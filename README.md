@@ -40,7 +40,7 @@ This custom card displays essential information about your Mercedes vehicle. It 
 
 1. Go to HACS page on your Home Assistant instance
 1. Add this repository (https://github.com/ngocjohn/vehicle-info-card) via HACS Custom repositories [How to add Custom Repositories](https://hacs.xyz/docs/faq/custom_repositories/)
-1. Select `Frontend`
+1. Select `Lovelace`
 1. Press add icon and search for `Vehicle Info Card`
 1. Select Vehicle Info Card repo and install
 1. Force refresh the Home Assistant page (<kbd>Ctrl</kbd> + <kbd>F5</kbd> / (<kbd>Shift</kbd> +) <kbd>⌘</kbd> + <kbd>R</kbd>)
@@ -48,7 +48,7 @@ This custom card displays essential information about your Mercedes vehicle. It 
 
 ### Manual
 
-1. Download the 'vehicle-info-card.js'
+1. Download the [vehicle-info-card.js](https://github.com/ngocjohn/vehicle-info-card/blob/main/dist/vehicle-info-card.js)
 1. Place the downloaded file on your Home Assistant machine in the `config/www` folder (when there is no `www` folder in the folder where your `configuration.yaml` file is, create it and place the file there)
 1. In Home Assistant go to `Configuration->Lovelace Dashboards->Resources` (When there is no `resources` tag on the `Lovelace Dashboard` page, enable advanced mode in your account settings, and retry this step)
 1. Add a new resource
@@ -154,6 +154,6 @@ Below is the configuration replaced entities card for `Vehicle status` button.
 
 2024 Viet Ngoc
 
-Project Link: [https://github.com/ngocjohn/](https://github.com/ngocjohn/)
+[https://github.com/ngocjohn/](https://github.com/ngocjohn/)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
