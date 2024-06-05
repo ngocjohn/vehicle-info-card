@@ -1,5 +1,6 @@
 {
     "name": "Vehicle Info Card",
     "render_readme": true,
-    "filename": "vehicle-info-card.js"
+    "filename": "vehicle-info-card.js",
+    "content_in_root": false
 }
