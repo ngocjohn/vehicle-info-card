@@ -202,6 +202,9 @@ export class VehicleCard extends LitElement {
         });
       });
     }
+    if (changedProps.has('activeCardType')) {
+      this.setupCardListeners();
+    }
   }
 
   // https://lit.dev/docs/components/lifecycle/#reactive-update-cycle-performing
@@ -348,7 +351,6 @@ export class VehicleCard extends LitElement {
 
   private _renderAdditionalCard(): TemplateResult | LovelaceCard | void {
     if (!this.activeCardType) return html``;
-
     let cards: any;
     let isDefaultCard = false;
 
@@ -394,7 +396,7 @@ export class VehicleCard extends LitElement {
     return html`
       <main id="cards-wrapper">
         ${this._renderAdditionalCardHeader()}
-        <section>
+        <section class="card-element">
           ${isDefaultCard ? cards : cards.map((card: any) => html`<div class="added-card">${card}</div>`)}
         </section>
         ${isDefaultCard
@@ -422,6 +424,92 @@ export class VehicleCard extends LitElement {
         </div>
       </div>
     `;
+  }
+
+  private setupCardListeners(): void {
+    const cardElement = this.shadowRoot?.querySelector('.card-element');
+    if (!cardElement) return;
+
+    // Variables to store touch/mouse coordinates
+    let xDown: number | null = null;
+    let yDown: number | null = null;
+    let xDiff: number | null = null;
+    let yDiff: number | null = null;
+    let isSwiping = false;
+
+    const presDown = (e: TouchEvent | MouseEvent) => {
+      e.stopImmediatePropagation();
+      if (e instanceof TouchEvent) {
+        xDown = e.touches[0].clientX;
+        yDown = e.touches[0].clientY;
+      } else if (e instanceof MouseEvent) {
+        xDown = e.clientX;
+        yDown = e.clientY;
+      }
+
+      ['touchmove', 'mousemove'].forEach((event) => {
+        cardElement.addEventListener(event, pressMove as EventListener);
+      });
+
+      ['touchend', 'mouseup'].forEach((event) => {
+        cardElement.addEventListener(event, pressRelease as EventListener);
+      });
+    };
+
+    const pressMove = (e: TouchEvent | MouseEvent) => {
+      if (xDown === null || yDown === null) return;
+
+      if (e instanceof TouchEvent) {
+        xDiff = xDown - e.touches[0].clientX;
+        yDiff = yDown - e.touches[0].clientY;
+      } else if (e instanceof MouseEvent) {
+        xDiff = xDown - e.clientX;
+        yDiff = yDown - e.clientY;
+      }
+
+      if (xDiff !== null && yDiff !== null) {
+        if (Math.abs(xDiff) > 1 && Math.abs(yDiff) > 1) {
+          isSwiping = true;
+        }
+      }
+    };
+
+    const pressRelease = (e: TouchEvent | MouseEvent) => {
+      e.stopImmediatePropagation();
+
+      ['touchmove', 'mousemove'].forEach((event) => {
+        cardElement.removeEventListener(event, pressMove as EventListener);
+      });
+
+      ['touchend', 'mouseup'].forEach((event) => {
+        cardElement.removeEventListener(event, pressRelease as EventListener);
+      });
+
+      console.log(`pressRelease: \nxDiff: ${xDiff}, yDiff: ${yDiff}, isSwiping: ${isSwiping}`);
+
+      const cardWidth = cardElement.clientWidth;
+      console.log('cardWidth', cardWidth);
+
+      if (isSwiping && xDiff !== null && yDiff !== null) {
+        if (Math.abs(xDiff) > Math.abs(yDiff) && Math.abs(xDiff) > cardWidth / 3) {
+          if (xDiff > 0) {
+            // console.log('swipe left');
+            this.toggleNextCard();
+          } else {
+            // console.log('swipe right');
+            this.togglePrevCard();
+          }
+        }
+        xDiff = yDiff = xDown = yDown = null;
+        isSwiping = false;
+      }
+    };
+
+    // Attach the initial pressDown listeners
+    ['touchstart', 'mousedown'].forEach((event) => {
+      cardElement.addEventListener(event, presDown as EventListener);
+      console.log('event', event);
+    });
   }
 
   private toggleNextCard(): void {
