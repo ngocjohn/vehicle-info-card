@@ -1,0 +1,82 @@
+{
+  "name": "vehicle-info-card",
+  "version": "1.0.0",
+  "description": "Lovelace custom card for displaying vehicle information from Mercedes Component integration",
+  "keywords": [
+    "home-assistant",
+    "homeassistant",
+    "hass",
+    "automation",
+    "lovelace",
+    "custom-cards"
+  ],
+  "author": "Viet Ngoc",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "module": "vehicle-info-card.js",
+  "license": "MIT",
+  "dependencies": {
+    "@lit-labs/scoped-registry-mixin": "^1.0.0",
+    "@material/mwc-formfield": "^0.25.3",
+    "@material/mwc-list": "^0.25.3",
+    "@material/mwc-menu": "^0.25.3",
+    "@material/mwc-notched-outline": "^0.25.3",
+    "@material/mwc-ripple": "^0.25.3",
+    "@material/mwc-select": "^0.25.3",
+    "@material/mwc-switch": "^0.25.3",
+    "@material/mwc-textfield": "^0.25.3",
+    "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "custom-card-helpers": "^1.7.2",
+    "home-assistant-js-websocket": "^5.11.1",
+    "lit": "^2.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.17.8",
+    "@babel/plugin-proposal-decorators": "^7.17.8",
+    "@babel/plugin-transform-class-properties": "^7.24.1",
+    "@rollup/plugin-image": "^3.0.3",
+    "@rollup/plugin-json": "^4.1.0",
+    "@types/leaflet": "^1.9.12",
+    "@types/leaflet-providers": "^1.2.4",
+    "@typescript-eslint/eslint-plugin": "^5.16.0",
+    "@typescript-eslint/parser": "^5.16.0",
+    "devcert": "^1.2.2",
+    "eslint": "^8.11.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-import": "^2.25.4",
+    "eslint-plugin-prettier": "^4.0.0",
+    "leaflet": "^1.9.4",
+    "leaflet-providers": "^2.0.0",
+    "postcss-preset-env": "^9.5.12",
+    "prettier": "^2.6.1",
+    "rollup": "^2.70.1",
+    "rollup-plugin-babel": "^4.4.0",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-filesize": "^10.0.0",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-postcss": "^4.0.2",
+    "rollup-plugin-postcss-lit": "^2.1.0",
+    "rollup-plugin-serve": "^1.1.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-typescript2": "^0.31.2",
+    "swiper": "^11.1.4",
+    "typescript": "^4.6.3"
+  },
+  "resolutions": {
+    "lit": "^2.1.2",
+    "lit-html": "2.1.2",
+    "lit-element": "3.1.2",
+    "@lit/reactive-element": "1.2.1"
+  },
+  "scripts": {
+    "dev": "rollup -c --watch",
+    "build": "npm run lint && npm run rollup",
+    "lint": "eslint src/*.ts",
+    "rollup": "rollup -c",
+    "local-copy": "cp dist/vehicle-info-card.js /Volumes/config/www/dashboard-resources/vehicle-info-card.js"
+  }
+}
