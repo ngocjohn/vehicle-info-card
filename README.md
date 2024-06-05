@@ -1,6 +1,6 @@
-# VEHICLE INFO CARD
-
 <a name="readme-top"></a>
+
+# VEHICLE INFO CARD
 
 ## Home Assistant Custom Card for Mercedes Vehicles
 
@@ -16,7 +16,7 @@ This custom card displays essential information about your Mercedes vehicle. It 
     <li>
       <a href="#installation">Installation</a>
       <ul>
-        <li><a href="#hacs">HACS</a></li>
+        <li><a href="#hacs-home-assistant-community-store">HACS</a></li>
         <li><a href="#manual">Manual</a></li>
       </ul>
     </li>
@@ -25,12 +25,10 @@ This custom card displays essential information about your Mercedes vehicle. It 
       <ul>
         <li><a href="#configuration">Configuration</a></li>
         <li><a href="#options">Options</a></li>
-        <li><a href="#example-config">Examples</a></li>
+        <li><a href="#examples">Examples</a></li>
       </ul>
     </li>
     <li><a href="#screenshots">Screenshots</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
   </ol>
 </details>
 
@@ -96,7 +94,7 @@ Below is the configuration replaced entities card for `Vehicle status` button.
 
 <details>
 
-<summary>Yaml Confiuration</summary>
+<summary>Yaml Configuration</summary>
 
 <br />
 
