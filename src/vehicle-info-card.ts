@@ -8,7 +8,6 @@ import {
   LovelaceCard,
   LovelaceCardConfig,
   fireEvent,
-  computeCardSize,
 } from 'custom-card-helpers'; // This is a community maintained npm module with common helper functions/types. https://github.com/custom-cards/custom-card-helpers
 
 import {
@@ -414,7 +413,7 @@ export class VehicleCard extends LitElement {
   private _renderAdditionalCardHeader(): TemplateResult {
     return html`
       <div class="added-card-header">
-        <div class="headder-btn" @click="${() => this.activeCardType && this.toggleCard(this.activeCardType)}">
+        <div class="headder-btn" @click="${() => this.closeAddedCard()}">
           <ha-icon icon="mdi:close"></ha-icon>
         </div>
         <div class="card-toggle ">
@@ -427,6 +426,10 @@ export class VehicleCard extends LitElement {
         </div>
       </div>
     `;
+  }
+
+  private closeAddedCard(): void {
+    this.activeCardType = null;
   }
 
   private toggleNextCard(): void {

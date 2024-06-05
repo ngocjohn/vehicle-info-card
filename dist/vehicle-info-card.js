@@ -2052,7 +2052,7 @@ button.swiper-pagination-bullet {
       </main>
     `}_renderAdditionalCardHeader(){return Q`
       <div class="added-card-header">
-        <div class="headder-btn" @click="${()=>this.activeCardType&&this.toggleCard(this.activeCardType)}">
+        <div class="headder-btn" @click="${()=>this.closeAddedCard()}">
           <ha-icon icon="mdi:close"></ha-icon>
         </div>
         <div class="card-toggle ">
@@ -2064,7 +2064,7 @@ button.swiper-pagination-bullet {
           </div>
         </div>
       </div>
-    `}toggleNextCard(){if(!this.activeCardType)return;const t=Object.keys(this.additionalCards),e=t.indexOf(this.activeCardType),i=t[(e+1)%t.length];this.toggleCard(i)}togglePrevCard(){if(!this.activeCardType)return;const t=Object.keys(this.additionalCards),e=t.indexOf(this.activeCardType),i=t[(e-1+t.length)%t.length];this.toggleCard(i)}toggleCard(t){if(this.additionalCards[t]&&this.additionalCards[t].length>0)this.activeCardType=this.activeCardType===t?null:t;else{const t=["default-tripCards","default-vehicleCards","default-ecoCards","default-tyreCards"],e=(t.indexOf(this.activeCardType||"")+1)%t.length;this.activeCardType=t[e]}}generateCardTemplate(t,e,i){return Q`
+    `}closeAddedCard(){this.activeCardType=null}toggleNextCard(){if(!this.activeCardType)return;const t=Object.keys(this.additionalCards),e=t.indexOf(this.activeCardType),i=t[(e+1)%t.length];this.toggleCard(i)}togglePrevCard(){if(!this.activeCardType)return;const t=Object.keys(this.additionalCards),e=t.indexOf(this.activeCardType),i=t[(e-1+t.length)%t.length];this.toggleCard(i)}toggleCard(t){if(this.additionalCards[t]&&this.additionalCards[t].length>0)this.activeCardType=this.activeCardType===t?null:t;else{const t=["default-tripCards","default-vehicleCards","default-ecoCards","default-tyreCards"],e=(t.indexOf(this.activeCardType||"")+1)%t.length;this.activeCardType=t[e]}}generateCardTemplate(t,e,i){return Q`
       <div class="default-card">
         <div class="data-header">${t}</div>
         ${e.map((({key:t,icon:e})=>Q`
