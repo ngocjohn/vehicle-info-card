@@ -8,6 +8,7 @@ import {
   LovelaceCard,
   LovelaceCardConfig,
   fireEvent,
+  computeCardSize,
 } from 'custom-card-helpers'; // This is a community maintained npm module with common helper functions/types. https://github.com/custom-cards/custom-card-helpers
 
 import {
@@ -693,6 +694,6 @@ export class VehicleCard extends LitElement {
   }
 
   public getCardSize(): number {
-    return 5;
+    return 3;
   }
 }
