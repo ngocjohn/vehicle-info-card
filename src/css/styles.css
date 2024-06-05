@@ -169,7 +169,7 @@ header h1 {
   align-items: center;
   margin-bottom: 1rem;
 }
-.added-card-header .close-btn {
+.added-card-header .headder-btn {
   cursor: pointer;
   color: var(--secondary-text-color);
   opacity: 0.5;
@@ -177,6 +177,10 @@ header h1 {
   &:hover {
     opacity: 1;
   }
+}
+
+.added-card-header .card-toggle {
+  display: flex;
 }
 
 .added-card {

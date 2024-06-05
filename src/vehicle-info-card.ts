@@ -166,29 +166,6 @@ export class VehicleCard extends LitElement {
     }
   }
 
-  // private async getEntities(filters: {
-  //   [key: string]: { prefix: string; suffix: string };
-  // }): Promise<{ [key: string]: string }> {
-  //   const allEntities = await this.hass.callWS<{ entity_id: string; device_id: string }[]>({
-  //     type: 'config/entity_registry/list',
-  //   });
-  //   const carEntity = allEntities.find((e) => e.entity_id === this.config.entity);
-  //   if (!carEntity) {
-  //     return {};
-  //   }
-
-  //   const deviceEntities = allEntities.filter((e) => e.device_id === carEntity.device_id);
-  //   const entityIds: { [key: string]: string } = {};
-
-  //   for (const entityName of Object.keys(filters)) {
-  //     const { prefix, suffix } = filters[entityName];
-  //     entityIds[entityName] =
-  //       deviceEntities.find((e) => e.entity_id.startsWith(prefix) && e.entity_id.endsWith(suffix))?.entity_id || '';
-  //   }
-
-  //   return entityIds;
-  // }
-
   private async getEntities(filters: {
     [key: string]: { prefix: string; suffix: string };
   }): Promise<{ [key: string]: WarningEntity | TripEntity }> {
@@ -229,6 +206,9 @@ export class VehicleCard extends LitElement {
           card.hass = this.hass;
         });
       });
+    }
+    if (changedProps.has('activeCardType')) {
+      console.log('activeCardType:' + this.activeCardType);
     }
   }
 
@@ -415,17 +395,9 @@ export class VehicleCard extends LitElement {
 
     const carLastUpdate = this.config.entity ? formatTimestamp(this.hass.states[this.config.entity].last_changed) : '';
 
-    const headerCloseBtn = html`
-      <div class="added-card-header">
-        <div class="close-btn" @click="${() => this.activeCardType && this.toggleCard(this.activeCardType)}">
-          <ha-icon icon="mdi:close"></ha-icon>
-        </div>
-      </div>
-    `;
-
     return html`
       <main id="cards-wrapper">
-        ${headerCloseBtn}
+        ${this._renderAdditionalCardHeader()}
         <section>
           ${isDefaultCard ? cards : cards.map((card: any) => html`<div class="added-card">${card}</div>`)}
         </section>
@@ -436,6 +408,46 @@ export class VehicleCard extends LitElement {
           : ''}
       </main>
     `;
+  }
+
+  private _renderAdditionalCardHeader(): TemplateResult {
+    return html`
+      <div class="added-card-header">
+        <div class="headder-btn" @click="${() => this.activeCardType && this.toggleCard(this.activeCardType)}">
+          <ha-icon icon="mdi:close"></ha-icon>
+        </div>
+        <div class="card-toggle ">
+          <div class="headder-btn" @click="${this.togglePrevCard.bind(this)}">
+            <ha-icon icon="mdi:chevron-left"></ha-icon>
+          </div>
+          <div class="headder-btn" @click="${this.toggleNextCard.bind(this)}">
+            <ha-icon icon="mdi:chevron-right"></ha-icon>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  private toggleNextCard(): void {
+    if (!this.activeCardType) return;
+
+    const additionalCardTypes = Object.keys(this.additionalCards);
+    const currentIndex = additionalCardTypes.indexOf(this.activeCardType);
+    const newIndex = (currentIndex + 1) % additionalCardTypes.length;
+
+    const newCardType = additionalCardTypes[newIndex];
+    this.toggleCard(newCardType);
+  }
+
+  private togglePrevCard(): void {
+    if (!this.activeCardType) return;
+
+    const additionalCardTypes = Object.keys(this.additionalCards);
+    const currentIndex = additionalCardTypes.indexOf(this.activeCardType);
+    const newIndex = (currentIndex - 1 + additionalCardTypes.length) % additionalCardTypes.length;
+
+    const newCardType = additionalCardTypes[newIndex];
+    this.toggleCard(newCardType);
   }
 
   private toggleCard(cardType: string): void {
@@ -707,21 +719,6 @@ export class VehicleCard extends LitElement {
   private getEntityFilters = (): { prefix: string; suffix: string }[] => {
     return [...Object.values(warningEntityFilters), ...Object.values(tripEntityFilters)];
   };
-
-  // private getEntityName(entity: string | undefined): string {
-  //   if (!entity || !this.hass.states[entity]) return '';
-
-  //   const filters = this.getEntityFilters();
-
-  //   for (const filter of filters) {
-  //     const { prefix, suffix } = filter;
-  //     if (entity.startsWith(prefix) && entity.endsWith(suffix)) {
-  //       const suffixFriendly = suffix.replace(/_/g, ' ');
-  //       return `${suffixFriendly}`;
-  //     }
-  //   }
-  //   return '';
-  // }
 
   private async getOriginalName(entity: string): Promise<string> {
     if (!this.hass) return '';
