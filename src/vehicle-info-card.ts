@@ -14,10 +14,10 @@ import {
 import {
   VehicleCardConfig,
   ExtendedThemes,
-  WarningEntities,
   warningEntityFilters,
-  TripEntities,
   tripEntityFilters,
+  WarningEntity,
+  TripEntity,
 } from './types';
 import { CARD_VERSION } from './const';
 import { localize } from './localize/localize';
@@ -98,9 +98,8 @@ export class VehicleCard extends LitElement {
 
   @property({ type: Object }) private config!: VehicleCardConfig;
 
-  @state() private warningEntities: WarningEntities = {};
-
-  @state() private tripEntities: TripEntities = {};
+  @state() private warningEntities: { [key: string]: WarningEntity } = {};
+  @state() private tripEntities: { [key: string]: TripEntity } = {};
 
   @state() private additionalCards: { [key: string]: Array<LovelaceCard> } = {
     tripCards: [],
@@ -116,7 +115,8 @@ export class VehicleCard extends LitElement {
     return styles;
   }
 
-  protected firstUpdated(): void {
+  protected firstUpdated(changedProperties: PropertyValues) {
+    super.firstUpdated(changedProperties);
     this.configureAsync();
   }
 
@@ -125,12 +125,13 @@ export class VehicleCard extends LitElement {
       this.getEntities(warningEntityFilters),
       this.getEntities(tripEntityFilters),
     ]);
+    this.requestUpdate();
   }
 
   private lockHandler(): void {
     console.log('lockHandler triggered');
     const lockElement = this.shadowRoot?.getElementById('lockelement');
-    const lockState = this.getEntityState(this.warningEntities.lock);
+    const lockState = this.getEntityState(this.warningEntities.lock?.entity_id);
     const actionConfig = {
       tap_action: {
         action: 'none',
@@ -166,9 +167,32 @@ export class VehicleCard extends LitElement {
     }
   }
 
+  // private async getEntities(filters: {
+  //   [key: string]: { prefix: string; suffix: string };
+  // }): Promise<{ [key: string]: string }> {
+  //   const allEntities = await this.hass.callWS<{ entity_id: string; device_id: string }[]>({
+  //     type: 'config/entity_registry/list',
+  //   });
+  //   const carEntity = allEntities.find((e) => e.entity_id === this.config.entity);
+  //   if (!carEntity) {
+  //     return {};
+  //   }
+
+  //   const deviceEntities = allEntities.filter((e) => e.device_id === carEntity.device_id);
+  //   const entityIds: { [key: string]: string } = {};
+
+  //   for (const entityName of Object.keys(filters)) {
+  //     const { prefix, suffix } = filters[entityName];
+  //     entityIds[entityName] =
+  //       deviceEntities.find((e) => e.entity_id.startsWith(prefix) && e.entity_id.endsWith(suffix))?.entity_id || '';
+  //   }
+
+  //   return entityIds;
+  // }
+
   private async getEntities(filters: {
     [key: string]: { prefix: string; suffix: string };
-  }): Promise<{ [key: string]: string }> {
+  }): Promise<{ [key: string]: WarningEntity | TripEntity }> {
     const allEntities = await this.hass.callWS<{ entity_id: string; device_id: string }[]>({
       type: 'config/entity_registry/list',
     });
@@ -178,12 +202,17 @@ export class VehicleCard extends LitElement {
     }
 
     const deviceEntities = allEntities.filter((e) => e.device_id === carEntity.device_id);
-    const entityIds: { [key: string]: string } = {};
+    const entityIds: { [key: string]: WarningEntity | TripEntity } = {};
 
     for (const entityName of Object.keys(filters)) {
       const { prefix, suffix } = filters[entityName];
-      entityIds[entityName] =
-        deviceEntities.find((e) => e.entity_id.startsWith(prefix) && e.entity_id.endsWith(suffix))?.entity_id || '';
+      const entity = deviceEntities.find((e) => e.entity_id.startsWith(prefix) && e.entity_id.endsWith(suffix));
+      if (entity) {
+        const original_name = await this.getOriginalName(entity.entity_id);
+        entityIds[entityName] = { entity_id: entity.entity_id, original_name };
+      } else {
+        entityIds[entityName] = { entity_id: '', original_name: '' };
+      }
     }
 
     return entityIds;
@@ -240,10 +269,9 @@ export class VehicleCard extends LitElement {
     return html` <div class="header-background" style="background-image: url(${isDark ? amgWhite : amgBlack})"></div> `;
   }
 
-  private _renderWarnings(): TemplateResult | void {
-    if (!this.warningEntities) return;
-    const lockState = this.getEntityState(this.warningEntities.lock);
-    const parkBrakeState = this.getBooleanState(this.warningEntities.parkBrake);
+  private _renderWarnings(): TemplateResult {
+    const lockState = this.getEntityState(this.warningEntities.lock?.entity_id);
+    const parkBrakeState = this.getBooleanState(this.warningEntities.parkBrake?.entity_id);
     return html`
       <div class="info-box">
         ${lockState
@@ -263,10 +291,8 @@ export class VehicleCard extends LitElement {
   }
 
   private _renderFuelRangeInfo(): TemplateResult | void {
-    const fuelLevel = this.getEntityState(this.tripEntities.fuelLevel);
-    const fuelUnit = this.getAttrUnitOfMeasurement(this.tripEntities?.fuelLevel);
-    const rangeLiquid = this.getEntityState(this.tripEntities.rangeLiquid);
-    const rangeUnit = this.getAttrUnitOfMeasurement(this.tripEntities?.rangeLiquid);
+    const { state: fuelLevel, unit: fuelUnit } = this.getEntityInfo(this.tripEntities?.fuelLevel?.entity_id);
+    const { state: rangeLiquid, unit: rangeUnit } = this.getEntityInfo(this.tripEntities?.rangeLiquid?.entity_id);
     if (!fuelLevel || !rangeLiquid) return;
 
     const fuelProgress = html`
@@ -288,6 +314,11 @@ export class VehicleCard extends LitElement {
       </div>
     `;
   }
+  getEntityInfo = (entityId: string | undefined) => {
+    const state = this.getEntityState(entityId);
+    const unit = this.getAttrUnitOfMeasurement(entityId);
+    return { state, unit };
+  };
 
   private _renderMainCard(): TemplateResult | void {
     return html`
@@ -426,15 +457,15 @@ export class VehicleCard extends LitElement {
         <div class="data-header">${title}</div>
         ${data.map(({ key, icon }) => {
           return html`
-            <div class="data-row" @click=${() => this.toggleMoreInfo(entityCollection[key])}>
+            <div class="data-row" @click=${() => this.toggleMoreInfo(entityCollection[key].entity_id)}>
               <div>
                 <ha-icon class="data-icon" icon="${icon}"></ha-icon>
-                <span>${this.getEntityName(entityCollection[key])}</span>
+                <span>${entityCollection[key].original_name}</span>
               </div>
               <div>
                 <span
-                  >${this.getEntityState(entityCollection[key])}
-                  ${this.getAttrUnitOfMeasurement(entityCollection[key])}</span
+                  >${this.getEntityState(entityCollection[key].entity_id)}
+                  ${this.getAttrUnitOfMeasurement(entityCollection[key].entity_id)}</span
                 >
               </div>
             </div>
@@ -445,112 +476,123 @@ export class VehicleCard extends LitElement {
   }
 
   private _renderDefaultVehicleCard(): TemplateResult | void {
+    const warningEntities = this.warningEntities;
+
+    const generateDataArray = (keys: { key: string; iconEntity: string; stateEntity: string }[]) => {
+      return keys.map(({ key, iconEntity, stateEntity }) => ({
+        key,
+        icon: this.getEntityAttribute(iconEntity, 'icon'),
+        state: this.getBooleanState(stateEntity) ? 'Problem' : 'Ok',
+      }));
+    };
+
     const vehicleData = [
       {
         key: 'parkBrake',
-        icon: this.getEntityAttribute(this.warningEntities.parkBrake, 'icon'),
-        state: this.getBooleanState(this.warningEntities.parkBrake) ? 'Parked' : 'Not Parked',
+        icon: this.getEntityAttribute(warningEntities.parkBrake?.entity_id, 'icon'),
+        state: this.getBooleanState(warningEntities.parkBrake?.entity_id) ? 'Parked' : 'Not Parked',
       },
       {
         key: 'windowsClosed',
-        icon: this.getEntityAttribute(this.warningEntities.windowsClosed, 'icon'),
-        state: this.getBooleanState(this.warningEntities.windowsClosed) ? 'Closed' : 'Opened',
+        icon: this.getEntityAttribute(warningEntities.windowsClosed?.entity_id, 'icon'),
+        state: this.getBooleanState(warningEntities.windowsClosed?.entity_id) ? 'Closed' : 'Opened',
       },
     ];
 
-    const vehicleElements = vehicleData.map(({ key, icon, state }) => {
-      return html`
-        <div class="data-row" @click=${() => this.toggleMoreInfo(this.warningEntities[key])}>
-          <div>
-            <ha-icon
-              class="data-icon ${this.getBooleanState(this.warningEntities[key]) ? 'warning' : ''} "
-              icon="${icon}"
-            ></ha-icon>
-            <span>${this.getEntityName(this.warningEntities[key])}</span>
-          </div>
-          <div>
-            <span>${state}</span>
-          </div>
-        </div>
-      `;
-    });
-
-    const warningsData = [
-      {
-        key: 'tire',
-        icon: this.getEntityAttribute(this.warningEntities.tire, 'icon'),
-        state: this.getBooleanState(this.warningEntities.tire) ? 'Problem' : 'Ok',
-      },
+    const warningsDataKeys = [
+      { key: 'tire', iconEntity: warningEntities.tire?.entity_id, stateEntity: warningEntities.tire?.entity_id },
       {
         key: 'lowBrakeFluid',
-        icon: this.getEntityAttribute(this.warningEntities.lowBrakeFluid, 'icon'),
-        state: this.getBooleanState(this.warningEntities.lowBrakeFluid) ? 'Problem' : 'Ok',
+        iconEntity: warningEntities.lowBrakeFluid?.entity_id,
+        stateEntity: warningEntities.lowBrakeFluid?.entity_id,
       },
       {
         key: 'lowCoolantLevel',
-        icon: this.getEntityAttribute(this.warningEntities.lowCoolantLevel, 'icon'),
-        state: this.getBooleanState(this.warningEntities.lowCoolantLevel) ? 'Problem' : 'Ok',
+        iconEntity: warningEntities.lowCoolantLevel?.entity_id,
+        stateEntity: warningEntities.lowCoolantLevel?.entity_id,
       },
       {
         key: 'engineLight',
-        icon: this.getEntityAttribute(this.warningEntities.engineLight, 'icon'),
-        state: this.getBooleanState(this.warningEntities.engineLight) ? 'Problem' : 'Ok',
+        iconEntity: warningEntities.engineLight?.entity_id,
+        stateEntity: warningEntities.engineLight?.entity_id,
       },
       {
         key: 'lowWashWater',
-        icon: this.getEntityAttribute(this.warningEntities.lowWashWater, 'icon'),
-        state: this.getBooleanState(this.warningEntities.lowWashWater) ? 'Problem' : 'Ok',
+        iconEntity: warningEntities.lowWashWater?.entity_id,
+        stateEntity: warningEntities.lowWashWater?.entity_id,
       },
     ];
 
-    const lockState = this.getEntityState(this.warningEntities.lock);
+    const lockState = this.getEntityState(warningEntities.lock?.entity_id);
     const lockIcon = lockState === 'locked' ? 'mdi:lock' : 'mdi:lock-open';
     const lockColor = lockState === 'locked' ? 'warning' : '';
-    const lockEntity = this.warningEntities.lock || '';
-    // window.setTimeout(() => this.lockHandler(), 100);
+    const lockEntity = warningEntities.lock?.entity_id;
+
+    const warningsData = generateDataArray(warningsDataKeys);
+
     return html`
       <div class="default-card">
         <div class="data-header">Vehicle status</div>
         <div id="lockelement" class="data-row" @click=${() => this.toggleMoreInfo(lockEntity)}>
           <div>
             <ha-icon class="data-icon ${lockColor}" icon=${lockIcon}></ha-icon>
-            <span>${this.getEntityName(this.warningEntities.lock)}</span>
+            <span>${warningEntities.lock.original_name}</span>
           </div>
           <div>
-            <span>${this.getEntityState(this.warningEntities.lock)}</span>
+            <span>${lockState}</span>
           </div>
         </div>
-        ${vehicleElements}
-      </div>
-      <div class="default-card">
-        <div class="data-header">Warnings</div>
-        ${warningsData.map(({ key, icon, state }) => {
-          return html`
-            <div class="data-row" @click=${() => this.toggleMoreInfo(this.warningEntities[key])}>
+        ${vehicleData.map(
+          ({ key, icon, state }) => html`
+            <div class="data-row" @click=${() => this.toggleMoreInfo(warningEntities[key]?.entity_id)}>
               <div>
                 <ha-icon
-                  class="data-icon ${this.getBooleanState(this.warningEntities[key]) ? 'warning' : ''} "
+                  class="data-icon ${this.getBooleanState(warningEntities[key]?.entity_id) ? 'warning' : ''} "
                   icon="${icon}"
                 ></ha-icon>
-                <span>${this.getEntityName(this.warningEntities[key])}</span>
+                <span>${warningEntities[key].original_name}</span>
               </div>
               <div>
                 <span>${state}</span>
               </div>
             </div>
-          `;
-        })}
+          `,
+        )}
+      </div>
+      <div class="default-card">
+        <div class="data-header">Warnings</div>
+        ${warningsData.map(
+          ({ key, icon, state }) => html`
+            <div class="data-row" @click=${() => this.toggleMoreInfo(warningEntities[key]?.entity_id)}>
+              <div>
+                <ha-icon
+                  class="data-icon ${this.getBooleanState(warningEntities[key]?.entity_id) ? 'warning' : ''} "
+                  icon="${icon}"
+                ></ha-icon>
+                <span>${warningEntities[key].original_name}</span>
+              </div>
+              <div>
+                <span>${state}</span>
+              </div>
+            </div>
+          `,
+        )}
       </div>
     `;
   }
 
   private _renderDefaultEcoCard(): TemplateResult | void {
     const ecoData = [
-      { key: 'ecoScoreBonusRange', icon: this.getEntityAttribute(this.tripEntities.ecoScoreBonusRange, 'icon') },
-      { key: 'ecoScoreAcceleraion', icon: this.getEntityAttribute(this.tripEntities.ecoScoreAcceleraion, 'icon') },
-      { key: 'ecoScoreConstant', icon: this.getEntityAttribute(this.tripEntities.ecoScoreAcceleraion, 'icon') },
-      { key: 'ecoScoreFreeWheel', icon: this.getEntityAttribute(this.tripEntities.ecoScoreAcceleraion, 'icon') },
+      { key: 'ecoScoreBonusRange', icon: '' },
+      { key: 'ecoScoreAcceleraion', icon: '' },
+      { key: 'ecoScoreConstant', icon: '' },
+      { key: 'ecoScoreFreeWheel', icon: '' },
     ];
+
+    // Loop through each item in ecoData and assign the icon dynamically
+    ecoData.forEach((item) => {
+      item.icon = this.getEntityAttribute(this.tripEntities[item.key]?.entity_id, 'icon');
+    });
 
     return this.generateCardTemplate('Eco display', ecoData, this.tripEntities);
   }
@@ -567,29 +609,33 @@ export class VehicleCard extends LitElement {
   }
 
   private _renderDefaultTripCard(): TemplateResult | void {
-    const overViewData = [
-      { key: 'odometer', icon: 'mdi:map-marker-radius' },
-      { key: 'fuelLevel', icon: this.getEntityAttribute(this.tripEntities.fuelLevel, 'icon') },
-      { key: 'rangeLiquid', icon: this.getEntityAttribute(this.tripEntities.rangeLiquid, 'icon') },
+    const generateDataArray = (keys: { key: string; icon?: string }[]): { key: string; icon: string }[] => {
+      return keys.map(({ key, icon }) => ({
+        key,
+        icon: icon ?? this.getEntityAttribute(this.tripEntities[key]?.entity_id, 'icon'),
+      }));
+    };
+
+    const overViewDataKeys = [
+      { key: 'odometer' },
+      { key: 'fuelLevel', icon: this.getEntityAttribute(this.tripEntities.fuelLevel?.entity_id, 'icon') },
+      { key: 'rangeLiquid', icon: this.getEntityAttribute(this.tripEntities.rangeLiquid?.entity_id, 'icon') },
     ];
 
-    const tripFromStartData = [
-      { key: 'distanceStart', icon: this.getEntityAttribute(this.tripEntities.distanceStart, 'icon') },
+    const tripFromStartDataKeys = [
+      { key: 'distanceStart' },
       { key: 'averageSpeedStart', icon: 'mdi:speedometer-slow' },
-      {
-        key: 'liquidConsumptionStart',
-        icon: this.getEntityAttribute(this.tripEntities.liquidConsumptionStart, 'icon'),
-      },
+      { key: 'liquidConsumptionStart' },
+    ];
+    const tripFromResetDataKeys = [
+      { key: 'distanceReset' },
+      { key: 'averageSpeedReset', icon: 'mdi:speedometer' },
+      { key: 'liquidConsumptionReset' },
     ];
 
-    const tripFromResetData = [
-      { key: 'distanceReset', icon: this.getEntityAttribute(this.tripEntities.distanceReset, 'icon') },
-      { key: 'averageSpeedReset', icon: 'mdi:speedometer' },
-      {
-        key: 'liquidConsumptionReset',
-        icon: this.getEntityAttribute(this.tripEntities.liquidConsumptionReset, 'icon'),
-      },
-    ];
+    const overViewData = generateDataArray(overViewDataKeys);
+    const tripFromStartData = generateDataArray(tripFromStartDataKeys);
+    const tripFromResetData = generateDataArray(tripFromResetDataKeys);
 
     return html`
       ${this.generateCardTemplate('Overview', overViewData, this.tripEntities)}
@@ -597,7 +643,6 @@ export class VehicleCard extends LitElement {
       ${this.generateCardTemplate('From reset', tripFromResetData, this.tripEntities)}
     `;
   }
-
   private getCardTypeData(cardType: string): { name: string; icon: string } {
     const cardTypeData: Record<string, { name: string; icon: string }> = {
       tripCards: { name: 'Trip data', icon: 'mdi:map-marker-path' },
@@ -609,16 +654,17 @@ export class VehicleCard extends LitElement {
   }
 
   private getSecondaryInfo(cardType: string): string {
+    const { tripEntities, warningEntities } = this;
     switch (cardType) {
       case 'tripCards' || 'default-tripCards':
-        return `${this.getEntityState(this.tripEntities.odometer)} ${this.getAttrUnitOfMeasurement(
-          this.tripEntities.odometer,
+        return `${this.getEntityState(tripEntities.odometer?.entity_id)} ${this.getAttrUnitOfMeasurement(
+          this.tripEntities.odometer?.entity_id,
         )}`;
       case 'vehicleCards' || 'default-vehicleCards':
-        return this.getEntityState(this.warningEntities.lock);
+        return this.getEntityState(warningEntities.lock?.entity_id);
       case 'ecoCards' || 'default-ecoCards':
-        return `${this.getEntityState(this.tripEntities.ecoScoreBonusRange)} ${this.getAttrUnitOfMeasurement(
-          this.tripEntities.ecoScoreBonusRange,
+        return `${this.getEntityState(tripEntities.ecoScoreBonusRange?.entity_id)} ${this.getAttrUnitOfMeasurement(
+          tripEntities.ecoScoreBonusRange?.entity_id,
         )}`;
       case 'tyreCards' || 'default-tyreCards':
         const tireAttributes = [
@@ -628,11 +674,11 @@ export class VehicleCard extends LitElement {
           'tirepressureRearRight',
         ];
         const pressures = tireAttributes.map((attr) =>
-          parseInt(this.getEntityAttributes(this.warningEntities.tire)[attr] || '0'),
+          parseInt(this.getEntityAttributes(warningEntities.tire?.entity_id)[attr] || '0'),
         );
         const minPressure = Math.min(...pressures);
         const maxPressure = Math.max(...pressures);
-        const tireUnit = this.getAttrUnitOfMeasurement(this.tripEntities.tirePressureFrontLeft);
+        const tireUnit = this.getAttrUnitOfMeasurement(tripEntities.tirePressureFrontLeft?.entity_id);
         return `${minPressure} - ${maxPressure} ${tireUnit}`;
       default:
         return 'Unknown Card';
@@ -649,7 +695,7 @@ export class VehicleCard extends LitElement {
     return this.hass.states[entity].state;
   }
 
-  getEntityAttributes(entity: string | undefined): { [key: string]: any } {
+  private getEntityAttributes(entity: string | undefined): { [key: string]: any } {
     if (!entity || !this.hass.states[entity] || !this.hass.states[entity].attributes) return {};
     return this.hass.states[entity].attributes;
   }
@@ -663,20 +709,28 @@ export class VehicleCard extends LitElement {
     return [...Object.values(warningEntityFilters), ...Object.values(tripEntityFilters)];
   };
 
-  private getEntityName(entity: string | undefined): string {
-    if (!entity || !this.hass.states[entity]) return '';
+  // private getEntityName(entity: string | undefined): string {
+  //   if (!entity || !this.hass.states[entity]) return '';
 
-    const filters = this.getEntityFilters();
+  //   const filters = this.getEntityFilters();
 
-    for (const filter of filters) {
-      const { prefix, suffix } = filter;
-      if (entity.startsWith(prefix) && entity.endsWith(suffix)) {
-        const suffixFriendly = suffix.replace(/_/g, ' ');
-        return `${suffixFriendly}`;
-      }
-    }
+  //   for (const filter of filters) {
+  //     const { prefix, suffix } = filter;
+  //     if (entity.startsWith(prefix) && entity.endsWith(suffix)) {
+  //       const suffixFriendly = suffix.replace(/_/g, ' ');
+  //       return `${suffixFriendly}`;
+  //     }
+  //   }
+  //   return '';
+  // }
 
-    return '';
+  private async getOriginalName(entity: string): Promise<string> {
+    if (!this.hass) return '';
+    const entityObj = await this.hass.callWS<{ entity_id: string; original_name: string }>({
+      type: 'config/entity_registry/get',
+      entity_id: entity,
+    });
+    return entityObj.original_name;
   }
 
   // Method to get the unit of measurement of an entity
