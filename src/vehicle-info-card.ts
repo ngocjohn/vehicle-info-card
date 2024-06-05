@@ -247,7 +247,7 @@ export class VehicleCard extends LitElement {
       <div class="info-box">
         ${lockState
           ? html` <div class="item">
-              <ha-icon></ha-icon>
+              <ha-icon icon=${lockState === 'locked' ? 'mdi:lock' : 'mdi:lock-open'}></ha-icon>
               <div><span>${lockState}</span></div>
             </div>`
           : ''}
