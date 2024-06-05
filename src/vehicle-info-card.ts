@@ -100,12 +100,7 @@ export class VehicleCard extends LitElement {
   @state() private warningEntities: { [key: string]: WarningEntity } = {};
   @state() private tripEntities: { [key: string]: TripEntity } = {};
 
-  @state() private additionalCards: { [key: string]: Array<LovelaceCard> } = {
-    tripCards: [],
-    vehicleCards: [],
-    ecoCards: [],
-    tyreCards: [],
-  };
+  @state() private additionalCards: { [key: string]: any[] } = {};
 
   @state() private activeCardType: string | null = null;
 
@@ -206,9 +201,6 @@ export class VehicleCard extends LitElement {
           card.hass = this.hass;
         });
       });
-    }
-    if (changedProps.has('activeCardType')) {
-      console.log('activeCardType:' + this.activeCardType);
     }
   }
 
@@ -337,9 +329,9 @@ export class VehicleCard extends LitElement {
 
     return html`
       <div class="grid-container">
-        ${Object.keys(this.additionalCards).map(
+        ${['tripCards', 'vehicleCards', 'ecoCards', 'tyreCards'].map(
           (cardType) => html`
-            <div class="grid-item" @click=${() => this.toggleCard(cardType)}>
+            <div class="grid-item" @click=${() => this.toggleCardFromButtons(cardType)}>
               <div class="item-icon">
                 <ha-icon icon="${this.getCardTypeData(cardType).icon}"></ha-icon>
               </div>
@@ -362,32 +354,36 @@ export class VehicleCard extends LitElement {
 
     switch (this.activeCardType) {
       case 'tripCards':
-        cards = this.additionalCards[this.activeCardType];
+        if (!this.config.trip_card || this.config.trip_card.length === 0) {
+          cards = this._renderDefaultTripCard();
+          isDefaultCard = true;
+        } else {
+          cards = this.additionalCards[this.activeCardType];
+        }
         break;
       case 'vehicleCards':
-        cards = this.additionalCards[this.activeCardType];
+        if (!this.config.vehicle_card || this.config.vehicle_card.length === 0) {
+          cards = this._renderDefaultVehicleCard();
+          isDefaultCard = true;
+        } else {
+          cards = this.additionalCards[this.activeCardType];
+        }
         break;
       case 'ecoCards':
-        cards = this.additionalCards[this.activeCardType];
+        if (!this.config.eco_card || this.config.eco_card.length === 0) {
+          cards = this._renderDefaultEcoCard();
+          isDefaultCard = true;
+        } else {
+          cards = this.additionalCards[this.activeCardType];
+        }
         break;
       case 'tyreCards':
-        cards = this.additionalCards[this.activeCardType];
-        break;
-      case 'default-tripCards':
-        cards = this._renderDefaultTripCard();
-        isDefaultCard = true;
-        break;
-      case 'default-vehicleCards':
-        cards = this._renderDefaultVehicleCard();
-        isDefaultCard = true;
-        break;
-      case 'default-ecoCards':
-        cards = this._renderDefaultEcoCard();
-        isDefaultCard = true;
-        break;
-      case 'default-tyreCards':
-        cards = this._renderDefaultTyreCard();
-        isDefaultCard = true;
+        if (!this.config.tyre_card || this.config.tyre_card.length === 0) {
+          cards = this._renderDefaultTyreCard();
+          isDefaultCard = true;
+        } else {
+          cards = this.additionalCards[this.activeCardType];
+        }
         break;
       default:
         return html``;
@@ -417,10 +413,10 @@ export class VehicleCard extends LitElement {
           <ha-icon icon="mdi:close"></ha-icon>
         </div>
         <div class="card-toggle ">
-          <div class="headder-btn" @click="${() => this.togglePrevCard()}">
+          <div class="headder-btn" @click=${() => this.toggleNextCard()}>
             <ha-icon icon="mdi:chevron-left"></ha-icon>
           </div>
-          <div class="headder-btn" @click="${() => this.toggleNextCard()}">
+          <div class="headder-btn" @click=${() => this.togglePrevCard()}>
             <ha-icon icon="mdi:chevron-right"></ha-icon>
           </div>
         </div>
@@ -428,43 +424,28 @@ export class VehicleCard extends LitElement {
     `;
   }
 
-  private closeAddedCard(): void {
-    this.activeCardType = null;
-  }
-
   private toggleNextCard(): void {
     if (!this.activeCardType) return;
-
-    const additionalCardTypes = Object.keys(this.additionalCards);
-    const currentIndex = additionalCardTypes.indexOf(this.activeCardType);
-    const newIndex = (currentIndex + 1) % additionalCardTypes.length;
-
-    const newCardType = additionalCardTypes[newIndex];
-    this.toggleCard(newCardType);
+    const cardTypes = ['tripCards', 'vehicleCards', 'ecoCards', 'tyreCards'];
+    const currentIndex = cardTypes.indexOf(this.activeCardType);
+    const nextIndex = currentIndex === cardTypes.length - 1 ? 0 : currentIndex + 1;
+    this.activeCardType = cardTypes[nextIndex];
   }
 
   private togglePrevCard(): void {
     if (!this.activeCardType) return;
-
-    const additionalCardTypes = Object.keys(this.additionalCards);
-    const currentIndex = additionalCardTypes.indexOf(this.activeCardType);
-    const newIndex = (currentIndex - 1 + additionalCardTypes.length) % additionalCardTypes.length;
-
-    const newCardType = additionalCardTypes[newIndex];
-    this.toggleCard(newCardType);
+    const cardTypes = ['tripCards', 'vehicleCards', 'ecoCards', 'tyreCards'];
+    const currentIndex = cardTypes.indexOf(this.activeCardType);
+    const prevIndex = currentIndex === 0 ? cardTypes.length - 1 : currentIndex - 1;
+    this.activeCardType = cardTypes[prevIndex];
   }
 
-  private toggleCard(cardType: string): void {
-    if (this.additionalCards[cardType] && this.additionalCards[cardType].length > 0) {
-      // If the added card type is defined and has cards, toggle between added card types
-      this.activeCardType = this.activeCardType === cardType ? null : cardType;
-    } else {
-      // If the added card type is null or has no cards, cycle through default card types
-      const defaultCardTypes = ['default-tripCards', 'default-vehicleCards', 'default-ecoCards', 'default-tyreCards'];
-      const currentIndex = defaultCardTypes.indexOf(this.activeCardType || '');
-      const newIndex = (currentIndex + 1) % defaultCardTypes.length;
-      this.activeCardType = defaultCardTypes[newIndex];
-    }
+  private closeAddedCard(): void {
+    this.activeCardType = null;
+  }
+
+  private toggleCardFromButtons(cardType: string): void {
+    this.activeCardType = this.activeCardType === cardType ? null : cardType;
   }
 
   private generateCardTemplate(
@@ -663,6 +644,7 @@ export class VehicleCard extends LitElement {
       ${this.generateCardTemplate('From reset', tripFromResetData, this.tripEntities)}
     `;
   }
+
   private getCardTypeData(cardType: string): { name: string; icon: string } {
     const cardTypeData: Record<string, { name: string; icon: string }> = {
       tripCards: { name: 'Trip data', icon: 'mdi:map-marker-path' },
@@ -670,34 +652,37 @@ export class VehicleCard extends LitElement {
       ecoCards: { name: 'Eco display', icon: 'mdi:leaf' },
       tyreCards: { name: 'Tyre pressure', icon: 'mdi:tire' },
     };
-    return cardTypeData[cardType] || { name: 'Unknown Card', icon: 'mdi:car' };
+    return cardTypeData[cardType];
   }
 
   private getSecondaryInfo(cardType: string): string {
     const { tripEntities, warningEntities } = this;
     switch (cardType) {
-      case 'tripCards' || 'default-tripCards':
+      case 'tripCards':
         return `${this.getEntityState(tripEntities.odometer?.entity_id)} ${this.getAttrUnitOfMeasurement(
           this.tripEntities.odometer?.entity_id,
         )}`;
-      case 'vehicleCards' || 'default-vehicleCards':
+      case 'vehicleCards':
         return this.getEntityState(warningEntities.lock?.entity_id);
-      case 'ecoCards' || 'default-ecoCards':
+      case 'ecoCards':
         return `${this.getEntityState(tripEntities.ecoScoreBonusRange?.entity_id)} ${this.getAttrUnitOfMeasurement(
           tripEntities.ecoScoreBonusRange?.entity_id,
         )}`;
-      case 'tyreCards' || 'default-tyreCards':
+      case 'tyreCards':
         const tireAttributes = [
-          'tirepressureFrontLeft',
-          'tirepressureFrontRight',
-          'tirepressureRearLeft',
-          'tirepressureRearRight',
+          'tirePressureFrontRight',
+          'tirePressureFrontRight',
+          'tirePressureRearLeft',
+          'tirePressureRearRight',
         ];
+
         const pressures = tireAttributes.map((attr) =>
-          parseInt(this.getEntityAttributes(warningEntities.tire?.entity_id)[attr] || '0'),
+          parseInt(this.getEntityState(tripEntities[attr]?.entity_id) || '0', 10),
         );
+
         const minPressure = Math.min(...pressures);
         const maxPressure = Math.max(...pressures);
+
         const tireUnit = this.getAttrUnitOfMeasurement(tripEntities.tirePressureFrontLeft?.entity_id);
         return `${minPressure} - ${maxPressure} ${tireUnit}`;
       default:
@@ -724,10 +709,6 @@ export class VehicleCard extends LitElement {
     if (!entity || !this.hass.states[entity] || !this.hass.states[entity].attributes) return undefined;
     return this.hass.states[entity].attributes[attribute];
   }
-
-  private getEntityFilters = (): { prefix: string; suffix: string }[] => {
-    return [...Object.values(warningEntityFilters), ...Object.values(tripEntityFilters)];
-  };
 
   private async getOriginalName(entity: string): Promise<string> {
     if (!this.hass) return '';
