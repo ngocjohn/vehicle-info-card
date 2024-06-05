@@ -418,10 +418,10 @@ export class VehicleCard extends LitElement {
           <ha-icon icon="mdi:close"></ha-icon>
         </div>
         <div class="card-toggle ">
-          <div class="headder-btn" @click="${this.togglePrevCard.bind(this)}">
+          <div class="headder-btn" @click="${() => this.togglePrevCard()}">
             <ha-icon icon="mdi:chevron-left"></ha-icon>
           </div>
-          <div class="headder-btn" @click="${this.toggleNextCard.bind(this)}">
+          <div class="headder-btn" @click="${() => this.toggleNextCard()}">
             <ha-icon icon="mdi:chevron-right"></ha-icon>
           </div>
         </div>
@@ -453,9 +453,14 @@ export class VehicleCard extends LitElement {
 
   private toggleCard(cardType: string): void {
     if (this.additionalCards[cardType] && this.additionalCards[cardType].length > 0) {
+      // If the added card type is defined and has cards, toggle between added card types
       this.activeCardType = this.activeCardType === cardType ? null : cardType;
     } else {
-      this.activeCardType = this.activeCardType === cardType ? null : `default-${cardType}`;
+      // If the added card type is null or has no cards, cycle through default card types
+      const defaultCardTypes = ['default-tripCards', 'default-vehicleCards', 'default-ecoCards', 'default-tyreCards'];
+      const currentIndex = defaultCardTypes.indexOf(this.activeCardType || '');
+      const newIndex = (currentIndex + 1) % defaultCardTypes.length;
+      this.activeCardType = defaultCardTypes[newIndex];
     }
   }
 
