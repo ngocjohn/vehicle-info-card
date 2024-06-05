@@ -17,12 +17,21 @@ import { ignoreSwitchFiles } from './elements/ignore/switch';
 
 const dev = process.env.ROLLUP_WATCH;
 const port = process.env.PORT || 8235;
+
 const serveopts = {
   contentBase: ['./dev'],
   port,
   allowCrossOrigin: true,
   headers: {
     'Access-Control-Allow-Origin': '*',
+  },
+};
+
+const terserOpt = {
+  module: true,
+  compress: {
+    drop_console: ['log', 'error'],
+    module: false,
   },
 };
 
@@ -49,7 +58,7 @@ const plugins = [
   }),
   postcssLit(),
   dev && serve(serveopts),
-  !dev && terser(),
+  !dev && terser(terserOpt),
   !dev && filesize(),
   ignore({
     files: [...ignoreTextfieldFiles, ...ignoreSelectFiles, ...ignoreSwitchFiles].map((file) => require.resolve(file)),

@@ -7,6 +7,12 @@ declare global {
   }
 }
 // TODO Add your configuration elements here for type-checking
+
+// Extend the existing Themes interface
+export interface ExtendedThemes extends Themes {
+  darkMode: boolean;
+}
+
 export interface VehicleCardConfig extends LovelaceCardConfig {
   type: string;
   name?: string;
@@ -27,21 +33,20 @@ export interface VehicleCardConfig extends LovelaceCardConfig {
   double_tap_action?: ActionConfig;
 }
 
-// Extend the existing Themes interface
-export interface ExtendedThemes extends Themes {
-  darkMode: boolean;
-}
-
-export type WarningEntities = {
-  lock?: string;
-  parkBrake?: string;
-  tire?: string;
-  lowBrakeFluid?: string;
-  lowCoolantLevel?: string;
-  engineLight?: string;
-  lowWashWater?: string;
-  windowsClosed?: string;
+// Define WarningEntity and TripEntity types
+export type WarningEntity = {
+  entity_id: string;
+  original_name: string;
 };
+
+export type TripEntity = {
+  entity_id: string;
+  original_name: string;
+};
+
+// Update WarningEntities and TripEntities to use the new types
+export type WarningEntities = { [key: string]: WarningEntity };
+export type TripEntities = { [key: string]: TripEntity };
 
 export const warningEntityFilters: { [name in keyof Required<WarningEntities>]: { prefix: string; suffix: string } } = {
   lock: { prefix: 'lock.', suffix: '_lock' },
@@ -52,30 +57,6 @@ export const warningEntityFilters: { [name in keyof Required<WarningEntities>]: 
   engineLight: { prefix: 'binary_sensor.', suffix: '_engine_light_warning' },
   lowWashWater: { prefix: 'binary_sensor.', suffix: '_low_wash_water_warning' },
   windowsClosed: { prefix: 'binary_sensor.', suffix: '_windows_closed' },
-};
-
-export type TripEntities = {
-  averageSpeedReset?: string;
-  averageSpeedStart?: string;
-  distanceReset?: string;
-  distanceStart?: string;
-  liquidConsumptionReset?: string;
-  liquidConsumptionStart?: string;
-  odometer?: string;
-  chargingPower?: string;
-  rangeLiquid?: string;
-  starterBatteryState?: string;
-  fuelLevel?: string;
-  ecoScoreAcceleraion?: string;
-  ecoScoreBonusRange?: string;
-  ecoScoreConstant?: string;
-  ecoScoreFreeWheel?: string;
-  ignitionState?: string;
-  tirePressureFrontLeft?: string;
-  tirePressureFrontRight?: string;
-  tirePressureRearLeft?: string;
-  tirePressureRearRight?: string;
-  lock?: string;
 };
 
 export const tripEntityFilters: { [name in keyof Required<TripEntities>]: { prefix: string; suffix: string } } = {
