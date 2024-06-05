@@ -46,8 +46,6 @@ This custom card displays essential information about your Mercedes vehicle. It 
 1. Force refresh the Home Assistant page (<kbd>Ctrl</kbd> + <kbd>F5</kbd> / (<kbd>Shift</kbd> +) <kbd>⌘</kbd> + <kbd>R</kbd>)
 1. Add vehicle-info-card to your page
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=bhuebschen&repository=vehicle-info-card&category=plugin)
-
 ### Manual
 
 1. Download the 'vehicle-info-card.js'
