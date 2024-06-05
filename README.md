@@ -7,7 +7,7 @@
 This custom card displays essential information about your Mercedes vehicle. It retrieves data using the Custom Component for Mercedes cars by [ReneNulschDE](https://github.com/ReneNulschDE/mbapi2020) available at [mbapi2020](https://github.com/ReneNulschDE/mbapi2020). The card features four primary buttons: Trip Data, Vehicle Status, Eco Display, and Tire Pressure. These buttons can be easily replaced with any Lovelace card within Home Assistant, allowing for flexible and customizable vehicle data display.
 
 <div align="center">
-<img src="./assets/default-card.gif" />
+<img src="https://raw.githubusercontent.com/ngocjohn/vehicle-info-card/main/assets/default-card.gif" />
 </div>
 
 <details>
@@ -128,26 +128,26 @@ Below is the configuration replaced entities card for `Vehicle status` button.
         - entity: binary_sensor.6z1_2359_low_wash_water_warning
 ```
 
-<img src="./assets/card-example-editor.png">
+<img src="https://raw.githubusercontent.com/ngocjohn/vehicle-info-card/main/assets/card-example-editor.png">
 
 </details>
 
 ## Screenshots
 
-<img src="./assets/card-dark.png" />
-<img src="./assets/card-light.png" />
+<img src="https://raw.githubusercontent.com/ngocjohn/vehicle-info-card/main/assets/card-dark.png" />
+<img src="https://raw.githubusercontent.com/ngocjohn/vehicle-info-card/main/assets/card-light.png" />
 
 <br />
 
 <details>
   <summary> More screenshots </summary>
-    <img src="./assets/card-toggled.png" />
+    <img src="https://raw.githubusercontent.com/ngocjohn/vehicle-info-card/main/assets/card-toggled.png" />
 
 <p>
 **Tip:** For an enhanced picture elements card, refer to <a href="https://community.home-assistant.io/t/mercedes-me-component/41911/1809"> this tutorial</a> on the Home Assistant forum. Use downloaded images with the new version of the component for the best results.
 </p>
-    <img src="./assets/car-custom-card-warning.png" />
-    <img src="./assets/car-custom-card.png" />
+    <img src="https://raw.githubusercontent.com/ngocjohn/vehicle-info-card/main/assets/car-custom-card-warning.png" />
+    <img src="https://raw.githubusercontent.com/ngocjohn/vehicle-info-card/main/assets/car-custom-card.png" />
 </details>
 
 ## Contact
