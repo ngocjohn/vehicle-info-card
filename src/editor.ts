@@ -94,18 +94,17 @@ export class VehicleCardEditor extends ScopedRegistryHost(LitElement) implements
     return this._config?.show_buttons || false;
   }
 
-  get _google_api_key(): string {
-    return this._config?.google_api_key || '';
-  }
-
   get _show_background(): boolean {
     return this._config?.show_background || false;
   }
 
-  get _background(): string {
-    return this._config?.background || '';
+  get _enable_map_popup(): boolean {
+    return this._config?.enable_map_popup || false;
   }
 
+  get _google_api_key(): string {
+    return this._config?.google_api_key || '';
+  }
   protected render(): TemplateResult | void {
     if (!this.hass || !this._helpers) {
       return html``;
@@ -186,6 +185,13 @@ export class VehicleCardEditor extends ScopedRegistryHost(LitElement) implements
           <mwc-switch
             .checked=${this._show_background !== false}
             .configValue=${'show_background'}
+            @change=${this._valueChanged}
+          ></mwc-switch>
+        </mwc-formfield>
+        <mwc-formfield .label=${`Enable map popup`}>
+          <mwc-switch
+            .checked=${this._enable_map_popup !== false}
+            .configValue=${'enable_map_popup'}
             @change=${this._valueChanged}
           ></mwc-switch>
         </mwc-formfield>

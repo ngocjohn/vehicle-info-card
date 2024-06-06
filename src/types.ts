@@ -24,7 +24,7 @@ export interface VehicleCardConfig extends LovelaceCardConfig {
   show_map?: boolean;
   show_buttons?: boolean;
   show_background?: boolean;
-  show_map_popup?: boolean;
+  enable_map_popup?: boolean;
   vehicle_card?: LovelaceCardConfig[];
   trip_card?: LovelaceCardConfig[];
   eco_card?: LovelaceCardConfig[];
@@ -49,7 +49,7 @@ export type TripEntity = {
 export type WarningEntities = { [key: string]: WarningEntity };
 export type TripEntities = { [key: string]: TripEntity };
 
-export const warningEntityFilters: { [name in keyof Required<WarningEntities>]: { prefix: string; suffix: string } } = {
+export const warningEntityFilters: { [name in keyof Partial<WarningEntities>]: { prefix: string; suffix: string } } = {
   lock: { prefix: 'lock.', suffix: '_lock' },
   parkBrake: { prefix: 'binary_sensor.', suffix: '_park_brake_status' },
   tire: { prefix: 'binary_sensor.', suffix: '_tire_warning' },
@@ -60,17 +60,21 @@ export const warningEntityFilters: { [name in keyof Required<WarningEntities>]: 
   windowsClosed: { prefix: 'binary_sensor.', suffix: '_windows_closed' },
 };
 
-export const tripEntityFilters: { [name in keyof Required<TripEntities>]: { prefix: string; suffix: string } } = {
+export const tripEntityFilters: { [name in keyof Partial<TripEntities>]: { prefix: string; suffix: string } } = {
   averageSpeedReset: { prefix: 'sensor.', suffix: '_average_speed_reset' },
   averageSpeedStart: { prefix: 'sensor.', suffix: '_average_speed_start' },
   distanceReset: { prefix: 'sensor.', suffix: '_distance_reset' },
   distanceStart: { prefix: 'sensor.', suffix: '_distance_start' },
   liquidConsumptionReset: { prefix: 'sensor.', suffix: '_liquid_consumption_reset' },
   liquidConsumptionStart: { prefix: 'sensor.', suffix: '_liquid_consumption_start' },
+  electricConsumptionReset: { prefix: 'sensor.', suffix: '_electric_consumption_reset' },
+  electricConsumptionStart: { prefix: 'sensor.', suffix: '_electric_consumption_start' },
   odometer: { prefix: 'sensor.', suffix: '_odometer' },
   rangeLiquid: { prefix: 'sensor.', suffix: '_range_liquid' },
+  rangeElectricKm: { prefix: 'sensor.', suffix: '_range_electric' },
   starterBatteryState: { prefix: 'sensor.', suffix: '_starter_battery_state' },
   fuelLevel: { prefix: 'sensor.', suffix: '_fuel_level' },
+  soc: { prefix: 'sensor.', suffix: '_state_of_charge' },
   ecoScoreAcceleraion: { prefix: 'sensor.', suffix: '_eco_score_acceleration' },
   ecoScoreBonusRange: { prefix: 'sensor.', suffix: '_eco_score_bonus_range' },
   ecoScoreConstant: { prefix: 'sensor.', suffix: '_eco_score_constant' },

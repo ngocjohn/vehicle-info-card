@@ -8,6 +8,7 @@ import {
   LovelaceCard,
   LovelaceCardConfig,
   fireEvent,
+  formatNumber,
 } from 'custom-card-helpers'; // This is a community maintained npm module with common helper functions/types. https://github.com/custom-cards/custom-card-helpers
 
 import {
@@ -62,9 +63,10 @@ export class VehicleCard extends LitElement {
       show_map: false,
       show_buttons: true,
       show_background: true,
+      enable_map_popup: false,
       images: [],
-      vehicle_card: [],
       trip_card: [],
+      vehicle_card: [],
       eco_card: [],
       tyre_card: [],
     };
@@ -94,8 +96,7 @@ export class VehicleCard extends LitElement {
     if (this.config.device_tracker) {
       const haMapConfig = {
         type: 'map',
-        zoom: 16,
-        dark_mode: false,
+        zoom: 14,
         entities: [
           {
             entity: this.config.device_tracker,
@@ -268,40 +269,61 @@ export class VehicleCard extends LitElement {
     `;
   }
 
-  private _renderFuelRangeInfo(): TemplateResult | void {
+  private _renderRangeInfo(): TemplateResult | void {
     const { state: fuelLevel, unit: fuelUnit } = this.getEntityInfo(this.tripEntities?.fuelLevel?.entity_id);
     const { state: rangeLiquid, unit: rangeUnit } = this.getEntityInfo(this.tripEntities?.rangeLiquid?.entity_id);
-    if (!fuelLevel || !rangeLiquid) return;
+    const { state: rangeElectric, unit: rangeElectricUnit } = this.getEntityInfo(
+      this.tripEntities?.rangeElectricKm?.entity_id,
+    );
+    const { state: soc, unit: socUnit } = this.getEntityInfo(this.tripEntities?.soc?.entity_id);
 
-    const fuelProgress = html`
-      <div class="fuel-wrapper">
-        <div class="fuel-level-bar" style="width: ${fuelLevel}%;"></div>
-      </div>
-    `;
-    return html`
-      <div class="info-box">
-        <div class="item">
-          <ha-icon icon="mdi:gas-station"></ha-icon>
-          <div><span>${fuelLevel} ${fuelUnit}</span></div>
+    if (fuelLevel && rangeLiquid) {
+      const fuelProgress = html`
+        <div class="fuel-wrapper">
+          <div class="fuel-level-bar" style="width: ${fuelLevel}%;"></div>
         </div>
-        ${fuelProgress}
-        <div class="item">
-          <ha-icon></ha-icon>
-          <div><span>${rangeLiquid} ${rangeUnit}</span></div>
+      `;
+
+      return html`
+        <div class="info-box">
+          <div class="item">
+            <ha-icon icon="mdi:gas-station"></ha-icon>
+            <div><span>${fuelLevel} ${fuelUnit}</span></div>
+          </div>
+          ${fuelProgress}
+          <div class="item">
+            <ha-icon></ha-icon>
+            <div><span>${rangeLiquid} ${rangeUnit}</span></div>
+          </div>
         </div>
-      </div>
-    `;
+      `;
+    } else if (rangeElectric && soc) {
+      const socProgress = html`
+        <div class="fuel-wrapper">
+          <div class="fuel-level-bar" style="width: ${soc}%;"></div>
+        </div>
+      `;
+
+      return html`
+        <div class="info-box">
+          <div class="item">
+            <ha-icon icon="mdi:ev-station"></ha-icon>
+            <div><span>${soc} ${socUnit}</span></div>
+          </div>
+          ${socProgress}
+          <div class="item">
+            <ha-icon icon="mdi:battery"></ha-icon>
+            <div><span>${rangeElectric} ${rangeElectricUnit}</span></div>
+          </div>
+        </div>
+      `;
+    }
   }
-  getEntityInfo = (entityId: string | undefined) => {
-    const state = this.getEntityState(entityId);
-    const unit = this.getAttrUnitOfMeasurement(entityId);
-    return { state, unit };
-  };
 
   private _renderMainCard(): TemplateResult | void {
     return html`
       <main id="main-wrapper">
-        <div class="header-info-box">${this._renderWarnings()} ${this._renderFuelRangeInfo()}</div>
+        <div class="header-info-box">${this._renderWarnings()} ${this._renderRangeInfo()}</div>
         ${this._renderHeaderSlides()} ${this._renderMap()} ${this._renderButtons()}
       </main>
     `;
@@ -326,7 +348,7 @@ export class VehicleCard extends LitElement {
           .hass=${this.hass}
           .apiKey=${this.config.google_api_key}
           .deviceTracker=${this.config.device_tracker}
-          .popup=${this.config.show_map_popup}
+          .popup=${this.config.enable_map_popup}
         ></vehicle-map>
       </div>
     `;
@@ -424,10 +446,10 @@ export class VehicleCard extends LitElement {
           <ha-icon icon="mdi:close"></ha-icon>
         </div>
         <div class="card-toggle ">
-          <div class="headder-btn" @click=${() => this.toggleNextCard()}>
+          <div class="headder-btn" @click=${() => this.togglePrevCard()}>
             <ha-icon icon="mdi:chevron-left"></ha-icon>
           </div>
-          <div class="headder-btn" @click=${() => this.togglePrevCard()}>
+          <div class="headder-btn" @click=${() => this.toggleNextCard()}>
             <ha-icon icon="mdi:chevron-right"></ha-icon>
           </div>
         </div>
@@ -541,32 +563,87 @@ export class VehicleCard extends LitElement {
 
   private generateCardTemplate(
     title: string,
-    data: Array<{ key: string; icon: string }>,
+    data: Array<{ key: string; icon?: string }>, // icon is optional now
     entityCollection: any,
   ): TemplateResult {
     return html`
       <div class="default-card">
         <div class="data-header">${title}</div>
         ${data.map(({ key, icon }) => {
-          return html`
-            <div class="data-row">
-              <div>
-                <ha-icon class="data-icon" icon="${icon}"></ha-icon>
-                <span>${entityCollection[key].original_name}</span>
+          const entity = entityCollection[key];
+          const originalName = entity?.original_name;
+          const entityId = entity?.entity_id;
+          let entityState = entityId ? this.getEntityState(entityId) : '';
+          const unitOfMeasurement = entityId ? this.getAttrUnitOfMeasurement(entityId) : '';
+
+          // Render correct formated state
+          if (!isNaN(parseFloat(entityState)) && entityState !== '') {
+            entityState = formatNumber(parseFloat(entityState), this.hass.locale);
+          }
+
+          // Render only if originalName and entityId are defined
+          if (originalName && entityId) {
+            return html`
+              <div class="data-row">
+                <div>
+                  ${icon ? html`<ha-icon class="data-icon" icon="${icon}"></ha-icon>` : ''}
+                  <span>${originalName}</span>
+                </div>
+                <div class="data-value-unit" @click=${() => this.toggleMoreInfo(entityId)}>
+                  <span>${entityState} ${unitOfMeasurement}</span>
+                </div>
               </div>
-              <div class="data-value-unit" @click=${() => this.toggleMoreInfo(entityCollection[key].entity_id)}>
-                <span
-                  >${this.getEntityState(entityCollection[key].entity_id)}
-                  ${this.getAttrUnitOfMeasurement(entityCollection[key].entity_id)}</span
-                >
-              </div>
-            </div>
-          `;
+            `;
+          } else {
+            return html``; // Return an empty template if conditions are not met
+          }
         })}
       </div>
     `;
   }
 
+  /* -------------------------------------------------------------------------- */
+  /* RENDER DEFAULT CARDS                                                       */
+  /* -------------------------------------------------------------------------- */
+
+  private _renderDefaultTripCard(): TemplateResult | void {
+    const generateDataArray = (keys: { key: string; icon?: string }[]): { key: string; icon: string }[] => {
+      return keys.map(({ key, icon }) => ({
+        key,
+        icon: icon ?? this.getEntityAttribute(this.tripEntities[key]?.entity_id, 'icon'),
+      }));
+    };
+
+    const overViewDataKeys = [
+      { key: 'odometer' },
+      { key: 'fuelLevel', icon: this.getEntityAttribute(this.tripEntities.fuelLevel?.entity_id, 'icon') },
+      { key: 'soc', icon: this.getEntityAttribute(this.tripEntities.soc?.entity_id, 'icon') },
+      { key: 'rangeLiquid', icon: this.getEntityAttribute(this.tripEntities.rangeLiquid?.entity_id, 'icon') },
+    ];
+
+    const tripFromStartDataKeys = [
+      { key: 'distanceStart' },
+      { key: 'averageSpeedStart', icon: 'mdi:speedometer-slow' },
+      { key: 'liquidConsumptionStart' },
+      { key: 'electricConsumptionStart' },
+    ];
+    const tripFromResetDataKeys = [
+      { key: 'distanceReset' },
+      { key: 'averageSpeedReset', icon: 'mdi:speedometer' },
+      { key: 'liquidConsumptionReset' },
+      { key: 'electricConsumptionReset' },
+    ];
+
+    const overViewData = generateDataArray(overViewDataKeys);
+    const tripFromStartData = generateDataArray(tripFromStartDataKeys);
+    const tripFromResetData = generateDataArray(tripFromResetDataKeys);
+
+    return html`
+      ${this.generateCardTemplate('Overview', overViewData, this.tripEntities)}
+      ${this.generateCardTemplate('From start', tripFromStartData, this.tripEntities)}
+      ${this.generateCardTemplate('From reset', tripFromResetData, this.tripEntities)}
+    `;
+  }
   private _renderDefaultVehicleCard(): TemplateResult | void {
     const warningEntities = this.warningEntities;
 
@@ -700,42 +777,6 @@ export class VehicleCard extends LitElement {
     return this.generateCardTemplate('Tyre pressures', tyreData, this.tripEntities);
   }
 
-  private _renderDefaultTripCard(): TemplateResult | void {
-    const generateDataArray = (keys: { key: string; icon?: string }[]): { key: string; icon: string }[] => {
-      return keys.map(({ key, icon }) => ({
-        key,
-        icon: icon ?? this.getEntityAttribute(this.tripEntities[key]?.entity_id, 'icon'),
-      }));
-    };
-
-    const overViewDataKeys = [
-      { key: 'odometer' },
-      { key: 'fuelLevel', icon: this.getEntityAttribute(this.tripEntities.fuelLevel?.entity_id, 'icon') },
-      { key: 'rangeLiquid', icon: this.getEntityAttribute(this.tripEntities.rangeLiquid?.entity_id, 'icon') },
-    ];
-
-    const tripFromStartDataKeys = [
-      { key: 'distanceStart' },
-      { key: 'averageSpeedStart', icon: 'mdi:speedometer-slow' },
-      { key: 'liquidConsumptionStart' },
-    ];
-    const tripFromResetDataKeys = [
-      { key: 'distanceReset' },
-      { key: 'averageSpeedReset', icon: 'mdi:speedometer' },
-      { key: 'liquidConsumptionReset' },
-    ];
-
-    const overViewData = generateDataArray(overViewDataKeys);
-    const tripFromStartData = generateDataArray(tripFromStartDataKeys);
-    const tripFromResetData = generateDataArray(tripFromResetDataKeys);
-
-    return html`
-      ${this.generateCardTemplate('Overview', overViewData, this.tripEntities)}
-      ${this.generateCardTemplate('From start', tripFromStartData, this.tripEntities)}
-      ${this.generateCardTemplate('From reset', tripFromResetData, this.tripEntities)}
-    `;
-  }
-
   private getCardTypeData(cardType: string): { name: string; icon: string } {
     const cardTypeData: Record<string, { name: string; icon: string }> = {
       tripCards: { name: 'Trip data', icon: 'mdi:map-marker-path' },
@@ -750,11 +791,14 @@ export class VehicleCard extends LitElement {
     const { tripEntities, warningEntities } = this;
     switch (cardType) {
       case 'tripCards':
-        return `${this.getEntityState(tripEntities.odometer?.entity_id)} ${this.getAttrUnitOfMeasurement(
-          this.tripEntities.odometer?.entity_id,
-        )}`;
+        const odometerState = parseFloat(this.getEntityState(tripEntities.odometer?.entity_id));
+        const odometerUnit = this.getAttrUnitOfMeasurement(tripEntities.odometer?.entity_id);
+        const formatedState = formatNumber(odometerState, this.hass.locale);
+        return `${formatedState} ${odometerUnit}`;
+
       case 'vehicleCards':
         const lockedState = this.getEntityState(warningEntities.lock?.entity_id) === 'locked' ? 'Locked' : 'Unlocked';
+        if (!lockedState) return '';
         return lockedState;
       case 'ecoCards':
         return `${this.getEntityState(tripEntities.ecoScoreBonusRange?.entity_id)} ${this.getAttrUnitOfMeasurement(
@@ -770,7 +814,7 @@ export class VehicleCard extends LitElement {
 
         // Store pressures with their original units
         const pressuresWithUnits = tireAttributes.map((attr) => ({
-          pressure: this.getEntityState(tripEntities[attr]?.entity_id) || '0',
+          pressure: this.getEntityState(tripEntities[attr]?.entity_id) || '',
           unit: this.getAttrUnitOfMeasurement(tripEntities[attr]?.entity_id),
         }));
 
@@ -807,6 +851,12 @@ export class VehicleCard extends LitElement {
     if (!entity || !this.hass.states[entity] || !this.hass.states[entity].attributes) return undefined;
     return this.hass.states[entity].attributes[attribute];
   }
+
+  private getEntityInfo = (entityId: string | undefined) => {
+    const state = this.getEntityState(entityId);
+    const unit = this.getAttrUnitOfMeasurement(entityId);
+    return { state, unit };
+  };
 
   private async getOriginalName(entity: string): Promise<string> {
     if (!this.hass) return '';

@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { fireEvent } from 'custom-card-helpers';
 
-import L, { popup } from 'leaflet';
+import L from 'leaflet';
 import 'leaflet-providers/leaflet-providers.js';
 
 import mapstyle from '../css/leaflet.css';
