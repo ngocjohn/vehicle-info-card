@@ -67,22 +67,23 @@ Basic options can be configured in the GUI editor. This card also offers optiona
 
 Below is the basic configuration for the custom card:
 
-| Name              | Type        | Requirement | Description                                                                                                                                                            |
-| ----------------- | ----------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `type`            | string      | Required    | `custom:vehicle-info-card`.                                                                                                                                            |
-| `entity`          | string      | Required    | The entity ID of the car sensor, e.g., `sensor.license_plate_car`.                                                                                                     |
-| `name`            | string      | Optional    | The name to be displayed on the card. Defaults vehicle model name.                                                                                                     |
-| `device_tracker`  | string      | Optional    | The entity ID of the device tracker for map display.                                                                                                                   |
-| `google_api_key`  | string      | Optional    | Google Maps API key for generating address from coordinates. Defaults to using OpenStreetMap service.                                                                  |
-| `show_slides`     | boolean     | Optional    | Set to `true` to enable slideshow of car images. Default is `false`.                                                                                                   |
-| `show_map`        | boolean     | Optional    | Set to `true` to display the car's position on a map. Default is `false`.                                                                                              |
-| `show_buttons`    | boolean     | Optional    | Set to `true` to show the buttons Default is `true`.                                                                                                                   |
-| `show_background` | boolean     | Optional    | Set to `true` to show a background image. Default is `true`.                                                                                                           |
-| `images`          | list        | Optional    | List of image URLs or Paths from config/www folder for the slideshow. Images render better with a transparent background and a maximum width of 500px to fit the card. |
-| `vehicle_card`    | object list | Optional    | Configuration objects for the vehicle card.                                                                                                                            |
-| `trip_card`       | object list | Optional    | Configuration objects for the trip card.                                                                                                                               |
-| `eco_card`        | object list | Optional    | Configuration objects for the eco display card.                                                                                                                        |
-| `tyre_card`       | object list | Optional    | Configuration objects for the tire pressure card.                                                                                                                      |
+| Name               | Type        | Requirement | Description                                                                                                                                                            |
+| ------------------ | ----------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `type`             | string      | Required    | `custom:vehicle-info-card`.                                                                                                                                            |
+| `entity`           | string      | Required    | The entity ID of the car sensor, e.g., `sensor.license_plate_car`.                                                                                                     |
+| `name`             | string      | Optional    | The name to be displayed on the card. Default is vehicle model name.                                                                                                   |
+| `device_tracker`   | string      | Optional    | The entity ID of the device tracker for map display.                                                                                                                   |
+| `google_api_key`   | string      | Optional    | Google Maps API key for generating address from coordinates. Defaults to using OpenStreetMap service.                                                                  |
+| `show_slides`      | boolean     | Optional    | Set to `true` to enable slideshow of car images. Default is `false`.                                                                                                   |
+| `show_map`         | boolean     | Optional    | Set to `true` to display the car's position on a map. Default is `false`.                                                                                              |
+| `show_buttons`     | boolean     | Optional    | Set to `true` to show the buttons Default is `true`.                                                                                                                   |
+| `show_background`  | boolean     | Optional    | Set to `true` to show a background image. Default is `true`.                                                                                                           |
+| `enable_map_popup` | boolean     | Optional    | Set to `true` to enable map popup function. Default is `false`                                                                                                         |
+| `images`           | list        | Optional    | List of image URLs or Paths from config/www folder for the slideshow. Images render better with a transparent background and a maximum width of 500px to fit the card. |
+| `trip_card`        | object list | Optional    | Configuration objects for the trip card.                                                                                                                               |
+| `vehicle_card`     | object list | Optional    | Configuration objects for the vehicle card.                                                                                                                            |
+| `eco_card`         | object list | Optional    | Configuration objects for the eco display card.                                                                                                                        |
+| `tyre_card`        | object list | Optional    | Configuration objects for the tire pressure card.                                                                                                                      |
 
 ### Examples
 
@@ -107,6 +108,7 @@ Below is the configuration replaced entities card for `Vehicle status` button.
   show_slides: true
   show_buttons: true
   show_background: true
+  enable_map_popup: false
   images:
     - /local/benz/benz-1.png
     - /local/benz/benz-2.png
