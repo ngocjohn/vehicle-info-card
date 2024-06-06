@@ -39,6 +39,10 @@ export class HeaderSlide extends LitElement {
           width: 100%;
           max-height: 125px;
         }
+        .swiper-slide:active {
+          scale: 1.02;
+        }
+
         .swiper-slide img {
           width: 100%;
           height: 100%;
