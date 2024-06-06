@@ -284,6 +284,10 @@ header h1 {
   color: var(--warning-color, --error-color);
 }
 
+.error {
+  color: var(--error-color);
+}
+
 dialog {
   width: 100%;
   overflow: hidden;

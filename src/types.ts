@@ -75,6 +75,7 @@ export const tripEntityFilters: { [name in keyof Partial<TripEntities>]: { prefi
   starterBatteryState: { prefix: 'sensor.', suffix: '_starter_battery_state' },
   fuelLevel: { prefix: 'sensor.', suffix: '_fuel_level' },
   soc: { prefix: 'sensor.', suffix: '_state_of_charge' },
+  maxSoc: { prefix: 'sensor.', suffix: '_max_state_of_charge' },
   ecoScoreAcceleraion: { prefix: 'sensor.', suffix: '_eco_score_acceleration' },
   ecoScoreBonusRange: { prefix: 'sensor.', suffix: '_eco_score_bonus_range' },
   ecoScoreConstant: { prefix: 'sensor.', suffix: '_eco_score_constant' },

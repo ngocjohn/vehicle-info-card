@@ -248,25 +248,46 @@ export class VehicleCard extends LitElement {
     return html` <div class="header-background" style="background-image: url(${background})"></div> `;
   }
 
+  private _renderMainCard(): TemplateResult | void {
+    return html`
+      <main id="main-wrapper">
+        <div class="header-info-box">${this._renderWarnings()} ${this._renderRangeInfo()}</div>
+        ${this._renderHeaderSlides()} ${this._renderMap()} ${this._renderButtons()}
+      </main>
+    `;
+  }
+
   private _renderWarnings(): TemplateResult {
     const lockState = this.getEntityState(this.warningEntities.lock?.entity_id);
     const parkBrakeState = this.getBooleanState(this.warningEntities.parkBrake?.entity_id);
     return html`
       <div class="info-box">
-        ${lockState
-          ? html` <div class="item">
-              <ha-icon icon=${lockState === 'locked' ? 'mdi:lock' : 'mdi:lock-open'}></ha-icon>
-              <div><span>${lockState}</span></div>
-            </div>`
-          : ''}
-        ${parkBrakeState
-          ? html`<div class="item">
-              <ha-icon icon="mdi:car-brake-parking"></ha-icon>
-              <div><span>${parkBrakeState ? 'Parked' : ' '}</span></div>
-            </div>`
-          : ''}
+        <div class="item">
+          <ha-icon icon=${lockState === 'locked' ? 'mdi:lock' : 'mdi:lock-open'}></ha-icon>
+          <div><span>${lockState}</span></div>
+        </div>
+        <div class="item">
+          <ha-icon icon="mdi:car-brake-parking"></ha-icon>
+          <div><span>${parkBrakeState ? 'Parked' : 'Released'}</span></div>
+        </div>
       </div>
     `;
+  }
+
+  private _renderSecondaryWarnings(): TemplateResult {
+    const entities = ['tire', 'lowBrakeFluid', 'lowCoolantLevel', 'engineLight', 'lowWashWater'];
+
+    return html` ${entities.map((entity) => {
+      const state = this.getBooleanState(this.warningEntities[entity]?.entity_id);
+      const icon = this.getEntityAttribute(this.warningEntities[entity]?.entity_id, 'icon');
+      if (state) {
+        return html` <div class="item error">
+          <ha-icon icon=${icon}></ha-icon>
+        </div>`;
+      } else {
+        return html``;
+      }
+    })}`;
   }
 
   private _renderRangeInfo(): TemplateResult | void {
@@ -320,18 +341,8 @@ export class VehicleCard extends LitElement {
     }
   }
 
-  private _renderMainCard(): TemplateResult | void {
-    return html`
-      <main id="main-wrapper">
-        <div class="header-info-box">${this._renderWarnings()} ${this._renderRangeInfo()}</div>
-        ${this._renderHeaderSlides()} ${this._renderMap()} ${this._renderButtons()}
-      </main>
-    `;
-  }
-
   private _renderHeaderSlides(): TemplateResult | void {
     if (!this.config.images || !this.config.show_slides) return;
-
     return html` <header-slide .images=${this.config.images}></header-slide> `;
   }
 
@@ -457,6 +468,10 @@ export class VehicleCard extends LitElement {
     `;
   }
 
+  /* -------------------------------------------------------------------------- */
+  /* ADDED CARD FUNCTIONALITY                                                   */
+  /* -------------------------------------------------------------------------- */
+
   private setupCardListeners(): void {
     const cardElement = this.shadowRoot?.querySelector('.card-element');
     if (!cardElement) return;
@@ -578,7 +593,7 @@ export class VehicleCard extends LitElement {
 
           // Render correct formated state
           if (!isNaN(parseFloat(entityState)) && entityState !== '') {
-            entityState = formatNumber(parseFloat(entityState), this.hass.locale);
+            entityState = formatNumber(entityState, this.hass.locale);
           }
 
           // Render only if originalName and entityId are defined
@@ -617,8 +632,15 @@ export class VehicleCard extends LitElement {
     const overViewDataKeys = [
       { key: 'odometer' },
       { key: 'fuelLevel', icon: this.getEntityAttribute(this.tripEntities.fuelLevel?.entity_id, 'icon') },
-      { key: 'soc', icon: this.getEntityAttribute(this.tripEntities.soc?.entity_id, 'icon') },
       { key: 'rangeLiquid', icon: this.getEntityAttribute(this.tripEntities.rangeLiquid?.entity_id, 'icon') },
+      { key: 'soc', icon: this.getEntityAttribute(this.tripEntities.soc?.entity_id, 'icon') },
+    ];
+
+    const tripFromResetDataKeys = [
+      { key: 'distanceReset' },
+      { key: 'averageSpeedReset', icon: 'mdi:speedometer' },
+      { key: 'liquidConsumptionReset' },
+      { key: 'electricConsumptionReset' },
     ];
 
     const tripFromStartDataKeys = [
@@ -626,12 +648,6 @@ export class VehicleCard extends LitElement {
       { key: 'averageSpeedStart', icon: 'mdi:speedometer-slow' },
       { key: 'liquidConsumptionStart' },
       { key: 'electricConsumptionStart' },
-    ];
-    const tripFromResetDataKeys = [
-      { key: 'distanceReset' },
-      { key: 'averageSpeedReset', icon: 'mdi:speedometer' },
-      { key: 'liquidConsumptionReset' },
-      { key: 'electricConsumptionReset' },
     ];
 
     const overViewData = generateDataArray(overViewDataKeys);
@@ -644,6 +660,7 @@ export class VehicleCard extends LitElement {
       ${this.generateCardTemplate('From reset', tripFromResetData, this.tripEntities)}
     `;
   }
+
   private _renderDefaultVehicleCard(): TemplateResult | void {
     const warningEntities = this.warningEntities;
 
@@ -659,7 +676,7 @@ export class VehicleCard extends LitElement {
       {
         key: 'parkBrake',
         icon: this.getEntityAttribute(warningEntities.parkBrake?.entity_id, 'icon'),
-        state: this.getBooleanState(warningEntities.parkBrake?.entity_id) ? 'Parked' : 'Not Parked',
+        state: this.getBooleanState(warningEntities.parkBrake?.entity_id) ? 'Engaged' : 'Released',
       },
       {
         key: 'windowsClosed',
@@ -702,13 +719,13 @@ export class VehicleCard extends LitElement {
     return html`
       <div class="default-card">
         <div class="data-header">Vehicle status</div>
-        <div id="lockelement" class="data-row" @click=${() => this.toggleMoreInfo(lockEntity)}>
+        <div id="lockelement" class="data-row">
           <div>
             <ha-icon class="data-icon ${lockColor}" icon=${lockIcon}></ha-icon>
             <span>${warningEntities.lock.original_name}</span>
           </div>
-          <div>
-            <span style="text-transform: capitalize">${lockState}</span>
+          <div class="data-value-unit">
+            <span style="text-transform: capitalize" @click=${() => this.toggleMoreInfo(lockEntity)}>${lockState}</span>
           </div>
         </div>
         ${vehicleData.map(
@@ -718,6 +735,7 @@ export class VehicleCard extends LitElement {
                 <ha-icon
                   class="data-icon ${this.getBooleanState(warningEntities[key]?.entity_id) ? 'warning' : ''} "
                   icon="${icon}"
+                  @click=${() => this.toggleMoreInfo(warningEntities[key]?.entity_id)}
                 ></ha-icon>
                 <span>${warningEntities[key].original_name}</span>
               </div>
@@ -732,15 +750,19 @@ export class VehicleCard extends LitElement {
         <div class="data-header">Warnings</div>
         ${warningsData.map(
           ({ key, icon, state }) => html`
-            <div class="data-row" @click=${() => this.toggleMoreInfo(warningEntities[key]?.entity_id)}>
+            <div class="data-row">
               <div>
                 <ha-icon
-                  class="data-icon ${this.getBooleanState(warningEntities[key]?.entity_id) ? 'warning' : ''} "
+                  class="data-icon"
                   icon="${icon}"
+                  @click=${() => this.toggleMoreInfo(warningEntities[key]?.entity_id)}
                 ></ha-icon>
                 <span>${warningEntities[key].original_name}</span>
               </div>
-              <div class="data-value-unit" @click=${() => this.toggleMoreInfo(warningEntities[key]?.entity_id)}>
+              <div
+                class="data-value-unit   ${this.getBooleanState(warningEntities[key]?.entity_id) ? 'error' : ''} "
+                @click=${() => this.toggleMoreInfo(warningEntities[key]?.entity_id)}
+              >
                 <span>${state}</span>
               </div>
             </div>
