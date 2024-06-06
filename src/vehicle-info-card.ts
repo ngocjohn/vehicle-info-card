@@ -20,7 +20,6 @@ import {
 } from './types';
 import { CARD_VERSION } from './const';
 import { localize } from './localize/localize';
-import { addActions } from './utils/tap-action.js';
 import styles from './css/styles.css';
 
 import './components/map-card.js';
@@ -91,6 +90,20 @@ export class VehicleCard extends LitElement {
     if (this.config.tyre_card) {
       this.createCards(this.config.tyre_card, 'tyreCards');
     }
+
+    if (this.config.device_tracker) {
+      const haMapConfig = {
+        type: 'map',
+        zoom: 16,
+        dark_mode: false,
+        entities: [
+          {
+            entity: this.config.device_tracker,
+          },
+        ],
+      };
+      this.createCards([haMapConfig], 'mapDialog');
+    }
   }
 
   @property({ attribute: false }) public hass!: HomeAssistant & { themes: ExtendedThemes };
@@ -106,7 +119,7 @@ export class VehicleCard extends LitElement {
 
   // https://lit.dev/docs/components/styles/
   static get styles(): CSSResultGroup {
-    return styles;
+    return [styles];
   }
 
   protected firstUpdated(changedProperties: PropertyValues) {
@@ -122,29 +135,18 @@ export class VehicleCard extends LitElement {
     this.requestUpdate();
   }
 
-  private lockHandler(): void {
-    console.log('lockHandler triggered');
-    const lockElement = this.shadowRoot?.getElementById('lockelement');
-    const lockState = this.getEntityState(this.warningEntities.lock?.entity_id);
-    const actionConfig = {
-      tap_action: {
-        action: 'none',
-      },
-      hold_action: {
-        action: 'call-service',
-        service: lockState === 'locked' ? 'lock.unlock' : 'lock.lock',
-        service_data: {
-          entity_id: this.warningEntities.lock,
-        },
-      },
-      double_tap_action: {
-        action: 'none',
-      },
-    };
-    const entity = this.warningEntities.lock;
-    if (lockElement && entity) {
-      addActions(lockElement, actionConfig, entity);
-    }
+  connectedCallback(): void {
+    super.connectedCallback();
+    this.addEventListener('toggle-map-popup', () => this.showMapOnCard());
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.removeEventListener('toggle-map-popup', () => this.showMapOnCard());
+  }
+
+  showMapOnCard(): void {
+    this.activeCardType = 'mapDialog';
   }
 
   private async createCards(cardConfigs: LovelaceCardConfig[], stateProperty: string): Promise<void> {
@@ -202,7 +204,7 @@ export class VehicleCard extends LitElement {
         });
       });
     }
-    if (changedProps.has('activeCardType')) {
+    if (changedProps.has('activeCardType') && this.activeCardType !== 'mapDialog') {
       this.setupCardListeners();
     }
   }
@@ -240,7 +242,9 @@ export class VehicleCard extends LitElement {
   private _renderHeaderBackground(): TemplateResult | void {
     if (!this.config.show_background) return;
     const isDark = this.isDark();
-    return html` <div class="header-background" style="background-image: url(${isDark ? amgWhite : amgBlack})"></div> `;
+    const background = isDark ? amgWhite : amgBlack;
+
+    return html` <div class="header-background" style="background-image: url(${background})"></div> `;
   }
 
   private _renderWarnings(): TemplateResult {
@@ -322,6 +326,7 @@ export class VehicleCard extends LitElement {
           .hass=${this.hass}
           .apiKey=${this.config.google_api_key}
           .deviceTracker=${this.config.device_tracker}
+          .popup=${this.config.show_map_popup}
         ></vehicle-map>
       </div>
     `;
@@ -387,6 +392,10 @@ export class VehicleCard extends LitElement {
           cards = this.additionalCards[this.activeCardType];
         }
         break;
+      case 'mapDialog':
+        cards = this.additionalCards[this.activeCardType];
+        break;
+
       default:
         return html``;
     }
@@ -485,18 +494,13 @@ export class VehicleCard extends LitElement {
         cardElement.removeEventListener(event, pressRelease as EventListener);
       });
 
-      console.log(`pressRelease: \nxDiff: ${xDiff}, yDiff: ${yDiff}, isSwiping: ${isSwiping}`);
-
       const cardWidth = cardElement.clientWidth;
-      console.log('cardWidth', cardWidth);
 
       if (isSwiping && xDiff !== null && yDiff !== null) {
         if (Math.abs(xDiff) > Math.abs(yDiff) && Math.abs(xDiff) > cardWidth / 3) {
           if (xDiff > 0) {
-            // console.log('swipe left');
             this.toggleNextCard();
           } else {
-            // console.log('swipe right');
             this.togglePrevCard();
           }
         }
@@ -508,7 +512,6 @@ export class VehicleCard extends LitElement {
     // Attach the initial pressDown listeners
     ['touchstart', 'mousedown'].forEach((event) => {
       cardElement.addEventListener(event, presDown as EventListener);
-      console.log('event', event);
     });
   }
 
@@ -546,12 +549,12 @@ export class VehicleCard extends LitElement {
         <div class="data-header">${title}</div>
         ${data.map(({ key, icon }) => {
           return html`
-            <div class="data-row" @click=${() => this.toggleMoreInfo(entityCollection[key].entity_id)}>
+            <div class="data-row">
               <div>
                 <ha-icon class="data-icon" icon="${icon}"></ha-icon>
                 <span>${entityCollection[key].original_name}</span>
               </div>
-              <div>
+              <div class="data-value-unit" @click=${() => this.toggleMoreInfo(entityCollection[key].entity_id)}>
                 <span
                   >${this.getEntityState(entityCollection[key].entity_id)}
                   ${this.getAttrUnitOfMeasurement(entityCollection[key].entity_id)}</span
@@ -628,12 +631,12 @@ export class VehicleCard extends LitElement {
             <span>${warningEntities.lock.original_name}</span>
           </div>
           <div>
-            <span>${lockState}</span>
+            <span style="text-transform: capitalize">${lockState}</span>
           </div>
         </div>
         ${vehicleData.map(
           ({ key, icon, state }) => html`
-            <div class="data-row" @click=${() => this.toggleMoreInfo(warningEntities[key]?.entity_id)}>
+            <div class="data-row">
               <div>
                 <ha-icon
                   class="data-icon ${this.getBooleanState(warningEntities[key]?.entity_id) ? 'warning' : ''} "
@@ -641,7 +644,7 @@ export class VehicleCard extends LitElement {
                 ></ha-icon>
                 <span>${warningEntities[key].original_name}</span>
               </div>
-              <div>
+              <div class="data-value-unit" @click=${() => this.toggleMoreInfo(warningEntities[key]?.entity_id)}>
                 <span>${state}</span>
               </div>
             </div>
@@ -660,7 +663,7 @@ export class VehicleCard extends LitElement {
                 ></ha-icon>
                 <span>${warningEntities[key].original_name}</span>
               </div>
-              <div>
+              <div class="data-value-unit" @click=${() => this.toggleMoreInfo(warningEntities[key]?.entity_id)}>
                 <span>${state}</span>
               </div>
             </div>
@@ -751,7 +754,8 @@ export class VehicleCard extends LitElement {
           this.tripEntities.odometer?.entity_id,
         )}`;
       case 'vehicleCards':
-        return this.getEntityState(warningEntities.lock?.entity_id);
+        const lockedState = this.getEntityState(warningEntities.lock?.entity_id) === 'locked' ? 'Locked' : 'Unlocked';
+        return lockedState;
       case 'ecoCards':
         return `${this.getEntityState(tripEntities.ecoScoreBonusRange?.entity_id)} ${this.getAttrUnitOfMeasurement(
           tripEntities.ecoScoreBonusRange?.entity_id,
@@ -764,15 +768,21 @@ export class VehicleCard extends LitElement {
           'tirePressureRearRight',
         ];
 
-        const pressures = tireAttributes.map((attr) =>
-          parseInt(this.getEntityState(tripEntities[attr]?.entity_id) || '0', 10),
-        );
+        // Store pressures with their original units
+        const pressuresWithUnits = tireAttributes.map((attr) => ({
+          pressure: this.getEntityState(tripEntities[attr]?.entity_id) || '0',
+          unit: this.getAttrUnitOfMeasurement(tripEntities[attr]?.entity_id),
+        }));
 
-        const minPressure = Math.min(...pressures);
-        const maxPressure = Math.max(...pressures);
+        // Find the minimum and maximum pressures
+        const minPressure = Math.min(...pressuresWithUnits.map(({ pressure }) => parseFloat(pressure)));
+        const maxPressure = Math.max(...pressuresWithUnits.map(({ pressure }) => parseFloat(pressure)));
 
-        const tireUnit = this.getAttrUnitOfMeasurement(tripEntities.tirePressureFrontLeft?.entity_id);
-        return `${minPressure} - ${maxPressure} ${tireUnit}`;
+        // Format the minimum and maximum pressures with their original units
+        const tireUnit = pressuresWithUnits[0]?.unit || ''; // Assuming all pressures have the same unit
+        const formattedMinPressure = minPressure % 1 === 0 ? minPressure.toFixed(0) : minPressure.toFixed(1);
+        const formattedMaxPressure = maxPressure % 1 === 0 ? maxPressure.toFixed(0) : maxPressure.toFixed(1);
+        return `${formattedMinPressure} - ${formattedMaxPressure} ${tireUnit}`;
       default:
         return 'Unknown Card';
     }

@@ -102,6 +102,10 @@ export class VehicleCardEditor extends ScopedRegistryHost(LitElement) implements
     return this._config?.show_background || false;
   }
 
+  get _background(): string {
+    return this._config?.background || '';
+  }
+
   protected render(): TemplateResult | void {
     if (!this.hass || !this._helpers) {
       return html``;

@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { fireEvent } from 'custom-card-helpers';
 
-import L from 'leaflet';
+import L, { popup } from 'leaflet';
 import 'leaflet-providers/leaflet-providers.js';
 
 import mapstyle from '../css/leaflet.css';
@@ -21,6 +21,7 @@ export class VehicleMap extends LitElement {
       darkMode: { Type: Boolean },
       state: { Type: String },
       apiKey: { Type: String },
+      popup: { Type: Boolean },
     };
   }
   constructor() {
@@ -32,6 +33,7 @@ export class VehicleMap extends LitElement {
     this.state = '';
     this.address = {};
     this.darkMode = false;
+    this.popup = false;
   }
 
   firstUpdated() {
@@ -76,15 +78,10 @@ export class VehicleMap extends LitElement {
         }
         :host {
           --map-marker-color: var(--primary-color);
-          font-family: poppins;
         }
         .map-wrapper {
-          position: absolute;
           width: 100%;
           height: 100%;
-          left: 0;
-          top: 0;
-          z-index: 0;
         }
 
         #map {
@@ -203,12 +200,23 @@ export class VehicleMap extends LitElement {
     // Add marker to map
     this.marker = L.marker([this.lat, this.lon], { icon: customIcon }).addTo(this.map);
     // Add click event listener to marker
-    this.marker.on('click', () => {
-      fireEvent(this, 'hass-more-info', { entityId: this.deviceTracker });
-      // Add any additional functionality here
-    });
+    if (this.popup) {
+      this.marker.on('click', () => {
+        this.togglePopup();
+      });
+    }
+
     this.marker.bindTooltip(this.state);
     this.updateMap();
+  }
+
+  togglePopup() {
+    const event = new CustomEvent('toggle-map-popup', {
+      detail: {},
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(event);
   }
 
   updateMap() {

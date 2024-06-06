@@ -24,6 +24,7 @@ export interface VehicleCardConfig extends LovelaceCardConfig {
   show_map?: boolean;
   show_buttons?: boolean;
   show_background?: boolean;
+  show_map_popup?: boolean;
   vehicle_card?: LovelaceCardConfig[];
   trip_card?: LovelaceCardConfig[];
   eco_card?: LovelaceCardConfig[];

@@ -157,7 +157,7 @@ header h1 {
   }
   .secondary {
     color: var(--secondary-text-color);
-    text-transform: capitalize;
+    /* text-transform: capitalize; */
     letter-spacing: 0.5px;
     font-size: smaller;
   }
@@ -256,6 +256,9 @@ header h1 {
   justify-content: space-between;
   padding: 8px 0;
   border-bottom: 1px solid #444;
+}
+
+.data-row .data-value-unit {
   cursor: pointer;
 }
 
@@ -263,7 +266,6 @@ header h1 {
   height: 100%;
   display: flex;
   align-items: flex-end;
-  text-transform: capitalize;
 }
 
 .data-row:last-child {
@@ -280,4 +282,18 @@ header h1 {
 
 .data-icon.warning {
   color: var(--warning-color, --error-color);
+}
+
+dialog {
+  width: 100%;
+  overflow: hidden;
+  max-width: 500px;
+  background: none;
+  border: none;
+  border-radius: 12px;
+}
+
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
 }
