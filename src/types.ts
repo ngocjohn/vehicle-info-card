@@ -45,9 +45,36 @@ export type TripEntity = {
   original_name: string;
 };
 
+export type SensorDevice = {
+  entity_id: string;
+  original_name: string;
+};
+
+export type BinarySensorDevice = {
+  entity_id: string;
+  original_name: string;
+};
+
 // Update WarningEntities and TripEntities to use the new types
 export type WarningEntities = { [key: string]: WarningEntity };
 export type TripEntities = { [key: string]: TripEntity };
+export type SensorDevices = { [key: string]: SensorDevice };
+export type BinarySensors = { [key: string]: BinarySensorDevice };
+
+export const binarySensorsFilters: { [name in keyof Partial<BinarySensors>]: { suffix: string } } = {
+  lock: { suffix: '_lock' },
+  parkbrakestatus: { suffix: '_parkbrakestatus' },
+  liquidRangeCritical: { suffix: '_liquidrangecritical' },
+  lowBrakeFluid: { suffix: '_warningbrakefluid' },
+  lowWashWater: { suffix: '_warningwashwater' },
+  lowCoolantLevel: { suffix: '_warningcoolantlevellow' },
+  engineLight: { suffix: '_warningenginelight' },
+  windowsClosed: { suffix: '_windowstatusoverall' },
+  tirePressureWarning: { suffix: '_tirewarninglamp' },
+  remoteStartActive: { suffix: '_remotestartactive' },
+  engineState: { suffix: '_enginestate' },
+  chargeFlapACStatus: { suffix: '_chargeflapacstatus' },
+};
 
 export const warningEntityFilters: { [name in keyof Partial<WarningEntities>]: { prefix: string; suffix: string } } = {
   lock: { prefix: 'lock.', suffix: '_lock' },
@@ -74,8 +101,8 @@ export const tripEntityFilters: { [name in keyof Partial<TripEntities>]: { prefi
   rangeElectricKm: { prefix: 'sensor.', suffix: '_range_electric' },
   starterBatteryState: { prefix: 'sensor.', suffix: '_starter_battery_state' },
   fuelLevel: { prefix: 'sensor.', suffix: '_fuel_level' },
-  soc: { prefix: 'sensor.', suffix: '_state_of_charge' },
   maxSoc: { prefix: 'sensor.', suffix: '_max_state_of_charge' },
+  soc: { prefix: 'sensor.', suffix: '_state_of_charge' },
   ecoScoreAcceleraion: { prefix: 'sensor.', suffix: '_eco_score_acceleration' },
   ecoScoreBonusRange: { prefix: 'sensor.', suffix: '_eco_score_bonus_range' },
   ecoScoreConstant: { prefix: 'sensor.', suffix: '_eco_score_constant' },
@@ -87,4 +114,35 @@ export const tripEntityFilters: { [name in keyof Partial<TripEntities>]: { prefi
   tirePressureRearLeft: { prefix: 'sensor.', suffix: '_tire_pressure_rear_left' },
   tirePressureRearRight: { prefix: 'sensor.', suffix: '_tire_pressure_rear_right' },
   lock: { prefix: 'sensor.', suffix: '_lock' },
+};
+
+export const sensorDeviceFilters: { [name in keyof Partial<SensorDevices>]: { suffix: string } } = {
+  lock: { suffix: '_doorlockstatusvehicle' },
+  averageSpeedReset: { suffix: '_averagespeedreset' },
+  averageSpeedStart: { suffix: '_averagespeedstart' },
+  distanceReset: { suffix: '_distancereset' },
+  distanceStart: { suffix: '_distancestart' },
+  liquidConsumptionReset: { suffix: '_liquidconsumptionreset' },
+  liquidConsumptionStart: { suffix: '_liquidconsumptionstart' },
+  electicConsumptionReset: { suffix: '_electricconsumptionreset' },
+  electricConsumptionStart: { suffix: '_electricconsumptionstart' },
+  odometer: { suffix: '_odometer' },
+  rangeLiquid: { suffix: '_rangeliquid' },
+  rangeElectic: { suffix: '_rangeelectric' },
+  fuelLevel: { suffix: '_tanklevelpercent' },
+  adBlueLevel: { suffix: '_tankleveladblue' },
+  ecoScoreTotal: { suffix: '_ecoscoretotal' },
+  ecoScoreFreeWheel: { suffix: '_ecoscorefreewhl' },
+  ecoScoreBonusRange: { suffix: '_ecoscorebonusrange' },
+  ecoScoreConstant: { suffix: '_ecoscoreconst' },
+  ecoScoreAcceleraion: { suffix: '_ecoscoreaccel' },
+  starterBatteryState: { suffix: '_starterbatterystate' },
+  ignitionState: { suffix: '_ignitionstate' },
+  tirePressureRearLeft: { suffix: '_tirepressurerearleft' },
+  tirePressureRearRight: { suffix: '_tirepressurerearright' },
+  tirePressureFrontLeft: { suffix: '_tirepressurefrontleft' },
+  tirePressureFrontRight: { suffix: '_tirepressurefrontright' },
+  soc: { suffix: '_soc' },
+  maxSoc: { suffix: '_max_soc' },
+  chargingPower: { suffix: '_chargingPower' },
 };

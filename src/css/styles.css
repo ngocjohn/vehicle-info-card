@@ -80,8 +80,7 @@ header h1 {
   height: fit-content;
   gap: 1rem;
   opacity: 0.8;
-  /* color: grey; */
-  text-transform: capitalize;
+  /* text-transform: capitalize; */
 }
 
 .info-box .item {
@@ -90,6 +89,9 @@ header h1 {
   gap: 0.2rem;
   span {
     font-size: 1rem;
+  }
+  ha-icon {
+    margin-bottom: 3px;
   }
 }
 
@@ -181,6 +183,7 @@ header h1 {
 
 .added-card-header .card-toggle {
   display: flex;
+  gap: 1rem;
 }
 
 .added-card {

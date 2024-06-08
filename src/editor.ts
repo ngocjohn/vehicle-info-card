@@ -105,6 +105,7 @@ export class VehicleCardEditor extends ScopedRegistryHost(LitElement) implements
   get _google_api_key(): string {
     return this._config?.google_api_key || '';
   }
+
   protected render(): TemplateResult | void {
     if (!this.hass || !this._helpers) {
       return html``;
@@ -149,6 +150,7 @@ export class VehicleCardEditor extends ScopedRegistryHost(LitElement) implements
         @selected=${this._valueChanged}
         @closed=${(ev) => ev.stopPropagation()}
       >
+        <mwc-list-item value=""></mwc-list-item>
         ${device_trackers.map((entity) => {
           return html`<mwc-list-item .value=${entity}>${entity}</mwc-list-item>`;
         })}
@@ -162,22 +164,25 @@ export class VehicleCardEditor extends ScopedRegistryHost(LitElement) implements
       <div class="switches">
         <mwc-formfield .label=${`Show slides`}>
           <mwc-switch
+            .disabled=${!this._config?.images || this._config?.images.length === 0}
             .checked=${this._show_slides !== false}
             .configValue=${'show_slides'}
             @change=${this._valueChanged}
           ></mwc-switch>
         </mwc-formfield>
-        <mwc-formfield .label=${`Show map`}>
-          <mwc-switch
-            .checked=${this._show_map !== false}
-            .configValue=${'show_map'}
-            @change=${this._valueChanged}
-          ></mwc-switch>
-        </mwc-formfield>
+
         <mwc-formfield .label=${`Show buttons`}>
           <mwc-switch
             .checked=${this._show_buttons !== false}
             .configValue=${'show_buttons'}
+            @change=${this._valueChanged}
+          ></mwc-switch>
+        </mwc-formfield>
+
+        <mwc-formfield .label=${`Show map`}>
+          <mwc-switch
+            .checked=${this._show_map !== false}
+            .configValue=${'show_map'}
             @change=${this._valueChanged}
           ></mwc-switch>
         </mwc-formfield>
@@ -190,6 +195,7 @@ export class VehicleCardEditor extends ScopedRegistryHost(LitElement) implements
         </mwc-formfield>
         <mwc-formfield .label=${`Enable map popup`}>
           <mwc-switch
+            .disabled=${this._show_map === false || this._show_map === undefined || !this._config?.device_tracker}
             .checked=${this._enable_map_popup !== false}
             .configValue=${'enable_map_popup'}
             @change=${this._valueChanged}

@@ -1,5 +1,4 @@
 import { LitElement, html, css } from 'lit';
-import { fireEvent } from 'custom-card-helpers';
 
 import L from 'leaflet';
 import 'leaflet-providers/leaflet-providers.js';
@@ -22,6 +21,7 @@ export class VehicleMap extends LitElement {
       state: { Type: String },
       apiKey: { Type: String },
       popup: { Type: Boolean },
+      enableAdress: { Type: Boolean },
     };
   }
   constructor() {
@@ -34,6 +34,7 @@ export class VehicleMap extends LitElement {
     this.address = {};
     this.darkMode = false;
     this.popup = false;
+    this.enableAdress = false;
   }
 
   firstUpdated() {
@@ -241,21 +242,29 @@ export class VehicleMap extends LitElement {
       <div class="reset-button" @click=${this.updateMap}>
         <ha-icon icon="mdi:compass"></ha-icon>
       </div>
+      ${this._renderAddress()}
+    </div>`;
+  }
+
+  _renderAddress() {
+    if (!this.enableAdress) return html``;
+    return html`
       <div class="address">
         <div class="address-line">
           <ha-icon icon="mdi:map-marker"></ha-icon>
           <div>
             <span>${this.address.streetNumber} ${this.address.streetName}</span><br /><span
               style="text-transform: uppercase; opacity: 0.8; letter-spacing: 1px"
-              >${this.address.sublocality}</span
+              >${!this.address.sublocality ? this.address.city : this.address.sublocality}</span
             >
           </div>
         </div>
       </div>
-    </div>`;
+    `;
   }
 
   async getAddressFromOpenStreet(lat, lon) {
+    console.log('Fetching address from OpenStreetMap');
     const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=jsonv2`;
 
     try {
@@ -315,10 +324,10 @@ export class VehicleMap extends LitElement {
           }
           // Sometimes city might be under 'administrative_area_level_2' or 'administrative_area_level_1'
           if (!city && component.types.includes('administrative_area_level_2')) {
-            city = component.long_name;
+            city = component.short_name;
           }
           if (!city && component.types.includes('administrative_area_level_1')) {
-            city = component.long_name;
+            city = component.short_name;
           }
         });
 
@@ -346,8 +355,10 @@ export class VehicleMap extends LitElement {
     }
     if (address) {
       this.address = address;
+      this.enableAdress = true;
       this.requestUpdate();
     } else {
+      this.enableAdress = false;
       console.log('Could not retrieve address');
     }
   }
