@@ -1,5 +1,7 @@
 export const CARD_VERSION = '1.0.1';
 
+export const cardTypes = ['tripCards', 'vehicleCards', 'ecoCards', 'tyreCards'];
+
 export const lockAttrMapping = {
   decklidstatus: { name: 'Deck lid', state: { false: 'closed', true: 'open' } },
   doorstatusfrontleft: { name: 'Door front left', state: { false: 'closed', true: 'open' } },

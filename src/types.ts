@@ -17,7 +17,6 @@ export interface ExtendedThemes extends Themes {
  * Configuration interface for the Vehicle Card.
  */
 export interface VehicleCardConfig extends LovelaceCardConfig {
-  type: string;
   name?: string;
   entity?: string;
   device_tracker?: string;
@@ -36,6 +35,23 @@ export interface VehicleCardConfig extends LovelaceCardConfig {
   hold_action?: ActionConfig;
   double_tap_action?: ActionConfig;
 }
+
+export const defaultConfig: Partial<VehicleCardConfig> = {
+  name: 'Mercedes Benz',
+  entity: '',
+  device_tracker: '',
+  google_api_key: '',
+  show_slides: false,
+  show_map: false,
+  show_buttons: true,
+  show_background: true,
+  enable_map_popup: false,
+  images: [],
+  trip_card: [],
+  vehicle_card: [],
+  eco_card: [],
+  tyre_card: [],
+};
 
 export interface SensorDevice {
   entity_id: string;
