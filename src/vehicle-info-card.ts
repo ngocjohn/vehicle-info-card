@@ -753,24 +753,31 @@ export class VehicleCard extends LitElement {
 
     const lockAttr = [
       'decklidstatus',
-      'doorlockstatusdecklid',
+      'doorlockstatusgas',
+      'doorlockstatusvehicle',
       'doorlockstatusfrontleft',
       'doorlockstatusfrontright',
-      'doorlockstatusgas',
-      'doorlockstatusrearleft',
       'doorlockstatusrearright',
-      'doorstatusfrontleft',
-      'doorstatusfrontright',
+      'doorlockstatusrearleft',
+      'doorlockstatusdecklid',
       'doorstatusrearleft',
+      'doorstatusfrontright',
       'doorstatusrearright',
+      'doorstatusfrontleft',
+      'rooftopstatus',
+      'sunroofstatus',
+      'engineHoodStatus',
     ];
 
     // Create an object to store the states of each attribute
     const lockAttributeStates: Record<string, string> = {};
 
-    // Retrieve the state for each attribute and store it in the attributeStates object
+    // Retrieve the state for each attribute if it exists and store it in the attributeStates object
     lockAttr.forEach((attribute) => {
-      lockAttributeStates[attribute] = this.getEntityAttribute(this.sensorDevices.lock?.entity_id, attribute);
+      const attributeState = this.getEntityAttribute(this.sensorDevices.lock?.entity_id, attribute);
+      if (attributeState !== undefined && attributeState !== null) {
+        lockAttributeStates[attribute] = attributeState;
+      }
     });
 
     const lockAttrVisible = this.lockAttributesVisible ? 'mdi:chevron-up' : 'mdi:chevron-right';
@@ -846,18 +853,45 @@ export class VehicleCard extends LitElement {
   private _renderLockAttributes(attributeStates: Record<string, string>): TemplateResult {
     const attributeMappings = {
       decklidstatus: { name: 'Deck lid', state: { false: 'closed', true: 'open' } },
-      doorlockstatusdecklid: { name: 'Door lock decklid', state: { false: 'locked', true: 'unlocked' } },
-      doorlockstatusfrontleft: { name: 'Door lock front left', state: { false: 'locked', true: 'unlocked' } },
-      doorlockstatusfrontright: { name: 'Door lock front right', state: { false: 'locked', true: 'unlocked' } },
-      doorlockstatusgas: { name: 'Gas lock', state: { false: 'locked', true: 'unlocked' } },
-      doorlockstatusrearleft: { name: 'Door lock rear left', state: { false: 'locked', true: 'unlocked' } },
-      doorlockstatusrearright: { name: 'Door lock rear right', state: { false: 'locked', true: 'unlocked' } },
       doorstatusfrontleft: { name: 'Door front left', state: { false: 'closed', true: 'open' } },
       doorstatusfrontright: { name: 'Door front right', state: { false: 'closed', true: 'open' } },
       doorstatusrearleft: { name: 'Door rear left', state: { false: 'closed', true: 'open' } },
       doorstatusrearright: { name: 'Door rear right', state: { false: 'closed', true: 'open' } },
+      doorlockstatusfrontleft: { name: 'Door lock front left', state: { false: 'locked', true: 'unlocked' } },
+      doorlockstatusfrontright: { name: 'Door lock front right', state: { false: 'locked', true: 'unlocked' } },
+      doorlockstatusrearleft: { name: 'Door lock rear left', state: { false: 'locked', true: 'unlocked' } },
+      doorlockstatusrearright: { name: 'Door lock rear right', state: { false: 'locked', true: 'unlocked' } },
+      doorlockstatusgas: { name: 'Gas lock', state: { false: 'locked', true: 'unlocked' } },
       enginehoodstatus: { name: 'Engine hood', state: { false: 'closed', true: 'open' } },
+      doorstatusoverall: {
+        name: 'Door status overall',
+        state: {
+          '0': 'open',
+          '1': 'closed',
+          '2': 'not existing',
+          '3': 'unknown',
+        },
+      },
+      sunroofstatus: {
+        name: 'Sunroof status',
+        state: {
+          '0': 'closed',
+          '1': 'open',
+          '2': 'lifting open',
+          '3': 'running',
+          '4': 'anti-booming position',
+          '5': 'sliding intermediate',
+          '6': 'lifting intermediate',
+          '7': 'opening',
+          '8': 'closing',
+          '9': 'anti-booming lifting',
+          '10': 'intermediate position',
+          '11': 'opening lifting',
+          '12': 'closing lifting',
+        },
+      },
     };
+
     const attributesClass = this.lockAttributesVisible ? 'sub-attributes active' : 'sub-attributes';
 
     // Render the lock attributes
@@ -865,15 +899,23 @@ export class VehicleCard extends LitElement {
       <div class=${attributesClass}>
         ${Object.keys(attributeStates).map((attribute) => {
           const rawState = attributeStates[attribute];
-          const readableState = attributeMappings[attribute].state[rawState] || 'Unknown';
-          return html`
-            <div class="data-row">
-              <span>${attributeMappings[attribute].name}</span>
-              <div class="data-value-unit">
-                <span style="text-transform: capitalize">${readableState}</span>
+
+          // Check if the state is valid and the attribute mapping exists
+          if (rawState !== undefined && rawState !== null && attributeMappings[attribute]) {
+            const readableState = attributeMappings[attribute].state[rawState] || 'Unknown';
+
+            return html`
+              <div class="data-row">
+                <span>${attributeMappings[attribute].name}</span>
+                <div class="data-value-unit">
+                  <span style="text-transform: capitalize">${readableState}</span>
+                </div>
               </div>
-            </div>
-          `;
+            `;
+          }
+
+          // Return nothing if the attribute state is not valid or attribute mapping does not exist
+          return '';
         })}
       </div>
     `;
