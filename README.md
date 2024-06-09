@@ -1,6 +1,8 @@
 <a name="readme-top"></a>
 # VEHICLE INFO CARD
-[![Validate](https://github.com/ngocjohn/vehicle-info-card/actions/workflows/validate.yaml/badge.svg)](https://github.com/ngocjohn/vehicle-info-card/actions/workflows/validate.yaml)
+[![Validate](https://github.com/ngocjohn/vehicle-info-card/actions/workflows/validate.yaml/badge.svg)](https://github.com/ngocjohn/vehicle-info-card/actions/workflows/validate.yaml) ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/ngocjohn/vehicle-info-card/total?style=flat&logo=homeassistantcommunitystore&logoSize=auto&label=Downloads&color=%2318BCF2)
+
+
 
 ## Home Assistant Custom Card for Mercedes Vehicles
 
