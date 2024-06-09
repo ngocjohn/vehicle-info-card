@@ -111,11 +111,11 @@ export class VehicleCard extends LitElement {
   }
 
   @property({ attribute: false }) public hass!: HomeAssistant & { themes: ExtendedThemes };
-
   @property({ type: Object }) private config!: VehicleCardConfig;
 
   @state() private sensorDevices: { [key: string]: SensorDevice } = {};
   @state() private binaryDevices: { [key: string]: BinarySensorDevice } = {};
+
   @state() private additionalCards: { [key: string]: any[] } = {};
 
   @state() private activeCardType: string | null = null;
@@ -182,7 +182,7 @@ export class VehicleCard extends LitElement {
     this.removeEventListener('toggle-map-popup', () => this.showMapOnCard());
   }
 
-  showMapOnCard(): void {
+  private showMapOnCard(): void {
     this.activeCardType = 'mapDialog';
   }
 
@@ -866,17 +866,6 @@ export class VehicleCard extends LitElement {
     return this.hass.states[entity].state;
   }
 
-  private getEntityIcon(entity: string | undefined): string {
-    if (!entity || !this.hass.states[entity]) return '';
-    const icon = this.hass.states[entity].attributes.icon;
-    return icon ? icon : '';
-  }
-
-  private getEntityAttributes(entity: string | undefined): { [key: string]: any } {
-    if (!entity || !this.hass.states[entity] || !this.hass.states[entity].attributes) return {};
-    return this.hass.states[entity].attributes;
-  }
-
   private getEntityAttribute(entity: string | undefined, attribute: string): any {
     if (!entity || !this.hass.states[entity] || !this.hass.states[entity].attributes) return undefined;
     return this.hass.states[entity].attributes[attribute];
@@ -887,15 +876,6 @@ export class VehicleCard extends LitElement {
     const unit = this.getAttrUnitOfMeasurement(entityId);
     return { state, unit };
   };
-
-  private async getOriginalName(entity: string): Promise<string> {
-    if (!this.hass) return '';
-    const entityObj = await this.hass.callWS<{ entity_id: string; original_name: string }>({
-      type: 'config/entity_registry/get',
-      entity_id: entity,
-    });
-    return entityObj.original_name;
-  }
 
   // Method to get the unit of measurement of an entity
   private getAttrUnitOfMeasurement(entity: string | undefined): string {
