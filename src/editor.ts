@@ -2,27 +2,17 @@
 import { LitElement, html, TemplateResult, css, CSSResultGroup } from 'lit';
 import { HomeAssistant, fireEvent, LovelaceCardEditor } from 'custom-card-helpers';
 
-import { ScopedRegistryHost } from '@lit-labs/scoped-registry-mixin';
 import { VehicleCardConfig } from './types';
 import { customElement, property, state } from 'lit/decorators';
-import { formfieldDefinition } from '../elements/formfield';
-import { selectDefinition } from '../elements/select';
-import { switchDefinition } from '../elements/switch';
-import { textfieldDefinition } from '../elements/textfield';
+
+import { CARD_VERSION } from './const';
 @customElement('vehicle-info-card-editor')
-export class VehicleCardEditor extends ScopedRegistryHost(LitElement) implements LovelaceCardEditor {
+export class VehicleCardEditor extends LitElement implements LovelaceCardEditor {
   @property({ attribute: false }) public hass!: HomeAssistant;
 
   @state() private _config?: VehicleCardConfig;
 
   @state() private _helpers?: any;
-
-  static elementDefinitions = {
-    ...textfieldDefinition,
-    ...selectDefinition,
-    ...switchDefinition,
-    ...formfieldDefinition,
-  };
 
   public async setConfig(config: VehicleCardConfig): Promise<void> {
     this._config = config;
@@ -121,88 +111,93 @@ export class VehicleCardEditor extends ScopedRegistryHost(LitElement) implements
     const device_trackers = Object.keys(this.hass.states).filter((entity) => entity.startsWith('device_tracker'));
 
     return html`
-      <mwc-textfield
-        label="Name (Optional)"
-        .value=${this._name}
-        .configValue=${'name'}
-        @input=${this._valueChanged}
-      ></mwc-textfield>
-      <mwc-select
-        naturalMenuWidth
-        fixedMenuPosition
-        label="Entity (Required)"
-        .configValue=${'entity'}
-        .value=${this._entity}
-        @selected=${this._valueChanged}
-        @closed=${(ev) => ev.stopPropagation()}
-      >
-        ${entities.map((entity) => {
-          return html`<mwc-list-item .value=${entity}>${entity}</mwc-list-item>`;
-        })}
-      </mwc-select>
+      <div class="card-config">
+        <ha-textfield
+          label="Name (Optional)"
+          .value=${this._name}
+          .configValue=${'name'}
+          @input=${this._valueChanged}
+        ></ha-textfield>
+        <ha-select
+          naturalMenuWidth
+          fixedMenuPosition
+          label="Entity (Required)"
+          .configValue=${'entity'}
+          .value=${this._entity}
+          @selected=${this._valueChanged}
+          @closed=${(ev) => ev.stopPropagation()}
+        >
+          ${entities.map((entity) => {
+            return html`<mwc-list-item .value=${entity}>${entity}</mwc-list-item>`;
+          })}
+        </ha-select>
 
-      <mwc-select
-        naturalMenuWidth
-        fixedMenuPosition
-        label="Device Tracker (Optional)"
-        .configValue=${'device_tracker'}
-        .value=${this._device_tracker}
-        @selected=${this._valueChanged}
-        @closed=${(ev) => ev.stopPropagation()}
-      >
-        <mwc-list-item value=""></mwc-list-item>
-        ${device_trackers.map((entity) => {
-          return html`<mwc-list-item .value=${entity}>${entity}</mwc-list-item>`;
-        })}
-      </mwc-select>
-      <mwc-textfield
-        label="Google API Key (Optional)"
-        .value=${this._google_api_key}
-        .configValue=${'google_api_key'}
-        @input=${this._valueChanged}
-      ></mwc-textfield>
-      <div class="switches">
-        <mwc-formfield .label=${`Show slides`}>
-          <mwc-switch
-            .disabled=${!this._config?.images || this._config?.images.length === 0}
-            .checked=${this._show_slides !== false}
-            .configValue=${'show_slides'}
-            @change=${this._valueChanged}
-          ></mwc-switch>
-        </mwc-formfield>
+        <ha-select
+          naturalMenuWidth
+          fixedMenuPosition
+          label="Device Tracker (Optional)"
+          .configValue=${'device_tracker'}
+          .value=${this._device_tracker}
+          @selected=${this._valueChanged}
+          @closed=${(ev) => ev.stopPropagation()}
+        >
+          <mwc-list-item value=""></mwc-list-item>
+          ${device_trackers.map((entity) => {
+            return html`<mwc-list-item .value=${entity}>${entity}</mwc-list-item>`;
+          })}
+        </ha-select>
+        <ha-textfield
+          label="Google API Key (Optional)"
+          .value=${this._google_api_key}
+          .configValue=${'google_api_key'}
+          @input=${this._valueChanged}
+        ></ha-textfield>
+        <div class="switches">
+          <ha-formfield .label=${`Show slides`}>
+            <ha-switch
+              .disabled=${!this._config?.images || this._config?.images.length === 0}
+              .checked=${this._show_slides !== false}
+              .configValue=${'show_slides'}
+              @change=${this._valueChanged}
+            ></ha-switch>
+          </ha-formfield>
 
-        <mwc-formfield .label=${`Show buttons`}>
-          <mwc-switch
-            .checked=${this._show_buttons !== false}
-            .configValue=${'show_buttons'}
-            @change=${this._valueChanged}
-          ></mwc-switch>
-        </mwc-formfield>
+          <ha-formfield .label=${`Show buttons`}>
+            <ha-switch
+              .checked=${this._show_buttons !== false}
+              .configValue=${'show_buttons'}
+              @change=${this._valueChanged}
+            ></ha-switch>
+          </ha-formfield>
 
-        <mwc-formfield .label=${`Show map`}>
-          <mwc-switch
-            .checked=${this._show_map !== false}
-            .configValue=${'show_map'}
-            @change=${this._valueChanged}
-          ></mwc-switch>
-        </mwc-formfield>
-        <mwc-formfield .label=${`Show background`}>
-          <mwc-switch
-            .checked=${this._show_background !== false}
-            .configValue=${'show_background'}
-            @change=${this._valueChanged}
-          ></mwc-switch>
-        </mwc-formfield>
-        <mwc-formfield .label=${`Enable map popup`}>
-          <mwc-switch
-            .disabled=${this._show_map === false || this._show_map === undefined || !this._config?.device_tracker}
-            .checked=${this._enable_map_popup !== false}
-            .configValue=${'enable_map_popup'}
-            @change=${this._valueChanged}
-          ></mwc-switch>
-        </mwc-formfield>
+          <ha-formfield .label=${`Show map`}>
+            <ha-switch
+              .checked=${this._show_map !== false}
+              .configValue=${'show_map'}
+              @change=${this._valueChanged}
+            ></ha-switch>
+          </ha-formfield>
+          <ha-formfield .label=${`Show background`}>
+            <ha-switch
+              .checked=${this._show_background !== false}
+              .configValue=${'show_background'}
+              @change=${this._valueChanged}
+            ></ha-switch>
+          </ha-formfield>
+          <ha-formfield .label=${`Enable map popup`}>
+            <ha-switch
+              .disabled=${this._show_map === false || this._show_map === undefined || !this._config?.device_tracker}
+              .checked=${this._enable_map_popup !== false}
+              .configValue=${'enable_map_popup'}
+              @change=${this._valueChanged}
+            ></ha-switch>
+          </ha-formfield>
+        </div>
+        <div class="note">
+          <p>version: ${CARD_VERSION}</p>
+          <i>Note: For another card configuration, use code editor.</i>
+        </div>
       </div>
-      <div class="note"><i>Note: For another card configuration, use code editor.</i></div>
     `;
   }
 
@@ -234,21 +229,26 @@ export class VehicleCardEditor extends ScopedRegistryHost(LitElement) implements
   }
 
   static styles: CSSResultGroup = css`
+    .card-config {
+      width: 100%;
+    }
     .switches {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 1rem;
       margin-block: 2rem;
     }
-    mwc-select,
-    mwc-textfield {
+    ha-select,
+    ha-textfield {
       margin-bottom: 16px;
       display: block;
+      width: 100%;
     }
-    mwc-formfield {
+    ha-formfield {
       padding-bottom: 8px;
+      width: 100%;
     }
-    mwc-switch {
+    ha-switch {
       --mdc-theme-secondary: var(--switch-checked-color);
     }
 
@@ -258,7 +258,7 @@ export class VehicleCardEditor extends ScopedRegistryHost(LitElement) implements
     }
     .note {
       color: var(--secondary-text-color);
-      text-align: -webkit-center;
+      text-align: start;
     }
   `;
 }

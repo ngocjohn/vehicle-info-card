@@ -8,7 +8,7 @@ declare global {
 }
 // TODO Add your configuration elements here for type-checking
 
-// Extend the existing Themes interface
+// Define the ExtendedThemes interface by extending the existing Themes interface
 export interface ExtendedThemes extends Themes {
   darkMode: boolean;
 }

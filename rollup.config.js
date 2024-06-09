@@ -5,15 +5,11 @@ import { babel } from '@rollup/plugin-babel';
 import { terser } from 'rollup-plugin-terser';
 import serve from 'rollup-plugin-serve';
 import json from '@rollup/plugin-json';
-import ignore from './rollup-plugins/ignore';
 import image from '@rollup/plugin-image';
 import postcss from 'rollup-plugin-postcss';
 import postcssPresetEnv from 'postcss-preset-env';
 import postcssLit from 'rollup-plugin-postcss-lit';
 import filesize from 'rollup-plugin-filesize';
-import { ignoreTextfieldFiles } from './elements/ignore/textfield';
-import { ignoreSelectFiles } from './elements/ignore/select';
-import { ignoreSwitchFiles } from './elements/ignore/switch';
 
 const dev = process.env.ROLLUP_WATCH;
 const port = process.env.PORT || 8235;
@@ -60,9 +56,6 @@ const plugins = [
   dev && serve(serveopts),
   !dev && terser(terserOpt),
   !dev && filesize(),
-  ignore({
-    files: [...ignoreTextfieldFiles, ...ignoreSelectFiles, ...ignoreSwitchFiles].map((file) => require.resolve(file)),
-  }),
 ];
 
 export default [

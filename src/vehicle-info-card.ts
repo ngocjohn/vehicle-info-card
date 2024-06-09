@@ -13,8 +13,8 @@ import {
 } from 'custom-card-helpers'; // This is a community maintained npm module with common helper functions/types. https://github.com/custom-cards/custom-card-helpers
 
 import {
-  VehicleCardConfig,
   ExtendedThemes,
+  VehicleCardConfig,
   sensorDeviceFilters,
   SensorDevice,
   binarySensorsFilters,
@@ -73,6 +73,7 @@ export class VehicleCard extends LitElement {
       tyre_card: [],
     };
   }
+
   public setConfig(config: VehicleCardConfig): void {
     if (!config) {
       throw new Error(localize('common.invalid_configuration'));
@@ -82,18 +83,18 @@ export class VehicleCard extends LitElement {
       ...config,
     };
 
-    if (this.config.trip_card) {
-      this.createCards(this.config.trip_card, 'tripCards');
-    }
-    if (this.config.vehicle_card) {
-      this.createCards(this.config.vehicle_card, 'vehicleCards');
-    }
-    if (this.config.eco_card) {
-      this.createCards(this.config.eco_card, 'ecoCards');
-    }
-    if (this.config.tyre_card) {
-      this.createCards(this.config.tyre_card, 'tyreCards');
-    }
+    // Helper function to handle creating cards based on config property names
+    const createConfigCards = (configProperty: keyof VehicleCardConfig, target: string) => {
+      const cardConfig = this.config[configProperty];
+      if (cardConfig) {
+        this.createCards(cardConfig, target);
+      }
+    };
+    // Create cards for each specific config property
+    createConfigCards('trip_card', 'tripCards');
+    createConfigCards('vehicle_card', 'vehicleCards');
+    createConfigCards('eco_card', 'ecoCards');
+    createConfigCards('tyre_card', 'tyreCards');
 
     if (this.config.device_tracker) {
       const haMapConfig = {
@@ -304,7 +305,7 @@ export class VehicleCard extends LitElement {
         <div class="info-box">
           <div class="item">
             <ha-icon icon="mdi:gas-station"></ha-icon>
-            <div><span>${fuelLevel} ${fuelUnit}</span></div>
+            <div><span>${fuelState} ${fuelUnit}</span></div>
           </div>
           ${fuelProgress}
           <div class="item">

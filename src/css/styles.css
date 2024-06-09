@@ -101,13 +101,12 @@ header h1 {
   height: 5px;
   background-color: #909090;
   border-radius: 5px;
-  /* z-index: 1; */
   position: relative;
   .fuel-level-bar {
     position: absolute;
     background-color: #4caf50;
     border-radius: 5px;
-    /* z-index: 2; */
+    transition: width 0.5s ease;
     height: 5px;
   }
 }
