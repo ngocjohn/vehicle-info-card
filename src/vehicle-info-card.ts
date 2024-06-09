@@ -20,6 +20,7 @@ import {
   binarySensorsFilters,
   BinarySensorDevice,
 } from './types';
+import ApexCharts from 'apexcharts';
 import { CARD_VERSION } from './const';
 import { localize } from './localize/localize';
 import { formatTimestamp } from './utils/helpers';
@@ -227,6 +228,9 @@ export class VehicleCard extends LitElement {
     }
     if (changedProps.has('activeCardType') && this.activeCardType !== 'mapDialog') {
       this.setupCardListeners();
+    }
+    if (changedProps.has('activeCardType') && this.activeCardType === 'ecoCards') {
+      this.initEcoChart();
     }
   }
 
@@ -673,7 +677,7 @@ export class VehicleCard extends LitElement {
     const tripFromStartDataKeys = [
       { key: 'distanceStart' },
       { key: 'averageSpeedStart', icon: 'mdi:speedometer-slow' },
-      { key: 'liquidConsumptionStart', name: 'Consumption reset' },
+      { key: 'liquidConsumptionStart', name: 'Consumption start' },
       { key: 'electricConsumptionStart', name: 'Consumption start' },
     ];
 
@@ -933,8 +937,90 @@ export class VehicleCard extends LitElement {
     ecoData.forEach((item) => {
       item.icon = this.getEntityAttribute(this.sensorDevices[item.key]?.entity_id, 'icon');
     });
+    return html`<div class="default-card">
+        <div class="data-header">Eco display</div>
+        <div id="chart"></div>
+      </div>
+      ${this.generateDataRow('', ecoData, this.sensorDevices)}`;
+  }
 
-    return this.generateDataRow('Eco display', ecoData, this.sensorDevices);
+  private initEcoChart(): void {
+    const chartElement = this.shadowRoot?.querySelector('#chart');
+
+    if (!chartElement) return;
+
+    const bonusRange = this.getEntityState(this.sensorDevices.ecoScoreBonusRange?.entity_id);
+    const acceleration = this.getEntityState(this.sensorDevices.ecoScoreAcceleraion?.entity_id);
+    const constant = this.getEntityState(this.sensorDevices.ecoScoreConstant?.entity_id);
+    const freeWheel = this.getEntityState(this.sensorDevices.ecoScoreFreeWheel?.entity_id);
+
+    const options = {
+      series: [acceleration, constant, freeWheel],
+      chart: {
+        height: 350,
+        width: 350,
+        type: 'radialBar',
+      },
+      plotOptions: {
+        radialBar: {
+          offsetY: 0,
+          startAngle: 0,
+          endAngle: 270,
+          hollow: {
+            margin: 5,
+            size: '40%',
+            background: 'transparent',
+            image: undefined,
+          },
+          dataLabels: {
+            textAnchor: 'middle',
+            distributed: false,
+
+            name: {
+              show: true,
+            },
+            value: {
+              show: true,
+              fontSize: '24px',
+              fontWeight: 'bold',
+            },
+            total: {
+              show: true,
+              label: 'Bonus range',
+              formatter: function () {
+                return bonusRange + ' km';
+              },
+              offsetX: 50,
+              offsetY: 10,
+            },
+          },
+          barLabels: {
+            enabled: true,
+            useSeriesColors: true,
+            margin: 8,
+            fontSize: '16px',
+            formatter: function (seriesName, opts) {
+              return seriesName + ':  ' + opts.w.globals.series[opts.seriesIndex];
+            },
+          },
+        },
+      },
+      colors: ['#1ab7ea', '#0084ff', '#39539E'],
+      labels: ['Acceleration', 'Constant', 'Free wheel'],
+      responsive: [
+        {
+          breakpoint: 480,
+          options: {
+            legend: {
+              show: false,
+            },
+          },
+        },
+      ],
+    };
+
+    const chart = new ApexCharts(chartElement, options);
+    chart.render();
   }
 
   private _renderDefaultTyreCard(): TemplateResult | void {
@@ -963,7 +1049,7 @@ export class VehicleCard extends LitElement {
   /* -------------------------------------------------------------------------- */
 
   private getSecondaryInfo(cardType: string): string {
-    const { sensorDevices, binaryDevices } = this;
+    const { sensorDevices } = this;
     switch (cardType) {
       case 'tripCards':
         const odometerState = parseFloat(this.getEntityState(sensorDevices.odometer?.entity_id));

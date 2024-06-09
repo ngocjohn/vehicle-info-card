@@ -2,6 +2,8 @@
   "compilerOptions": {
     "target": "es2017",
     "module": "esnext",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "moduleResolution": "node",
     "lib": ["es2017", "dom", "dom.iterable"],
     "noEmit": true,
