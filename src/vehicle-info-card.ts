@@ -120,6 +120,9 @@ export class VehicleCard extends LitElement {
 
   @state() private activeCardType: string | null = null;
 
+  private lockAttributesVisible = false;
+  private windowAttributesVisible = false;
+
   // https://lit.dev/docs/components/styles/
   static get styles(): CSSResultGroup {
     return [styles];
@@ -139,8 +142,8 @@ export class VehicleCard extends LitElement {
     this.requestUpdate();
   }
 
-  private async getDeviceEntities(filter: {
-    [key: string]: { suffix: string };
+  private async getDeviceEntities(filters: {
+    [key: string]: { prefix?: string; suffix: string };
   }): Promise<{ [key: string]: SensorDevice | BinarySensorDevice }> {
     const allEntities = await this.hass.callWS<
       { entity_id: string; device_id: string; original_name: string; unique_id: string }[]
@@ -156,17 +159,26 @@ export class VehicleCard extends LitElement {
     const deviceEntities = allEntities.filter((e) => e.device_id === carEntity.device_id);
     const entityIds: { [key: string]: SensorDevice | BinarySensorDevice } = {};
 
-    for (const entityName of Object.keys(filter)) {
-      const { suffix } = filter[entityName];
-      const entity = deviceEntities.find((e) => e.unique_id.endsWith(suffix));
-      if (entity) {
-        entityIds[entityName] = {
-          entity_id: entity.entity_id,
-          original_name: entity.original_name,
-          device_id: entity.device_id,
-        };
+    for (const entityName of Object.keys(filters)) {
+      const { prefix, suffix } = filters[entityName];
+      if (!prefix) {
+        const entity = deviceEntities.find((e) => e.unique_id.endsWith(suffix));
+        if (entity) {
+          entityIds[entityName] = {
+            entity_id: entity.entity_id,
+            original_name: entity.original_name,
+            device_id: entity.device_id,
+          };
+        }
       } else {
-        entityIds[entityName] = { entity_id: '', original_name: '', device_id: '' };
+        const entity = deviceEntities.find((e) => e.entity_id.startsWith(prefix) && e.entity_id.endsWith(suffix));
+        if (entity) {
+          entityIds[entityName] = {
+            entity_id: entity.entity_id,
+            original_name: entity.original_name,
+            device_id: entity.device_id,
+          };
+        }
       }
     }
     return entityIds;
@@ -270,14 +282,28 @@ export class VehicleCard extends LitElement {
   }
 
   private _renderWarnings(): TemplateResult {
-    const { lock, parkBrake } = this.binaryDevices;
-    const lockState = this.getEntityState(lock?.entity_id);
-    const parkBrakeState = this.getBooleanState(parkBrake?.entity_id);
+    // Get the current state of the lock and park brake
+    const lockState = this.getEntityState(this.sensorDevices.lock?.entity_id);
+    const parkBrakeState = this.getBooleanState(this.binaryDevices.parkBrake?.entity_id);
+
+    // Define the lock state formatting object
+    const lockStateFormatted = {
+      '0': 'Unlocked',
+      '1': 'Locked int',
+      '2': 'Locked',
+      '3': 'Partly unlocked',
+      '4': 'Unknown',
+    };
+
+    // Determine the display text for the lock state
+    // Default to "Unknown" if the lock state is not in the formatting object
+    const lockDisplayText = lockStateFormatted[lockState] || lockStateFormatted['4'];
+
     return html`
       <div class="info-box">
         <div class="item">
-          <ha-icon icon=${lockState === 'locked' ? 'mdi:lock' : 'mdi:lock-open'}></ha-icon>
-          <div><span style="text-transform: capitalize;">${lockState}</span></div>
+          <ha-icon icon=${lockState === '2' || lockState === '1' ? 'mdi:lock' : 'mdi:lock-open'}></ha-icon>
+          <div><span>${lockDisplayText} </span></div>
         </div>
         <div class="item">
           <ha-icon icon="mdi:car-brake-parking"></ha-icon>
@@ -666,23 +692,26 @@ export class VehicleCard extends LitElement {
     const binarySensor = this.binaryDevices;
 
     const generateDataArray = (
-      keys: { key: string; state?: string; icon?: string }[],
+      keys: { key: string; state?: string; icon?: string; name?: string }[],
     ): { key: string; state: string; icon: string }[] => {
-      return keys.map(({ key, state, icon }) => ({
+      return keys.map(({ key, state, icon, name }) => ({
         key,
         icon: icon ?? this.getEntityAttribute(this.binaryDevices[key]?.entity_id, 'icon'),
         state: state ?? this.getBooleanState(this.binaryDevices[key]?.entity_id) ? 'Problem' : 'OK',
+        name: name ?? this.binaryDevices[key]?.original_name,
       }));
     };
 
     const vehicleData = [
       {
         key: 'parkBrake',
+        name: 'Park brake',
         icon: this.getEntityAttribute(binarySensor.parkBrake?.entity_id, 'icon'),
         state: this.getBooleanState(binarySensor.parkBrake?.entity_id) ? 'Engaged' : 'Released',
       },
       {
         key: 'windowsClosed',
+        name: 'Windows',
         icon: this.getEntityAttribute(binarySensor.windowsClosed?.entity_id, 'icon'),
         state: this.getBooleanState(binarySensor.windowsClosed?.entity_id) ? 'Closed' : 'Opened',
       },
@@ -706,13 +735,45 @@ export class VehicleCard extends LitElement {
       },
     ];
 
-    const lockState = this.getEntityState(binarySensor.lock?.entity_id);
-    const lockIcon = lockState === 'locked' ? 'mdi:lock' : 'mdi:lock-open';
-    const lockColor = lockState === 'locked' ? 'warning' : '';
-    const lockEntity = binarySensor.lock?.entity_id;
-    const lockName = binarySensor.lock?.original_name;
+    const lockState = this.getEntityState(this.sensorDevices.lock?.entity_id);
+    const formatedLockState = {
+      '0': 'Unlocked',
+      '1': 'Locked int',
+      '2': 'Locked',
+      '3': 'Partly unlocked',
+      '4': 'Unknown',
+    };
+    const lockStateFormatted = formatedLockState[lockState] || formatedLockState['4'];
+    const lockIcon = lockState === '2' || lockState === '1' ? 'mdi:lock' : 'mdi:lock-open';
+    const lockColor = lockState === '2' || lockState === '1' ? 'warning' : '';
+    const lockName = this.sensorDevices.lock?.original_name;
+    const lockEntity = this.sensorDevices.lock?.entity_id;
 
     const warningsData = generateDataArray(warningsDataKeys);
+
+    const lockAttr = [
+      'decklidstatus',
+      'doorlockstatusdecklid',
+      'doorlockstatusfrontleft',
+      'doorlockstatusfrontright',
+      'doorlockstatusgas',
+      'doorlockstatusrearleft',
+      'doorlockstatusrearright',
+      'doorstatusfrontleft',
+      'doorstatusfrontright',
+      'doorstatusrearleft',
+      'doorstatusrearright',
+    ];
+
+    // Create an object to store the states of each attribute
+    const lockAttributeStates: Record<string, string> = {};
+
+    // Retrieve the state for each attribute and store it in the attributeStates object
+    lockAttr.forEach((attribute) => {
+      lockAttributeStates[attribute] = this.getEntityAttribute(this.sensorDevices.lock?.entity_id, attribute);
+    });
+
+    const lockAttrVisible = this.lockAttributesVisible ? 'mdi:chevron-up' : 'mdi:chevron-right';
 
     return html`
       <div class="default-card">
@@ -723,11 +784,15 @@ export class VehicleCard extends LitElement {
             <span>${lockName}</span>
           </div>
           <div class="data-value-unit">
-            <span style="text-transform: capitalize" @click=${() => this.toggleMoreInfo(lockEntity)}>${lockState}</span>
+            <span style="text-transform: capitalize" @click=${() => this.toggleMoreInfo(lockEntity)}
+              >${lockStateFormatted}</span
+            >
+            <ha-icon icon="${lockAttrVisible}" @click=${() => this.toggleLockAttributes()}></ha-icon>
           </div>
         </div>
+        ${this._renderLockAttributes(lockAttributeStates)}
         ${vehicleData.map(
-          ({ key, icon, state }) => html`
+          ({ key, icon, state, name }) => html`
             <div class="data-row">
               <div>
                 <ha-icon
@@ -735,15 +800,17 @@ export class VehicleCard extends LitElement {
                   icon="${icon}"
                   @click=${() => this.toggleMoreInfo(binarySensor[key]?.entity_id)}
                 ></ha-icon>
-                <span>${binarySensor[key]?.original_name}</span>
+                <span>${name}</span>
               </div>
               <div class="data-value-unit" @click=${() => this.toggleMoreInfo(binarySensor[key]?.entity_id)}>
                 <span>${state}</span>
+                <ha-icon icon="mdi:chevron-right" style="opacity: 0;"></ha-icon>
               </div>
             </div>
           `,
         )}
       </div>
+
       <div class="default-card">
         <div class="data-header">Warnings</div>
         ${warningsData.map(
@@ -766,6 +833,48 @@ export class VehicleCard extends LitElement {
             </div>
           `,
         )}
+      </div>
+    `;
+  }
+
+  // Method to toggle the visibility of lock attributes
+  private toggleLockAttributes() {
+    this.lockAttributesVisible = !this.lockAttributesVisible;
+    this.requestUpdate(); // Trigger a re-render
+  }
+
+  private _renderLockAttributes(attributeStates: Record<string, string>): TemplateResult {
+    const attributeMappings = {
+      decklidstatus: { name: 'Deck lid', state: { false: 'closed', true: 'open' } },
+      doorlockstatusdecklid: { name: 'Door lock decklid', state: { false: 'locked', true: 'unlocked' } },
+      doorlockstatusfrontleft: { name: 'Door lock front left', state: { false: 'locked', true: 'unlocked' } },
+      doorlockstatusfrontright: { name: 'Door lock front right', state: { false: 'locked', true: 'unlocked' } },
+      doorlockstatusgas: { name: 'Gas lock', state: { false: 'locked', true: 'unlocked' } },
+      doorlockstatusrearleft: { name: 'Door lock rear left', state: { false: 'locked', true: 'unlocked' } },
+      doorlockstatusrearright: { name: 'Door lock rear right', state: { false: 'locked', true: 'unlocked' } },
+      doorstatusfrontleft: { name: 'Door front left', state: { false: 'closed', true: 'open' } },
+      doorstatusfrontright: { name: 'Door front right', state: { false: 'closed', true: 'open' } },
+      doorstatusrearleft: { name: 'Door rear left', state: { false: 'closed', true: 'open' } },
+      doorstatusrearright: { name: 'Door rear right', state: { false: 'closed', true: 'open' } },
+      enginehoodstatus: { name: 'Engine hood', state: { false: 'closed', true: 'open' } },
+    };
+    const attributesClass = this.lockAttributesVisible ? 'sub-attributes active' : 'sub-attributes';
+
+    // Render the lock attributes
+    return html`
+      <div class=${attributesClass}>
+        ${Object.keys(attributeStates).map((attribute) => {
+          const rawState = attributeStates[attribute];
+          const readableState = attributeMappings[attribute].state[rawState] || 'Unknown';
+          return html`
+            <div class="data-row">
+              <span>${attributeMappings[attribute].name}</span>
+              <div class="data-value-unit">
+                <span style="text-transform: capitalize">${readableState}</span>
+              </div>
+            </div>
+          `;
+        })}
       </div>
     `;
   }
@@ -821,9 +930,16 @@ export class VehicleCard extends LitElement {
         return `${formatedState} ${odometerUnit}`;
 
       case 'vehicleCards':
-        const lockedState = this.getEntityState(binaryDevices.lock?.entity_id) === 'locked' ? 'Locked' : 'Unlocked';
-        if (!lockedState) return '';
-        return lockedState;
+        const lockedState = this.getEntityState(sensorDevices.lock?.entity_id);
+        const formatedLockedState = {
+          '0': 'Unlocked',
+          '1': 'Locked int',
+          '2': 'Locked',
+          '3': 'Partly unlocked',
+          '4': 'Unknown',
+        };
+        const lockedDisplayText = formatedLockedState[lockedState] || formatedLockedState['4'];
+        return lockedDisplayText;
       case 'ecoCards':
         return `${this.getEntityState(sensorDevices.ecoScoreBonusRange?.entity_id)} ${this.getAttrUnitOfMeasurement(
           sensorDevices.ecoScoreBonusRange?.entity_id,

@@ -286,6 +286,21 @@ header h1 {
   color: var(--warning-color, --error-color);
 }
 
+.sub-attributes {
+  overflow: hidden;
+  padding-top: 0 !important;
+  padding: inherit;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.5s ease, opacity 0.5s ease;
+}
+
+.sub-attributes.active {
+  max-height: 400px; /* Adjust this to be more than the expected height of the content */
+  opacity: 1;
+  padding: inherit;
+}
+
 .error {
   color: var(--error-color);
 }
@@ -302,4 +317,13 @@ dialog {
 dialog::backdrop {
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(5px);
+}
+
+@keyframes slideUpDown {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(0);
+  }
 }

@@ -50,8 +50,10 @@ export type BinarySensorDevice = {
 export type SensorDevices = { [key: string]: SensorDevice };
 export type BinarySensors = { [key: string]: BinarySensorDevice };
 
-export const binarySensorsFilters: { [name in keyof Partial<BinarySensors>]: { suffix: string } } = {
-  lock: { suffix: '_lock' },
+export const binarySensorsFilters: {
+  [name in keyof Partial<BinarySensors>]: { prefix?: string; suffix: string };
+} = {
+  lock: { prefix: 'lock', suffix: '_lock' },
   parkBrake: { suffix: '_parkbrakestatus' },
   liquidRangeCritical: { suffix: '_liquidrangecritical' },
   lowBrakeFluid: { suffix: '_warningbrakefluid' },
@@ -65,8 +67,10 @@ export const binarySensorsFilters: { [name in keyof Partial<BinarySensors>]: { s
   chargeFlapACStatus: { suffix: '_chargeflapacstatus' },
 };
 
-export const sensorDeviceFilters: { [name in keyof Partial<SensorDevices>]: { suffix: string } } = {
-  lock: { suffix: '_doorlockstatusvehicle' },
+export const sensorDeviceFilters: {
+  [name in keyof Partial<SensorDevices>]: { prefix?: string; suffix: string };
+} = {
+  lock: { prefix: 'sensor.', suffix: '_lock' },
   averageSpeedReset: { suffix: '_averagespeedreset' },
   averageSpeedStart: { suffix: '_averagespeedstart' },
   distanceReset: { suffix: '_distancereset' },
