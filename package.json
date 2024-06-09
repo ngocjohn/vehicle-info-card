@@ -23,6 +23,7 @@
     "apexcharts": "^3.49.1",
     "custom-card-helpers": "^1.7.2",
     "home-assistant-js-websocket": "^5.11.1",
+    "js-yaml": "^4.1.0",
     "lit": "^2.0.0"
   },
   "devDependencies": {

@@ -4,7 +4,7 @@ import { HomeAssistant, fireEvent, LovelaceCardEditor } from 'custom-card-helper
 
 import { VehicleCardConfig } from './types';
 import { customElement, property, state } from 'lit/decorators';
-
+import yaml from 'js-yaml';
 import { CARD_VERSION } from './const';
 @customElement('vehicle-info-card-editor')
 export class VehicleCardEditor extends LitElement implements LovelaceCardEditor {
@@ -110,6 +110,14 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
     const device_trackers = Object.keys(this.hass.states).filter((entity) => entity.startsWith('device_tracker'));
 
+    let images = '';
+
+    if (this._config && Array.isArray(this._config.images)) {
+      images = this._config.images.join('\n');
+    } else if (this._config && typeof this._config.images === 'string') {
+      images = this._config.images;
+    }
+
     return html`
       <div class="card-config">
         <ha-textfield
@@ -152,50 +160,69 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           .configValue=${'google_api_key'}
           @input=${this._valueChanged}
         ></ha-textfield>
-        <div class="switches">
-          <ha-formfield .label=${`Show slides`}>
-            <ha-switch
-              .disabled=${!this._config?.images || this._config?.images.length === 0}
-              .checked=${this._show_slides !== false}
-              .configValue=${'show_slides'}
-              @change=${this._valueChanged}
-            ></ha-switch>
-          </ha-formfield>
-
-          <ha-formfield .label=${`Show buttons`}>
-            <ha-switch
-              .checked=${this._show_buttons !== false}
-              .configValue=${'show_buttons'}
-              @change=${this._valueChanged}
-            ></ha-switch>
-          </ha-formfield>
-
-          <ha-formfield .label=${`Show map`}>
-            <ha-switch
-              .checked=${this._show_map !== false}
-              .configValue=${'show_map'}
-              @change=${this._valueChanged}
-            ></ha-switch>
-          </ha-formfield>
-          <ha-formfield .label=${`Show background`}>
-            <ha-switch
-              .checked=${this._show_background !== false}
-              .configValue=${'show_background'}
-              @change=${this._valueChanged}
-            ></ha-switch>
-          </ha-formfield>
-          <ha-formfield .label=${`Enable map popup`}>
-            <ha-switch
-              .disabled=${this._show_map === false || this._show_map === undefined || !this._config?.device_tracker}
-              .checked=${this._enable_map_popup !== false}
-              .configValue=${'enable_map_popup'}
-              @change=${this._valueChanged}
-            ></ha-switch>
-          </ha-formfield>
+        <ha-expansion-panel .open=${false} .outlined=${true}>
+        <h3 slot="header">
+          <ha-icon icon="mdi:code-array"></ha-icon>
+          Images Configuration
+        </h3>
+        <div class="code-editor">
+          <ha-alert alert-type="info">There is no need to add a '-' for each line. Each line will be treated as a separate URL automatically.</ha-alert>
+          <ha-code-editor
+          autofocus
+          autocomplete-entities
+          autocomplete-icons
+          .hass=${this.hass}
+          .value=${images}
+          .configValue="${'images'}"
+          @blur=${this._valueChanged}
+        ></ha-code-editor>
         </div>
-        <div class="note">
-          <p>version: ${CARD_VERSION}</p>
-          <i>Note: For another card configuration, use code editor.</i>
+        </ha-expansion-panel>
+          <div class="switches">
+            <ha-formfield .label=${`Show slides`}>
+              <ha-switch
+                .disabled=${!this._config?.images || this._config?.images.length === 0}
+                .checked=${this._show_slides !== false}
+                .configValue=${'show_slides'}
+                @change=${this._valueChanged}
+              ></ha-switch>
+            </ha-formfield>
+
+            <ha-formfield .label=${`Show buttons`}>
+              <ha-switch
+                .checked=${this._show_buttons !== false}
+                .configValue=${'show_buttons'}
+                @change=${this._valueChanged}
+              ></ha-switch>
+            </ha-formfield>
+
+            <ha-formfield .label=${`Show map`}>
+              <ha-switch
+                .checked=${this._show_map !== false}
+                .configValue=${'show_map'}
+                @change=${this._valueChanged}
+              ></ha-switch>
+            </ha-formfield>
+            <ha-formfield .label=${`Show background`}>
+              <ha-switch
+                .checked=${this._show_background !== false}
+                .configValue=${'show_background'}
+                @change=${this._valueChanged}
+              ></ha-switch>
+            </ha-formfield>
+            <ha-formfield .label=${`Enable map popup`}>
+              <ha-switch
+                .disabled=${this._show_map === false || this._show_map === undefined || !this._config?.device_tracker}
+                .checked=${this._enable_map_popup !== false}
+                .configValue=${'enable_map_popup'}
+                @change=${this._valueChanged}
+              ></ha-switch>
+            </ha-formfield>
+          </div>
+          <div class="note">
+            <p>version: ${CARD_VERSION}</p>
+            <i>Note: For another card configuration, use code editor.</i>
+          </div>
         </div>
       </div>
     `;
@@ -205,26 +232,63 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     this._helpers = await (window as any).loadCardHelpers();
   }
 
+  // private _valueChanged(ev): void {
+  //   if (!this._config || !this.hass) {
+  //     return;
+  //   }
+  //   const target = ev.target;
+  //   if (this[`_${target.configValue}`] === target.value) {
+  //     return;
+  //   }
+  //   if (target.configValue) {
+  //     if (target.value === '') {
+  //       const tmpConfig = { ...this._config };
+  //       delete tmpConfig[target.configValue];
+  //       this._config = tmpConfig;
+  //     } else {
+  //       this._config = {
+  //         ...this._config,
+  //         [target.configValue]: target.checked !== undefined ? target.checked : target.value,
+  //       };
+  //     }
+  //   }
+  //   fireEvent(this, 'config-changed', { config: this._config });
+  // }
+
   private _valueChanged(ev): void {
     if (!this._config || !this.hass) {
       return;
     }
+
     const target = ev.target;
-    if (this[`_${target.configValue}`] === target.value) {
+    const configValue = target.configValue;
+
+    if (this[`_${configValue}`] === target.value) {
       return;
     }
-    if (target.configValue) {
-      if (target.value === '') {
-        const tmpConfig = { ...this._config };
-        delete tmpConfig[target.configValue];
-        this._config = tmpConfig;
-      } else {
-        this._config = {
-          ...this._config,
-          [target.configValue]: target.checked !== undefined ? target.checked : target.value,
-        };
-      }
+
+    let newValue: any;
+    if (configValue === 'images') {
+      newValue = target.value
+        .split('\n')
+        .map((line: string) => line.trim())
+        .filter((line: string) => line); // Remove empty lines
+    } else {
+      newValue = target.checked !== undefined ? target.checked : target.value;
     }
+
+    if (newValue.length === 0) {
+      // Check for an empty array
+      const tmpConfig = { ...this._config };
+      delete tmpConfig[configValue];
+      this._config = tmpConfig;
+    } else {
+      this._config = {
+        ...this._config,
+        [configValue]: newValue,
+      };
+    }
+
     fireEvent(this, 'config-changed', { config: this._config });
   }
 
@@ -252,10 +316,10 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       --mdc-theme-secondary: var(--switch-checked-color);
     }
 
-    .select-with-text {
-      display: flex;
-      align-items: center;
+    h3 {
+      color: var(--secondary-text-color);
     }
+
     .note {
       color: var(--secondary-text-color);
       text-align: start;
