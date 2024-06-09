@@ -1,6 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { LitElement, html, TemplateResult, PropertyValues, CSSResultGroup } from 'lit';
 import { customElement, property, state } from 'lit/decorators';
+
+// Third-party Libraries
+import ApexCharts from 'apexcharts';
+
+// Custom Helpers
 import {
   HomeAssistant,
   hasConfigOrEntityChanged,
@@ -10,8 +15,9 @@ import {
   fireEvent,
   formatNumber,
   formatDateTime,
-} from 'custom-card-helpers'; // This is a community maintained npm module with common helper functions/types. https://github.com/custom-cards/custom-card-helpers
+} from 'custom-card-helpers';
 
+// Custom Types and Constants
 import {
   ExtendedThemes,
   VehicleCardConfig,
@@ -20,27 +26,32 @@ import {
   binarySensorsFilters,
   BinarySensorDevice,
 } from './types';
-import ApexCharts from 'apexcharts';
-import { CARD_VERSION } from './const';
+import { CARD_VERSION, lockAttrMapping, lockStateMapping } from './const';
 import { localize } from './localize/localize';
 import { formatTimestamp } from './utils/helpers';
-import styles from './css/styles.css';
 
+// Styles and Assets
+import styles from './css/styles.css';
 import './components/map-card.js';
 import './components/header-slide.js';
 import amgWhite from './images/amg_bg_white.png';
 import amgBlack from './images/amg_bg_black.png';
 
-/* eslint no-console: 0 */
+declare global {
+  interface Window {
+    customCards: any[];
+    loadCardHelpers: () => Promise<void>;
+  }
+}
+
 console.info(
   `%c  VEHICLE-INFO-CARD %c  ${CARD_VERSION}  `,
   'color: orange; font-weight: bold; background: black',
   'color: white; font-weight: bold; background: dimgray',
 );
 
-// This puts your card into the UI card picker dialog
-(window as any).customCards = (window as any).customCards || [];
-(window as any).customCards.push({
+window.customCards = window.customCards || [];
+window.customCards.push({
   type: 'vehicle-info-card',
   name: 'Vehicle Card',
   preview: true,
@@ -182,7 +193,6 @@ export class VehicleCard extends LitElement {
         }
       }
     }
-    console.log('sensors:', entityIds);
     return entityIds;
   }
 
@@ -291,18 +301,9 @@ export class VehicleCard extends LitElement {
     const lockState = this.getEntityState(this.sensorDevices.lock?.entity_id);
     const parkBrakeState = this.getBooleanState(this.binaryDevices.parkBrake?.entity_id);
 
-    // Define the lock state formatting object
-    const lockStateFormatted = {
-      '0': 'Unlocked',
-      '1': 'Locked int',
-      '2': 'Locked',
-      '3': 'Partly unlocked',
-      '4': 'Unknown',
-    };
-
     // Determine the display text for the lock state
     // Default to "Unknown" if the lock state is not in the formatting object
-    const lockDisplayText = lockStateFormatted[lockState] || lockStateFormatted['4'];
+    const lockDisplayText = lockStateMapping[lockState] || lockStateMapping['4'];
 
     return html`
       <div class="info-box">
@@ -319,11 +320,14 @@ export class VehicleCard extends LitElement {
   }
 
   private _renderRangeInfo(): TemplateResult | void {
-    const { fuelLevel, rangeLiquid, rangeElectric, soc } = this.sensorDevices;
+    const { fuelLevel, rangeLiquid, rangeElectric } = this.sensorDevices;
     const { state: fuelState, unit: fuelUnit } = this.getEntityInfo(fuelLevel?.entity_id);
     const { state: rangeLiquidState, unit: rangeUnit } = this.getEntityInfo(rangeLiquid?.entity_id);
     const { state: rangeElectricState, unit: electricUnit } = this.getEntityInfo(rangeElectric?.entity_id);
-    const { state: socState, unit: socUnit } = this.getEntityInfo(soc?.entity_id);
+    const { state: socState, unit: socUnit } = {
+      state: this.getEntityAttribute(rangeElectric?.entity_id, 'soc'),
+      unit: '%',
+    };
 
     if (fuelState && rangeLiquidState) {
       const fuelProgress = html`
@@ -860,47 +864,6 @@ export class VehicleCard extends LitElement {
   }
 
   private _renderLockAttributes(attributeStates: Record<string, string>): TemplateResult {
-    const attributeMappings = {
-      decklidstatus: { name: 'Deck lid', state: { false: 'closed', true: 'open' } },
-      doorstatusfrontleft: { name: 'Door front left', state: { false: 'closed', true: 'open' } },
-      doorstatusfrontright: { name: 'Door front right', state: { false: 'closed', true: 'open' } },
-      doorstatusrearleft: { name: 'Door rear left', state: { false: 'closed', true: 'open' } },
-      doorstatusrearright: { name: 'Door rear right', state: { false: 'closed', true: 'open' } },
-      doorlockstatusfrontleft: { name: 'Door lock front left', state: { false: 'locked', true: 'unlocked' } },
-      doorlockstatusfrontright: { name: 'Door lock front right', state: { false: 'locked', true: 'unlocked' } },
-      doorlockstatusrearleft: { name: 'Door lock rear left', state: { false: 'locked', true: 'unlocked' } },
-      doorlockstatusrearright: { name: 'Door lock rear right', state: { false: 'locked', true: 'unlocked' } },
-      doorlockstatusgas: { name: 'Gas lock', state: { false: 'locked', true: 'unlocked' } },
-      enginehoodstatus: { name: 'Engine hood', state: { false: 'closed', true: 'open' } },
-      doorstatusoverall: {
-        name: 'Door status overall',
-        state: {
-          '0': 'open',
-          '1': 'closed',
-          '2': 'not existing',
-          '3': 'unknown',
-        },
-      },
-      sunroofstatus: {
-        name: 'Sunroof status',
-        state: {
-          '0': 'closed',
-          '1': 'open',
-          '2': 'lifting open',
-          '3': 'running',
-          '4': 'anti-booming position',
-          '5': 'sliding intermediate',
-          '6': 'lifting intermediate',
-          '7': 'opening',
-          '8': 'closing',
-          '9': 'anti-booming lifting',
-          '10': 'intermediate position',
-          '11': 'opening lifting',
-          '12': 'closing lifting',
-        },
-      },
-    };
-
     const attributesClass = this.lockAttributesVisible ? 'sub-attributes active' : 'sub-attributes';
 
     // Render the lock attributes
@@ -910,19 +873,18 @@ export class VehicleCard extends LitElement {
           const rawState = attributeStates[attribute];
 
           // Check if the state is valid and the attribute mapping exists
-          if (rawState !== undefined && rawState !== null && attributeMappings[attribute]) {
-            const readableState = attributeMappings[attribute].state[rawState] || 'Unknown';
+          if (rawState !== undefined && rawState !== null && lockAttrMapping[attribute]) {
+            const readableState = lockAttrMapping[attribute].state[rawState] || 'Unknown';
 
             return html`
               <div class="data-row">
-                <span>${attributeMappings[attribute].name}</span>
+                <span>${lockAttrMapping[attribute].name}</span>
                 <div class="data-value-unit">
                   <span style="text-transform: capitalize">${readableState}</span>
                 </div>
               </div>
             `;
           }
-
           // Return nothing if the attribute state is not valid or attribute mapping does not exist
           return '';
         })}

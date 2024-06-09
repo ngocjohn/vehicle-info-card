@@ -6,13 +6,16 @@ declare global {
     'hui-error-card': LovelaceCard;
   }
 }
-// TODO Add your configuration elements here for type-checking
-
-// Define the ExtendedThemes interface by extending the existing Themes interface
+/**
+ * ExtendedThemes extends the existing Themes interface with additional properties.
+ */
 export interface ExtendedThemes extends Themes {
   darkMode: boolean;
 }
 
+/**
+ * Configuration interface for the Vehicle Card.
+ */
 export interface VehicleCardConfig extends LovelaceCardConfig {
   type: string;
   name?: string;
@@ -34,22 +37,29 @@ export interface VehicleCardConfig extends LovelaceCardConfig {
   double_tap_action?: ActionConfig;
 }
 
-export type SensorDevice = {
+export interface SensorDevice {
   entity_id: string;
   original_name: string;
   device_id: string;
-};
+}
 
-export type BinarySensorDevice = {
+export interface BinarySensorDevice {
   entity_id: string;
   original_name: string;
   device_id: string;
-};
+}
 
-// Update WarningEntities and TripEntities to use the new types
-export type SensorDevices = { [key: string]: SensorDevice };
-export type BinarySensors = { [key: string]: BinarySensorDevice };
+export interface SensorDevices {
+  [key: string]: SensorDevice;
+}
 
+export interface BinarySensors {
+  [key: string]: BinarySensorDevice;
+}
+
+/**
+ * Filters for binary sensors.
+ */
 export const binarySensorsFilters: {
   [name in keyof Partial<BinarySensors>]: { prefix?: string; suffix: string };
 } = {
@@ -67,6 +77,9 @@ export const binarySensorsFilters: {
   chargeFlapACStatus: { suffix: '_chargeflapacstatus' },
 };
 
+/**
+ * Filters for sensor devices.
+ */
 export const sensorDeviceFilters: {
   [name in keyof Partial<SensorDevices>]: { prefix?: string; suffix: string };
 } = {
@@ -95,7 +108,7 @@ export const sensorDeviceFilters: {
   tirePressureRearRight: { suffix: '_tirepressurerearright' },
   tirePressureFrontLeft: { suffix: '_tirepressurefrontleft' },
   tirePressureFrontRight: { suffix: '_tirepressurefrontright' },
-  soc: { suffix: '_soc' },
   maxSoc: { suffix: '_max_soc' },
+  soc: { suffix: '_soc' },
   chargingPower: { suffix: '_chargingPower' },
 };
