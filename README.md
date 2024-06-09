@@ -7,7 +7,7 @@
 This custom card displays essential information about your Mercedes vehicle. It retrieves data using the Custom Component for Mercedes cars by [ReneNulschDE](https://github.com/ReneNulschDE/mbapi2020) available at [mbapi2020](https://github.com/ReneNulschDE/mbapi2020). The card features four primary buttons: Trip Data, Vehicle Status, Eco Display, and Tire Pressure. These buttons can be easily replaced with any Lovelace card within Home Assistant, allowing for flexible and customizable vehicle data display.
 
 <div align="center">
-<img src="https://raw.githubusercontent.com/ngocjohn/vehicle-info-card/main/assets/default-card.gif" />
+  <a href="#"> <img src="https://raw.githubusercontent.com/ngocjohn/vehicle-info-card/main/assets/default-card.gif"></a>
 </div>
 
 <details>
@@ -73,7 +73,7 @@ Below is the basic configuration for the custom card:
 | `entity`           | string      | Required    | The entity ID of the car sensor, e.g., `sensor.license_plate_car`.                                                                                                     |
 | `name`             | string      | Optional    | The name to be displayed on the card. Default is vehicle model name.                                                                                                   |
 | `device_tracker`   | string      | Optional    | The entity ID of the device tracker for map display.                                                                                                                   |
-| `google_api_key`   | string      | Optional    | Google Maps API key for generating address from coordinates. Defaults to using OpenStreetMap service.                                                                  |
+| `google_api_key`   | string      | Optional    | Google Maps API key for generating address from coordinates. Default is using OpenStreetMap service.                                                                   |
 | `show_slides`      | boolean     | Optional    | Set to `true` to enable slideshow of car images. Default is `false`.                                                                                                   |
 | `show_map`         | boolean     | Optional    | Set to `true` to display the car's position on a map. Default is `false`.                                                                                              |
 | `show_buttons`     | boolean     | Optional    | Set to `true` to show the buttons Default is `true`.                                                                                                                   |
@@ -158,7 +158,9 @@ Below is the configuration replaced entities card for `Vehicle status` button.
 
 [https://github.com/ngocjohn/](https://github.com/ngocjohn/)
 
-<a href="https://buymeacoffee.com/ngocjohn" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 48px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
+<a href="https://buymeacoffee.com/ngocjohn" target="_blank">
+  <img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 24px;width: auto;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" >
+</a>
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
