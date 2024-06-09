@@ -1,6 +1,6 @@
 {
   "name": "vehicle-info-card",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Lovelace custom card for displaying vehicle information from Mercedes Component integration",
   "keywords": [
     "home-assistant",
@@ -13,7 +13,7 @@
   "author": "Viet Ngoc",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/ngocjohn/vehicle-info-card"
   },
   "module": "vehicle-info-card.js",
   "license": "MIT",
