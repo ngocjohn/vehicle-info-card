@@ -17,6 +17,7 @@ export interface ExtendedThemes extends Themes {
  * Configuration interface for the Vehicle Card.
  */
 export interface VehicleCardConfig extends LovelaceCardConfig {
+  type: string;
   name?: string;
   entity?: string;
   device_tracker?: string;
@@ -37,6 +38,7 @@ export interface VehicleCardConfig extends LovelaceCardConfig {
 }
 
 export const defaultConfig: Partial<VehicleCardConfig> = {
+  type: 'custom:vehicle-info-card',
   name: 'Mercedes Benz',
   entity: '',
   device_tracker: '',
