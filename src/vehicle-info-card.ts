@@ -31,6 +31,7 @@ import { CARD_VERSION, lockAttrMapping, lockStateMapping, cardTypes } from './co
 import { localize } from './localize/localize';
 import { formatTimestamp } from './utils/helpers';
 import { getDeviceEntities } from './utils/helpers';
+import { tapFeedback } from './utils/tap-action.js';
 
 // Styles and Assets
 import styles from './css/styles.css';
@@ -146,12 +147,38 @@ export class VehicleCard extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
-    this.addEventListener('toggle-map-popup', () => this.showMapOnCard());
+    this.addCustomEventListener('toggle-map-popup', this.showMapOnCard);
+    this.setButtonEventListeners();
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
-    this.removeEventListener('toggle-map-popup', () => this.showMapOnCard());
+    this.removeCustomEventListener('toggle-map-popup', this.showMapOnCard);
+    this.removeButtonEventListeners();
+  }
+
+  private addCustomEventListener(event: string, handler: EventListenerOrEventListenerObject): void {
+    this.addEventListener(event, handler);
+  }
+
+  private removeCustomEventListener(event: string, handler: EventListenerOrEventListenerObject): void {
+    this.removeEventListener(event, handler);
+  }
+
+  private setButtonEventListeners(): void {
+    this.manageButtonEventListeners('addEventListener');
+  }
+
+  private removeButtonEventListeners(): void {
+    this.manageButtonEventListeners('removeEventListener');
+  }
+
+  private manageButtonEventListeners(action: 'addEventListener' | 'removeEventListener'): void {
+    const buttons = this.shadowRoot?.querySelectorAll('.grid-item');
+    if (!buttons) return;
+    buttons.forEach((button) => {
+      button[action]('click', () => tapFeedback(button));
+    });
   }
 
   private showMapOnCard(): void {
@@ -190,6 +217,10 @@ export class VehicleCard extends LitElement {
     }
     if (changedProps.has('activeCardType') && this.activeCardType === 'ecoCards') {
       this.initEcoChart();
+    }
+
+    if (changedProps.has('activeCardType') && this.activeCardType === null) {
+      this.manageButtonEventListeners('addEventListener');
     }
   }
 

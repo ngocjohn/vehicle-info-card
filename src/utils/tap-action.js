@@ -102,3 +102,7 @@ export function addActions(element, config, defaultEntity) {
   // element.addEventListener('contextmenu', (e) => e.preventDefault());
   // element.style.cursor = 'auto';
 }
+
+export const forwardHaptic = (hapticType) => {
+  fireEvent(window, 'haptic', hapticType);
+};
