@@ -182,6 +182,7 @@ export class VehicleCard extends LitElement {
         }
       }
     }
+    console.log('sensors:', entityIds);
     return entityIds;
   }
 
@@ -608,19 +609,18 @@ export class VehicleCard extends LitElement {
 
   private generateDataRow(
     title: string,
-    data: Array<{ key: string; name?: string; icon?: string }>, // icon is optional now
+    data: Array<{ key: string; name?: string; icon?: string; state?: string }>, // icon is optional now
     entityCollection: any,
   ): TemplateResult {
     return html`
       <div class="default-card">
         <div class="data-header">${title}</div>
-        ${data.map(({ key, name, icon }) => {
+        ${data.map(({ key, name, icon, state }) => {
           const entity = entityCollection[key];
           const entityId = entity?.entity_id;
           const entityName = name ?? entity?.original_name;
-          let entityState = entityId ? this.getEntityState(entityId) : '';
+          let entityState = state ?? this.getEntityState(entityId);
           const unitOfMeasurement = entityId ? this.getAttrUnitOfMeasurement(entityId) : '';
-
           // Render correct formated state
           if (!isNaN(parseFloat(entityState)) && entityState !== '') {
             entityState = formatNumber(entityState, this.hass.locale);
@@ -649,12 +649,13 @@ export class VehicleCard extends LitElement {
 
   private _renderDefaultTripCard(): TemplateResult | void {
     const generateDataArray = (
-      keys: { key: string; name?: string; icon?: string }[],
-    ): { key: string; name: string; icon: string }[] => {
-      return keys.map(({ key, name, icon }) => ({
+      keys: { key: string; name?: string; icon?: string; state?: string }[],
+    ): { key: string; name: string; icon: string; state: string }[] => {
+      return keys.map(({ key, name, icon, state }) => ({
         key,
         name: name ?? this.sensorDevices[key]?.original_name,
         icon: icon ?? this.getEntityAttribute(this.sensorDevices[key]?.entity_id, 'icon'),
+        state: state ?? this.getEntityState(this.sensorDevices[key]?.entity_id),
       }));
     };
 
@@ -662,7 +663,11 @@ export class VehicleCard extends LitElement {
       { key: 'odometer' },
       { key: 'fuelLevel' },
       { key: 'rangeLiquid' },
-      { key: 'soc' },
+      {
+        key: 'soc',
+        name: 'State of charger',
+        state: this.getEntityAttribute(this.sensorDevices.rangeElectric?.entity_id, 'soc'),
+      },
       { key: 'maxSoc' },
       { key: 'rangeElectric' },
     ];
@@ -969,7 +974,7 @@ export class VehicleCard extends LitElement {
           hollow: {
             margin: 5,
             size: '40%',
-            background: 'transparent',
+            background: '#ffffff',
             image: undefined,
           },
           dataLabels: {
