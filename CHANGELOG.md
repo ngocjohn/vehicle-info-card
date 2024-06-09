@@ -1,5 +1,16 @@
 # CHANGELOG.md
 
+## 1.0.2 (2024-06-09)
+
+### Features
+
+- **Eco Score Chart**: Added an eco score chart for Eco display card.
+- **Additional Display Attributes**: Included additional display attributes for `sensor.lock` in Vehicle status card.
+
+### Fixes
+
+- **State of Charge Display**: Fixed the correct display of state of charge values for electric vehicles.
+
 ## 1.0.1 (2024-06-06)
 
 ### Features
