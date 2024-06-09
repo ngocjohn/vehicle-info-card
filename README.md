@@ -1,6 +1,6 @@
 <a name="readme-top"></a>
-
 # VEHICLE INFO CARD
+[![Validate](https://github.com/ngocjohn/vehicle-info-card/actions/workflows/validate.yaml/badge.svg)](https://github.com/ngocjohn/vehicle-info-card/actions/workflows/validate.yaml)
 
 ## Home Assistant Custom Card for Mercedes Vehicles
 
@@ -157,5 +157,8 @@ Below is the configuration replaced entities card for `Vehicle status` button.
 2024 Viet Ngoc
 
 [https://github.com/ngocjohn/](https://github.com/ngocjohn/)
+
+<a href="https://buymeacoffee.com/ngocjohn" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 48px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
