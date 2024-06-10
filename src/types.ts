@@ -130,3 +130,15 @@ export const sensorDeviceFilters: {
   soc: { suffix: '_soc' },
   chargingPower: { suffix: '_chargingPower' },
 };
+
+/**
+ * Interface entityConfig
+ */
+
+export interface EntityConfig {
+  key: string;
+  name?: string;
+  icon?: string;
+  unit?: string;
+  state?: string;
+}

@@ -2,7 +2,6 @@ const maxHoldDuration = 300;
 const doubleTapTimeout = 300;
 
 export const fireEvent = (node, type, detail, options) => {
-  console.log('fireEvent', node, type, detail, options);
   options = options || {};
   detail = detail === null || detail === undefined ? {} : detail;
   const event = new Event(type, {

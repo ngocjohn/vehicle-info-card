@@ -1,6 +1,31 @@
 export const CARD_VERSION = '1.0.2';
 
-export const cardTypes = ['tripCards', 'vehicleCards', 'ecoCards', 'tyreCards'];
+export const cardTypes = [
+  {
+    type: 'tripCards',
+    name: 'Trip data',
+    icon: 'mdi:map-marker-path',
+    config: 'trip_card',
+  },
+  {
+    type: 'vehicleCards',
+    name: 'Vehicle status',
+    icon: 'mdi:car-info',
+    config: 'vehicle_card',
+  },
+  {
+    type: 'ecoCards',
+    name: 'Eco display',
+    icon: 'mdi:leaf',
+    config: 'eco_card',
+  },
+  {
+    type: 'tyreCards',
+    name: 'Tyre pressure',
+    icon: 'mdi:tire',
+    config: 'tyre_card',
+  },
+];
 
 export const lockAttrMapping = {
   decklidstatus: { name: 'Deck lid', state: { false: 'closed', true: 'open' } },

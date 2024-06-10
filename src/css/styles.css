@@ -215,6 +215,55 @@ header h1 {
   position: relative;
 }
 
+.card-element {
+  transition: transform 0.3s ease;
+  position: relative;
+}
+
+/* .card-element.swiping-left {
+  transform: translateX(-120%);
+}
+
+.card-element.swiping-right {
+  transform: translateX(120%);
+} */
+
+.card-element {
+  transition: transform 0.3s ease-in-out;
+  position: relative;
+}
+
+.slide-left-enter {
+  transform: translateX(100%);
+}
+
+.slide-left-enter-active {
+  transform: translateX(0);
+}
+
+.slide-left-exit {
+  transform: translateX(0);
+}
+
+.slide-left-exit-active {
+  transform: translateX(-100%);
+}
+
+.slide-right-enter {
+  transform: translateX(-100%);
+}
+
+.slide-right-enter-active {
+  transform: translateX(0);
+}
+
+.slide-right-exit {
+  transform: translateX(0);
+}
+
+.slide-right-exit-active {
+  transform: translateX(100%);
+}
 @keyframes fadeIn {
   from {
     opacity: 0;
