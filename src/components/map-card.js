@@ -89,9 +89,6 @@ export class VehicleMap extends LitElement {
           height: 100%;
           width: 100%;
           background: transparent !important;
-          /* mask-image: radial-gradient(circle at 70%, black 20%, transparent 90%),
-            linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%),
-            linear-gradient(to left, transparent 0%, black 30%); */
           mask-image: linear-gradient(to right, transparent 0%, black 25%, black 90%, transparent 100%),
             linear-gradient(to bottom, transparent 20%, black 35%, black 90%, transparent 100%);
           mask-composite: intersect;

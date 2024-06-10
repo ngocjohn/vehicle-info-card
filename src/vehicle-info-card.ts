@@ -91,20 +91,6 @@ export class VehicleCard extends LitElement {
       ...config,
     };
 
-    // // Helper function to handle creating cards based on config property names
-    // const createConfigCards = (configProperty: keyof VehicleCardConfig, target: string) => {
-    //   const cardConfig = this.config[configProperty];
-    //   if (cardConfig) {
-    //     this.createCards(cardConfig, target);
-    //   }
-    // };
-
-    // // Create cards for each specific config property
-    // createConfigCards('trip_card', 'tripCards');
-    // createConfigCards('vehicle_card', 'vehicleCards');
-    // createConfigCards('eco_card', 'ecoCards');
-    // createConfigCards('tyre_card', 'tyreCards');
-
     for (const cardType of cardTypes) {
       if (this.config[cardType.config]) {
         this.createCards(this.config[cardType.config], cardType.type);
@@ -260,20 +246,20 @@ export class VehicleCard extends LitElement {
         <header>
           <h1>${name}</h1>
         </header>
-        ${this.activeCardType ? this._renderAdditionalCard() : this._renderMainCard()}
+        ${this.activeCardType ? this._renderCustomCard() : this._renderMainCard()}
       </ha-card>
     `;
   }
 
-  private _renderHeaderBackground(): TemplateResult | void {
-    if (!this.config.show_background) return;
+  private _renderHeaderBackground(): TemplateResult {
+    if (!this.config.show_background) return html``;
     const isDark = this.isDark();
     const background = isDark ? amgWhite : amgBlack;
 
     return html` <div class="header-background" style="background-image: url(${background})"></div> `;
   }
 
-  private _renderMainCard(): TemplateResult | void {
+  private _renderMainCard(): TemplateResult {
     return html`
       <main id="main-wrapper">
         <div class="header-info-box">${this._renderWarnings()} ${this._renderRangeInfo()}</div>
@@ -362,19 +348,20 @@ export class VehicleCard extends LitElement {
   }
 
   private _renderMap(): TemplateResult | void {
-    if (!this.config.show_map) {
+    const { config, hass } = this;
+    if (!config.show_map) {
       return;
     }
-    if (!this.config.device_tracker && this.config.show_map) {
+    if (!config.device_tracker && config.show_map) {
       return this._showWarning('No device_tracker entity provided.');
     }
     return html`
       <div id="map-box">
         <vehicle-map
-          .hass=${this.hass}
-          .apiKey=${this.config.google_api_key}
-          .deviceTracker=${this.config.device_tracker}
-          .popup=${this.config.enable_map_popup}
+          .hass=${hass}
+          .apiKey=${config.google_api_key}
+          .deviceTracker=${config.device_tracker}
+          .popup=${config.enable_map_popup}
         ></vehicle-map>
       </div>
     `;
@@ -402,7 +389,7 @@ export class VehicleCard extends LitElement {
     `;
   }
 
-  private _renderAdditionalCard(): TemplateResult | LovelaceCard | void {
+  private _renderCustomCard(): TemplateResult | LovelaceCard | void {
     if (!this.activeCardType) return html``;
 
     const cardConfigMap = {
