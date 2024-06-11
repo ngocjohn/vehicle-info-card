@@ -102,23 +102,29 @@ header h1 {
 
 .info-box.charge {
   overflow: hidden;
-  padding-top: 0 !important;
-  justify-content: space-around;
+  justify-content: space-evenly;
   max-height: 0;
   opacity: 0;
-  transition: max-height 0.5s ease-in-out, opacity 0.5s ease;
+  transition: all 0.5s ease-in-out;
 }
 
 .info-box.charge.active {
   max-height: 100px; /* Adjust this to be more than the expected height of the content */
   opacity: 1;
+  padding-top: 0.5rem;
 }
 
-.info-box .item-secondary {
+.info-box.charge .item {
   display: flex;
-  align-items: flex-start;
-  flex-wrap: nowrap;
+  align-items: center;
+  flex-wrap: wrap;
   flex-direction: column;
+  gap: initial;
+  width: max-content;
+}
+
+.info-box.charge .item-name {
+  color: var(--secondary-text-color);
 }
 
 .fuel-wrapper {

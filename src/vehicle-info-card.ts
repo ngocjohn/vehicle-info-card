@@ -103,11 +103,11 @@ export class VehicleCard extends LitElement {
   private lockAttributesVisible = false;
   private chargingInfoVisible = false;
 
-  get isCharging() {
-    return this.getEntityAttribute(this.sensorDevices.rangeElectric?.entity_id, 'chargingactive');
-  }
+  // get isCharging() {
+  //   return this.getEntityAttribute(this.sensorDevices.rangeElectric?.entity_id, 'chargingactive');
+  // }
 
-  // private isCharging = true;
+  private isCharging = true;
 
   protected firstUpdated(changedProperties: PropertyValues) {
     super.firstUpdated(changedProperties);
@@ -344,13 +344,15 @@ export class VehicleCard extends LitElement {
 
     return html`
       <div class=${chargingClass}>
-        ${chargingData.map(({ name, state, icon, unit }) => {
+        ${chargingDataSimulated.map(({ name, state, icon, unit }) => {
           return html`
-            <div class="item">
-              <ha-icon .icon=${icon}></ha-icon>
-              <div class="item-secondary">
-                <span>${name}</span>
+            <div class="item charge">
+              <div>
+                <ha-icon .icon=${icon}></ha-icon>
                 <span>${state} ${unit}</span>
+              </div>
+              <div class="item-name">
+                <span>${name}</span>
               </div>
             </div>
           `;
