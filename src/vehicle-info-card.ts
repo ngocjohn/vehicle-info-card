@@ -292,52 +292,46 @@ export class VehicleCard extends LitElement {
 
   private _renderRangeInfo(): TemplateResult | void {
     const { fuelLevel, rangeLiquid, rangeElectric } = this.sensorDevices;
-    const { state: fuelState, unit: fuelUnit } = this.getEntityInfo(fuelLevel?.entity_id);
-    const { state: rangeLiquidState, unit: rangeUnit } = this.getEntityInfo(rangeLiquid?.entity_id);
-    const { state: rangeElectricState, unit: electricUnit } = this.getEntityInfo(rangeElectric?.entity_id);
-    const { state: socState, unit: socUnit } = {
+
+    const fuelInfo = this.getEntityInfo(fuelLevel?.entity_id);
+    const rangeLiquidInfo = this.getEntityInfo(rangeLiquid?.entity_id);
+    const rangeElectricInfo = this.getEntityInfo(rangeElectric?.entity_id);
+    const socInfo = {
       state: this.getEntityAttribute(rangeElectric?.entity_id, 'soc'),
       unit: '%',
     };
 
-    if (fuelState && rangeLiquidState) {
-      const fuelProgress = html`
+    const renderInfoBox = (icon: string, state: string, unit: string, rangeState: string, rangeUnit: string) => html`
+      <div class="info-box">
+        <div class="item">
+          <ha-icon icon="${icon}"></ha-icon>
+          <div><span>${state} ${unit}</span></div>
+        </div>
         <div class="fuel-wrapper">
-          <div class="fuel-level-bar" style="width: ${fuelState}%;"></div>
+          <div class="fuel-level-bar" style="width: ${state}%;"></div>
         </div>
-      `;
+        <div class="item">
+          <span>${rangeState} ${rangeUnit}</span>
+        </div>
+      </div>
+    `;
 
-      return html`
-        <div class="info-box">
-          <div class="item">
-            <ha-icon icon="mdi:gas-station"></ha-icon>
-            <div><span>${fuelState} ${fuelUnit}</span></div>
-          </div>
-          ${fuelProgress}
-          <div class="item">
-            <span>${rangeLiquidState} ${rangeUnit}</span>
-          </div>
-        </div>
-      `;
-    } else if (rangeElectricState && socState) {
-      const socProgress = html`
-        <div class="fuel-wrapper">
-          <div class="fuel-level-bar" style="width: ${socState}%;"></div>
-        </div>
-      `;
-
-      return html`
-        <div class="info-box">
-          <div class="item">
-            <ha-icon icon="mdi:ev-station"></ha-icon>
-            <div><span>${socState} ${socUnit}</span></div>
-          </div>
-          ${socProgress}
-          <div class="item">
-            <span>${rangeElectricState} ${electricUnit}</span>
-          </div>
-        </div>
-      `;
+    if (fuelInfo.state && rangeLiquidInfo.state) {
+      return renderInfoBox(
+        'mdi:gas-station',
+        fuelInfo.state,
+        fuelInfo.unit,
+        rangeLiquidInfo.state,
+        rangeLiquidInfo.unit,
+      );
+    } else if (rangeElectricInfo.state && socInfo.state) {
+      return renderInfoBox(
+        'mdi:ev-station',
+        socInfo.state,
+        socInfo.unit,
+        rangeElectricInfo.state,
+        rangeElectricInfo.unit,
+      );
     }
   }
 
