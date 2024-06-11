@@ -261,7 +261,6 @@ export class VehicleMap extends LitElement {
   }
 
   async getAddressFromOpenStreet(lat, lon) {
-    console.log('Fetching address from OpenStreetMap');
     const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=jsonv2`;
 
     try {

@@ -10,10 +10,6 @@ export class HeaderSlide extends LitElement {
       swiper: { Type: Object },
     };
   }
-  constructor() {
-    super();
-    this.images = [];
-  }
 
   static get styles() {
     return [
@@ -63,7 +59,9 @@ export class HeaderSlide extends LitElement {
   }
 
   firstUpdated() {
-    this.initSwiper();
+    if (!this.swiper) {
+      this.initSwiper();
+    }
   }
 
   initSwiper() {
@@ -112,5 +110,4 @@ export class HeaderSlide extends LitElement {
     `;
   }
 }
-
 customElements.define('header-slide', HeaderSlide);

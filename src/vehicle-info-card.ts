@@ -36,10 +36,9 @@ import { tapFeedback } from './utils/tap-action.js';
 
 // Styles and Assets
 import styles from './css/styles.css';
+import { amgBlack, amgWhite } from './utils/imgconst';
 import './components/map-card.js';
 import './components/header-slide.js';
-import amgWhite from './images/amg_bg_white.png';
-import amgBlack from './images/amg_bg_black.png';
 
 declare global {
   interface Window {
