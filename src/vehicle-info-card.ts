@@ -101,10 +101,7 @@ export class VehicleCard extends LitElement {
   @state() private activeCardType: string | null = null;
 
   private lockAttributesVisible = false;
-  private cardTypes = cardTypes;
-  get isDark(): boolean {
-    return this.hass.themes.darkMode;
-  }
+  private chargingInfoVisible = false;
 
   protected firstUpdated(changedProperties: PropertyValues) {
     super.firstUpdated(changedProperties);
@@ -222,32 +219,90 @@ export class VehicleCard extends LitElement {
   private _renderMainCard(): TemplateResult {
     return html`
       <main id="main-wrapper">
-        <div class="header-info-box">${this._renderWarnings()} ${this._renderRangeInfo()}</div>
+        <div class="header-info-box">
+          ${this._renderWarnings()} ${this._renderChargingInfo()} ${this._renderRangeInfo()}
+        </div>
         ${this._renderHeaderSlides()} ${this._renderMap()} ${this._renderButtons()}
       </main>
     `;
   }
 
+  private isCharging = true;
   private _renderWarnings(): TemplateResult {
     const { vehicleEntities } = this;
     // Get the current state of the lock and park brake
-    const lockState = this.getEntityState(vehicleEntities.lockSensor?.entity_id);
-    const parkBrakeState = this.getBooleanState(vehicleEntities.parkBrake?.entity_id);
+    const lockState =
+      lockStateMapping[this.getEntityState(this.sensorDevices.lock?.entity_id)] || lockStateMapping['4'];
+    const lockSensorState = this.getEntityState(this.sensorDevices.lock?.entity_id);
+    const lockIconDisplay = lockSensorState === '2' || lockSensorState === '1' ? 'mdi:lock' : 'mdi:lock-open';
 
-    // Determine the display text for the lock state
-    // Default to "Unknown" if the lock state is not in the formatting object
-    const lockDisplayText = lockStateMapping[lockState] || lockStateMapping['4'];
+    const parkBrakeState = this.getBooleanState(this.binaryDevices.parkBrake?.entity_id) ? 'Parked' : 'Released';
+
+    const itemsData = [
+      { key: 'lock', state: lockState, icon: lockIconDisplay },
+      { key: 'parkBrake', state: parkBrakeState, icon: 'mdi:car-brake-parking' },
+    ];
+
+    const chargingIcon = 'mdi:ev-station';
+
+    const defaultIdicator = itemsData.map(({ state, icon }) => {
+      return html`
+        <div class="item">
+          <ha-icon icon=${icon}></ha-icon>
+          <div><span>${state}</span></div>
+        </div>
+      `;
+    });
+
+    const addedChargingInfo = this.isCharging
+      ? html` <div class="item charge" @click=${() => this.toggleChargingInfo()}>
+          <ha-icon icon=${chargingIcon}></ha-icon>
+          <div>
+            <span>Charging</span>
+            <ha-icon icon=${this.chargingInfoVisible ? 'mdi:chevron-up' : 'mdi:chevron-right'}></ha-icon>
+          </div>
+        </div>`
+      : html``;
+
+    return html`<div class="info-box">${defaultIdicator} ${addedChargingInfo}</div> `;
+  }
+
+  toggleChargingInfo(): void {
+    this.chargingInfoVisible = !this.chargingInfoVisible;
+    console.log('charging toggle: ', this.chargingInfoVisible);
+    this.requestUpdate();
+  }
+
+  private _renderChargingInfo(): TemplateResult | void {
+    if (!this.isCharging) return;
+    const chargingClass = this.chargingInfoVisible ? 'info-box charge active' : 'info-box charge';
+    const currentChargingState = 80;
+    const stateUnit = '%';
+    const maxSoc = 100;
+    const mode = 'Standard';
+    const power = 3.7;
+    const powerUnit = 'kW';
+
+    const chargingItems = [
+      { name: 'Power', value: `${power} ${powerUnit}`, icon: 'mdi:flash' },
+      { name: 'Current state', value: `${currentChargingState} ${stateUnit}`, icon: 'mdi:battery-charging-medium' },
+      { name: 'Maximum', value: `${maxSoc} ${stateUnit}`, icon: 'mdi:battery-charging-100' },
+      { name: 'Program', value: mode, icon: 'mdi:ev-station' },
+    ];
 
     return html`
-      <div class="info-box">
-        <div class="item">
-          <ha-icon icon=${lockState === '2' || lockState === '1' ? 'mdi:lock' : 'mdi:lock-open'}></ha-icon>
-          <div><span>${lockDisplayText}</span></div>
-        </div>
-        <div class="item">
-          <ha-icon icon="mdi:car-brake-parking"></ha-icon>
-          <div><span>${parkBrakeState ? 'Parked' : 'Released'}</span></div>
-        </div>
+      <div class=${chargingClass}>
+        ${chargingItems.map(({ name, value, icon }) => {
+          return html`
+            <div class="item">
+              <ha-icon icon=${icon}></ha-icon>
+              <div class="item-secondary">
+                <span>${name}</span>
+                <span>${value}</span>
+              </div>
+            </div>
+          `;
+        })}
       </div>
     `;
   }
