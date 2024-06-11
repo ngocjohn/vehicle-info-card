@@ -4,7 +4,6 @@ import { HomeAssistant, fireEvent, LovelaceCardEditor } from 'custom-card-helper
 
 import { VehicleCardConfig } from './types';
 import { customElement, property, state } from 'lit/decorators';
-import yaml from 'js-yaml';
 import { CARD_VERSION } from './const';
 @customElement('vehicle-info-card-editor')
 export class VehicleCardEditor extends LitElement implements LovelaceCardEditor {
