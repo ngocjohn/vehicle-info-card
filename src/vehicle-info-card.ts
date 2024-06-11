@@ -325,8 +325,8 @@ export class VehicleCard extends LitElement {
     const generateChargingDataSimulated = () => {
       const data = [
         { name: 'Power', state: 3.7, unit: 'kW', icon: 'mdi:flash' },
-        { name: 'Current state', state: 50, unit: '%', icon: 'mdi:battery-charging-medium' },
-        { name: 'Maximum', state: 60, unit: '%' },
+        { name: 'Current state', state: 25, unit: '%' },
+        { name: 'Maximum', state: 80, unit: '%' },
         { name: 'Program', state: selectedProgramMapping[3], icon: 'mdi:ev-station' },
       ];
 
@@ -334,6 +334,19 @@ export class VehicleCard extends LitElement {
         if (item.name === 'Maximum') {
           return { ...item, icon: `mdi:battery-charging-${item.state}` };
         }
+        if (item.name === 'Current state') {
+          const itemState = typeof item.state === 'string' ? parseFloat(item.state) : item.state;
+          let icon;
+          if (itemState < 35) {
+            icon = 'mdi:battery-charging-low';
+          } else if (itemState < 70) {
+            icon = 'mdi:battery-charging-medium';
+          } else {
+            icon = 'mdi:battery-charging-high';
+          }
+          return { ...item, icon };
+        }
+
         return item;
       });
     };

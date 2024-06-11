@@ -96,6 +96,7 @@ header h1 {
     margin-bottom: 3px;
   }
 }
+
 .item.charge {
   cursor: pointer;
 }
@@ -111,7 +112,7 @@ header h1 {
 .info-box.charge.active {
   max-height: 100px; /* Adjust this to be more than the expected height of the content */
   opacity: 1;
-  padding-top: 0.5rem;
+  padding-block: 0.5rem;
 }
 
 .info-box.charge .item {
