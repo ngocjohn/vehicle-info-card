@@ -41,8 +41,11 @@ This custom card displays essential information about your Mercedes vehicle. It 
 ### [HACS](https://hacs.xyz) (Home Assistant Community Store)
 
 1. Go to HACS page on your Home Assistant instance
-1. Add this repository (https://github.com/ngocjohn/vehicle-info-card) via HACS Custom repositories [How to add Custom Repositories](https://hacs.xyz/docs/faq/custom_repositories/)
-1. Select `Lovelace`
+1. Add this repository via HACS Custom repositories [How to add Custom Repositories](https://hacs.xyz/docs/faq/custom_repositories/)
+```
+https://github.com/ngocjohn/vehicle-info-card
+```
+3. Select `Lovelace`
 1. Press add icon and search for `Vehicle Info Card`
 1. Select Vehicle Info Card repo and install
 1. Force refresh the Home Assistant page (`Ctrl` + `F5` / (`Shift` +) `⌘` + `R`)
@@ -65,7 +68,8 @@ This custom card displays essential information about your Mercedes vehicle. It 
 
 Basic options can be configured in the GUI editor. This card also offers optional advanced features for enhanced customization. You can enable a slideshow to display images of your car, with the ability to swipe sideways to navigate between images. Additionally, you can display the car's position on a map along with the generated address. To use the map feature, you need to add a device tracker entity. For these options, you will need to use the code editor with YAML configuration.
 
-**Tip:** For the best quality images of your vehicle, use the [Mercedes-Benz API service](https://developer.mercedes-benz.com/products/vehicle_images/docs#) to download them. You can find the Python script for downloading images [here](https://gist.github.com/ngocjohn/b1c1f3730cc6f7079ae0d2b3bddd57ad).
+> [!TIP]
+> For the best quality images of your vehicle, use the [Mercedes-Benz API service](https://developer.mercedes-benz.com/products/vehicle_images/docs#) to download them. You can find the Python script for downloading images [here](https://gist.github.com/ngocjohn/b1c1f3730cc6f7079ae0d2b3bddd57ad).
 
 ### Options
 
@@ -95,7 +99,8 @@ For advanced options such as the slideshow or map display, you will need to use 
 
 Below is the configuration replaced entities card for `Vehicle status` button.
 
-**Tip:** For an enhanced picture elements card, refer to [this tutorial](https://community.home-assistant.io/t/mercedes-me-component/41911/1809) on the Home Assistant forum. Use downloaded images with the new version of the component for the best results.
+> [!TIP]
+> For an enhanced picture elements card, refer to [this tutorial](https://community.home-assistant.io/t/mercedes-me-component/41911/1809) on the Home Assistant forum. Use downloaded images with the new version of the component for the best results.
 
 <details>
 
@@ -150,7 +155,6 @@ Below is the configuration replaced entities card for `Vehicle status` button.
     <img src="https://raw.githubusercontent.com/ngocjohn/vehicle-info-card/main/assets/card-toggled.png" />
 
 <p>
-**Tip:** For an enhanced picture elements card, refer to <a href="https://community.home-assistant.io/t/mercedes-me-component/41911/1809"> this tutorial</a> on the Home Assistant forum. Use downloaded images with the new version of the component for the best results.
 </p>
     <img src="https://raw.githubusercontent.com/ngocjohn/vehicle-info-card/main/assets/car-custom-card-warning.png" />
     <img src="https://raw.githubusercontent.com/ngocjohn/vehicle-info-card/main/assets/car-custom-card.png" />
