@@ -30,7 +30,7 @@ import './components/header-slide';
 import './components/eco-chart';
 
 console.info(
-  `%c  VEHICLE-INFO-CARD %c  FIX  `,
+  `%c  VEHICLE-INFO-CARD %c  ${CARD_VERSION}  `,
   'color: orange; font-weight: bold; background: black',
   'color: white; font-weight: bold; background: dimgray',
 );
@@ -102,6 +102,12 @@ export class VehicleCard extends LitElement {
 
   private lockAttributesVisible = false;
   private chargingInfoVisible = false;
+
+  get isCharging() {
+    return this.getEntityAttribute(this.sensorDevices.rangeElectric?.entity_id, 'chargingactive');
+  }
+
+  // private isCharging = true;
 
   protected firstUpdated(changedProperties: PropertyValues) {
     super.firstUpdated(changedProperties);
@@ -227,7 +233,6 @@ export class VehicleCard extends LitElement {
     `;
   }
 
-  private isCharging = true;
   private _renderWarnings(): TemplateResult {
     const { vehicleEntities } = this;
     // Get the current state of the lock and park brake
@@ -275,30 +280,77 @@ export class VehicleCard extends LitElement {
 
   private _renderChargingInfo(): TemplateResult | void {
     if (!this.isCharging) return;
-    const chargingClass = this.chargingInfoVisible ? 'info-box charge active' : 'info-box charge';
-    const currentChargingState = 80;
-    const stateUnit = '%';
-    const maxSoc = 100;
-    const mode = 'Standard';
-    const power = 3.7;
-    const powerUnit = 'kW';
 
-    const chargingItems = [
-      { name: 'Power', value: `${power} ${powerUnit}`, icon: 'mdi:flash' },
-      { name: 'Current state', value: `${currentChargingState} ${stateUnit}`, icon: 'mdi:battery-charging-medium' },
-      { name: 'Maximum', value: `${maxSoc} ${stateUnit}`, icon: 'mdi:battery-charging-100' },
-      { name: 'Program', value: mode, icon: 'mdi:ev-station' },
+    const generateDataArray = (
+      keys: EntityConfig[],
+    ): { key: string; name: string; icon: string; state: string; unit: string }[] => {
+      return keys.map(({ key, name, icon, state, unit }) => {
+        if (!this.sensorDevices[key] && key === 'selectedProgram') {
+          // Return the attributes directly for the 'mode' key if it doesn't exist in sensorDevices
+          return {
+            key,
+            name: name ?? 'Program',
+            icon: icon ?? 'mdi:ev-station',
+            state:
+              selectedProgramMapping[
+                this.getEntityAttribute(this.sensorDevices.rangeElectric?.entity_id, 'selectedChargeProgram')
+              ],
+            unit: unit ?? '',
+          };
+        }
+        return {
+          key,
+          name: name ?? this.sensorDevices[key]?.original_name,
+          icon: icon ?? this.getEntityAttribute(this.sensorDevices[key]?.entity_id, 'icon'),
+          state: state ?? this.getEntityState(this.sensorDevices[key]?.entity_id),
+          unit: unit ?? this.getEntityUnit(this.sensorDevices[key]?.entity_id),
+        };
+      });
+    };
+
+    const chargingDataKeys: EntityConfig[] = [
+      { key: 'chargingPower', name: 'Power', icon: 'mdi:flash' },
+      {
+        key: 'soc',
+        name: 'Current state',
+        state: this.getEntityAttribute(this.sensorDevices.rangeElectric?.entity_id, 'soc'),
+        unit: '%',
+      },
+      { key: 'maxSoc', name: 'Maximum' },
+      { key: 'selectedProgram' },
     ];
+
+    const chargingData = generateDataArray(chargingDataKeys);
+
+    const generateChargingDataSimulated = () => {
+      const data = [
+        { name: 'Power', state: 3.7, unit: 'kW', icon: 'mdi:flash' },
+        { name: 'Current state', state: 50, unit: '%', icon: 'mdi:battery-charging-medium' },
+        { name: 'Maximum', state: 60, unit: '%' },
+        { name: 'Program', state: selectedProgramMapping[3], icon: 'mdi:ev-station' },
+      ];
+
+      return data.map((item) => {
+        if (item.name === 'Maximum') {
+          return { ...item, icon: `mdi:battery-charging-${item.state}` };
+        }
+        return item;
+      });
+    };
+
+    const chargingDataSimulated = generateChargingDataSimulated();
+
+    const chargingClass = this.chargingInfoVisible ? 'info-box charge active' : 'info-box charge';
 
     return html`
       <div class=${chargingClass}>
-        ${chargingItems.map(({ name, value, icon }) => {
+        ${chargingData.map(({ name, state, icon, unit }) => {
           return html`
             <div class="item">
-              <ha-icon icon=${icon}></ha-icon>
+              <ha-icon .icon=${icon}></ha-icon>
               <div class="item-secondary">
                 <span>${name}</span>
-                <span>${value}</span>
+                <span>${state} ${unit}</span>
               </div>
             </div>
           `;
@@ -308,6 +360,8 @@ export class VehicleCard extends LitElement {
   }
 
   private _renderRangeInfo(): TemplateResult | void {
+    if (this.chargingInfoVisible) return;
+
     const { fuelLevel, rangeLiquid, rangeElectric, soc } = this.vehicleEntities;
 
     const fuelInfo = this.getEntityInfo(fuelLevel?.entity_id);
