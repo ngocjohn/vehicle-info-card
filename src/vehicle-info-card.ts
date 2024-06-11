@@ -557,6 +557,7 @@ export class VehicleCard extends LitElement {
       { key: 'rangeElectric' },
       { key: 'soc' },
       { key: 'maxSoc' },
+      { key: 'rangeElectric', name: 'Range' },
     ];
 
     const tripFromResetDataKeys = [
