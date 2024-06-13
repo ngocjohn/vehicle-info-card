@@ -237,11 +237,11 @@ export class VehicleCard extends LitElement {
     const { vehicleEntities } = this;
     // Get the current state of the lock and park brake
     const lockState =
-      lockStateMapping[this.getEntityState(this.sensorDevices.lock?.entity_id)] || lockStateMapping['4'];
-    const lockSensorState = this.getEntityState(this.sensorDevices.lock?.entity_id);
+      lockStateMapping[this.getEntityState(vehicleEntities.lockSensor?.entity_id)] || lockStateMapping['4'];
+    const lockSensorState = this.getEntityState(vehicleEntities.lockSensor?.entity_id);
     const lockIconDisplay = lockSensorState === '2' || lockSensorState === '1' ? 'mdi:lock' : 'mdi:lock-open';
 
-    const parkBrakeState = this.getBooleanState(this.binaryDevices.parkBrake?.entity_id) ? 'Parked' : 'Released';
+    const parkBrakeState = this.getBooleanState(vehicleEntities.parkBrake?.entity_id) ? 'Parked' : 'Released';
 
     const itemsData = [
       { key: 'lock', state: lockState, icon: lockIconDisplay },
@@ -285,7 +285,7 @@ export class VehicleCard extends LitElement {
       keys: EntityConfig[],
     ): { key: string; name: string; icon: string; state: string; unit: string }[] => {
       return keys.map(({ key, name, icon, state, unit }) => {
-        if (!this.sensorDevices[key] && key === 'selectedProgram') {
+        if (!this.vehicleEntities[key] && key === 'selectedProgram') {
           // Return the attributes directly for the 'mode' key if it doesn't exist in sensorDevices
           return {
             key,
@@ -293,17 +293,17 @@ export class VehicleCard extends LitElement {
             icon: icon ?? 'mdi:ev-station',
             state:
               selectedProgramMapping[
-                this.getEntityAttribute(this.sensorDevices.rangeElectric?.entity_id, 'selectedChargeProgram')
+                this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'selectedChargeProgram')
               ],
             unit: unit ?? '',
           };
         }
         return {
           key,
-          name: name ?? this.sensorDevices[key]?.original_name,
-          icon: icon ?? this.getEntityAttribute(this.sensorDevices[key]?.entity_id, 'icon'),
-          state: state ?? this.getEntityState(this.sensorDevices[key]?.entity_id),
-          unit: unit ?? this.getEntityUnit(this.sensorDevices[key]?.entity_id),
+          name: name ?? this.vehicleEntities[key]?.original_name,
+          icon: icon ?? this.getEntityAttribute(this.vehicleEntities[key]?.entity_id, 'icon'),
+          state: state ?? this.getEntityState(this.vehicleEntities[key]?.entity_id),
+          unit: unit ?? this.getEntityUnit(this.vehicleEntities[key]?.entity_id),
         };
       });
     };
@@ -313,7 +313,7 @@ export class VehicleCard extends LitElement {
       {
         key: 'soc',
         name: 'Current state',
-        state: this.getEntityAttribute(this.sensorDevices.rangeElectric?.entity_id, 'soc'),
+        state: this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'soc'),
         unit: '%',
       },
       { key: 'maxSoc', name: 'Maximum' },
