@@ -43,7 +43,6 @@ console.info(
   description: 'A custom card to display vehicle data with a map and additional cards.',
   documentationURL: 'https://github.com/ngocjohn/vehicle-info-card?tab=readme-ov-file#configuration',
 });
-
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
 
 @customElement('vehicle-info-card')
@@ -52,6 +51,22 @@ export class VehicleCard extends LitElement {
     await import('./editor');
     return document.createElement('vehicle-info-card-editor');
   }
+
+  @property({ attribute: false }) public hass!: HomeAssistant & { themes: ExtendedThemes };
+
+  @property({ type: Object }) private config!: VehicleCardConfig;
+
+  @state() private vehicleEntities: { [key: string]: VehicleEntity } = {};
+
+  @state() private additionalCards: { [key: string]: any[] } = {};
+  @state() private activeCardType: string | null = null;
+
+  private lockAttributesVisible = false;
+
+  get isDark(): boolean {
+    return this.hass.themes.darkMode;
+  }
+
   // https://lit.dev/docs/components/styles/
   public static get styles(): CSSResultGroup {
     return styles;
@@ -63,7 +78,7 @@ export class VehicleCard extends LitElement {
     };
   };
 
-  public setConfig(config: VehicleCardConfig): void {
+  public async setConfig(config: VehicleCardConfig): Promise<void> {
     if (!config) {
       throw new Error(localize('common.invalid_configuration'));
     }
@@ -71,7 +86,6 @@ export class VehicleCard extends LitElement {
     this.config = {
       ...config,
     };
-
     for (const cardType of cardTypes) {
       if (this.config[cardType.config]) {
         this.createCards(this.config[cardType.config], cardType.type);
@@ -92,22 +106,7 @@ export class VehicleCard extends LitElement {
     }
   }
 
-  @property({ attribute: false }) public hass!: HomeAssistant & { themes: ExtendedThemes };
-  @property({ type: Object }) private config!: VehicleCardConfig;
-
-  @state() private vehicleEntities: { [key: string]: VehicleEntity } = {};
-
-  @state() private additionalCards: { [key: string]: any[] } = {};
-  @state() private activeCardType: string | null = null;
-
-  private lockAttributesVisible = false;
-  private chargingInfoVisible = false;
-
-  // get isCharging() {
-  //   return this.getEntityAttribute(this.sensorDevices.rangeElectric?.entity_id, 'chargingactive');
-  // }
-
-  private isCharging = true;
+  private windowAttributesVisible = false;
 
   protected firstUpdated(changedProperties: PropertyValues) {
     super.firstUpdated(changedProperties);
@@ -146,7 +145,7 @@ export class VehicleCard extends LitElement {
   };
 
   private async createCards(cardConfigs: LovelaceCardConfig[], stateProperty: string): Promise<void> {
-    if (HELPERS) {
+    if (!HELPERS) {
       const helpers = await HELPERS;
       const cards = await Promise.all(
         cardConfigs.map(async (cardConfig) => {
@@ -157,7 +156,6 @@ export class VehicleCard extends LitElement {
       );
       this.additionalCards[stateProperty] = cards;
     }
-    console.log('Additional cards created:', this.additionalCards);
   }
 
   protected updated(changedProps: PropertyValues) {
