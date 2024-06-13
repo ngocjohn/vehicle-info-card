@@ -1,68 +1,63 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css, TemplateResult, CSSResultGroup } from 'lit';
+import { customElement, property, state } from 'lit/decorators.js';
+
+import { HomeAssistant } from 'custom-card-helpers';
 
 import L from 'leaflet';
 import 'leaflet-providers/leaflet-providers.js';
-
 import mapstyle from '../css/leaflet.css';
 
-export class VehicleMap extends LitElement {
-  static get properties() {
-    return {
-      hass: {},
-      deviceTracker: { Type: String },
-      lat: { Type: Number },
-      lon: { Type: Number },
-      zoom: { Type: Number },
-      picture: { Type: String },
-      map: { Type: Object },
-      marker: { Type: Object },
-      address: { Type: Object },
-      darkMode: { Type: Boolean },
-      state: { Type: String },
-      apiKey: { Type: String },
-      popup: { Type: Boolean },
-      enableAdress: { Type: Boolean },
-    };
-  }
-  constructor() {
-    super();
-    this.lat = 0;
-    this.lon = 0;
-    this.zoom = 16;
-    this.picture = '';
-    this.state = '';
-    this.address = {};
-    this.darkMode = false;
-    this.popup = false;
-    this.enableAdress = false;
-  }
+interface Address {
+  streetNumber: string;
+  streetName: string;
+  sublocality: string;
+  city: string;
+  state: string;
+  country: string;
+  postcode: string;
+}
 
-  firstUpdated() {
+@customElement('vehicle-map')
+export class VehicleMap extends LitElement {
+  @property({ attribute: false }) hass!: HomeAssistant;
+  @property({ type: String }) deviceTracker = '';
+  @property({ type: Boolean }) darkMode = false;
+  @property({ type: Boolean }) popup = false;
+
+  @state() private map: L.Map | null = null;
+  @state() private marker: L.Marker | null = null;
+  @state() private lat = 0;
+  @state() private lon = 0;
+  @state() private zoom = 15;
+  @state() private state = '';
+  @state() private address: Partial<Address> = {};
+  @state() private enableAdress = false;
+  @state() private apiKey = '';
+
+  firstUpdated(): void {
     this.setEntityAttribute();
   }
 
-  updated(changedProperties) {
+  updated(changedProperties: Map<string | number | symbol, unknown>): void {
     if (changedProperties.has('darkMode')) {
       this.updateCSSVariables();
     }
   }
 
-  setEntityAttribute() {
+  setEntityAttribute(): void {
     const deviceTracker = this.hass.states[this.deviceTracker];
     if (deviceTracker) {
       this.lat = deviceTracker.attributes.latitude;
       this.lon = deviceTracker.attributes.longitude;
-      this.picture = deviceTracker.attributes.entity_picture;
       this.state = deviceTracker.state;
-      this.getAddressData(this.lat, this.lon);
-      this.darkMode = this.hass.themes.darkMode;
+      this.getAddress(this.lat, this.lon);
     }
     setTimeout(() => {
       this.initMap();
     }, 100);
   }
 
-  updateCSSVariables() {
+  updateCSSVariables(): void {
     if (this.darkMode) {
       this.style.setProperty('--map-marker-color', 'var(--accent-color)');
     } else {
@@ -70,7 +65,20 @@ export class VehicleMap extends LitElement {
     }
   }
 
-  static get styles() {
+  async getAddress(lat: number, lon: number): Promise<void> {
+    let address: Partial<Address> | null = null;
+    if (this.apiKey !== '') {
+      address = await this.getAddressFromGoggle(lat, lon);
+    } else {
+      address = await this.getAddressFromOpenStreet(lat, lon);
+    }
+    if (address) {
+      this.address = address;
+      this.enableAdress = true;
+    }
+  }
+
+  static get styles(): CSSResultGroup {
     return [
       mapstyle,
       css`
@@ -84,7 +92,6 @@ export class VehicleMap extends LitElement {
           width: 100%;
           height: 100%;
         }
-
         #map {
           height: 100%;
           width: 100%;
@@ -101,7 +108,6 @@ export class VehicleMap extends LitElement {
         .marker.dark {
           filter: brightness(0.5);
         }
-
         .dot {
           position: absolute;
           width: 14px;
@@ -129,7 +135,6 @@ export class VehicleMap extends LitElement {
         .marker:hover .dot {
           opacity: 1;
         }
-
         .leaflet-control-container {
           display: none;
         }
@@ -172,14 +177,17 @@ export class VehicleMap extends LitElement {
     ];
   }
 
-  initMap() {
+  initMap(): void {
     const mapOptions = {
       dragging: true,
       zoomControl: false,
       scrollWheelZoom: true,
     };
 
-    this.map = L.map(this.shadowRoot.getElementById('map'), mapOptions).setView([this.lat, this.lon], this.zoom);
+    this.map = L.map(this.shadowRoot?.getElementById('map') as HTMLElement, mapOptions).setView(
+      [this.lat, this.lon],
+      this.zoom,
+    );
 
     const tileLayer = this.darkMode ? 'CartoDB.DarkMatter' : 'CartoDB.Positron';
     L.tileLayer.provider(tileLayer).addTo(this.map);
@@ -208,7 +216,7 @@ export class VehicleMap extends LitElement {
     this.updateMap();
   }
 
-  togglePopup() {
+  togglePopup(): void {
     const event = new CustomEvent('toggle-map-popup', {
       detail: {},
       bubbles: true,
@@ -217,13 +225,26 @@ export class VehicleMap extends LitElement {
     this.dispatchEvent(event);
   }
 
-  updateMap() {
-    const offset = this.calculateLatLngOffset(this.map, this.lat, this.lon, this.map.getSize().x / 5, 3);
+  private updateMap(): void {
+    if (!this.map || !this.marker) return;
+    const offset: [number, number] = this.calculateLatLngOffset(
+      this.map,
+      this.lat,
+      this.lon,
+      this.map.getSize().x / 5,
+      3,
+    );
     this.map.setView(offset, this.zoom);
     this.marker.setLatLng([this.lat, this.lon]);
   }
 
-  calculateLatLngOffset(map, lat, lng, xOffset, yOffset) {
+  private calculateLatLngOffset(
+    map: L.Map,
+    lat: number,
+    lng: number,
+    xOffset: number,
+    yOffset: number,
+  ): [number, number] {
     // Convert the lat/lng to a point
     const point = map.latLngToContainerPoint([lat, lng]);
     // Apply the offset
@@ -233,17 +254,19 @@ export class VehicleMap extends LitElement {
     return [newLatLng.lat, newLatLng.lng];
   }
 
-  render() {
-    return html` <div class="map-wrapper">
-      <div id="map" style=${this.darkMode ? 'filter: brightness(1.5);' : ''}></div>
-      <div class="reset-button" @click=${this.updateMap}>
-        <ha-icon icon="mdi:compass"></ha-icon>
+  render(): TemplateResult {
+    return html`
+      <div class="map-wrapper">
+        <div id="map" style=${this.darkMode ? 'filter: brightness(1.5);' : ''}></div>
+        <div class="reset-button" @click=${this.updateMap}>
+          <ha-icon icon="mdi:compass"></ha-icon>
+        </div>
+        ${this._renderAddress()}
       </div>
-      ${this._renderAddress()}
-    </div>`;
+    `;
   }
 
-  _renderAddress() {
+  private _renderAddress() {
     if (!this.enableAdress) return html``;
     return html`
       <div class="address">
@@ -260,9 +283,9 @@ export class VehicleMap extends LitElement {
     `;
   }
 
-  async getAddressFromOpenStreet(lat, lon) {
-    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=jsonv2`;
-
+  private async getAddressFromOpenStreet(lat: number, lng: number): Promise<Partial<Address> | null> {
+    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=jsonv2`;
+    console.log(url);
     try {
       const response = await fetch(url);
       const data = await response.json();
@@ -284,11 +307,12 @@ export class VehicleMap extends LitElement {
         throw new Error('Failed to fetch address');
       }
     } catch (error) {
+      console.error('Error fetching address:', error);
       return null;
     }
   }
 
-  async getAddressFromGoggle(lat, lng) {
+  private async getAddressFromGoggle(lat: number, lng: number): Promise<Partial<Address> | null> {
     const apiKey = this.apiKey; // Replace with your API key
     const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`;
 
@@ -340,22 +364,4 @@ export class VehicleMap extends LitElement {
       return null;
     }
   }
-
-  async getAddressData(lat, lon) {
-    let address;
-    if (this.apiKey) {
-      address = await this.getAddressFromGoggle(lat, lon);
-    } else {
-      address = await this.getAddressFromOpenStreet(lat, lon);
-    }
-    if (address) {
-      this.address = address;
-      this.enableAdress = true;
-      this.requestUpdate();
-    } else {
-      this.enableAdress = false;
-      console.log('Could not retrieve address');
-    }
-  }
 }
-customElements.define('vehicle-map', VehicleMap);

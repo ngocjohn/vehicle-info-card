@@ -29,7 +29,7 @@ import { tapFeedback } from './utils/tap-action.js';
 import styles from './css/styles.css';
 import { amgBlack, amgWhite } from './utils/imgconst';
 import './components/map-card.js';
-import './components/header-slide.js';
+import './components/header-slide';
 import './components/eco-chart';
 declare global {
   interface Window {
@@ -325,9 +325,12 @@ export class VehicleCard extends LitElement {
     }
   }
 
-  private _renderHeaderSlides(): TemplateResult | void {
-    if (!this.config.images || !this.config.show_slides) return;
-    return html` <header-slide .images=${this.config.images}></header-slide> `;
+  private _renderHeaderSlides(): TemplateResult {
+    if (!this.config.images || !this.config.show_slides) return html``;
+
+    const images: string[] = this.config.images;
+
+    return html`<header-slide .images=${images}></header-slide>`;
   }
 
   private _renderMap(): TemplateResult | void {
@@ -338,13 +341,15 @@ export class VehicleCard extends LitElement {
     if (!config.device_tracker && config.show_map) {
       return this._showWarning('No device_tracker entity provided.');
     }
+    const darkMode = this.isDark();
     return html`
       <div id="map-box">
         <vehicle-map
           .hass=${hass}
-          .apiKey=${config.google_api_key}
-          .deviceTracker=${config.device_tracker}
-          .popup=${config.enable_map_popup}
+          .darkMode=${darkMode}
+          .apiKey=${this.config.google_api_key || ''}
+          .deviceTracker=${config.device_tracker || ''}
+          .popup=${config.enable_map_popup || false}
         ></vehicle-map>
       </div>
     `;

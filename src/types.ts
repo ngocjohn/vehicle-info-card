@@ -26,7 +26,7 @@ export interface VehicleCardConfig extends LovelaceCardConfig {
   entity?: string;
   device_tracker?: string;
   google_api_key?: string;
-  images?: string | string[];
+  images?: string[];
   show_slides?: boolean;
   show_map?: boolean;
   show_buttons?: boolean;
