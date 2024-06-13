@@ -94,7 +94,7 @@ export interface EntityConfig {
 /**
  * Filters for binary sensors.
  */
-export const binarySensorsFilters: {
+const binarySensorsFilters: {
   [key: string]: { prefix?: string; suffix: string };
 } = {
   lock: { prefix: 'lock', suffix: '_lock' },
@@ -114,7 +114,7 @@ export const binarySensorsFilters: {
 /**
  * Filters for sensor devices.
  */
-export const sensorDeviceFilters: {
+const sensorDeviceFilters: {
   [key: string]: { prefix?: string; suffix: string };
 } = {
   lockSensor: { prefix: 'sensor.', suffix: '_lock' },

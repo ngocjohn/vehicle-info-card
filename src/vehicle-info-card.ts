@@ -30,7 +30,7 @@ import styles from './css/styles.css';
 import { amgBlack, amgWhite } from './utils/imgconst';
 import './components/map-card.js';
 import './components/header-slide.js';
-
+import './components/eco-chart';
 declare global {
   interface Window {
     customCards: any[];
@@ -348,6 +348,19 @@ export class VehicleCard extends LitElement {
         ></vehicle-map>
       </div>
     `;
+  }
+
+  private _renderEcoChart(): TemplateResult | void {
+    if (this.activeCardType !== 'ecoCards') return html``;
+
+    const ecoData = {
+      bonusRange: parseFloat(this.getEntityState(this.vehicleEntities.ecoScoreBonusRange?.entity_id)) || 0,
+      acceleration: parseFloat(this.getEntityState(this.vehicleEntities.ecoScoreAcceleraion?.entity_id)) || 0,
+      constant: parseFloat(this.getEntityState(this.vehicleEntities.ecoScoreConstant?.entity_id)) || 0,
+      freeWheel: parseFloat(this.getEntityState(this.vehicleEntities.ecoScoreFreeWheel?.entity_id)) || 0,
+    };
+
+    return html`<eco-chart .ecoData=${ecoData}></eco-chart>`;
   }
 
   private _renderButtons(): TemplateResult {
@@ -755,7 +768,7 @@ export class VehicleCard extends LitElement {
 
     return html`<div class="default-card">
         <div class="data-header">Eco display</div>
-        <div id="chart"></div>
+        ${this._renderEcoChart()}
       </div>
       ${this.createItemDataRow('Scores', ecoData)}`;
   }
