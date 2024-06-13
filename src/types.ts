@@ -1,9 +1,13 @@
 import { ActionConfig, LovelaceCard, LovelaceCardConfig, LovelaceCardEditor, Themes } from 'custom-card-helpers';
 
+import { VehicleCard } from './vehicle-info-card';
 declare global {
   interface HTMLElementTagNameMap {
     'vehicle-info-card-editor': LovelaceCardEditor;
     'hui-error-card': LovelaceCard;
+  }
+  interface Window {
+    BenzCard: VehicleCard | undefined;
   }
 }
 /**
@@ -55,31 +59,43 @@ export const defaultConfig: Partial<VehicleCardConfig> = {
   tyre_card: [],
 };
 
-export interface SensorDevice {
+export interface VehicleEntity {
   entity_id: string;
   original_name: string;
   device_id: string;
 }
 
-export interface BinarySensorDevice {
+export interface VehicleEntities {
+  [key: string]: VehicleEntity;
+}
+
+export interface VehicleEntity {
   entity_id: string;
   original_name: string;
   device_id: string;
 }
 
-export interface SensorDevices {
-  [key: string]: SensorDevice;
-}
+export type EntityAttr = {
+  key: string;
+  name: string;
+  icon: string;
+  unit: string;
+  state: string;
+};
 
-export interface BinarySensors {
-  [key: string]: BinarySensorDevice;
+export interface EntityConfig {
+  key: string;
+  name?: string;
+  icon?: string;
+  unit?: string;
+  state?: string;
 }
 
 /**
  * Filters for binary sensors.
  */
 export const binarySensorsFilters: {
-  [name in keyof Partial<BinarySensors>]: { prefix?: string; suffix: string };
+  [key: string]: { prefix?: string; suffix: string };
 } = {
   lock: { prefix: 'lock', suffix: '_lock' },
   parkBrake: { suffix: '_parkbrakestatus' },
@@ -99,9 +115,9 @@ export const binarySensorsFilters: {
  * Filters for sensor devices.
  */
 export const sensorDeviceFilters: {
-  [name in keyof Partial<SensorDevices>]: { prefix?: string; suffix: string };
+  [key: string]: { prefix?: string; suffix: string };
 } = {
-  lock: { prefix: 'sensor.', suffix: '_lock' },
+  lockSensor: { prefix: 'sensor.', suffix: '_lock' },
   averageSpeedReset: { suffix: '_averagespeedreset' },
   averageSpeedStart: { suffix: '_averagespeedstart' },
   distanceReset: { suffix: '_distancereset' },
@@ -131,14 +147,7 @@ export const sensorDeviceFilters: {
   chargingPower: { suffix: '_chargingPower' },
 };
 
-/**
- * Interface entityConfig
- */
-
-export interface EntityConfig {
-  key: string;
-  name?: string;
-  icon?: string;
-  unit?: string;
-  state?: string;
-}
+export const combinedFilters: { [name in keyof Partial<VehicleEntities>]: { prefix?: string; suffix: string } } = {
+  ...binarySensorsFilters,
+  ...sensorDeviceFilters,
+};

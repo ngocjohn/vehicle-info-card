@@ -284,7 +284,6 @@ export class VehicleMap extends LitElement {
         throw new Error('Failed to fetch address');
       }
     } catch (error) {
-      console.error('Error fetching address:', error);
       return null;
     }
   }

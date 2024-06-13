@@ -9,29 +9,20 @@ import ApexCharts from 'apexcharts';
 import {
   fireEvent,
   formatDateTime,
-  formatNumber,
   hasConfigOrEntityChanged,
   HomeAssistant,
   LovelaceCard,
   LovelaceCardConfig,
   LovelaceCardEditor,
+  computeStateDisplay,
 } from 'custom-card-helpers';
 
 // Custom Types and Constants
-import {
-  BinarySensorDevice,
-  binarySensorsFilters,
-  ExtendedThemes,
-  SensorDevice,
-  sensorDeviceFilters,
-  VehicleCardConfig,
-  defaultConfig,
-  EntityConfig,
-} from './types';
-import { CARD_VERSION, lockAttrMapping, lockStateMapping, cardTypes } from './const';
+import { ExtendedThemes, VehicleCardConfig, defaultConfig, EntityConfig, VehicleEntity, EntityAttr } from './types';
+import { CARD_VERSION, lockAttrMapping, lockStateMapping, cardTypes, selectedProgramMapping } from './const';
 import { localize } from './localize/localize';
 import { formatTimestamp } from './utils/helpers';
-import { getDeviceEntities } from './utils/utils';
+import { getVehicleEntities } from './utils/utils';
 import { tapFeedback } from './utils/tap-action.js';
 
 // Styles and Assets
@@ -111,13 +102,11 @@ export class VehicleCard extends LitElement {
   }
 
   @property({ attribute: false }) public hass!: HomeAssistant & { themes: ExtendedThemes };
+
   @property({ type: Object }) private config!: VehicleCardConfig;
 
-  @state() private sensorDevices: { [key: string]: SensorDevice } = {};
-  @state() private binaryDevices: { [key: string]: BinarySensorDevice } = {};
-
+  @state() private vehicleEntities: { [key: string]: VehicleEntity } = {};
   @state() private additionalCards: { [key: string]: any[] } = {};
-
   @state() private activeCardType: string | null = null;
 
   private lockAttributesVisible = false;
@@ -129,24 +118,24 @@ export class VehicleCard extends LitElement {
   }
 
   private async configureAsync(): Promise<void> {
-    [this.sensorDevices, this.binaryDevices] = await Promise.all([
-      getDeviceEntities(this.hass, this.config, sensorDeviceFilters),
-      getDeviceEntities(this.hass, this.config, binarySensorsFilters),
-    ]);
-
+    this.vehicleEntities = await getVehicleEntities(this.hass, this.config);
     this.requestUpdate();
   }
 
   connectedCallback(): void {
     super.connectedCallback();
+    window.BenzCard = this;
     this.addCustomEventListener('toggle-map-popup', this.showMapOnCard);
     this.setButtonEventListeners();
   }
 
   disconnectedCallback(): void {
-    super.disconnectedCallback();
+    if (window.BenzCard === this) {
+      window.BenzCard = undefined;
+    }
     this.removeCustomEventListener('toggle-map-popup', this.showMapOnCard);
     this.removeButtonEventListeners();
+    super.disconnectedCallback();
   }
 
   private addCustomEventListener(event: string, handler: EventListenerOrEventListenerObject): void {
@@ -268,9 +257,10 @@ export class VehicleCard extends LitElement {
   }
 
   private _renderWarnings(): TemplateResult {
+    const { vehicleEntities } = this;
     // Get the current state of the lock and park brake
-    const lockState = this.getEntityState(this.sensorDevices.lock?.entity_id);
-    const parkBrakeState = this.getBooleanState(this.binaryDevices.parkBrake?.entity_id);
+    const lockState = this.getEntityState(vehicleEntities.lockSensor?.entity_id);
+    const parkBrakeState = this.getBooleanState(vehicleEntities.parkBrake?.entity_id);
 
     // Determine the display text for the lock state
     // Default to "Unknown" if the lock state is not in the formatting object
@@ -280,7 +270,7 @@ export class VehicleCard extends LitElement {
       <div class="info-box">
         <div class="item">
           <ha-icon icon=${lockState === '2' || lockState === '1' ? 'mdi:lock' : 'mdi:lock-open'}></ha-icon>
-          <div><span>${lockDisplayText} </span></div>
+          <div><span>${lockDisplayText}</span></div>
         </div>
         <div class="item">
           <ha-icon icon="mdi:car-brake-parking"></ha-icon>
@@ -291,7 +281,7 @@ export class VehicleCard extends LitElement {
   }
 
   private _renderRangeInfo(): TemplateResult | void {
-    const { fuelLevel, rangeLiquid, rangeElectric } = this.sensorDevices;
+    const { fuelLevel, rangeLiquid, rangeElectric } = this.vehicleEntities;
 
     const fuelInfo = this.getEntityInfo(fuelLevel?.entity_id);
     const rangeLiquidInfo = this.getEntityInfo(rangeLiquid?.entity_id);
@@ -457,7 +447,6 @@ export class VehicleCard extends LitElement {
 
   private setupCardListeners(): void {
     const cardElement = this.shadowRoot?.querySelector('.card-element');
-    console.log(cardElement);
     if (!cardElement) return;
 
     // Variables to store touch/mouse coordinates
@@ -569,40 +558,28 @@ export class VehicleCard extends LitElement {
   /* RENDER DEFAULT CARDS                                                       */
   /* -------------------------------------------------------------------------- */
 
-  private generateDataRow(
+  private createItemDataRow(
     title: string,
-    data: Array<EntityConfig>, // icon is optional now
-    entityCollection: any,
+    data: { key: string; name?: string; icon?: string; state?: string }[],
   ): TemplateResult {
     return html`
       <div class="default-card">
         <div class="data-header">${title}</div>
         ${data.map(({ key, name, icon, state }) => {
-          const entity = entityCollection[key];
-          const entityId = entity?.entity_id;
-          const entityName = name ?? entity?.original_name;
-          let entityState = state ?? this.getEntityState(entityId);
-          const unitOfMeasurement = entityId ? this.getEntityUnit(entityId) : '';
-          // Render correct formated state
-          if (!isNaN(parseFloat(entityState)) && entityState !== '') {
-            entityState = formatNumber(entityState, this.hass.locale);
-          }
-
-          // Render only if originalName and entityId are defined
-          if (entityId) {
+          if (key && name && state) {
             return html`
               <div class="data-row">
                 <div>
-                  ${icon ? html`<ha-icon class="data-icon" icon="${icon}"></ha-icon>` : ''}
-                  <span>${entityName}</span>
+                  <ha-icon class="data-icon" .icon="${icon}"></ha-icon>
+                  <span>${name}</span>
                 </div>
-                <div class="data-value-unit" @click=${() => this.toggleMoreInfo(entityId)}>
-                  <span>${entityState} ${unitOfMeasurement}</span>
+                <div class="data-value-unit" @click=${() => this.toggleMoreInfo(this.vehicleEntities[key]?.entity_id)}>
+                  <span>${state}</span>
                 </div>
               </div>
             `;
           } else {
-            return html``; // Return an empty template if conditions are not met
+            return html``;
           }
         })}
       </div>
@@ -610,26 +587,11 @@ export class VehicleCard extends LitElement {
   }
 
   private _renderDefaultTripCard(): TemplateResult | void {
-    const generateDataArray = (
-      keys: { key: string; name?: string; icon?: string; state?: string }[],
-    ): { key: string; name: string; icon: string; state: string }[] => {
-      return keys.map(({ key, name, icon, state }) => ({
-        key,
-        name: name ?? this.sensorDevices[key]?.original_name,
-        icon: icon ?? this.getEntityAttribute(this.sensorDevices[key]?.entity_id, 'icon'),
-        state: state ?? this.getEntityState(this.sensorDevices[key]?.entity_id),
-      }));
-    };
-
     const overViewDataKeys = [
       { key: 'odometer' },
       { key: 'fuelLevel' },
       { key: 'rangeLiquid' },
-      {
-        key: 'soc',
-        name: 'State of charger',
-        state: this.getEntityAttribute(this.sensorDevices.rangeElectric?.entity_id, 'soc'),
-      },
+      { key: 'soc' },
       { key: 'maxSoc' },
       { key: 'rangeElectric' },
     ];
@@ -648,112 +610,63 @@ export class VehicleCard extends LitElement {
       { key: 'electricConsumptionStart', name: 'Consumption start' },
     ];
 
-    const overViewData = generateDataArray(overViewDataKeys);
-    const tripFromStartData = generateDataArray(tripFromStartDataKeys);
-    const tripFromResetData = generateDataArray(tripFromResetDataKeys);
+    const overViewData = this.createDataArray(overViewDataKeys);
+    const tripFromStartData = this.createDataArray(tripFromStartDataKeys);
+    const tripFromResetData = this.createDataArray(tripFromResetDataKeys);
 
     return html`
-      ${this.generateDataRow('Overview', overViewData, this.sensorDevices)}
-      ${this.generateDataRow('From start', tripFromStartData, this.sensorDevices)}
-      ${this.generateDataRow('From reset', tripFromResetData, this.sensorDevices)}
+      ${this.createItemDataRow('Overview', overViewData)} ${this.createItemDataRow('From start', tripFromStartData)}
+      ${this.createItemDataRow('From reset', tripFromResetData)}
     `;
   }
 
   private _renderDefaultVehicleCard(): TemplateResult | void {
-    const binarySensor = this.binaryDevices;
+    const { vehicleEntities } = this;
 
-    const generateDataArray = (keys: Array<EntityConfig>): { key: string; state: string; icon: string }[] => {
-      return keys.map(({ key, state, icon, name }) => ({
-        key,
-        icon: icon ?? this.getEntityAttribute(this.binaryDevices[key]?.entity_id, 'icon'),
-        state: state ?? this.getBooleanState(this.binaryDevices[key]?.entity_id) ? 'Problem' : 'OK',
-        name: name ?? this.binaryDevices[key]?.original_name,
-      }));
-    };
-
-    const vehicleData = [
-      {
-        key: 'parkBrake',
-        name: 'Park brake',
-        icon: this.getEntityAttribute(binarySensor.parkBrake?.entity_id, 'icon'),
-        state: this.getBooleanState(binarySensor.parkBrake?.entity_id) ? 'Engaged' : 'Released',
-      },
-      {
-        key: 'windowsClosed',
-        name: 'Windows',
-        icon: this.getEntityAttribute(binarySensor.windowsClosed?.entity_id, 'icon'),
-        state: this.getBooleanState(binarySensor.windowsClosed?.entity_id) ? 'Closed' : 'Opened',
-      },
-    ];
+    const vehicleDataKeys = [{ key: 'parkBrake' }, { key: 'windowsClosed' }];
 
     const warningsDataKeys = [
-      {
-        key: 'tirePressureWarning',
-      },
-      {
-        key: 'lowBrakeFluid',
-      },
-      {
-        key: 'lowCoolantLevel',
-      },
-      {
-        key: 'engineLight',
-      },
-      {
-        key: 'lowWashWater',
-      },
+      { key: 'tirePressureWarning' },
+      { key: 'lowBrakeFluid' },
+      { key: 'lowCoolantLevel' },
+      { key: 'engineLight' },
+      { key: 'lowWashWater' },
     ];
 
-    const lockState = this.getEntityState(this.sensorDevices.lock?.entity_id);
-    const lockStateFormatted = lockStateMapping[lockState] || lockStateMapping['4'];
-    const lockIcon = lockState === '2' || lockState === '1' ? 'mdi:lock' : 'mdi:lock-open';
-    const lockColor = lockState === '2' || lockState === '1' ? 'warning' : '';
-    const lockName = this.sensorDevices.lock?.original_name;
-    const lockEntity = this.sensorDevices.lock?.entity_id;
-
-    const warningsData = generateDataArray(warningsDataKeys);
-
-    const lockAttributeStates: Record<string, any> = {};
-
-    // Iterate over the keys of the lockAttrMapping object
-    Object.keys(lockAttrMapping).forEach((attribute) => {
-      const attributeState = this.getEntityAttribute(this.sensorDevices.lock?.entity_id, attribute);
-      if (attributeState !== undefined && attributeState !== null) {
-        lockAttributeStates[attribute] = attributeState;
-      }
-    });
-
-    const lockAttrVisible = this.lockAttributesVisible ? 'mdi:chevron-up' : 'mdi:chevron-right';
+    const lockInfoData = this.getLockEntityInfo();
+    const vehicleData = this.createDataArray(vehicleDataKeys);
+    const warningsData = this.createDataArray(warningsDataKeys);
 
     return html`
       <div class="default-card">
         <div class="data-header">Vehicle status</div>
-        <div id="lockelement" class="data-row">
+        <div class="data-row">
           <div>
-            <ha-icon class="data-icon ${lockColor}" icon=${lockIcon}></ha-icon>
-            <span>${lockName}</span>
+            <ha-icon class="data-icon ${lockInfoData.color}" .icon=${lockInfoData.icon}></ha-icon>
+            <span>${lockInfoData.name}</span>
           </div>
           <div class="data-value-unit">
-            <span style="text-transform: capitalize" @click=${() => this.toggleMoreInfo(lockEntity)}
-              >${lockStateFormatted}</span
-            >
-            <ha-icon icon="${lockAttrVisible}" @click=${() => this.toggleLockAttributes()}></ha-icon>
+            <span @click=${() => this.toggleMoreInfo(lockInfoData.lockId ?? '')}>${lockInfoData.state}</span>
+            <ha-icon
+              icon="${this.lockAttributesVisible ? 'mdi:chevron-up' : 'mdi:chevron-right'}"
+              @click=${() => this.toggleLockAttributes()}
+            ></ha-icon>
           </div>
         </div>
 
-        ${this._renderLockAttributes(lockAttributeStates)}
+        ${this._renderLockAttributes()}
         ${vehicleData.map(
           ({ key, icon, state, name }) => html`
             <div class="data-row">
               <div>
                 <ha-icon
-                  class="data-icon ${this.getBooleanState(binarySensor[key]?.entity_id) ? 'warning' : ''} "
+                  class="data-icon ${this.getBooleanState(vehicleEntities[key]?.entity_id) ? 'warning' : ''} "
                   icon="${icon}"
-                  @click=${() => this.toggleMoreInfo(binarySensor[key]?.entity_id)}
+                  @click=${() => this.toggleMoreInfo(vehicleEntities[key]?.entity_id)}
                 ></ha-icon>
                 <span>${name}</span>
               </div>
-              <div class="data-value-unit" @click=${() => this.toggleMoreInfo(binarySensor[key]?.entity_id)}>
+              <div class="data-value-unit" @click=${() => this.toggleMoreInfo(vehicleEntities[key]?.entity_id)}>
                 <span>${state}</span>
                 <ha-icon icon="mdi:chevron-right" style="opacity: 0;"></ha-icon>
               </div>
@@ -765,19 +678,19 @@ export class VehicleCard extends LitElement {
       <div class="default-card">
         <div class="data-header">Warnings</div>
         ${warningsData.map(
-          ({ key, icon, state }) => html`
+          ({ key, icon, state, name }) => html`
             <div class="data-row">
               <div>
                 <ha-icon
                   class="data-icon"
                   icon="${icon}"
-                  @click=${() => this.toggleMoreInfo(binarySensor[key]?.entity_id)}
+                  @click=${() => this.toggleMoreInfo(vehicleEntities[key]?.entity_id)}
                 ></ha-icon>
-                <span>${binarySensor[key]?.original_name}</span>
+                <span>${name}</span>
               </div>
               <div
-                class="data-value-unit   ${this.getBooleanState(binarySensor[key]?.entity_id) ? 'error' : ''} "
-                @click=${() => this.toggleMoreInfo(binarySensor[key]?.entity_id)}
+                class="data-value-unit ${this.getBooleanState(vehicleEntities[key]?.entity_id) ? 'error' : ''} "
+                @click=${() => this.toggleMoreInfo(vehicleEntities[key]?.entity_id)}
               >
                 <span>${state}</span>
               </div>
@@ -794,18 +707,26 @@ export class VehicleCard extends LitElement {
     this.requestUpdate(); // Trigger a re-render
   }
 
-  private _renderLockAttributes(attributeStates: Record<string, string>): TemplateResult {
+  private _renderLockAttributes(): TemplateResult {
+    const lockAttributeStates: Record<string, any> = {};
+    // Iterate over the keys of the lockAttrMapping object
+    Object.keys(lockAttrMapping).forEach((attribute) => {
+      const attributeState = this.getEntityAttribute(this.vehicleEntities.lockSensor?.entity_id, attribute);
+      if (attributeState !== undefined && attributeState !== null) {
+        lockAttributeStates[attribute] = attributeState;
+      }
+    });
+
     const attributesClass = this.lockAttributesVisible ? 'sub-attributes active' : 'sub-attributes';
     // Render the lock attributes
     return html`
       <div class=${attributesClass}>
-        ${Object.keys(attributeStates).map((attribute) => {
-          const rawState = attributeStates[attribute];
+        ${Object.keys(lockAttributeStates).map((attribute) => {
+          const rawState = lockAttributeStates[attribute];
 
           // Check if the state is valid and the attribute mapping exists
           if (rawState !== undefined && rawState !== null && lockAttrMapping[attribute]) {
             const readableState = lockAttrMapping[attribute].state[rawState] || 'Unknown';
-
             return html`
               <div class="data-row">
                 <span>${lockAttrMapping[attribute].name}</span>
@@ -823,33 +744,32 @@ export class VehicleCard extends LitElement {
   }
 
   private _renderDefaultEcoCard(): TemplateResult | void {
-    const ecoData = [
-      { key: 'ecoScoreBonusRange', icon: '' },
-      { key: 'ecoScoreAcceleraion', icon: '' },
-      { key: 'ecoScoreConstant', icon: '' },
-      { key: 'ecoScoreFreeWheel', icon: '' },
+    const ecoDataKeys = [
+      { key: 'ecoScoreBonusRange', name: 'Bonus range' },
+      { key: 'ecoScoreAcceleraion', name: 'Acceleration' },
+      { key: 'ecoScoreConstant', name: 'Constant' },
+      { key: 'ecoScoreFreeWheel', name: 'Free wheel' },
     ];
 
-    // Loop through each item in ecoData and assign the icon dynamically
-    ecoData.forEach((item) => {
-      item.icon = this.getEntityAttribute(this.sensorDevices[item.key]?.entity_id, 'icon');
-    });
+    const ecoData = this.createDataArray(ecoDataKeys);
+
     return html`<div class="default-card">
         <div class="data-header">Eco display</div>
         <div id="chart"></div>
       </div>
-      ${this.generateDataRow('', ecoData, this.sensorDevices)}`;
+      ${this.createItemDataRow('Scores', ecoData)}`;
   }
 
   private initializeEcoChart(): void {
     const chartElement = this.shadowRoot?.querySelector('#chart');
-
     if (!chartElement) return;
 
-    const bonusRange = this.getEntityState(this.sensorDevices.ecoScoreBonusRange?.entity_id);
-    const acceleration = this.getEntityState(this.sensorDevices.ecoScoreAcceleraion?.entity_id);
-    const constant = this.getEntityState(this.sensorDevices.ecoScoreConstant?.entity_id);
-    const freeWheel = this.getEntityState(this.sensorDevices.ecoScoreFreeWheel?.entity_id);
+    const { ecoScoreBonusRange, ecoScoreAcceleraion, ecoScoreConstant, ecoScoreFreeWheel } = this.vehicleEntities;
+
+    const bonusRange = this.getEntityState(ecoScoreBonusRange?.entity_id);
+    const acceleration = this.getEntityState(ecoScoreAcceleraion?.entity_id);
+    const constant = this.getEntityState(ecoScoreConstant?.entity_id);
+    const freeWheel = this.getEntityState(ecoScoreFreeWheel?.entity_id);
 
     const options = {
       series: [acceleration, constant, freeWheel],
@@ -921,37 +841,164 @@ export class VehicleCard extends LitElement {
   }
 
   private _renderDefaultTyreCard(): TemplateResult | void {
-    const tyreData = [
-      { key: 'tirePressureFrontLeft', icon: 'mdi:tire' },
-      { key: 'tirePressureFrontRight', icon: 'mdi:tire' },
-      { key: 'tirePressureRearLeft', icon: 'mdi:tire' },
-      { key: 'tirePressureRearRight', icon: 'mdi:tire' },
+    const tyreDataKeys = [
+      { key: 'tirePressureFrontLeft', name: 'Front left', icon: 'mdi:tire' },
+      { key: 'tirePressureFrontRight', name: 'Front right', icon: 'mdi:tire' },
+      { key: 'tirePressureRearLeft', name: 'Rear left', icon: 'mdi:tire' },
+      { key: 'tirePressureRearRight', name: 'Rear right', icon: 'mdi:tire' },
     ];
 
-    return this.generateDataRow('Tyre pressures', tyreData, this.sensorDevices);
+    const tyreData = this.createDataArray(tyreDataKeys);
+    return this.createItemDataRow('Tyre pressures', tyreData);
   }
 
   /* -------------------------------------------------------------------------- */
   /* GET ENTITIES STATE AND ATTRIBUTES                                          */
   /* -------------------------------------------------------------------------- */
 
+  private getEntityInfoByKey({ key, name, icon, state, unit }: Partial<EntityConfig>): {
+    key: string;
+    name: string;
+    icon: string;
+    state: string;
+    unit: string;
+  } {
+    if (!key) {
+      return {
+        key: '',
+        name: '',
+        icon: '',
+        unit: '',
+        state: '',
+      };
+    }
+    if (!this.vehicleEntities[key]) {
+      if (key === 'selectedProgram') {
+        return {
+          key,
+          name: name ?? 'Program',
+          icon: icon ?? 'mdi:ev-station',
+          state:
+            selectedProgramMapping[
+              this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'selectedChargeProgram')
+            ] ?? '',
+          unit: unit ?? '',
+        };
+      }
+    }
+
+    if (this.vehicleEntities[key]) {
+      if (key === 'soc') {
+        const currentState = this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'soc');
+        const stateValue = currentState ? parseFloat(currentState) : 0;
+        const socIcon =
+          stateValue < 35
+            ? 'mdi:battery-charging-low'
+            : stateValue < 70
+            ? 'mdi:battery-charging-medium'
+            : 'mdi:battery-charging-high';
+        return {
+          key,
+          name: name ?? 'State of charger',
+          icon: icon ?? socIcon ?? '',
+          state: state ?? currentState ?? '',
+          unit: unit ?? '%',
+        };
+      } else if (key === 'maxSoc') {
+        const maxSocState = this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'maxSoc');
+        return {
+          key,
+          name: name ?? this.vehicleEntities.maxSoc?.original_name ?? 'Max state of charger',
+          icon: icon ?? `mdi:battery-charging-${maxSocState}`,
+          state: state ?? maxSocState,
+          unit: unit ?? '%',
+        };
+      } else if (key === 'parkBrake') {
+        return {
+          key,
+          name: name ?? 'Park brake',
+          icon: icon ?? 'mdi:car-brake-parking',
+          state: state ?? this.getBooleanState(this.vehicleEntities.parkBrake?.entity_id) ? 'Engaged' : 'Released',
+          unit: unit ?? '',
+        };
+      } else if (key === 'windowsClosed') {
+        return {
+          key,
+          name: name ?? 'Windows',
+          state: state ?? this.getBooleanState(this.vehicleEntities.windowsClosed?.entity_id) ? 'Closed' : 'Opened',
+          icon: icon ?? this.getEntityAttribute(this.vehicleEntities.windowsClosed?.entity_id, 'icon'),
+          unit: unit ?? '',
+        };
+      }
+    }
+
+    // Directly handle warning states
+    if (['tirePressureWarning', 'lowBrakeFluid', 'lowCoolantLevel', 'engineLight', 'lowWashWater'].includes(key)) {
+      return {
+        key,
+        name: name ?? this.vehicleEntities[key]?.original_name,
+        icon: icon ?? this.getEntityAttribute(this.vehicleEntities[key]?.entity_id, 'icon') ?? '',
+        state: this.getBooleanState(this.vehicleEntities[key]?.entity_id) ? 'Problem' : 'OK',
+        unit: unit ?? '',
+      };
+    }
+
+    const entityId = this.vehicleEntities[key]?.entity_id;
+
+    return {
+      key,
+      name: name ?? this.vehicleEntities[key]?.original_name,
+      icon: icon ?? this.getEntityAttribute(entityId, 'icon'),
+      unit: unit ?? this.getEntityUnit(entityId),
+      state: state ?? this.getStateDisplay(entityId),
+    };
+  }
+
+  private createDataArray(
+    keys: Partial<EntityConfig>[],
+  ): { key: string; name: string; icon: string; state: string; unit: string }[] {
+    return keys.map((config) => this.getEntityInfoByKey(config));
+  }
+
+  private getLockEntityInfo(): Partial<EntityAttr & { lockId: string; color: string }> {
+    const lockState = this.getEntityState(this.vehicleEntities.lockSensor?.entity_id);
+    const lockStateFormatted = lockStateMapping[lockState] || lockStateMapping['4'];
+    const lockIcon = lockState === '2' || lockState === '1' ? 'mdi:lock' : 'mdi:lock-open';
+    const lockColor = lockState === '2' || lockState === '1' ? 'warning' : '';
+    const lockName = this.vehicleEntities.lock?.original_name;
+    return {
+      key: 'lock',
+      name: lockName,
+      icon: lockIcon,
+      state: lockStateFormatted,
+      color: lockColor,
+      lockId: this.vehicleEntities.lockSensor?.entity_id,
+    };
+  }
+
+  private getStateDisplay(entityId: string | undefined): string {
+    if (!entityId || !this.hass.states[entityId] || !this.hass.locale) return '';
+    return computeStateDisplay(this.hass.localize, this.hass.states[entityId], this.hass.locale);
+  }
+
   private getSecondaryInfo(cardType: string): string {
-    const { sensorDevices } = this;
+    const { vehicleEntities } = this;
+
     switch (cardType) {
       case 'tripCards':
-        const odometerState = parseFloat(this.getEntityState(sensorDevices.odometer?.entity_id));
-        const odometerUnit = this.getEntityUnit(sensorDevices.odometer?.entity_id);
-        const formatedState = formatNumber(odometerState, this.hass.locale);
-        return `${formatedState} ${odometerUnit}`;
+        const odometerDisplayText = this.getStateDisplay(vehicleEntities.odometer?.entity_id);
+
+        return odometerDisplayText;
 
       case 'vehicleCards':
-        const lockedState = this.getEntityState(sensorDevices.lock?.entity_id);
+        const lockedState = this.getEntityState(vehicleEntities.lockSensor?.entity_id);
         const lockedDisplayText = lockStateMapping[lockedState] || lockStateMapping['4'];
         return lockedDisplayText;
+
       case 'ecoCards':
-        return `${this.getEntityState(sensorDevices.ecoScoreBonusRange?.entity_id)} ${this.getEntityUnit(
-          sensorDevices.ecoScoreBonusRange?.entity_id,
-        )}`;
+        const bonusRangeDisplayText = this.getStateDisplay(vehicleEntities.ecoScoreBonusRange?.entity_id);
+        return bonusRangeDisplayText;
+
       case 'tyreCards':
         const tireAttributes = [
           'tirePressureFrontRight',
@@ -961,9 +1008,9 @@ export class VehicleCard extends LitElement {
         ];
 
         // Store pressures with their original units
-        const pressuresWithUnits = tireAttributes.map((attr) => ({
-          pressure: this.getEntityState(sensorDevices[attr]?.entity_id) || '',
-          unit: this.getEntityUnit(sensorDevices[attr]?.entity_id),
+        const pressuresWithUnits = tireAttributes.map((key) => ({
+          pressure: this.getEntityState(vehicleEntities[key]?.entity_id) || '',
+          unit: this.getEntityUnit(vehicleEntities[key]?.entity_id),
         }));
 
         // Find the minimum and maximum pressures

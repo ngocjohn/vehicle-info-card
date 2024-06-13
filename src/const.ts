@@ -75,3 +75,10 @@ export const lockStateMapping = {
   '3': 'Partly unlocked',
   '4': 'Unknown',
 };
+
+export const selectedProgramMapping = {
+  '0': 'Standard',
+  '1': 'Unknown',
+  '2': 'Home',
+  '3': 'Work',
+};

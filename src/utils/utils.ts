@@ -1,20 +1,17 @@
 import { HomeAssistant } from 'custom-card-helpers';
-import { SensorDevice, BinarySensorDevice } from '../types';
+import { VehicleEntity } from '../types';
+import { combinedFilters } from '../types';
 
 /**
  *
- * @param hass
- * @param config
- * @param filters
+ * @param car
  * @returns
  */
-export async function getDeviceEntities(
+
+export async function getVehicleEntities(
   hass: HomeAssistant,
   config: { entity?: string },
-  filters: {
-    [key: string]: { prefix?: string; suffix: string };
-  },
-): Promise<{ [key: string]: SensorDevice | BinarySensorDevice }> {
+): Promise<{ [key: string]: VehicleEntity }> {
   const allEntities = await hass.callWS<
     { entity_id: string; device_id: string; original_name: string; unique_id: string }[]
   >({
@@ -27,10 +24,10 @@ export async function getDeviceEntities(
   }
 
   const deviceEntities = allEntities.filter((e) => e.device_id === carEntity.device_id);
-  const entityIds: { [key: string]: SensorDevice | BinarySensorDevice } = {};
+  const entityIds: { [key: string]: VehicleEntity } = {};
 
-  for (const entityName of Object.keys(filters)) {
-    const { prefix, suffix } = filters[entityName];
+  for (const entityName of Object.keys(combinedFilters)) {
+    const { prefix, suffix } = combinedFilters[entityName];
     if (!prefix) {
       const entity = deviceEntities.find((e) => e.unique_id.endsWith(suffix));
       if (entity) {
