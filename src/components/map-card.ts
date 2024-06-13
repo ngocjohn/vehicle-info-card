@@ -73,8 +73,8 @@ export class VehicleMap extends LitElement {
       address = await this.getAddressFromOpenStreet(lat, lon);
     }
     if (address) {
-      this.address = address;
       this.enableAdress = true;
+      this.address = address;
     }
   }
 
@@ -283,8 +283,8 @@ export class VehicleMap extends LitElement {
     `;
   }
 
-  private async getAddressFromOpenStreet(lat: number, lng: number): Promise<Partial<Address> | null> {
-    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=jsonv2`;
+  private async getAddressFromOpenStreet(lat: number, lon: number): Promise<Partial<Address> | null> {
+    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=jsonv2`;
     console.log(url);
     try {
       const response = await fetch(url);
@@ -312,9 +312,9 @@ export class VehicleMap extends LitElement {
     }
   }
 
-  private async getAddressFromGoggle(lat: number, lng: number): Promise<Partial<Address> | null> {
+  private async getAddressFromGoggle(lat: number, lon: number): Promise<Partial<Address> | null> {
     const apiKey = this.apiKey; // Replace with your API key
-    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`;
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${apiKey}`;
 
     try {
       const response = await fetch(url);

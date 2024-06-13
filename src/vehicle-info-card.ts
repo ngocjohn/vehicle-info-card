@@ -28,7 +28,7 @@ import { tapFeedback } from './utils/tap-action.js';
 // Styles and Assets
 import styles from './css/styles.css';
 import { amgBlack, amgWhite } from './utils/imgconst';
-import './components/map-card.js';
+import './components/map-card';
 import './components/header-slide';
 import './components/eco-chart';
 declare global {
