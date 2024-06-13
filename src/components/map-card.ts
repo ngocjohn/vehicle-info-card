@@ -54,7 +54,7 @@ export class VehicleMap extends LitElement {
     }
     setTimeout(() => {
       this.initMap();
-    }, 100);
+    }, 200);
   }
 
   updateCSSVariables(): void {
@@ -73,8 +73,11 @@ export class VehicleMap extends LitElement {
       address = await this.getAddressFromOpenStreet(lat, lon);
     }
     if (address) {
-      this.enableAdress = true;
       this.address = address;
+      this.enableAdress = true;
+      this.requestUpdate();
+    } else {
+      this.enableAdress = false;
     }
   }
 
@@ -285,7 +288,6 @@ export class VehicleMap extends LitElement {
 
   private async getAddressFromOpenStreet(lat: number, lon: number): Promise<Partial<Address> | null> {
     const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=jsonv2`;
-    console.log(url);
     try {
       const response = await fetch(url);
       const data = await response.json();
@@ -304,10 +306,10 @@ export class VehicleMap extends LitElement {
 
         return address;
       } else {
-        throw new Error('Failed to fetch address');
+        throw new Error('Failed to fetch address OpenStreetMap');
       }
     } catch (error) {
-      console.error('Error fetching address:', error);
+      // console.error('Error fetching address:', error);
       return null;
     }
   }

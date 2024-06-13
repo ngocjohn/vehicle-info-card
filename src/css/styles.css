@@ -224,22 +224,17 @@ header h1 {
 }
 
 .card-element {
-  transition: transform 0.3s ease;
+  transition: all 0.5s ease;
   position: relative;
 }
 
 /* .card-element.swiping-left {
   transform: translateX(-120%);
-}
-
-.card-element.swiping-right {
-  transform: translateX(120%);
 } */
 
-.card-element {
-  transition: transform 0.3s ease-in-out;
-  position: relative;
-}
+/* .card-element.swiping-right {
+  transform: translateX(120%);
+}  */
 
 .slide-left-enter {
   transform: translateX(100%);
@@ -383,4 +378,27 @@ dialog::backdrop {
   100% {
     transform: translateY(0);
   }
+}
+
+@keyframes tap-feedback {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  64% {
+    transform: translateX(0);
+    opacity: 0.1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.click-shrink {
+  transition: transform 0.1s;
+}
+
+.click-shrink:active {
+  transform: scale(0.9);
 }
