@@ -39,6 +39,7 @@ logCardInfo();
   description: 'A custom card to display vehicle data with a map and additional cards.',
   documentationURL: 'https://github.com/ngocjohn/vehicle-info-card?tab=readme-ov-file#configuration',
 });
+
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
 
 @customElement('vehicle-info-card')
