@@ -2,6 +2,8 @@ import { HomeAssistant } from 'custom-card-helpers';
 import { VehicleEntity } from '../types';
 import { combinedFilters } from '../types';
 
+import { version, description, repository } from '../../package.json';
+
 /**
  *
  * @param car
@@ -13,7 +15,7 @@ export async function getVehicleEntities(
   config: { entity?: string },
 ): Promise<{ [key: string]: VehicleEntity }> {
   const allEntities = await hass.callWS<
-    { entity_id: string; device_id: string; original_name: string; unique_id: string }[]
+    { entity_id: string; device_id: string; original_name: string; unique_id: string; translation_key: string }[]
   >({
     type: 'config/entity_registry/list',
   });
@@ -24,6 +26,31 @@ export async function getVehicleEntities(
   }
 
   const deviceEntities = allEntities.filter((e) => e.device_id === carEntity.device_id);
+
+  const deviceEntitIds: { [key: string]: VehicleEntity } = {};
+
+  console.groupCollapsed('Vehicle entities');
+  console.log('| Name                  | Entity ID              | Unique id               |');
+  console.log('|-----------------------|------------------------|-------------------------|');
+
+  for (const deviceEntity of deviceEntities) {
+    console.log(
+      `| ${deviceEntity.original_name.padEnd(22)} | ${deviceEntity.entity_id.padEnd(
+        24,
+      )} | ${deviceEntity.unique_id.padEnd(24)} |`,
+    );
+
+    deviceEntitIds[deviceEntity.translation_key] = {
+      entity_id: deviceEntity.entity_id,
+      original_name: deviceEntity.original_name,
+      device_id: deviceEntity.device_id,
+      unique_id: deviceEntity.unique_id,
+      translation_key: deviceEntity.translation_key,
+    };
+  }
+  console.groupEnd();
+  console.log('Device entities:', deviceEntitIds);
+
   const entityIds: { [key: string]: VehicleEntity } = {};
 
   for (const entityName of Object.keys(combinedFilters)) {
@@ -146,4 +173,27 @@ export function setupCardListeners(
   ['touchstart', 'mousedown'].forEach((event) => {
     cardElement.addEventListener(event, presDown as EventListener);
   });
+}
+
+/**
+ * Console log info
+ */
+
+export function logCardInfo(): void {
+  /* eslint no-console: 0 */
+  const line1 = '   VEHICLE-INFO-CARD';
+  const line2 = `   v${version}`;
+  const length = Math.max(line1.length, line2.length) + 3;
+  const pad = (text: string, length: number) => text + ' '.repeat(length - text.length);
+  const repo = repository.url;
+
+  /* eslint no-console: 0 */
+  console.groupCollapsed(
+    `%c${pad(line1, length)}\n%c${pad(line2, length)}`,
+    'color: orange; font-weight: bold; background: black',
+    'color: white; font-weight: bold; background: dimgray',
+  );
+  console.info(description);
+  console.info(`Github: ${repo}`);
+  console.groupEnd();
 }

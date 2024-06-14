@@ -16,10 +16,10 @@ import {
 
 // Custom Types and Constants
 import { ExtendedThemes, VehicleCardConfig, defaultConfig, EntityConfig, VehicleEntity, EntityAttr } from './types';
-import { CARD_VERSION, lockAttrMapping, lockStateMapping, cardTypes, selectedProgramMapping } from './const';
+import { lockAttrMapping, lockStateMapping, cardTypes, selectedProgramMapping } from './const';
 import { localize } from './localize/localize';
 import { formatTimestamp } from './utils/helpers';
-import { getVehicleEntities, setupCardListeners } from './utils/utils';
+import { logCardInfo, getVehicleEntities, setupCardListeners } from './utils/utils';
 import { tapFeedback } from './utils/tap-action.js';
 
 // Styles and Assets
@@ -28,13 +28,8 @@ import { amgBlack, amgWhite } from './utils/imgconst';
 import './components/map-card';
 import './components/header-slide';
 import './components/eco-chart';
-import { set } from 'lodash';
 
-console.info(
-  `%c  VEHICLE-INFO-CARD %c  ${CARD_VERSION}  `,
-  'color: orange; font-weight: bold; background: black',
-  'color: white; font-weight: bold; background: dimgray',
-);
+logCardInfo();
 
 (window as any).customCards = (window as any).customCards || [];
 (window as any).customCards.push({
@@ -44,6 +39,7 @@ console.info(
   description: 'A custom card to display vehicle data with a map and additional cards.',
   documentationURL: 'https://github.com/ngocjohn/vehicle-info-card?tab=readme-ov-file#configuration',
 });
+
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
 @customElement('vehicle-info-card')
 export class VehicleCard extends LitElement {

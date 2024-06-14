@@ -59,12 +59,6 @@ export const defaultConfig: Partial<VehicleCardConfig> = {
   tyre_card: [],
 };
 
-export interface VehicleEntity {
-  entity_id: string;
-  original_name: string;
-  device_id: string;
-}
-
 export interface VehicleEntities {
   [key: string]: VehicleEntity;
 }
@@ -72,7 +66,9 @@ export interface VehicleEntities {
 export interface VehicleEntity {
   entity_id: string;
   original_name: string;
-  device_id: string;
+  device_id?: string;
+  unique_id?: string;
+  translation_key?: string;
 }
 
 export type EntityAttr = {
