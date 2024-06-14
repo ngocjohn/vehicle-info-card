@@ -29,11 +29,7 @@ import './components/map-card';
 import './components/header-slide';
 import './components/eco-chart';
 
-console.info(
-  `%c  VEHICLE-INFO-CARD %c  ${CARD_VERSION}  `,
-  'color: orange; font-weight: bold; background: black',
-  'color: white; font-weight: bold; background: dimgray',
-);
+logCardInfo();
 
 (window as any).customCards = (window as any).customCards || [];
 (window as any).customCards.push({
@@ -43,6 +39,7 @@ console.info(
   description: 'A custom card to display vehicle data with a map and additional cards.',
   documentationURL: 'https://github.com/ngocjohn/vehicle-info-card?tab=readme-ov-file#configuration',
 });
+
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
 
 @customElement('vehicle-info-card')
