@@ -612,7 +612,6 @@ export class VehicleCard extends LitElement {
         lockAttributeStates[attribute] = attributeState;
       }
     });
-
     const attributesClass = this.lockAttributesVisible ? 'sub-attributes active' : 'sub-attributes';
     // Render the lock attributes
     return html`
