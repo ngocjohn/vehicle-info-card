@@ -59,6 +59,13 @@ export class VehicleCard extends LitElement {
   @state() private activeCardType: string | null = null;
 
   private lockAttributesVisible = false;
+  private chargingInfoVisible = false;
+
+  get isCharging() {
+    return this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'chargingactive');
+  }
+
+  // private isCharging = true;
 
   get isDark(): boolean {
     return this.hass.themes.darkMode;
@@ -298,7 +305,7 @@ export class VehicleCard extends LitElement {
           name: name ?? this.vehicleEntities[key]?.original_name,
           icon: icon ?? this.getEntityAttribute(this.vehicleEntities[key]?.entity_id, 'icon'),
           state: state ?? this.getEntityState(this.vehicleEntities[key]?.entity_id),
-          unit: unit ?? this.getEntityUnit(this.vehicleEntities[key]?.entity_id),
+          unit: unit ?? this.getEntityAttribute(this.vehicleEntities[key]?.entity_id, 'unit_of_measurement'),
         };
       });
     };
@@ -352,7 +359,7 @@ export class VehicleCard extends LitElement {
 
     return html`
       <div class=${chargingClass}>
-        ${chargingDataSimulated.map(({ name, state, icon, unit }) => {
+        ${chargingData.map(({ name, state, icon, unit }) => {
           return html`
             <div class="item charge">
               <div>
