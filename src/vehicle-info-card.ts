@@ -248,15 +248,12 @@ export class VehicleCard extends LitElement {
   }
 
   private _renderRangeInfo(): TemplateResult | void {
-    const { fuelLevel, rangeLiquid, rangeElectric } = this.vehicleEntities;
+    const { fuelLevel, rangeLiquid, rangeElectric, soc } = this.vehicleEntities;
 
     const fuelInfo = this.getEntityInfo(fuelLevel?.entity_id);
     const rangeLiquidInfo = this.getEntityInfo(rangeLiquid?.entity_id);
     const rangeElectricInfo = this.getEntityInfo(rangeElectric?.entity_id);
-    const socInfo = {
-      state: this.getEntityAttribute(rangeElectric?.entity_id, 'soc'),
-      unit: '%',
-    };
+    const socInfo = this.getEntityInfo(soc?.entity_id);
 
     const renderInfoBox = (icon: string, state: string, unit: string, rangeState: string, rangeUnit: string) => html`
       <div class="info-box">
@@ -487,9 +484,9 @@ export class VehicleCard extends LitElement {
       { key: 'odometer' },
       { key: 'fuelLevel' },
       { key: 'rangeLiquid' },
+      { key: 'rangeElectric' },
       { key: 'soc' },
       { key: 'maxSoc' },
-      { key: 'rangeElectric' },
     ];
 
     const tripFromResetDataKeys = [
@@ -705,7 +702,7 @@ export class VehicleCard extends LitElement {
 
     if (this.vehicleEntities[key]) {
       if (key === 'soc') {
-        const currentState = this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'soc');
+        const currentState = this.getEntityState(this.vehicleEntities.soc?.entity_id);
         const stateValue = currentState ? parseFloat(currentState) : 0;
         const socIcon =
           stateValue < 35
@@ -715,16 +712,16 @@ export class VehicleCard extends LitElement {
             : 'mdi:battery-charging-high';
         return {
           key,
-          name: name ?? 'State of charger',
+          name: name ?? this.vehicleEntities.soc?.original_name,
           icon: icon ?? socIcon ?? '',
           state: state ?? currentState ?? '',
           unit: unit ?? '%',
         };
       } else if (key === 'maxSoc') {
-        const maxSocState = this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'maxSoc');
+        const maxSocState = this.getEntityState(this.vehicleEntities.maxSoc?.entity_id) || '0';
         return {
           key,
-          name: name ?? this.vehicleEntities.maxSoc?.original_name ?? 'Max state of charger',
+          name: name ?? this.vehicleEntities.maxSoc?.original_name,
           icon: icon ?? `mdi:battery-charging-${maxSocState}`,
           state: state ?? maxSocState,
           unit: unit ?? '%',

@@ -138,9 +138,9 @@ const sensorDeviceFilters: {
   tirePressureRearRight: { suffix: '_tirepressurerearright' },
   tirePressureFrontLeft: { suffix: '_tirepressurefrontleft' },
   tirePressureFrontRight: { suffix: '_tirepressurefrontright' },
-  maxSoc: { suffix: '_max_soc' },
-  soc: { suffix: '_soc' },
-  chargingPower: { suffix: '_chargingPower' },
+  maxSoc: { prefix: 'sensor.', suffix: '_max_state_of_charge' },
+  soc: { prefix: 'sensor.', suffix: 'soc' },
+  chargingPower: { suffix: '_chargingpowerkw' },
 };
 
 export const combinedFilters: { [name in keyof Partial<VehicleEntities>]: { prefix?: string; suffix: string } } = {
