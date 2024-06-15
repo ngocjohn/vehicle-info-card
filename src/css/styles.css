@@ -67,8 +67,10 @@ header h1 {
   position: relative;
   width: 100%;
   height: fit-content;
-  gap: 1rem;
+  overflow: hidden;
+  gap: 0.5rem;
   flex-wrap: wrap;
+  transition: all 0.5s ease;
 }
 .info-box {
   --mdc-icon-size: 17px;
@@ -86,13 +88,44 @@ header h1 {
 .info-box .item {
   display: flex;
   align-items: center;
-  gap: 0.2rem;
+  gap: 0.4rem;
   span {
     font-size: 1rem;
   }
   ha-icon {
     margin-bottom: 3px;
   }
+}
+
+.item.chargeinfo {
+  cursor: pointer;
+}
+
+.info-box.charge {
+  overflow: hidden;
+  justify-content: space-evenly;
+  max-height: 0;
+  opacity: 0;
+  transition: all 0.5s ease-in-out;
+}
+
+.info-box.charge.active {
+  max-height: 100px; /* Adjust this to be more than the expected height of the content */
+  opacity: 1;
+  padding-block: 0.5rem;
+}
+
+.info-box.charge .item {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  flex-direction: column;
+  gap: initial;
+  width: max-content;
+}
+
+.info-box.charge .item-name {
+  color: var(--secondary-text-color);
 }
 
 .fuel-wrapper {
