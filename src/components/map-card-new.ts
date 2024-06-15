@@ -69,8 +69,10 @@ export class VehicleMap extends LitElement {
     let address: Partial<Address> | null = null;
     if (this.apiKey !== '') {
       address = await this.getAddressFromGoggle(lat, lon);
+      console.log('google addr', address);
     } else {
       address = await this.getAddressFromOpenStreet(lat, lon);
+      console.log('openstreet addr', address);
     }
     if (address) {
       this.address = address;
