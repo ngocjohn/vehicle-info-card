@@ -155,6 +155,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         </ha-select>
         <ha-textfield
           label="Google API Key (Optional)"
+          type="password"
           .value=${this._google_api_key}
           .configValue=${'google_api_key'}
           @input=${this._valueChanged}
