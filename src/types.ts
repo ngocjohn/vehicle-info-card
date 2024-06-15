@@ -32,6 +32,7 @@ export interface VehicleCardConfig extends LovelaceCardConfig {
   show_buttons?: boolean;
   show_background?: boolean;
   enable_map_popup?: boolean;
+  map_popup_config?: MapPopupConfig;
   vehicle_card?: LovelaceCardConfig[];
   trip_card?: LovelaceCardConfig[];
   eco_card?: LovelaceCardConfig[];
@@ -41,6 +42,11 @@ export interface VehicleCardConfig extends LovelaceCardConfig {
   double_tap_action?: ActionConfig;
 }
 
+export interface MapPopupConfig {
+  hours_to_show?: number;
+  default_zoom?: number;
+  theme_mode?: 'dark' | 'light' | 'auto';
+}
 export const defaultConfig: Partial<VehicleCardConfig> = {
   type: 'custom:vehicle-info-card',
   name: 'Mercedes Benz',

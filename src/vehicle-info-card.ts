@@ -77,7 +77,9 @@ export class VehicleCard extends LitElement {
     if (this.config.device_tracker) {
       const haMapConfig = {
         type: 'map',
-        zoom: 14,
+        default_zoom: this.config.map_popup_config?.default_zoom,
+        hours_to_show: this.config.map_popup_config?.hours_to_show,
+        theme_mode: this.config.map_popup_config?.theme_mode,
         entities: [
           {
             entity: this.config.device_tracker,

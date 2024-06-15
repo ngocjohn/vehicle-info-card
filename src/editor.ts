@@ -159,24 +159,61 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           .configValue=${'google_api_key'}
           @input=${this._valueChanged}
         ></ha-textfield>
-        <ha-expansion-panel .open=${false} .outlined=${true}>
-        <h3 slot="header">
-          <ha-icon icon="mdi:code-array"></ha-icon>
-          Images Configuration
-        </h3>
-        <div class="code-editor">
-          <ha-alert alert-type="info">There is no need to add a '-' for each line. Each line will be treated as a separate URL automatically.</ha-alert>
-          <ha-code-editor
-          autofocus
-          autocomplete-entities
-          autocomplete-icons
-          .hass=${this.hass}
-          .value=${images}
-          .configValue="${'images'}"
-          @blur=${this._valueChanged}
-        ></ha-code-editor>
+        <div class="panel-container">
+          <ha-expansion-panel .open=${false} .outlined=${true}>
+            <h3 slot="header">
+              <ha-icon icon="mdi:map"></ha-icon>
+              Map Popup Configuration
+            </h3>
+            <div class="map-config">
+              <ha-textfield
+              label="Hours to show"
+              type="number"
+              .value=${this._config?.map_popup_config?.hours_to_show || 0}
+              .configValue=${'hours_to_show'}
+              @input=${this._valueChanged}
+            ></ha-textfield>
+            <ha-textfield
+              label="Default zoom"
+              type="number"
+              .value=${this._config?.map_popup_config?.default_zoom || 14}
+              .configValue=${'default_zoom'}
+              @input=${this._valueChanged}
+            ></ha-textfield>
+            <ha-select
+              label="Theme mode"
+              .value=${this._config?.map_popup_config?.theme_mode || 'auto'}
+              .configValue=${'theme_mode'}
+              @selected=${this._valueChanged}
+              @closed=${(ev) => ev.stopPropagation()}
+            >
+              <mwc-list-item value="auto">Auto</mwc-list-item>
+              <mwc-list-item value="dark">Dark</mwc-list-item>
+              <mwc-list-item value="light">Light</mwc-list-item>
+            </ha-select>
+            </div>
+          </ha-expansion-panel>
         </div>
-        </ha-expansion-panel>
+        <div class="panel-container">
+          <ha-expansion-panel .open=${false} .outlined=${true}>
+            <h3 slot="header">
+              <ha-icon icon="mdi:code-array"></ha-icon>
+              Images Configuration
+            </h3>
+            <div class="code-editor">
+              <ha-alert alert-type="info">There is no need to add a '-' for each line. Each line will be treated as a separate URL automatically.</ha-alert>
+              <ha-code-editor
+              autofocus
+              autocomplete-entities
+              autocomplete-icons
+              .hass=${this.hass}
+              .value=${images}
+              .configValue="${'images'}"
+              @blur=${this._valueChanged}
+            ></ha-code-editor>
+            </div>
+          </ha-expansion-panel>
+        </div>
           <div class="switches">
             <ha-formfield .label=${`Show slides`}>
               <ha-switch
@@ -235,22 +272,36 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   //   if (!this._config || !this.hass) {
   //     return;
   //   }
+
   //   const target = ev.target;
-  //   if (this[`_${target.configValue}`] === target.value) {
+  //   const configValue = target.configValue;
+
+  //   if (this[`_${configValue}`] === target.value) {
   //     return;
   //   }
-  //   if (target.configValue) {
-  //     if (target.value === '') {
-  //       const tmpConfig = { ...this._config };
-  //       delete tmpConfig[target.configValue];
-  //       this._config = tmpConfig;
-  //     } else {
-  //       this._config = {
-  //         ...this._config,
-  //         [target.configValue]: target.checked !== undefined ? target.checked : target.value,
-  //       };
-  //     }
+
+  //   let newValue: any;
+  //   if (configValue === 'images') {
+  //     newValue = target.value
+  //       .split('\n')
+  //       .map((line: string) => line.trim())
+  //       .filter((line: string) => line); // Remove empty lines
+  //   } else {
+  //     newValue = target.checked !== undefined ? target.checked : target.value;
   //   }
+
+  //   if (newValue.length === 0) {
+  //     // Check for an empty array
+  //     const tmpConfig = { ...this._config };
+  //     delete tmpConfig[configValue];
+  //     this._config = tmpConfig;
+  //   } else {
+  //     this._config = {
+  //       ...this._config,
+  //       [configValue]: newValue,
+  //     };
+  //   }
+
   //   fireEvent(this, 'config-changed', { config: this._config });
   // }
 
@@ -272,8 +323,32 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         .split('\n')
         .map((line: string) => line.trim())
         .filter((line: string) => line); // Remove empty lines
+    } else if (['hours_to_show', 'default_zoom'].includes(configValue)) {
+      newValue = target.value === '' ? undefined : Number(target.value);
+      if (!isNaN(newValue)) {
+        this._config = {
+          ...this._config,
+          map_popup_config: {
+            ...this._config.map_popup_config,
+            [configValue]: newValue,
+          },
+        };
+      }
+    } else if (configValue === 'theme_mode') {
+      newValue = target.value;
+      this._config = {
+        ...this._config,
+        map_popup_config: {
+          ...this._config.map_popup_config,
+          [configValue]: newValue,
+        },
+      };
     } else {
       newValue = target.checked !== undefined ? target.checked : target.value;
+      this._config = {
+        ...this._config,
+        [configValue]: newValue,
+      };
     }
 
     if (newValue.length === 0) {
@@ -281,11 +356,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       const tmpConfig = { ...this._config };
       delete tmpConfig[configValue];
       this._config = tmpConfig;
-    } else {
-      this._config = {
-        ...this._config,
-        [configValue]: newValue,
-      };
     }
 
     fireEvent(this, 'config-changed', { config: this._config });
@@ -295,6 +365,10 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     .card-config {
       width: 100%;
     }
+    .panel-container {
+      margin-top: 16px;
+    }
+
     .switches {
       display: grid;
       grid-template-columns: 1fr 1fr;
