@@ -187,6 +187,7 @@ export function logCardInfo(): void {
   const length = Math.max(line1.length, line2.length) + 3;
   const pad = (text: string, length: number) => text + ' '.repeat(length - text.length);
   const repo = repository.url;
+  const sponsor = 'https://github.com/sponsors/ngocjohn';
 
   /* eslint no-console: 0 */
   console.groupCollapsed(
@@ -196,5 +197,6 @@ export function logCardInfo(): void {
   );
   console.info(description);
   console.info(`Github: ${repo}`);
+  console.info(`If you like the card, consider supporting the developer: ${sponsor}`);
   console.groupEnd();
 }
