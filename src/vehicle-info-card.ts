@@ -61,11 +61,11 @@ export class VehicleCard extends LitElement {
   private lockAttributesVisible = false;
   private chargingInfoVisible = false;
 
-  // get isCharging() {
-  //   return this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'chargingactive');
-  // }
+  get isCharging() {
+    return this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'chargingactive');
+  }
 
-  private isCharging = true;
+  // private isCharging = true;
 
   get isDark(): boolean {
     return this.hass.themes.darkMode;
@@ -147,7 +147,7 @@ export class VehicleCard extends LitElement {
   };
 
   private async createCards(cardConfigs: LovelaceCardConfig[], stateProperty: string): Promise<void> {
-    if (!HELPERS) {
+    if (HELPERS) {
       const helpers = await HELPERS;
       const cards = await Promise.all(
         cardConfigs.map(async (cardConfig) => {
@@ -310,11 +310,7 @@ export class VehicleCard extends LitElement {
 
     const chargingDataKeys: EntityConfig[] = [
       { key: 'chargingPower', name: 'Power', icon: 'mdi:flash' },
-      {
-        key: 'soc',
-        name: 'Current state',
-        unit: '%',
-      },
+      { key: 'soc', name: 'Current state', unit: '%' },
       { key: 'maxSoc', name: 'Maximum', unit: '%' },
       { key: 'selectedProgram' },
     ];
@@ -356,7 +352,7 @@ export class VehicleCard extends LitElement {
 
     return html`
       <div class=${chargingClass}>
-        ${chargingDataSimulated.map(({ name, state, icon, unit }) => {
+        ${chargingData.map(({ name, state, icon, unit }) => {
           return html`
             <div class="item charge">
               <div>
