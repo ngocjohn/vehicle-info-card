@@ -544,7 +544,7 @@ export class VehicleCard extends LitElement {
 
   private createItemDataRow = (
     title: string,
-    data: { key: string; name?: string; icon?: string; state?: string }[],
+    data: { key: string; name?: string; icon?: string; state?: string; unit?: string }[],
   ): TemplateResult => {
     return html`
       <div class="default-card">
@@ -574,11 +574,10 @@ export class VehicleCard extends LitElement {
     const overViewDataKeys = [
       { key: 'odometer' },
       { key: 'fuelLevel' },
-      { key: 'rangeLiquid' },
+      { key: 'rangeLiquid', name: 'Range' },
       { key: 'rangeElectric', name: 'Range' },
       { key: 'soc' },
       { key: 'maxSoc' },
-      { key: 'rangeElectric', name: 'Range' },
     ];
 
     const tripFromResetDataKeys = [
@@ -620,7 +619,6 @@ export class VehicleCard extends LitElement {
     const lockInfoData = this.getLockEntityInfo();
     const vehicleData = this.createDataArray(vehicleDataKeys);
     const warningsData = this.createDataArray(warningsDataKeys);
-
     return html`
       <div class="default-card">
         <div class="data-header">Vehicle status</div>
@@ -642,7 +640,7 @@ export class VehicleCard extends LitElement {
               <div>
                 <ha-icon
                   class="data-icon ${this.getBooleanState(vehicleEntities[key]?.entity_id) ? 'warning' : ''} "
-                  icon="${icon}"
+                  .icon="${icon}"
                   @click=${() => this.toggleMoreInfo(vehicleEntities[key]?.entity_id)}
                 ></ha-icon>
                 <span>${name}</span>
@@ -755,6 +753,12 @@ export class VehicleCard extends LitElement {
   /* GET ENTITIES STATE AND ATTRIBUTES                                          */
   /* -------------------------------------------------------------------------- */
 
+  private createDataArray = (
+    keys: Partial<EntityConfig>[],
+  ): { key: string; name?: string; icon?: string; state?: string; unit?: string }[] => {
+    return keys.map((config) => this.getEntityInfoByKey(config));
+  };
+
   getEntityInfoByKey = ({
     key,
     name,
@@ -806,8 +810,8 @@ export class VehicleCard extends LitElement {
           key,
           name: name ?? this.vehicleEntities.soc?.original_name,
           icon: icon ?? socIcon ?? '',
-          state: state ?? currentState ?? '',
-          unit: unit ?? '%',
+          state: state ?? this.getStateDisplay(this.vehicleEntities.soc?.entity_id),
+          unit: unit ?? this.getEntityAttribute(this.vehicleEntities.soc?.entity_id, 'unit_of_measurement'),
         };
       } else if (key === 'maxSoc') {
         const maxSocState = this.getEntityState(this.vehicleEntities.maxSoc?.entity_id) || '0';
@@ -815,8 +819,8 @@ export class VehicleCard extends LitElement {
           key,
           name: name ?? this.vehicleEntities.maxSoc?.original_name,
           icon: icon ?? `mdi:battery-charging-${maxSocState}`,
-          state: state ?? maxSocState,
-          unit: unit ?? '%',
+          state: state ?? this.getStateDisplay(this.vehicleEntities.maxSoc?.entity_id),
+          unit: unit ?? this.getEntityAttribute(this.vehicleEntities.maxSoc?.entity_id, 'unit_of_measurement'),
         };
       } else if (key === 'parkBrake') {
         return {
@@ -848,21 +852,13 @@ export class VehicleCard extends LitElement {
       };
     }
 
-    const entityId = this.vehicleEntities[key]?.entity_id;
-
     return {
       key,
       name: name ?? this.vehicleEntities[key]?.original_name,
-      icon: icon ?? this.getEntityAttribute(entityId, 'icon'),
-      unit: unit ?? this.getEntityAttribute(entityId, 'unit_of_measurement'),
-      state: state ?? this.getStateDisplay(entityId),
+      icon: icon ?? this.getEntityAttribute(this.vehicleEntities[key]?.entity_id, 'icon'),
+      unit: unit ?? this.getEntityAttribute(this.vehicleEntities[key]?.entity_id, 'unit_of_measurement'),
+      state: state ?? this.getStateDisplay(this.vehicleEntities[key]?.entity_id),
     };
-  };
-
-  private createDataArray = (
-    keys: Partial<EntityConfig>[],
-  ): { key: string; name: string; icon: string; state: string; unit: string }[] => {
-    return keys.map((config) => this.getEntityInfoByKey(config));
   };
 
   private getLockEntityInfo = (): Partial<EntityAttr & { lockId: string; color: string }> => {
