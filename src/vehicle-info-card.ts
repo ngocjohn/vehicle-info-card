@@ -29,11 +29,7 @@ import './components/map-card';
 import './components/header-slide';
 import './components/eco-chart';
 
-console.info(
-  `%c  VEHICLE-INFO-CARD %c  FIX  `,
-  'color: orange; font-weight: bold; background: black',
-  'color: white; font-weight: bold; background: dimgray',
-);
+logCardInfo();
 
 (window as any).customCards = (window as any).customCards || [];
 (window as any).customCards.push({
@@ -101,7 +97,7 @@ export class VehicleCard extends LitElement {
   @state() private activeCardType: string | null = null;
 
   private lockAttributesVisible = false;
-  private cardTypes = cardTypes;
+
   get isDark(): boolean {
     return this.hass.themes.darkMode;
   }
@@ -154,7 +150,6 @@ export class VehicleCard extends LitElement {
       );
       this.additionalCards[stateProperty] = cards;
     }
-    console.log('Additional cards created:', this.additionalCards);
   }
 
   protected updated(changedProps: PropertyValues) {
@@ -358,16 +353,6 @@ export class VehicleCard extends LitElement {
         )}
       </div>
     `;
-  }
-
-  private getCardTypeData(cardType: string): { name: string; icon: string } {
-    const cardTypeData: Record<string, { name: string; icon: string }> = {
-      tripCards: { name: 'Trip data', icon: 'mdi:map-marker-path' },
-      vehicleCards: { name: 'Vehicle status', icon: 'mdi:car-info' },
-      ecoCards: { name: 'Eco display', icon: 'mdi:leaf' },
-      tyreCards: { name: 'Tyre pressure', icon: 'mdi:tire' },
-    };
-    return cardTypeData[cardType];
   }
 
   private _renderCustomCard(): TemplateResult | LovelaceCard | void {
