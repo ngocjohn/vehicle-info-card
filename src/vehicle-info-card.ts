@@ -479,16 +479,6 @@ export class VehicleCard extends LitElement {
     `;
   }
 
-  private getCardTypeData(cardType: string): { name: string; icon: string } {
-    const cardTypeData: Record<string, { name: string; icon: string }> = {
-      tripCards: { name: 'Trip data', icon: 'mdi:map-marker-path' },
-      vehicleCards: { name: 'Vehicle status', icon: 'mdi:car-info' },
-      ecoCards: { name: 'Eco display', icon: 'mdi:leaf' },
-      tyreCards: { name: 'Tyre pressure', icon: 'mdi:tire' },
-    };
-    return cardTypeData[cardType];
-  }
-
   private _renderCustomCard(): TemplateResult | LovelaceCard | void {
     if (!this.activeCardType) return html``;
 
