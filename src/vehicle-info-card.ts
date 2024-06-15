@@ -65,8 +65,6 @@ export class VehicleCard extends LitElement {
     return this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'chargingactive');
   }
 
-  // private isCharging = true;
-
   get isDark(): boolean {
     return this.hass.themes.darkMode;
   }
@@ -274,9 +272,8 @@ export class VehicleCard extends LitElement {
     return html`<div class="info-box">${defaultIdicator} ${addedChargingInfo}</div> `;
   }
 
-  toggleChargingInfo = (): void => {
+  private toggleChargingInfo = (): void => {
     this.chargingInfoVisible = !this.chargingInfoVisible;
-    console.log('charging toggle: ', this.chargingInfoVisible);
     this.requestUpdate();
   };
 
@@ -318,38 +315,6 @@ export class VehicleCard extends LitElement {
     ];
 
     const chargingData = generateDataArray(chargingDataKeys);
-
-    const generateChargingDataSimulated = () => {
-      const data = [
-        { name: 'Power', state: 3.7, unit: 'kW', icon: 'mdi:flash' },
-        { name: 'Current state', state: 25, unit: '%' },
-        { name: 'Maximum', state: 80, unit: '%' },
-        { name: 'Program', state: selectedProgramMapping[3], icon: 'mdi:ev-station' },
-      ];
-
-      return data.map((item) => {
-        if (item.name === 'Maximum') {
-          return { ...item, icon: `mdi:battery-charging-${item.state}` };
-        }
-        if (item.name === 'Current state') {
-          const itemState = typeof item.state === 'string' ? parseFloat(item.state) : item.state;
-          let icon;
-          if (itemState < 35) {
-            icon = 'mdi:battery-charging-low';
-          } else if (itemState < 70) {
-            icon = 'mdi:battery-charging-medium';
-          } else {
-            icon = 'mdi:battery-charging-high';
-          }
-          return { ...item, icon };
-        }
-
-        return item;
-      });
-    };
-
-    const chargingDataSimulated = generateChargingDataSimulated();
-
     const chargingClass = this.chargingInfoVisible ? 'info-box charge active' : 'info-box charge';
 
     return html`

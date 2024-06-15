@@ -269,43 +269,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     this._helpers = await (window as any).loadCardHelpers();
   }
 
-  // private _valueChanged(ev): void {
-  //   if (!this._config || !this.hass) {
-  //     return;
-  //   }
-
-  //   const target = ev.target;
-  //   const configValue = target.configValue;
-
-  //   if (this[`_${configValue}`] === target.value) {
-  //     return;
-  //   }
-
-  //   let newValue: any;
-  //   if (configValue === 'images') {
-  //     newValue = target.value
-  //       .split('\n')
-  //       .map((line: string) => line.trim())
-  //       .filter((line: string) => line); // Remove empty lines
-  //   } else {
-  //     newValue = target.checked !== undefined ? target.checked : target.value;
-  //   }
-
-  //   if (newValue.length === 0) {
-  //     // Check for an empty array
-  //     const tmpConfig = { ...this._config };
-  //     delete tmpConfig[configValue];
-  //     this._config = tmpConfig;
-  //   } else {
-  //     this._config = {
-  //       ...this._config,
-  //       [configValue]: newValue,
-  //     };
-  //   }
-
-  //   fireEvent(this, 'config-changed', { config: this._config });
-  // }
-
   private _valueChanged(ev): void {
     if (!this._config || !this.hass) {
       return;
