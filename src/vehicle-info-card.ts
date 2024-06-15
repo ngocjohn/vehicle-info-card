@@ -29,7 +29,11 @@ import './components/map-card';
 import './components/header-slide';
 import './components/eco-chart';
 
-logCardInfo();
+console.info(
+  `%c  VEHICLE-INFO-CARD %c  FIX  `,
+  'color: orange; font-weight: bold; background: black',
+  'color: white; font-weight: bold; background: dimgray',
+);
 
 (window as any).customCards = (window as any).customCards || [];
 (window as any).customCards.push({
@@ -41,28 +45,13 @@ logCardInfo();
 });
 
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
+
 @customElement('vehicle-info-card')
 export class VehicleCard extends LitElement {
   public static async getConfigElement(): Promise<LovelaceCardEditor> {
     await import('./editor');
     return document.createElement('vehicle-info-card-editor');
   }
-
-  @property({ attribute: false }) public hass!: HomeAssistant & { themes: ExtendedThemes };
-
-  @property({ type: Object }) private config!: VehicleCardConfig;
-
-  @state() private vehicleEntities: { [key: string]: VehicleEntity } = {};
-
-  @state() private additionalCards: { [key: string]: any[] } = {};
-  @state() private activeCardType: string | null = null;
-
-  private lockAttributesVisible = false;
-
-  get isDark(): boolean {
-    return this.hass.themes.darkMode;
-  }
-
   // https://lit.dev/docs/components/styles/
   public static get styles(): CSSResultGroup {
     return styles;
@@ -74,7 +63,7 @@ export class VehicleCard extends LitElement {
     };
   };
 
-  public async setConfig(config: VehicleCardConfig): Promise<void> {
+  public setConfig(config: VehicleCardConfig): void {
     if (!config) {
       throw new Error(localize('common.invalid_configuration'));
     }
@@ -82,6 +71,7 @@ export class VehicleCard extends LitElement {
     this.config = {
       ...config,
     };
+
     for (const cardType of cardTypes) {
       if (this.config[cardType.config]) {
         this.createCards(this.config[cardType.config], cardType.type);
@@ -100,6 +90,20 @@ export class VehicleCard extends LitElement {
       };
       this.createCards([haMapConfig], 'mapDialog');
     }
+  }
+
+  @property({ attribute: false }) public hass!: HomeAssistant & { themes: ExtendedThemes };
+  @property({ type: Object }) private config!: VehicleCardConfig;
+
+  @state() private vehicleEntities: { [key: string]: VehicleEntity } = {};
+
+  @state() private additionalCards: { [key: string]: any[] } = {};
+  @state() private activeCardType: string | null = null;
+
+  private lockAttributesVisible = false;
+  private cardTypes = cardTypes;
+  get isDark(): boolean {
+    return this.hass.themes.darkMode;
   }
 
   protected firstUpdated(changedProperties: PropertyValues) {
@@ -139,7 +143,7 @@ export class VehicleCard extends LitElement {
   };
 
   private async createCards(cardConfigs: LovelaceCardConfig[], stateProperty: string): Promise<void> {
-    if (!HELPERS) {
+    if (HELPERS) {
       const helpers = await HELPERS;
       const cards = await Promise.all(
         cardConfigs.map(async (cardConfig) => {
@@ -150,6 +154,7 @@ export class VehicleCard extends LitElement {
       );
       this.additionalCards[stateProperty] = cards;
     }
+    console.log('Additional cards created:', this.additionalCards);
   }
 
   protected updated(changedProps: PropertyValues) {
@@ -353,6 +358,16 @@ export class VehicleCard extends LitElement {
         )}
       </div>
     `;
+  }
+
+  private getCardTypeData(cardType: string): { name: string; icon: string } {
+    const cardTypeData: Record<string, { name: string; icon: string }> = {
+      tripCards: { name: 'Trip data', icon: 'mdi:map-marker-path' },
+      vehicleCards: { name: 'Vehicle status', icon: 'mdi:car-info' },
+      ecoCards: { name: 'Eco display', icon: 'mdi:leaf' },
+      tyreCards: { name: 'Tyre pressure', icon: 'mdi:tire' },
+    };
+    return cardTypeData[cardType];
   }
 
   private _renderCustomCard(): TemplateResult | LovelaceCard | void {
