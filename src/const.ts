@@ -84,3 +84,14 @@ export const selectedProgramMapping = {
   '2': 'Home',
   '3': 'Work',
 };
+
+export const windowsStateMapping = {
+  windowstatusrearleft: { name: 'Window rear left', state: { 2: 'closed', 0: 'open' } },
+  windowstatusrearright: { name: 'Window rear right', state: { 2: 'closed', 0: 'open' } },
+  windowstatusfrontleft: { name: 'Window front left', state: { 2: 'closed', 0: 'open' } },
+  windowstatusfrontright: { name: 'Window front right', state: { 2: 'closed', 0: 'open' } },
+  windowstatusrearleftblind: { name: 'Window rear left blind', state: { 2: 'closed', 0: 'open' } },
+  windowstatusrearrightblind: { name: 'Window rear right blind', state: { 2: 'closed', 0: 'open' } },
+  windowstatusfrontleftblind: { name: 'Window front left blind', state: { 2: 'closed', 0: 'open' } },
+  windowstatusfrontrightblind: { name: 'Window front right blind', state: { 2: 'closed', 0: 'open' } },
+};

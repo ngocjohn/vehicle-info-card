@@ -16,7 +16,7 @@ import {
 
 // Custom Types and Constants
 import { ExtendedThemes, VehicleCardConfig, defaultConfig, EntityConfig, VehicleEntity, EntityAttr } from './types';
-import { lockAttrMapping, lockStateMapping, cardTypes, selectedProgramMapping } from './const';
+import { lockAttrMapping, lockStateMapping, cardTypes, selectedProgramMapping, windowsStateMapping } from './const';
 import { localize } from './localize/localize';
 import { formatTimestamp } from './utils/helpers';
 import { logCardInfo, getVehicleEntities, setupCardListeners } from './utils/utils';
@@ -59,6 +59,7 @@ export class VehicleCard extends LitElement {
   @state() private activeCardType: string | null = null;
 
   private lockAttributesVisible = false;
+  private windowAttributesVisible = false;
   private chargingInfoVisible = false;
 
   get isCharging() {
@@ -542,8 +543,6 @@ export class VehicleCard extends LitElement {
   private _renderDefaultVehicleCard(): TemplateResult | void {
     const { vehicleEntities } = this;
 
-    const vehicleDataKeys = [{ key: 'parkBrake' }, { key: 'windowsClosed' }];
-
     const warningsDataKeys = [
       { key: 'tirePressureWarning' },
       { key: 'lowBrakeFluid' },
@@ -553,7 +552,8 @@ export class VehicleCard extends LitElement {
     ];
 
     const lockInfoData = this.getLockEntityInfo();
-    const vehicleData = this.createDataArray(vehicleDataKeys);
+    const windowData = this.createDataArray([{ key: 'windowsClosed' }]);
+    const parkBrakeData = this.createDataArray([{ key: 'parkBrake' }]);
     const warningsData = this.createDataArray(warningsDataKeys);
     return html`
       <div class="default-card">
@@ -570,26 +570,48 @@ export class VehicleCard extends LitElement {
         </div>
 
         ${this._renderLockAttributes()}
-        ${vehicleData.map(
-          ({ key, icon, state, name }) => html`
+        ${windowData.map(({ name, icon, state }) => {
+          return html`
             <div class="data-row">
               <div>
                 <ha-icon
-                  class="data-icon ${this.getBooleanState(vehicleEntities[key]?.entity_id) ? 'warning' : ''} "
+                  class="data-icon"
                   .icon="${icon}"
-                  @click=${() => this.toggleMoreInfo(vehicleEntities[key]?.entity_id)}
+                  @click=${() => this.toggleMoreInfo(vehicleEntities.windowsClosed?.entity_id)}
                 ></ha-icon>
                 <span>${name}</span>
               </div>
-              <div class="data-value-unit" @click=${() => this.toggleMoreInfo(vehicleEntities[key]?.entity_id)}>
+              <div class="data-value-unit" @click=${() => this.toggleWindowAttributes()}>
                 <span>${state}</span>
-                <ha-icon icon="mdi:chevron-right" style="opacity: 0;"></ha-icon>
+                <ha-icon icon="${this.windowAttributesVisible ? 'mdi:chevron-up' : 'mdi:chevron-right'}"></ha-icon>
               </div>
             </div>
-          `,
-        )}
+          `;
+        })}
+        ${this._renderWindowAttributes()}
+        ${parkBrakeData.map(({ name, icon, state }) => {
+          return html`
+            <div class="data-row">
+              <div>
+                <ha-icon
+                  class="data-icon ${state === 'Parked' ? '' : 'warning'}"
+                  .icon="${icon}"
+                  @click=${() => this.toggleMoreInfo(vehicleEntities.parkBrake?.entity_id)}
+                ></ha-icon>
+                <span>${name}</span>
+              </div>
+              <div
+                class="data-value
+              ${state === 'Parked' ? '' : 'warning'}"
+                @click=${() => this.toggleMoreInfo(vehicleEntities.parkBrake?.entity_id)}
+              >
+                <span>${state}</span>
+                <ha-icon icon="mdi:chevron-double-right" style="opacity: 0"></ha-icon>
+              </div>
+            </div>
+          `;
+        })}
       </div>
-
       <div class="default-card">
         <div class="data-header">Warnings</div>
         ${warningsData.map(
@@ -598,7 +620,7 @@ export class VehicleCard extends LitElement {
               <div>
                 <ha-icon
                   class="data-icon"
-                  icon="${icon}"
+                  .icon="${icon}"
                   @click=${() => this.toggleMoreInfo(vehicleEntities[key]?.entity_id)}
                 ></ha-icon>
                 <span>${name}</span>
@@ -614,6 +636,34 @@ export class VehicleCard extends LitElement {
         )}
       </div>
     `;
+  }
+
+  private _renderDefaultEcoCard(): TemplateResult | void {
+    const ecoDataKeys = [
+      { key: 'ecoScoreBonusRange', name: 'Bonus range' },
+      { key: 'ecoScoreAcceleraion', name: 'Acceleration' },
+      { key: 'ecoScoreConstant', name: 'Constant' },
+      { key: 'ecoScoreFreeWheel', name: 'Free wheel' },
+    ];
+
+    const ecoData = this.createDataArray(ecoDataKeys);
+    return html`<div class="default-card">
+        <div class="data-header">Eco display</div>
+        ${this._renderEcoChart()}
+      </div>
+      ${this.createItemDataRow('Scores', ecoData)}`;
+  }
+
+  private _renderDefaultTyreCard(): TemplateResult | void {
+    const tyreDataKeys = [
+      { key: 'tirePressureFrontLeft', name: 'Front left', icon: 'mdi:tire' },
+      { key: 'tirePressureFrontRight', name: 'Front right', icon: 'mdi:tire' },
+      { key: 'tirePressureRearLeft', name: 'Rear left', icon: 'mdi:tire' },
+      { key: 'tirePressureRearRight', name: 'Rear right', icon: 'mdi:tire' },
+    ];
+
+    const tyreData = this.createDataArray(tyreDataKeys);
+    return this.createItemDataRow('Tyre pressures', tyreData);
   }
 
   private _renderLockAttributes(): TemplateResult {
@@ -651,32 +701,40 @@ export class VehicleCard extends LitElement {
     `;
   }
 
-  private _renderDefaultEcoCard(): TemplateResult | void {
-    const ecoDataKeys = [
-      { key: 'ecoScoreBonusRange', name: 'Bonus range' },
-      { key: 'ecoScoreAcceleraion', name: 'Acceleration' },
-      { key: 'ecoScoreConstant', name: 'Constant' },
-      { key: 'ecoScoreFreeWheel', name: 'Free wheel' },
-    ];
+  private _renderWindowAttributes(): TemplateResult {
+    const windowAttributeStates: Record<string, any> = {};
+    // Iterate over the keys of the Windows object
+    Object.keys(windowsStateMapping).forEach((attribute) => {
+      const attributeState = this.getEntityAttribute(this.vehicleEntities.windowsClosed?.entity_id, attribute);
+      if (attributeState !== undefined && attributeState !== null) {
+        windowAttributeStates[attribute] = attributeState;
+      }
+    });
 
-    const ecoData = this.createDataArray(ecoDataKeys);
-    return html`<div class="default-card">
-        <div class="data-header">Eco display</div>
-        ${this._renderEcoChart()}
+    const attributesClass = this.windowAttributesVisible ? 'sub-attributes active' : 'sub-attributes';
+
+    // Render the window attributes
+    return html`
+      <div class=${attributesClass}>
+        ${Object.keys(windowAttributeStates).map((attribute) => {
+          const rawState = windowAttributeStates[attribute];
+          // Check if the state is valid and the attribute mapping exists
+          if (rawState !== undefined && rawState !== null && windowsStateMapping[attribute]) {
+            const readableState = windowsStateMapping[attribute].state[rawState] || 'Unknown';
+            return html`
+              <div class="data-row">
+                <span>${windowsStateMapping[attribute].name}</span>
+                <div class="data-value-unit">
+                  <span style="text-transform: capitalize">${readableState}</span>
+                </div>
+              </div>
+            `;
+          }
+          // Return nothing if the attribute state is not valid or attribute mapping does not exist
+          return '';
+        })}
       </div>
-      ${this.createItemDataRow('Scores', ecoData)}`;
-  }
-
-  private _renderDefaultTyreCard(): TemplateResult | void {
-    const tyreDataKeys = [
-      { key: 'tirePressureFrontLeft', name: 'Front left', icon: 'mdi:tire' },
-      { key: 'tirePressureFrontRight', name: 'Front right', icon: 'mdi:tire' },
-      { key: 'tirePressureRearLeft', name: 'Rear left', icon: 'mdi:tire' },
-      { key: 'tirePressureRearRight', name: 'Rear right', icon: 'mdi:tire' },
-    ];
-
-    const tyreData = this.createDataArray(tyreDataKeys);
-    return this.createItemDataRow('Tyre pressures', tyreData);
+    `;
   }
 
   private _showWarning(warning: string): TemplateResult {
@@ -729,6 +787,11 @@ export class VehicleCard extends LitElement {
   private toggleLockAttributes = () => {
     this.lockAttributesVisible = !this.lockAttributesVisible;
     this.requestUpdate(); // Trigger a re-render
+  };
+
+  private toggleWindowAttributes = () => {
+    this.windowAttributesVisible = !this.windowAttributesVisible;
+    this.requestUpdate();
   };
 
   /* -------------------------------------------------------------------------- */
