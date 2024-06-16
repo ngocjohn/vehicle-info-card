@@ -175,28 +175,3 @@ export function setupCardListeners(
     cardElement.addEventListener(event, presDown as EventListener);
   });
 }
-
-/**
- * Console log info
- */
-
-export function logCardInfo(): void {
-  /* eslint no-console: 0 */
-  const line1 = '   VEHICLE-INFO-CARD';
-  const line2 = `   v${version}`;
-  const length = Math.max(line1.length, line2.length) + 3;
-  const pad = (text: string, length: number) => text + ' '.repeat(length - text.length);
-  const repo = repository.url;
-  const sponsor = 'https://github.com/sponsors/ngocjohn';
-
-  /* eslint no-console: 0 */
-  console.groupCollapsed(
-    `%c${pad(line1, length)}\n%c${pad(line2, length)}`,
-    'color: orange; font-weight: bold; background: black',
-    'color: white; font-weight: bold; background: dimgray',
-  );
-  console.info(description);
-  console.info(`Github: ${repo}`);
-  console.info(`If you like the card, consider supporting the developer: ${sponsor}`);
-  console.groupEnd();
-}
