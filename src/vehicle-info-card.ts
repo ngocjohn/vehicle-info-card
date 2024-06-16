@@ -110,6 +110,10 @@ export class VehicleCard extends LitElement {
     }
   }
 
+  public getCardSize(): number {
+    return 3;
+  }
+
   protected firstUpdated(changedProperties: PropertyValues) {
     super.firstUpdated(changedProperties);
     this.configureAsync();
@@ -141,10 +145,6 @@ export class VehicleCard extends LitElement {
       button[action]('click', () => tapFeedback(button));
     });
   }
-
-  private showMapOnCard = (): void => {
-    this.activeCardType = 'mapDialog';
-  };
 
   private async createCards(cardConfigs: LovelaceCardConfig[], stateProperty: string): Promise<void> {
     if (HELPERS) {
@@ -271,11 +271,6 @@ export class VehicleCard extends LitElement {
 
     return html`<div class="info-box">${defaultIdicator} ${addedChargingInfo}</div> `;
   }
-
-  private toggleChargingInfo = (): void => {
-    this.chargingInfoVisible = !this.chargingInfoVisible;
-    this.requestUpdate();
-  };
 
   private _renderChargingInfo(): TemplateResult | void {
     if (!this.isCharging) return;
@@ -511,65 +506,6 @@ export class VehicleCard extends LitElement {
     `;
   }
 
-  /* -------------------------------------------------------------------------- */
-  /* ADDED CARD FUNCTIONALITY                                                   */
-  /* -------------------------------------------------------------------------- */
-
-  private toggleCard = (action?: 'next' | 'prev' | 'close'): void => {
-    const cardElement = this.shadowRoot?.querySelector('.card-element') as HTMLElement;
-    if (!this.activeCardType || !cardElement) return;
-    if (action === 'next' || action === 'prev') {
-      const currentIndex = cardTypes.findIndex((card) => card.type === this.activeCardType);
-      const newIndex =
-        action === 'next'
-          ? (currentIndex + 1) % cardTypes.length
-          : (currentIndex - 1 + cardTypes.length) % cardTypes.length;
-
-      cardElement.style.animation = 'none';
-      setTimeout(() => {
-        this.activeCardType = cardTypes[newIndex].type;
-        cardElement.style.animation = 'fadeIn 0.3s ease';
-      }, 300);
-      // this.activeCardType = cardTypes[newIndex].type;
-    } else if (action === 'close') {
-      this.activeCardType = null;
-    }
-  };
-
-  private toggleCardFromButtons = (cardType: string): void => {
-    setTimeout(() => {
-      this.activeCardType = this.activeCardType === cardType ? null : cardType;
-    }, 200);
-  };
-
-  private createItemDataRow = (
-    title: string,
-    data: { key: string; name?: string; icon?: string; state?: string; unit?: string }[],
-  ): TemplateResult => {
-    return html`
-      <div class="default-card">
-        <div class="data-header">${title}</div>
-        ${data.map(({ key, name, icon, state }) => {
-          if (key && name && state) {
-            return html`
-              <div class="data-row">
-                <div>
-                  <ha-icon class="data-icon" .icon="${icon}"></ha-icon>
-                  <span>${name}</span>
-                </div>
-                <div class="data-value-unit" @click=${() => this.toggleMoreInfo(this.vehicleEntities[key]?.entity_id)}>
-                  <span>${state}</span>
-                </div>
-              </div>
-            `;
-          } else {
-            return html``;
-          }
-        })}
-      </div>
-    `;
-  };
-
   private _renderDefaultTripCard(): TemplateResult | void {
     const overViewDataKeys = [
       { key: 'odometer' },
@@ -680,12 +616,6 @@ export class VehicleCard extends LitElement {
     `;
   }
 
-  // Method to toggle the visibility of lock attributes
-  private toggleLockAttributes = () => {
-    this.lockAttributesVisible = !this.lockAttributesVisible;
-    this.requestUpdate(); // Trigger a re-render
-  };
-
   private _renderLockAttributes(): TemplateResult {
     const lockAttributeStates: Record<string, any> = {};
     // Iterate over the keys of the lockAttrMapping object
@@ -749,9 +679,89 @@ export class VehicleCard extends LitElement {
     return this.createItemDataRow('Tyre pressures', tyreData);
   }
 
+  private _showWarning(warning: string): TemplateResult {
+    return html` <hui-warning>${warning}</hui-warning> `;
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /* ADDED CARD FUNCTIONALITY                                                   */
+  /* -------------------------------------------------------------------------- */
+
+  private toggleCard = (action?: 'next' | 'prev' | 'close'): void => {
+    const cardElement = this.shadowRoot?.querySelector('.card-element') as HTMLElement;
+    if (!this.activeCardType || !cardElement) return;
+    if (action === 'next' || action === 'prev') {
+      const currentIndex = cardTypes.findIndex((card) => card.type === this.activeCardType);
+      const newIndex =
+        action === 'next'
+          ? (currentIndex + 1) % cardTypes.length
+          : (currentIndex - 1 + cardTypes.length) % cardTypes.length;
+
+      cardElement.style.animation = 'none';
+      setTimeout(() => {
+        this.activeCardType = cardTypes[newIndex].type;
+        cardElement.style.animation = 'fadeIn 0.3s ease';
+      }, 300);
+      // this.activeCardType = cardTypes[newIndex].type;
+    } else if (action === 'close') {
+      this.activeCardType = null;
+    }
+  };
+
+  private toggleCardFromButtons = (cardType: string): void => {
+    setTimeout(() => {
+      this.activeCardType = this.activeCardType === cardType ? null : cardType;
+    }, 200);
+  };
+
+  /* ----------------------------- PRIVATE METHODS ---------------------------- */
+
+  private toggleChargingInfo = (): void => {
+    this.chargingInfoVisible = !this.chargingInfoVisible;
+    this.requestUpdate();
+  };
+
+  private showMapOnCard = (): void => {
+    this.activeCardType = 'mapDialog';
+  };
+
+  // Method to toggle the visibility of lock attributes
+  private toggleLockAttributes = () => {
+    this.lockAttributesVisible = !this.lockAttributesVisible;
+    this.requestUpdate(); // Trigger a re-render
+  };
+
   /* -------------------------------------------------------------------------- */
   /* GET ENTITIES STATE AND ATTRIBUTES                                          */
   /* -------------------------------------------------------------------------- */
+
+  private createItemDataRow = (
+    title: string,
+    data: { key: string; name?: string; icon?: string; state?: string; unit?: string }[],
+  ): TemplateResult => {
+    return html`
+      <div class="default-card">
+        <div class="data-header">${title}</div>
+        ${data.map(({ key, name, icon, state }) => {
+          if (key && name && state) {
+            return html`
+              <div class="data-row">
+                <div>
+                  <ha-icon class="data-icon" .icon="${icon}"></ha-icon>
+                  <span>${name}</span>
+                </div>
+                <div class="data-value-unit" @click=${() => this.toggleMoreInfo(this.vehicleEntities[key]?.entity_id)}>
+                  <span>${state}</span>
+                </div>
+              </div>
+            `;
+          } else {
+            return html``;
+          }
+        })}
+      </div>
+    `;
+  };
 
   private createDataArray = (
     keys: Partial<EntityConfig>[],
@@ -804,8 +814,8 @@ export class VehicleCard extends LitElement {
           stateValue < 35
             ? 'mdi:battery-charging-low'
             : stateValue < 70
-            ? 'mdi:battery-charging-medium'
-            : 'mdi:battery-charging-high';
+              ? 'mdi:battery-charging-medium'
+              : 'mdi:battery-charging-high';
         return {
           key,
           name: name ?? this.vehicleEntities.soc?.original_name,
@@ -946,15 +956,7 @@ export class VehicleCard extends LitElement {
     return this.hass.states[entity].attributes[attribute];
   };
 
-  private toggleMoreInfo(entity: string): void {
+  private toggleMoreInfo = (entity: string): void => {
     fireEvent(this, 'hass-more-info', { entityId: entity });
-  }
-
-  private _showWarning(warning: string): TemplateResult {
-    return html` <hui-warning>${warning}</hui-warning> `;
-  }
-
-  public getCardSize(): number {
-    return 3;
-  }
+  };
 }
