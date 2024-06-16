@@ -22,7 +22,7 @@
     "@rollup/plugin-typescript": "^11.1.6",
     "apexcharts": "^3.49.1",
     "custom-card-helpers": "^1.7.2",
-    "home-assistant-js-websocket": "^5.11.1",
+    "home-assistant-js-websocket": "^9.4.0",
     "js-yaml": "^4.1.0",
     "lit": "^2.0.0",
     "lodash": "^4.17.21"
