@@ -11,8 +11,7 @@
     Ubuntu,
     Cantarell,
     'Open Sans',
-    'Helvetica Neue',
-    sans-serif;
+    'Helvetica Neue';
 }
 *:focus {
   outline: none;
@@ -384,6 +383,20 @@ header h1 {
   color: var(--warning-color, --error-color) !important;
 }
 
+.subcard-icon {
+  transition: transform 0.3s;
+  transform: rotate(0deg);
+  display: inline-block;
+}
+
+.subcard-icon.active {
+  transform: rotate(90deg);
+}
+
+.subcard-icon.hidden {
+  visibility: hidden;
+}
+
 .sub-attributes {
   overflow: hidden;
   padding-top: 0 !important;
@@ -398,7 +411,7 @@ header h1 {
 .sub-attributes.active {
   max-height: 1000px;
   opacity: 1;
-  padding: inherit !important;
+  padding: inherit;
 }
 
 .error {
@@ -430,16 +443,10 @@ dialog::backdrop {
 
 @keyframes tap-feedback {
   0% {
-    transform: translateX(-100%);
-    opacity: 0;
-  }
-  64% {
-    transform: translateX(0);
-    opacity: 0.1;
+    transform: translateX(-50%);
   }
   100% {
     transform: translateX(100%);
-    opacity: 0;
   }
 }
 

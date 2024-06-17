@@ -6,6 +6,7 @@ import { customElement, property, state } from 'lit/decorators';
 import {
   fireEvent,
   formatDateTime,
+  formatNumber,
   forwardHaptic,
   hasConfigOrEntityChanged,
   HomeAssistant,
@@ -16,16 +17,24 @@ import {
 
 // Custom Types and Constants
 import { ExtendedThemes, VehicleCardConfig, defaultConfig, EntityConfig, VehicleEntities } from './types';
-import { lockAttrMapping, lockStateMapping, cardTypes, selectedProgramMapping, windowsStateMapping } from './const';
-import { formatTimestamp } from './utils/helpers';
-import { getVehicleEntities, setupCardListeners } from './utils/utils';
+import { cardTypes } from './const';
+
+import * as DataKeys from './const/data-keys';
+import * as StateMapping from './const/state-mapping';
 
 // Styles and Assets
 import styles from './css/styles.css';
-import { amgBlack, amgWhite } from './utils/imgconst';
+import { amgBlack, amgWhite } from './const/imgconst';
+
+// Components
 import './components/map-card';
 import './components/header-slide';
 import './components/eco-chart';
+
+// Functions
+import { formatTimestamp } from './utils/helpers';
+import { getVehicleEntities, setupCardListeners } from './utils/get-device-entities';
+import { range } from 'lodash';
 
 (window as any).customCards = (window as any).customCards || [];
 (window as any).customCards.push({
@@ -57,9 +66,11 @@ export class VehicleCard extends LitElement {
 
   @state() private chargingInfoVisible = false;
 
-  get isCharging() {
-    return this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'chargingactive');
-  }
+  // get isCharging() {
+  //   return this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'chargingactive');
+  // }
+
+  isCharging = true;
 
   get isDark(): boolean {
     return this.hass.themes.darkMode;
@@ -186,7 +197,7 @@ export class VehicleCard extends LitElement {
     const isDark = this.isDark ? 'dark' : '';
     const name = this.config.name || '';
     return html`
-      <ha-card class=${isDark ? 'dark' : ''}>
+      <ha-card class=${isDark}>
         ${this._renderHeaderBackground()}
         <header>
           <h1>${name}</h1>
@@ -197,9 +208,8 @@ export class VehicleCard extends LitElement {
   }
 
   private _renderHeaderBackground(): TemplateResult {
-    if (!this.config.show_background) return html``;
-    const isDark = this.isDark;
-    const background = isDark ? amgWhite : amgBlack;
+    if (!this.config.show_background || this.activeCardType !== null) return html``;
+    const background = this.isDark ? amgWhite : amgBlack;
 
     return html` <div class="header-background" style="background-image: url(${background})"></div> `;
   }
@@ -216,26 +226,12 @@ export class VehicleCard extends LitElement {
   }
 
   private _renderWarnings(): TemplateResult {
-    const { vehicleEntities } = this;
-    // Get the current state of the lock and park brake
-    const lockState =
-      lockStateMapping[this.getEntityState(vehicleEntities.lockSensor?.entity_id)] || lockStateMapping['4'];
-    const lockSensorState = this.getEntityState(vehicleEntities.lockSensor?.entity_id);
-    const lockIconDisplay = lockSensorState === '2' || lockSensorState === '1' ? 'mdi:lock' : 'mdi:lock-open';
+    const defaultIndicData = this.createDataArray([{ key: 'lockSensor' }, { key: 'parkBrake' }]);
 
-    const parkBrakeState = this.getBooleanState(vehicleEntities.parkBrake?.entity_id) ? 'Parked' : 'Released';
-
-    const itemsData = [
-      { key: 'lock', state: lockState, icon: lockIconDisplay },
-      { key: 'parkBrake', state: parkBrakeState, icon: 'mdi:car-brake-parking' },
-    ];
-
-    const chargingIcon = 'mdi:ev-station';
-
-    const defaultIdicator = itemsData.map(({ state, icon }) => {
+    const defaultIdicator = defaultIndicData.map(({ state, icon }) => {
       return html`
         <div class="item">
-          <ha-icon icon=${icon}></ha-icon>
+          <ha-icon .icon=${icon}></ha-icon>
           <div><span>${state}</span></div>
         </div>
       `;
@@ -243,10 +239,12 @@ export class VehicleCard extends LitElement {
 
     const addedChargingInfo = this.isCharging
       ? html` <div class="item chargeinfo" @click=${() => (this.chargingInfoVisible = !this.chargingInfoVisible)}>
-          <ha-icon icon=${chargingIcon}></ha-icon>
+          <ha-icon icon=${'mdi:ev-station'}></ha-icon>
           <div>
             <span>Charging</span>
-            <ha-icon icon=${this.chargingInfoVisible ? 'mdi:chevron-up' : 'mdi:chevron-right'}></ha-icon>
+            <div class="subcard-icon ${this.chargingInfoVisible ? 'active' : ''} " style="margin-bottom: 2px">
+              <ha-icon icon="mdi:chevron-right"></ha-icon>
+            </div>
           </div>
         </div>`
       : html``;
@@ -255,32 +253,27 @@ export class VehicleCard extends LitElement {
   }
 
   private _renderChargingInfo(): TemplateResult | void {
-    if (!this.isCharging) return;
-
-    const chargingDataKeys = [
-      { key: 'chargingPower', name: 'Power', icon: 'mdi:flash' },
-      { key: 'soc', name: 'Current state' },
-      { key: 'maxSoc', name: 'Maximum' },
-      { key: 'selectedProgram' },
-    ];
-
-    const chargingData = this.createDataArray(chargingDataKeys);
+    const chargingData = this.createDataArray(DataKeys.chargingOverview);
     const chargingClass = this.chargingInfoVisible ? 'info-box charge active' : 'info-box charge';
 
     return html`
-      <div class=${chargingClass}>
+      <div class=${chargingClass} .hidden=${this.isCharging}>
         ${chargingData.map(({ name, state, icon }) => {
-          return html`
-            <div class="item charge">
-              <div>
-                <ha-icon .icon=${icon}></ha-icon>
-                <span>${state}</span>
+          if (state) {
+            return html`
+              <div class="item charge">
+                <div>
+                  <ha-icon .icon=${icon}></ha-icon>
+                  <span>${state}</span>
+                </div>
+                <div class="item-name">
+                  <span>${name}</span>
+                </div>
               </div>
-              <div class="item-name">
-                <span>${name}</span>
-              </div>
-            </div>
-          `;
+            `;
+          } else {
+            return html``;
+          }
         })}
       </div>
     `;
@@ -432,19 +425,20 @@ export class VehicleCard extends LitElement {
     const cards = isDefaultCard ? cardInfo.defaultRender() : this.additionalCards[this.activeCardType];
 
     const lastCarUpdate = this.config.entity ? this.hass.states[this.config.entity].last_changed : '';
+
     const formattedDate = this.hass.locale
       ? formatDateTime(new Date(lastCarUpdate), this.hass.locale)
       : formatTimestamp(lastCarUpdate);
 
     const cardHeaderBox = html` <div class="added-card-header">
-      <div class="headder-btn" @click="${() => this.toggleCard('close')}">
+      <div class="headder-btn click-shrink" @click="${() => this.toggleCard('close')}">
         <ha-icon icon="mdi:close"></ha-icon>
       </div>
       <div class="card-toggle">
-        <div class="headder-btn" @click=${() => this.toggleCard('prev')}>
+        <div class="headder-btn click-shrink" @click=${() => this.toggleCard('prev')}>
           <ha-icon icon="mdi:chevron-left"></ha-icon>
         </div>
-        <div class="headder-btn" @click=${() => this.toggleCard('next')}>
+        <div class="headder-btn click-shrink" @click=${() => this.toggleCard('next')}>
           <ha-icon icon="mdi:chevron-right"></ha-icon>
         </div>
       </div>
@@ -462,48 +456,18 @@ export class VehicleCard extends LitElement {
   }
 
   private _renderDefaultTripCard(): TemplateResult | void {
-    const overViewDataKeys = [
-      { key: 'odometer' },
-      { key: 'fuelLevel' },
-      { key: 'rangeLiquid', name: 'Range' },
-      { key: 'rangeElectric', name: 'Range' },
-      { key: 'soc' },
-      { key: 'maxSoc' },
-    ];
-
-    const tripFromResetDataKeys = [
-      { key: 'distanceReset' },
-      { key: 'averageSpeedReset', icon: 'mdi:speedometer' },
-      { key: 'liquidConsumptionReset', name: 'Consumption reset' },
-      { key: 'electricConsumptionReset', name: 'Consumption reset' },
-    ];
-
-    const tripFromStartDataKeys = [
-      { key: 'distanceStart' },
-      { key: 'averageSpeedStart', icon: 'mdi:speedometer-slow' },
-      { key: 'liquidConsumptionStart', name: 'Consumption start' },
-      { key: 'electricConsumptionStart', name: 'Consumption start' },
-    ];
-
     const sections = [
-      { title: 'Overview', data: this.createDataArray(overViewDataKeys) },
-      { title: 'From start', data: this.createDataArray(tripFromStartDataKeys) },
-      { title: 'From reset', data: this.createDataArray(tripFromResetDataKeys) },
+      { title: 'Overview', data: this.createDataArray(DataKeys.tripOverview) },
+      { title: 'From start', data: this.createDataArray(DataKeys.tripFromStart) },
+      { title: 'From reset', data: this.createDataArray(DataKeys.tripFromReset) },
     ];
 
     return html` ${sections.map((section) => this.createItemDataRow(section.title, section.data))} `;
   }
 
   private _renderDefaultVehicleCard(): TemplateResult | void {
-    const { vehicleEntities } = this;
-
-    const dataKeys = {
-      warnings: ['tirePressureWarning', 'lowBrakeFluid', 'lowCoolantLevel', 'engineLight', 'lowWashWater'],
-      overview: ['lockSensor', 'windowsClosed', 'parkBrake'],
-    };
-
-    const warningsData = this.createDataArray(dataKeys.warnings.map((key) => ({ key })));
-    const overViewData = this.createDataArray(dataKeys.overview.map((key) => ({ key })));
+    const warningsData = this.createDataArray(DataKeys.vehicleWarnings);
+    const overViewData = this.createDataArray(DataKeys.vehicleOverview);
 
     const toggleAttributes = (key: string) => {
       if (key === 'lockSensor') {
@@ -518,9 +482,9 @@ export class VehicleCard extends LitElement {
     const subCardIconActive = (key: string): string => {
       if (['lockSensor', 'windowsClosed'].includes(key)) {
         const isVisible = key === 'lockSensor' ? this.lockAttributesVisible : this.windowAttributesVisible;
-        return isVisible ? 'mdi:chevron-up' : 'mdi:chevron-right';
+        return isVisible ? 'active' : '';
       }
-      return 'mdi:empty';
+      return 'hidden';
     };
 
     const subCardElements = (key: string): TemplateResult | null => {
@@ -531,7 +495,7 @@ export class VehicleCard extends LitElement {
     };
 
     const toggleMoreInfo = (key: string) => {
-      this.toggleMoreInfo(vehicleEntities[key]?.entity_id);
+      this.toggleMoreInfo(this.vehicleEntities[key]?.entity_id);
     };
 
     const renderDataRow = (key: string, name?: string, icon?: string, state?: string, active?: boolean) => html`
@@ -546,7 +510,7 @@ export class VehicleCard extends LitElement {
         </div>
         <div class="data-value-unit" @click=${() => toggleAttributes(key)}>
           <span class="${!active ? 'warning' : ''}">${state}</span>
-          <ha-icon .icon="${subCardIconActive(key)}"></ha-icon>
+          <ha-icon class="subcard-icon ${subCardIconActive(key)}" icon="mdi:chevron-right"></ha-icon>
         </div>
       </div>
       ${subCardElements(key)}
@@ -555,14 +519,14 @@ export class VehicleCard extends LitElement {
     const overViewItems = overViewData.map(({ key, name, icon, state, active }) =>
       renderDataRow(key, name, icon, state, active),
     );
+    const subCardVisible = this.lockAttributesVisible || this.windowAttributesVisible;
 
     return html`
       <div class="default-card">
         <div class="data-header">Vehicle status</div>
         ${overViewItems}
       </div>
-
-      <div class="default-card">
+      <div class="default-card" .hidden=${subCardVisible}>
         <div class="data-header">Warnings</div>
         ${warningsData.map(
           ({ key, icon, state, name, active }) => html`
@@ -582,14 +546,8 @@ export class VehicleCard extends LitElement {
   }
 
   private _renderDefaultEcoCard(): TemplateResult | void {
-    const ecoDataKeys = [
-      { key: 'ecoScoreBonusRange', name: 'Bonus range' },
-      { key: 'ecoScoreAcceleraion', name: 'Acceleration' },
-      { key: 'ecoScoreConstant', name: 'Constant' },
-      { key: 'ecoScoreFreeWheel', name: 'Free wheel' },
-    ];
+    const ecoData = this.createDataArray(DataKeys.ecoScores);
 
-    const ecoData = this.createDataArray(ecoDataKeys);
     return html`<div class="default-card">
         <div class="data-header">Eco display</div>
         ${this._renderEcoChart()}
@@ -598,39 +556,36 @@ export class VehicleCard extends LitElement {
   }
 
   private _renderDefaultTyreCard(): TemplateResult | void {
-    const tyreDataKeys = [
-      { key: 'tirePressureFrontLeft', name: 'Front left', icon: 'mdi:tire' },
-      { key: 'tirePressureFrontRight', name: 'Front right', icon: 'mdi:tire' },
-      { key: 'tirePressureRearLeft', name: 'Rear left', icon: 'mdi:tire' },
-      { key: 'tirePressureRearRight', name: 'Rear right', icon: 'mdi:tire' },
-    ];
-
-    const tyreData = this.createDataArray(tyreDataKeys);
+    const tyreData = this.createDataArray(DataKeys.tyrePressures);
     return this.createItemDataRow('Tyre pressures', tyreData);
   }
 
   private _renderLockAttributes(): TemplateResult {
-    const lockAttributeStates: Record<string, any> = {};
+    const state: Record<string, any> = {};
+
     // Iterate over the keys of the lockAttrMapping object
-    Object.keys(lockAttrMapping).forEach((attribute) => {
+
+    Object.keys(StateMapping.lockAttributeStates).forEach((attribute) => {
       const attributeState = this.getEntityAttribute(this.vehicleEntities.lockSensor?.entity_id, attribute);
       if (attributeState !== undefined && attributeState !== null) {
-        lockAttributeStates[attribute] = attributeState;
+        state[attribute] = attributeState;
       }
     });
+
     const attributesClass = this.lockAttributesVisible ? 'sub-attributes active' : 'sub-attributes';
+
     // Render the lock attributes
     return html`
       <div class=${attributesClass}>
-        ${Object.keys(lockAttributeStates).map((attribute) => {
-          const rawState = lockAttributeStates[attribute];
+        ${Object.keys(state).map((attribute) => {
+          const rawState = state[attribute];
           // Check if the state is valid and the attribute mapping exists
-          if (rawState !== undefined && rawState !== null && lockAttrMapping[attribute]) {
-            const readableState = lockAttrMapping[attribute].state[rawState] || 'Unknown';
+          if (rawState !== undefined && rawState !== null && StateMapping.lockAttributeStates[attribute]) {
+            const readableState = StateMapping.lockAttributeStates[attribute].state[rawState] || 'Unknown';
             const classState = rawState ? 'warning' : '';
             return html`
               <div class="data-row">
-                <span>${lockAttrMapping[attribute].name} </span>
+                <span>${StateMapping.lockAttributeStates[attribute].name} </span>
                 <div class="data-value-unit">
                   <span style="text-transform: capitalize" class="${classState}">${readableState}</span>
                 </div>
@@ -646,6 +601,8 @@ export class VehicleCard extends LitElement {
 
   private _renderWindowAttributes(): TemplateResult {
     const windowAttributeStates: Record<string, any> = {};
+    const windowsStateMapping = StateMapping.windowsAttributesState;
+
     // Iterate over the keys of the Windows object
     Object.keys(windowsStateMapping).forEach((attribute) => {
       const attributeState = this.getEntityAttribute(this.vehicleEntities.windowsClosed?.entity_id, attribute);
@@ -689,6 +646,7 @@ export class VehicleCard extends LitElement {
   /* -------------------------------------------------------------------------- */
 
   private toggleCard = (action?: 'next' | 'prev' | 'close'): void => {
+    forwardHaptic('light');
     const cardElement = this.shadowRoot?.querySelector('.card-element') as HTMLElement;
     if (!this.activeCardType || !cardElement) return;
     if (action === 'next' || action === 'prev') {
@@ -745,11 +703,11 @@ export class VehicleCard extends LitElement {
     `;
   };
 
-  createDataArray(keys: EntityConfig[]): ReturnType<VehicleCard['getEntityInfoByKey']>[] {
+  private createDataArray = (keys: EntityConfig[]): ReturnType<VehicleCard['getEntityInfoByKey']>[] => {
     return keys.map((config) => this.getEntityInfoByKey(config));
-  }
+  };
 
-  getEntityInfoByKey = ({ key, name, icon, unit, state }: EntityConfig): EntityConfig => {
+  private getEntityInfoByKey = ({ key, name, icon, unit, state }: EntityConfig): EntityConfig => {
     const vehicleEntity = this.vehicleEntities[key];
 
     if (!vehicleEntity) {
@@ -759,7 +717,7 @@ export class VehicleCard extends LitElement {
             name: 'Program',
             icon: 'mdi:ev-station',
             state:
-              selectedProgramMapping[
+              StateMapping.chargeSelectedProgram[
                 this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'selectedChargeProgram')
               ],
             unit,
@@ -779,17 +737,34 @@ export class VehicleCard extends LitElement {
       case 'soc': {
         const currentState = this.getEntityState(vehicleEntity.entity_id);
         const stateValue = currentState ? parseFloat(currentState) : 0;
-        const socIcon =
-          stateValue < 35
-            ? 'mdi:battery-charging-low'
-            : stateValue < 70
-              ? 'mdi:battery-charging-medium'
-              : 'mdi:battery-charging-high';
+        let socIcon: string;
+        if (stateValue < 35) {
+          socIcon = 'mdi:battery-charging-low';
+        } else if (stateValue < 70) {
+          socIcon = 'mdi:battery-charging-medium';
+        } else {
+          socIcon = 'mdi:battery-charging-high';
+        }
         return { ...defaultInfo, icon: socIcon };
       }
       case 'maxSoc': {
-        const maxSocState = this.getEntityState(vehicleEntity.entity_id) || '0';
-        return { ...defaultInfo, icon: `mdi:battery-charging-${maxSocState}` };
+        const maxSocState = this.getEntityState(vehicleEntity.entity_id);
+        const maxSocStateValue = maxSocState ? parseFloat(maxSocState) : 0;
+        const iconValue = Math.round(maxSocStateValue / 10) * 10;
+        const maxSocIcon = `mdi:battery-charging-${iconValue}`;
+
+        return { ...defaultInfo, icon: maxSocIcon };
+      }
+
+      case 'chargingPower': {
+        const powerState = this.getEntityState(vehicleEntity.entity_id);
+        const powerStateValue = powerState ? parseFloat(powerState) : 0;
+        const powerStateUnit = this.getEntityAttribute(vehicleEntity.entity_id, 'unit_of_measurement') || 'kW';
+
+        const powerStateDecimals = formatNumber(powerStateValue, this.hass.locale);
+        const powerStateDislay = powerStateDecimals + ' ' + powerStateUnit;
+
+        return { ...defaultInfo, state: powerStateDislay };
       }
 
       case 'parkBrake': {
@@ -801,6 +776,7 @@ export class VehicleCard extends LitElement {
           active: parkBrakeState,
         };
       }
+
       case 'windowsClosed': {
         let windowState: string;
         const windowsState = this.getBooleanState(vehicleEntity.entity_id);
@@ -809,7 +785,7 @@ export class VehicleCard extends LitElement {
         } else {
           const windowAttributeStates: Record<number, any> = {};
 
-          Object.keys(windowsStateMapping).forEach((attribute) => {
+          Object.keys(StateMapping.windowsAttributesState).forEach((attribute) => {
             const attributeState = this.getEntityAttribute(vehicleEntity.entity_id, attribute);
             if (attributeState !== undefined && attributeState !== null) {
               windowAttributeStates[attribute] = attributeState;
@@ -833,7 +809,7 @@ export class VehicleCard extends LitElement {
 
       case 'lockSensor': {
         const lockState = this.getEntityState(vehicleEntity.entity_id);
-        const lockStateFormatted = lockStateMapping[lockState] || lockStateMapping['4'];
+        const lockStateFormatted = StateMapping.lockStates[lockState] || StateMapping.lockStates['4'];
         const lockIcon = lockState === '2' || lockState === '1' ? 'mdi:lock' : 'mdi:lock-open';
 
         return {
@@ -845,7 +821,7 @@ export class VehicleCard extends LitElement {
       }
 
       default:
-        if (['tirePressureWarning', 'lowBrakeFluid', 'lowCoolantLevel', 'engineLight', 'lowWashWater'].includes(key)) {
+        if (DataKeys.vehicleWarnings.map((key) => key.key).includes(key)) {
           const warningState = this.getBooleanState(vehicleEntity.entity_id);
 
           return {
@@ -858,69 +834,36 @@ export class VehicleCard extends LitElement {
     }
   };
 
-  private getLockEntityInfo = (): Partial<EntityConfig & { lockId: string; color: string }> => {
-    const lockState = this.getEntityState(this.vehicleEntities.lockSensor?.entity_id);
-    const lockStateFormatted = lockStateMapping[lockState] || lockStateMapping['4'];
-    const lockIcon = lockState === '2' || lockState === '1' ? 'mdi:lock' : 'mdi:lock-open';
-    const lockColor = lockState === '2' || lockState === '1' ? 'warning' : '';
-    const lockName = this.vehicleEntities.lock?.original_name;
-    return {
-      key: 'lock',
-      name: lockName,
-      icon: lockIcon,
-      state: lockStateFormatted,
-      color: lockColor,
-      lockId: this.vehicleEntities.lockSensor?.entity_id,
-    };
-  };
-
   private getStateDisplay = (entityId: string | undefined): string => {
     if (!entityId || !this.hass.states[entityId] || !this.hass.locale) return '';
     return computeStateDisplay(this.hass.localize, this.hass.states[entityId], this.hass.locale);
   };
 
   private getSecondaryInfo = (cardType: string): string => {
-    const { vehicleEntities } = this;
+    const { odometer, lockSensor, ecoScoreBonusRange } = this.vehicleEntities;
 
     switch (cardType) {
       case 'tripCards':
-        return this.getStateDisplay(vehicleEntities.odometer?.entity_id);
+        return this.getStateDisplay(odometer?.entity_id);
 
       case 'vehicleCards':
         const lockedDisplayText =
-          lockStateMapping[this.getEntityState(vehicleEntities.lockSensor?.entity_id)] || lockStateMapping['4'];
+          StateMapping.lockStates[this.getEntityState(lockSensor?.entity_id)] || StateMapping.lockStates['4'];
         return lockedDisplayText;
 
       case 'ecoCards':
-        return this.getStateDisplay(vehicleEntities.ecoScoreBonusRange?.entity_id);
+        return this.getStateDisplay(ecoScoreBonusRange?.entity_id);
 
       case 'tyreCards':
-        const tireAttributes = [
-          'tirePressureFrontRight',
-          'tirePressureFrontRight',
-          'tirePressureRearLeft',
-          'tirePressureRearRight',
-        ];
+        const secondaryInfoTyres = this.getMinMaxTyrePressure();
+        return secondaryInfoTyres;
 
-        // Store pressures with their original units
-        const pressuresWithUnits = tireAttributes.map((key) => ({
-          pressure: this.getEntityState(vehicleEntities[key]?.entity_id) || '',
-          unit: this.getEntityAttribute(vehicleEntities[key]?.entity_id, 'unit_of_measurement'),
-        }));
-
-        // Find the minimum and maximum pressures
-        const minPressure = Math.min(...pressuresWithUnits.map(({ pressure }) => parseFloat(pressure)));
-        const maxPressure = Math.max(...pressuresWithUnits.map(({ pressure }) => parseFloat(pressure)));
-
-        // Format the minimum and maximum pressures with their original units
-        const tireUnit = pressuresWithUnits[0]?.unit || '';
-        const formattedMinPressure = minPressure % 1 === 0 ? minPressure.toFixed(0) : minPressure.toFixed(1);
-        const formattedMaxPressure = maxPressure % 1 === 0 ? maxPressure.toFixed(0) : maxPressure.toFixed(1);
-        return `${formattedMinPressure} - ${formattedMaxPressure} ${tireUnit}`;
       default:
         return 'Unknown Card';
     }
   };
+
+  /* --------------------------- GET INFO FROM HASS --------------------------- */
 
   private getEntityInfo = (entity: string): { state: string; unit: string } => {
     const state = this.getEntityState(entity);
@@ -945,5 +888,23 @@ export class VehicleCard extends LitElement {
 
   private toggleMoreInfo = (entity: string): void => {
     fireEvent(this, 'hass-more-info', { entityId: entity });
+  };
+
+  private getMinMaxTyrePressure = () => {
+    const { vehicleEntities } = this;
+    const pressuresWithUnits = DataKeys.tyreAttributes.map((key) => ({
+      pressure: this.getEntityState(vehicleEntities[key]?.entity_id) || '',
+      unit: this.getEntityAttribute(vehicleEntities[key]?.entity_id, 'unit_of_measurement'),
+    }));
+
+    // Find the minimum and maximum pressures
+    const minPressure = Math.min(...pressuresWithUnits.map(({ pressure }) => parseFloat(pressure)));
+    const maxPressure = Math.max(...pressuresWithUnits.map(({ pressure }) => parseFloat(pressure)));
+
+    // Format the minimum and maximum pressures with their original units
+    const tireUnit = pressuresWithUnits[0]?.unit || '';
+    const formattedMinPressure = minPressure % 1 === 0 ? minPressure.toFixed(0) : minPressure.toFixed(1);
+    const formattedMaxPressure = maxPressure % 1 === 0 ? maxPressure.toFixed(0) : maxPressure.toFixed(1);
+    return `${formattedMinPressure} - ${formattedMaxPressure} ${tireUnit}`;
   };
 }
