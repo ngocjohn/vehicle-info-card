@@ -1,6 +1,6 @@
 name: Feature request
-description: Suggest a new feature or enhancement.
-title: "[FEATURE]: "
+description: Suggest a new feature or enhancement. ✨
+title: "[Feature] "
 labels: ["enhancement"]
 assignees: []
 
@@ -8,13 +8,13 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for suggesting a new feature! Please fill out the details below to help us understand your request.
+        Thanks for suggesting a new feature! 🚀 Please fill out the details below to help us understand your request.
 
   - type: input
     id: title
     attributes:
       label: Short summary
-      description: A short summary of the feature request
+      description: A short summary of the feature request 📝
       placeholder: "e.g., Add dark mode to the application"
     validations:
       required: true
@@ -23,7 +23,7 @@ body:
     id: description
     attributes:
       label: Detailed description
-      description: A detailed description of the feature request
+      description: A detailed description of the feature request 📋
       placeholder: "Describe the feature in detail, including the problem it solves, the benefits it provides, and any additional context."
     validations:
       required: true
@@ -31,7 +31,7 @@ body:
   - type: input
     id: examples
     attributes:
-      label: Examples
+      label: Examples 🖼️
       description: Any examples or mockups to help illustrate the feature
       placeholder: "e.g., Provide a screenshot or a link to a similar feature"
     validations:
@@ -40,7 +40,7 @@ body:
   - type: input
     id: additional_context
     attributes:
-      label: Additional context
+      label: Additional context 🗒️
       description: Any other context or information you want to provide
       placeholder: "e.g., Why is this feature important to you?"
     validations:
