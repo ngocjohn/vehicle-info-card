@@ -1,8 +1,6 @@
 import { HomeAssistant } from 'custom-card-helpers';
-import { VehicleEntity } from '../types';
-import { combinedFilters } from '../types';
-
-import { version, description, repository } from '../../package.json';
+import { VehicleEntities } from '../types';
+import { combinedFilters } from '../const';
 
 /**
  *
@@ -10,10 +8,7 @@ import { version, description, repository } from '../../package.json';
  * @returns
  */
 
-export async function getVehicleEntities(
-  hass: HomeAssistant,
-  config: { entity?: string },
-): Promise<{ [key: string]: VehicleEntity }> {
+export async function getVehicleEntities(hass: HomeAssistant, config: { entity?: string }): Promise<VehicleEntities> {
   const allEntities = await hass.callWS<
     { entity_id: string; device_id: string; original_name: string; unique_id: string; translation_key: string }[]
   >({
@@ -27,7 +22,7 @@ export async function getVehicleEntities(
 
   const deviceEntities = allEntities.filter((e) => e.device_id === carEntity.device_id);
 
-  const entityIds: { [key: string]: VehicleEntity } = {};
+  const entityIds: VehicleEntities = {};
 
   for (const entityName of Object.keys(combinedFilters)) {
     const { prefix, suffix } = combinedFilters[entityName];
