@@ -34,7 +34,6 @@ import './components/eco-chart';
 // Functions
 import { formatTimestamp } from './utils/helpers';
 import { getVehicleEntities, setupCardListeners } from './utils/get-device-entities';
-import { range } from 'lodash';
 
 (window as any).customCards = (window as any).customCards || [];
 (window as any).customCards.push({
