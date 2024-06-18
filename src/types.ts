@@ -56,10 +56,6 @@ export const defaultConfig: Partial<VehicleCardConfig> = {
   show_buttons: true,
   show_background: true,
   enable_map_popup: false,
-  trip_card: [],
-  vehicle_card: [],
-  eco_card: [],
-  tyre_card: [],
 };
 
 export interface VehicleEntities {

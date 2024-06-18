@@ -241,7 +241,7 @@ export class VehicleCard extends LitElement {
           <ha-icon icon=${'mdi:ev-station'}></ha-icon>
           <div>
             <span>Charging</span>
-            <div class="subcard-icon ${this.chargingInfoVisible ? 'active' : ''} " style="margin-bottom: 2px">
+            <div class="subcard-icon ${this.chargingInfoVisible ? 'active' : ''}" style="margin-bottom: 2px">
               <ha-icon icon="mdi:chevron-right"></ha-icon>
             </div>
           </div>
@@ -388,24 +388,24 @@ export class VehicleCard extends LitElement {
     `;
   }
 
-  private _renderCustomCard(): TemplateResult | void {
+  private _renderCustomCard(): TemplateResult {
     if (!this.activeCardType) return html``;
-
+    const { config } = this;
     const cardConfigMap = {
       tripCards: {
-        config: this.config.trip_card,
+        config: config.trip_card,
         defaultRender: this._renderDefaultTripCard.bind(this),
       },
       vehicleCards: {
-        config: this.config.vehicle_card,
+        config: config.vehicle_card,
         defaultRender: this._renderDefaultVehicleCard.bind(this),
       },
       ecoCards: {
-        config: this.config.eco_card,
+        config: config.eco_card,
         defaultRender: this._renderDefaultEcoCard.bind(this),
       },
       tyreCards: {
-        config: this.config.tyre_card,
+        config: config.tyre_card,
         defaultRender: this._renderDefaultTyreCard.bind(this),
       },
       mapDialog: {
@@ -423,7 +423,7 @@ export class VehicleCard extends LitElement {
     const isDefaultCard = !cardInfo.config || cardInfo.config.length === 0;
     const cards = isDefaultCard ? cardInfo.defaultRender() : this.additionalCards[this.activeCardType];
 
-    const lastCarUpdate = this.config.entity ? this.hass.states[this.config.entity].last_changed : '';
+    const lastCarUpdate = config.entity ? this.hass.states[config.entity].last_changed : '';
 
     const formattedDate = this.hass.locale
       ? formatDateTime(new Date(lastCarUpdate), this.hass.locale)
@@ -508,7 +508,7 @@ export class VehicleCard extends LitElement {
           <span>${name}</span>
         </div>
         <div class="data-value-unit" @click=${() => toggleAttributes(key)}>
-          <span class="${!active ? 'warning' : ''}">${state}</span>
+          <span class=${!active ? 'warning' : ''}>${state}</span>
           <ha-icon class="subcard-icon ${subCardIconActive(key)}" icon="mdi:chevron-right"></ha-icon>
         </div>
       </div>
