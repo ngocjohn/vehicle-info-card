@@ -34,6 +34,7 @@ import './components/eco-chart';
 // Functions
 import { formatTimestamp } from './utils/helpers';
 import { getVehicleEntities, setupCardListeners } from './utils/get-device-entities';
+import { over } from 'lodash';
 
 (window as any).customCards = (window as any).customCards || [];
 (window as any).customCards.push({
@@ -467,75 +468,12 @@ export class VehicleCard extends LitElement {
 
   private _renderDefaultVehicleCard(): TemplateResult | void {
     const warningsData = this.createDataArray(DataKeys.vehicleWarnings);
-    const overViewData = this.createDataArray(DataKeys.vehicleOverview);
-
-    const toggleAttributes = (key: string) => {
-      if (key === 'lockSensor') {
-        this.lockAttributesVisible = !this.lockAttributesVisible;
-      } else if (key === 'windowsClosed') {
-        this.windowAttributesVisible = !this.windowAttributesVisible;
-      } else if (key === 'doorStatusOverall') {
-        this.doorsAttributesVisible = !this.doorsAttributesVisible;
-      } else {
-        return;
-      }
-    };
-
-    const subCardIconActive = (key: string): string => {
-      if (['lockSensor', 'windowsClosed', 'doorStatusOverall'].includes(key)) {
-        const isVisible =
-          key === 'lockSensor'
-            ? this.lockAttributesVisible
-            : key === 'windowsClosed'
-              ? this.windowAttributesVisible
-              : this.doorsAttributesVisible;
-        return isVisible ? 'active' : '';
-      }
-      return 'hidden';
-    };
-
-    const subCardElements = (key: string): TemplateResult | null => {
-      if (['lockSensor', 'windowsClosed', 'doorStatusOverall'].includes(key)) {
-        return key === 'lockSensor'
-          ? this._renderLockAttributes()
-          : key === 'windowsClosed'
-            ? this._renderWindowAttributes()
-            : this._renderDoorAttributes();
-      }
-      return null;
-    };
-
-    const toggleMoreInfo = (key: string) => {
-      this.toggleMoreInfo(this.vehicleEntities[key]?.entity_id);
-    };
-
-    const renderDataRow = (key: string, name?: string, icon?: string, state?: string, active?: boolean) => html`
-      <div class="data-row">
-        <div>
-          <ha-icon
-            class="data-icon ${!active ? 'warning' : ''}"
-            .icon="${icon}"
-            @click=${() => toggleMoreInfo(key)}
-          ></ha-icon>
-          <span style="text-transform: none;">${name}</span>
-        </div>
-        <div class="data-value-unit" @click=${() => toggleAttributes(key)}>
-          <span class=${!active ? 'warning' : ''} style="text-transform: capitalize;">${state}</span>
-          <ha-icon class="subcard-icon ${subCardIconActive(key)}" icon="mdi:chevron-right"></ha-icon>
-        </div>
-      </div>
-      ${subCardElements(key)}
-    `;
-
-    const overViewItems = overViewData.map(({ key, name, icon, state, active }) =>
-      renderDataRow(key, name, icon, state, active),
-    );
-    const subCardVisible = this.lockAttributesVisible || this.windowAttributesVisible;
+    const subCardVisible = this.isSubCardVisible();
 
     return html`
       <div class="default-card">
         <div class="data-header">Vehicle status</div>
-        ${overViewItems}
+        ${this._renderOverviewDataWithSubCard()}
       </div>
       <div class="default-card" .hidden=${subCardVisible}>
         <div class="data-header">Warnings</div>
@@ -543,10 +481,17 @@ export class VehicleCard extends LitElement {
           ({ key, icon, state, name, active }) => html`
             <div class="data-row">
               <div>
-                <ha-icon class="data-icon" .icon="${icon}" @click=${() => toggleMoreInfo(key)}></ha-icon>
+                <ha-icon
+                  class="data-icon"
+                  .icon="${icon}"
+                  @click=${() => this.toggleMoreInfo(this.vehicleEntities[key]?.entity_id)}
+                ></ha-icon>
                 <span>${name}</span>
               </div>
-              <div class="data-value-unit ${active ? 'error' : ''} " @click=${() => toggleMoreInfo(key)}>
+              <div
+                class="data-value-unit ${active ? 'error' : ''} "
+                @click=${() => this.toggleMoreInfo(this.vehicleEntities[key]?.entity_id)}
+              >
                 <span>${state}</span>
               </div>
             </div>
@@ -569,121 +514,6 @@ export class VehicleCard extends LitElement {
   private _renderDefaultTyreCard(): TemplateResult | void {
     const tyreData = this.createDataArray(DataKeys.tyrePressures);
     return this.createItemDataRow('Tyre pressures', tyreData);
-  }
-
-  private _renderLockAttributes(): TemplateResult {
-    const state: Record<string, any> = {};
-    const lockStateMap = StateMapping.lockAttributes;
-    // Iterate over the keys of the lockAttrMapping object
-
-    Object.keys(lockStateMap).forEach((attribute) => {
-      const attributeState = this.getEntityAttribute(this.vehicleEntities.lockSensor?.entity_id, attribute);
-      if (attributeState !== undefined && attributeState !== null) {
-        state[attribute] = attributeState;
-      }
-    });
-
-    const attributesClass = this.lockAttributesVisible ? 'sub-attributes active' : 'sub-attributes';
-
-    // Render the lock attributes
-    return html`
-      <div class=${attributesClass}>
-        ${Object.keys(state).map((attribute) => {
-          const rawState = state[attribute];
-          // Check if the state is valid and the attribute mapping exists
-          if (rawState !== undefined && rawState !== null && lockStateMap[attribute]) {
-            const readableState = lockStateMap[attribute].state[rawState] || 'Unknown';
-            const classState = rawState ? 'warning' : '';
-            return html`
-              <div class="data-row">
-                <span>${lockStateMap[attribute].name} </span>
-                <div class="data-value-unit">
-                  <span style="text-transform: capitalize" class="${classState}">${readableState}</span>
-                </div>
-              </div>
-            `;
-          }
-          // Return nothing if the attribute state is not valid or attribute mapping does not exist
-          return '';
-        })}
-      </div>
-    `;
-  }
-
-  private _renderWindowAttributes(): TemplateResult {
-    const windowAttributeStates: Record<string, any> = {};
-    const windowsStateMapping = StateMapping.windowAttributes;
-
-    // Iterate over the keys of the Windows object
-    Object.keys(windowsStateMapping).forEach((attribute) => {
-      const attributeState = this.getEntityAttribute(this.vehicleEntities.windowsClosed?.entity_id, attribute);
-      if (attributeState !== undefined && attributeState !== null) {
-        windowAttributeStates[attribute] = attributeState;
-      }
-    });
-
-    const attributesClass = this.windowAttributesVisible ? 'sub-attributes active' : 'sub-attributes';
-
-    // Render the window attributes
-    return html`
-      <div class=${attributesClass}>
-        ${Object.keys(windowAttributeStates).map((attribute) => {
-          const rawState = windowAttributeStates[attribute];
-          // Check if the state is valid and the attribute mapping exists
-          if (rawState !== undefined && rawState !== null && windowsStateMapping[attribute]) {
-            const readableState = windowsStateMapping[attribute].state[rawState] || 'Unknown';
-            return html`
-              <div class="data-row">
-                <span>${windowsStateMapping[attribute].name}</span>
-                <div class="data-value-unit">
-                  <span style="text-transform: capitalize">${readableState}</span>
-                </div>
-              </div>
-            `;
-          }
-          // Return nothing if the attribute state is not valid or attribute mapping does not exist
-          return '';
-        })}
-      </div>
-    `;
-  }
-
-  private _renderDoorAttributes(): TemplateResult {
-    const doorAttributeStates: Record<string, any> = {};
-    const doorsStateMapping = StateMapping.doorAttributes;
-
-    // Iterate over the keys of the Doors object
-    Object.keys(doorsStateMapping).forEach((attribute) => {
-      const attributeState = this.getEntityAttribute(this.vehicleEntities.lockSensor?.entity_id, attribute);
-      if (attributeState !== undefined && attributeState !== null) {
-        doorAttributeStates[attribute] = attributeState;
-      }
-    });
-
-    const attributesClass = this.doorsAttributesVisible ? 'sub-attributes active' : 'sub-attributes';
-
-    // Render the door attributes
-    return html`
-      <div class=${attributesClass}>
-        ${Object.keys(doorAttributeStates).map((attribute) => {
-          const rawState = doorAttributeStates[attribute];
-          // Check if the state is valid and the attribute mapping exists
-          if (rawState !== undefined && rawState !== null && doorsStateMapping[attribute]) {
-            const readableState = doorsStateMapping[attribute].state[rawState] || 'Unknown';
-            return html`
-              <div class="data-row">
-                <span>${doorsStateMapping[attribute].name}</span>
-                <div class="data-value-unit">
-                  <span style="text-transform: capitalize">${readableState}</span>
-                </div>
-              </div>
-            `;
-          }
-          // Return nothing if the attribute state is not valid or attribute mapping does not exist
-          return '';
-        })}
-      </div>
-    `;
   }
 
   private _showWarning(warning: string): TemplateResult {
@@ -722,6 +552,162 @@ export class VehicleCard extends LitElement {
       this.activeCardType = this.activeCardType === cardType ? null : cardType;
     }, 200);
   };
+
+  /* --------------------- SUBCARDS METHODS AND RENDERING --------------------- */
+
+  private _renderOverviewDataWithSubCard() {
+    const overViewData = this.createDataArray(DataKeys.vehicleOverview);
+
+    const toggleAttributes = (key: string) => {
+      if (key === 'lockSensor') {
+        this.lockAttributesVisible = !this.lockAttributesVisible;
+      } else if (key === 'windowsClosed') {
+        this.windowAttributesVisible = !this.windowAttributesVisible;
+      } else if (key === 'doorStatusOverall') {
+        this.doorsAttributesVisible = !this.doorsAttributesVisible;
+      } else {
+        return;
+      }
+    };
+
+    const subCardIconActive = (key: string): string => {
+      if (['lockSensor', 'windowsClosed', 'doorStatusOverall'].includes(key)) {
+        const isVisible =
+          key === 'lockSensor'
+            ? this.lockAttributesVisible
+            : key === 'windowsClosed'
+              ? this.windowAttributesVisible
+              : this.doorsAttributesVisible;
+        return isVisible ? 'active' : '';
+      }
+      return 'hidden';
+    };
+
+    const subCardElements = (key: string): TemplateResult | null => {
+      if (['lockSensor', 'windowsClosed', 'doorStatusOverall'].includes(key)) {
+        return key === 'lockSensor'
+          ? this._renderSubCard('lock')
+          : key === 'windowsClosed'
+            ? this._renderSubCard('window')
+            : this._renderSubCard('door');
+      }
+      return null;
+    };
+
+    const toggleMoreInfo = (key: string) => {
+      if (['lockSensor', 'doorStatusOverall'].includes(key)) {
+        this.toggleMoreInfo(this.vehicleEntities.lockSensor?.entity_id);
+      } else {
+        this.toggleMoreInfo(this.vehicleEntities[key]?.entity_id);
+      }
+    };
+
+    const renderDataRow = (key: string, name?: string, icon?: string, state?: string, active?: boolean) => html`
+      <div class="data-row">
+        <div>
+          <ha-icon
+            class="data-icon ${!active ? 'warning' : ''}"
+            .icon="${icon}"
+            @click=${() => toggleMoreInfo(key)}
+          ></ha-icon>
+          <span style="text-transform: none;">${name}</span>
+        </div>
+        <div class="data-value-unit" @click=${() => toggleAttributes(key)}>
+          <span class=${!active ? 'warning' : ''} style="text-transform: capitalize;">${state}</span>
+          <ha-icon class="subcard-icon ${subCardIconActive(key)}" icon="mdi:chevron-right"></ha-icon>
+        </div>
+      </div>
+      ${subCardElements(key)}
+    `;
+
+    const overViewItems = overViewData.map(({ key, name, icon, state, active }) =>
+      renderDataRow(key, name, icon, state, active),
+    );
+
+    return overViewItems;
+  }
+
+  private _renderSubCard(attributeType: 'lock' | 'window' | 'door'): TemplateResult {
+    const state: Record<string, any> = {};
+    const entityID = this.getEntityTypeId(attributeType);
+    const stateMapping = this.getAttrStateMap(attributeType);
+    const attributesVisible = this.getSubCardVisible(attributeType);
+    const attributesClass = attributesVisible ? 'sub-attributes active' : 'sub-attributes';
+
+    // Iterate over the keys of the stateMapping object
+    Object.keys(stateMapping).forEach((attribute) => {
+      const attributeState = this.getEntityAttribute(entityID, attribute);
+      if (attributeState !== undefined && attributeState !== null) {
+        state[attribute] = attributeState;
+      }
+    });
+
+    // Render the attributes
+    return html`
+      <div class=${attributesClass}>
+        ${Object.keys(state).map((attribute) => {
+          const rawState = state[attribute];
+          // Check if the state is valid and the attribute mapping exists
+          if (rawState !== undefined && rawState !== null && stateMapping[attribute]) {
+            const readableState = stateMapping[attribute].state[rawState] || 'Unknown';
+            const classState = rawState === '2' || rawState === false ? '' : 'warning';
+            return html`
+              <div class="data-row">
+                <span>${stateMapping[attribute].name}</span>
+                <div class="data-value-unit">
+                  <span style="text-transform: capitalize" class="${classState}">${readableState}</span>
+                </div>
+              </div>
+            `;
+          }
+          // Return nothing if the attribute state is not valid or attribute mapping does not exist
+          return '';
+        })}
+      </div>
+    `;
+  }
+
+  private getEntityTypeId(attributeType: 'lock' | 'window' | 'door'): string | undefined {
+    switch (attributeType) {
+      case 'lock':
+        return this.vehicleEntities.lockSensor?.entity_id;
+      case 'window':
+        return this.vehicleEntities.windowsClosed?.entity_id;
+      case 'door':
+        return this.vehicleEntities.lockSensor?.entity_id;
+    }
+  }
+
+  private getAttrStateMap(attributeType: 'lock' | 'window' | 'door'): Record<string, any> {
+    switch (attributeType) {
+      case 'lock':
+        return StateMapping.lockAttributes;
+      case 'window':
+        return StateMapping.windowAttributes;
+      case 'door':
+        return StateMapping.doorAttributes;
+    }
+  }
+
+  private getSubCardVisible(attributeType: 'lock' | 'window' | 'door'): boolean {
+    switch (attributeType) {
+      case 'lock':
+        return this.lockAttributesVisible;
+      case 'window':
+        return this.windowAttributesVisible;
+      case 'door':
+        return this.doorsAttributesVisible;
+    }
+  }
+
+  private isSubCardVisible(): boolean {
+    const attributeVisibilityStates = [
+      this.lockAttributesVisible,
+      this.windowAttributesVisible,
+      this.doorsAttributesVisible,
+    ];
+    return attributeVisibilityStates.some((state) => state);
+  }
 
   /* -------------------------------------------------------------------------- */
   /* GET ENTITIES STATE AND ATTRIBUTES                                          */
