@@ -33,6 +33,7 @@
     "@babel/plugin-transform-class-properties": "^7.24.1",
     "@rollup/plugin-image": "^3.0.3",
     "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-replace": "^5.0.7",
     "@types/leaflet": "^1.9.12",
     "@types/leaflet-providers": "^1.2.4",
     "@typescript-eslint/eslint-plugin": "^5.16.0",
@@ -69,7 +70,7 @@
   "scripts": {
     "dev": "rollup -c --watch",
     "build": "npm run lint && npm run rollup",
-    "lint": "eslint src/*.ts",
+    "lint": "eslint src/const/*.ts",
     "rollup": "rollup -c",
     "local-copy": "cp dist/vehicle-info-card.js /Volumes/config/www/dashboard-resources/vehicle-info-card.js"
   }

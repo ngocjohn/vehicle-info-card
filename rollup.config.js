@@ -10,6 +10,7 @@ import postcss from 'rollup-plugin-postcss';
 import postcssPresetEnv from 'postcss-preset-env';
 import postcssLit from 'rollup-plugin-postcss-lit';
 import filesize from 'rollup-plugin-filesize';
+import replace from '@rollup/plugin-replace';
 import { version } from './package.json';
 import { logCardInfo } from './rollup.config.dev.mjs';
 
@@ -18,6 +19,11 @@ const port = process.env.PORT || 8235;
 
 const currentVersion = dev ? 'DEVELOPMENT' : `v${version}`;
 const custombanner = logCardInfo(currentVersion);
+
+const replaceOpts = {
+  'process.env.ROLLUP_WATCH': JSON.stringify(dev),
+  preventAssignment: true,
+};
 
 const serveopts = {
   contentBase: ['./dev'],
@@ -57,6 +63,7 @@ const plugins = [
     ],
     extract: false,
   }),
+  replace(replaceOpts),
   postcssLit(),
   dev && serve(serveopts),
   !dev && terser(terserOpt),
