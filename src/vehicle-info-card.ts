@@ -62,6 +62,7 @@ export class VehicleCard extends LitElement {
 
   @property({ type: Boolean }) lockAttributesVisible = false;
   @property({ type: Boolean }) windowAttributesVisible = false;
+  @property({ type: Boolean }) doorsAttributesVisible = false;
 
   @state() private chargingInfoVisible = false;
 
@@ -473,22 +474,33 @@ export class VehicleCard extends LitElement {
         this.lockAttributesVisible = !this.lockAttributesVisible;
       } else if (key === 'windowsClosed') {
         this.windowAttributesVisible = !this.windowAttributesVisible;
+      } else if (key === 'doorStatusOverall') {
+        this.doorsAttributesVisible = !this.doorsAttributesVisible;
       } else {
         return;
       }
     };
 
     const subCardIconActive = (key: string): string => {
-      if (['lockSensor', 'windowsClosed'].includes(key)) {
-        const isVisible = key === 'lockSensor' ? this.lockAttributesVisible : this.windowAttributesVisible;
+      if (['lockSensor', 'windowsClosed', 'doorStatusOverall'].includes(key)) {
+        const isVisible =
+          key === 'lockSensor'
+            ? this.lockAttributesVisible
+            : key === 'windowsClosed'
+              ? this.windowAttributesVisible
+              : this.doorsAttributesVisible;
         return isVisible ? 'active' : '';
       }
       return 'hidden';
     };
 
     const subCardElements = (key: string): TemplateResult | null => {
-      if (['lockSensor', 'windowsClosed'].includes(key)) {
-        return key === 'lockSensor' ? this._renderLockAttributes() : this._renderWindowAttributes();
+      if (['lockSensor', 'windowsClosed', 'doorStatusOverall'].includes(key)) {
+        return key === 'lockSensor'
+          ? this._renderLockAttributes()
+          : key === 'windowsClosed'
+            ? this._renderWindowAttributes()
+            : this._renderDoorAttributes();
       }
       return null;
     };
@@ -636,6 +648,44 @@ export class VehicleCard extends LitElement {
     `;
   }
 
+  private _renderDoorAttributes(): TemplateResult {
+    const doorAttributeStates: Record<string, any> = {};
+    const doorsStateMapping = StateMapping.doorsAttrStates;
+
+    // Iterate over the keys of the Doors object
+    Object.keys(doorsStateMapping).forEach((attribute) => {
+      const attributeState = this.getEntityAttribute(this.vehicleEntities.lockSensor?.entity_id, attribute);
+      if (attributeState !== undefined && attributeState !== null) {
+        doorAttributeStates[attribute] = attributeState;
+      }
+    });
+
+    const attributesClass = this.doorsAttributesVisible ? 'sub-attributes active' : 'sub-attributes';
+
+    // Render the door attributes
+    return html`
+      <div class=${attributesClass}>
+        ${Object.keys(doorAttributeStates).map((attribute) => {
+          const rawState = doorAttributeStates[attribute];
+          // Check if the state is valid and the attribute mapping exists
+          if (rawState !== undefined && rawState !== null && doorsStateMapping[attribute]) {
+            const readableState = doorsStateMapping[attribute].state[rawState] || 'Unknown';
+            return html`
+              <div class="data-row">
+                <span>${doorsStateMapping[attribute].name}</span>
+                <div class="data-value-unit">
+                  <span style="text-transform: capitalize">${readableState}</span>
+                </div>
+              </div>
+            `;
+          }
+          // Return nothing if the attribute state is not valid or attribute mapping does not exist
+          return '';
+        })}
+      </div>
+    `;
+  }
+
   private _showWarning(warning: string): TemplateResult {
     return html` <hui-warning>${warning}</hui-warning> `;
   }
@@ -710,18 +760,31 @@ export class VehicleCard extends LitElement {
     const vehicleEntity = this.vehicleEntities[key];
 
     if (!vehicleEntity) {
-      return key === 'selectedProgram'
-        ? {
-            key,
-            name: 'Program',
-            icon: 'mdi:ev-station',
-            state:
-              StateMapping.chargeSelectedProgram[
-                this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'selectedChargeProgram')
-              ],
-            unit,
-          }
-        : { key, name, icon, state, unit };
+      if (key === 'selectedProgram') {
+        return {
+          key,
+          name: 'Program',
+          icon: 'mdi:ev-station',
+          state:
+            StateMapping.chargeSelectedProgram[
+              this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'selectedChargeProgram')
+            ],
+          unit,
+        };
+      } else if (key === 'doorStatusOverall') {
+        const doorValue = this.getEntityAttribute(this.vehicleEntities.lockSensor?.entity_id, 'doorStatusOverall');
+        const doorFormatted = StateMapping.doorStatus[doorValue] || 'Unknown';
+        const activeState = doorValue === '1' ? true : false;
+        return {
+          key,
+          name: 'Doors',
+          icon: 'mdi:car-door-lock',
+          state: doorFormatted,
+          active: activeState,
+          unit,
+        };
+      }
+      return { key, name, icon, state: '', unit };
     }
 
     const defaultInfo = {

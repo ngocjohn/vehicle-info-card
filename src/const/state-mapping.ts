@@ -1,24 +1,25 @@
 export const lockAttributeStates = {
-  decklidstatus: { name: 'Deck lid', state: { false: 'closed', true: 'open' } },
-  doorstatusfrontleft: { name: 'Door front left', state: { false: 'closed', true: 'open' } },
-  doorstatusfrontright: { name: 'Door front right', state: { false: 'closed', true: 'open' } },
-  doorstatusrearleft: { name: 'Door rear left', state: { false: 'closed', true: 'open' } },
-  doorstatusrearright: { name: 'Door rear right', state: { false: 'closed', true: 'open' } },
   doorlockstatusfrontleft: { name: 'Door lock front left', state: { false: 'locked', true: 'unlocked' } },
   doorlockstatusfrontright: { name: 'Door lock front right', state: { false: 'locked', true: 'unlocked' } },
   doorlockstatusrearleft: { name: 'Door lock rear left', state: { false: 'locked', true: 'unlocked' } },
   doorlockstatusrearright: { name: 'Door lock rear right', state: { false: 'locked', true: 'unlocked' } },
   doorlockstatusgas: { name: 'Gas lock', state: { false: 'locked', true: 'unlocked' } },
+};
+
+export const doorStatus = {
+  '0': 'Open',
+  '1': 'Closed',
+  '2': 'Not existing',
+  '3': 'Unknown',
+};
+
+export const doorsAttrStates = {
+  decklidstatus: { name: 'Deck lid', state: { false: 'closed', true: 'open' } },
+  doorstatusfrontleft: { name: 'Door front left', state: { false: 'closed', true: 'open' } },
+  doorstatusfrontright: { name: 'Door front right', state: { false: 'closed', true: 'open' } },
+  doorstatusrearleft: { name: 'Door rear left', state: { false: 'closed', true: 'open' } },
+  doorstatusrearright: { name: 'Door rear right', state: { false: 'closed', true: 'open' } },
   enginehoodstatus: { name: 'Engine hood', state: { false: 'closed', true: 'open' } },
-  doorstatusoverall: {
-    name: 'Door status overall',
-    state: {
-      '0': 'open',
-      '1': 'closed',
-      '2': 'not existing',
-      '3': 'unknown',
-    },
-  },
   sunroofstatus: {
     name: 'Sunroof status',
     state: {

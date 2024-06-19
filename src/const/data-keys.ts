@@ -1,5 +1,5 @@
 export const tripOverview = [
-  { key: 'odometer' },
+  { key: 'odometer', icon: 'mdi:counter' },
   { key: 'fuelLevel' },
   { key: 'rangeLiquid', name: 'Range' },
   { key: 'rangeElectric', name: 'Range' },
@@ -24,6 +24,7 @@ export const tripFromStart = [
 export const vehicleOverview = [
   { key: 'lockSensor', name: 'Lock status' },
   { key: 'windowsClosed' },
+  { key: 'doorStatusOverall' },
   { key: 'parkBrake' },
   { key: 'ignitionState' },
 ];
