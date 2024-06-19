@@ -1,4 +1,4 @@
-export const lockAttributeStates = {
+export const lockAttributes = {
   doorlockstatusfrontleft: { name: 'Door lock front left', state: { false: 'locked', true: 'unlocked' } },
   doorlockstatusfrontright: { name: 'Door lock front right', state: { false: 'locked', true: 'unlocked' } },
   doorlockstatusrearleft: { name: 'Door lock rear left', state: { false: 'locked', true: 'unlocked' } },
@@ -13,7 +13,7 @@ export const doorStatus = {
   '3': 'Unknown',
 };
 
-export const doorsAttrStates = {
+export const doorAttributes = {
   decklidstatus: { name: 'Deck lid', state: { false: 'closed', true: 'open' } },
   doorstatusfrontleft: { name: 'Door front left', state: { false: 'closed', true: 'open' } },
   doorstatusfrontright: { name: 'Door front right', state: { false: 'closed', true: 'open' } },
@@ -55,7 +55,7 @@ export const chargeSelectedProgram = {
   '3': 'Work',
 };
 
-export const windowsAttributesState = {
+export const windowAttributes = {
   windowstatusrearleft: { name: 'Window rear left', state: { 2: 'closed', 0: 'open' } },
   windowstatusrearright: { name: 'Window rear right', state: { 2: 'closed', 0: 'open' } },
   windowstatusfrontleft: { name: 'Window front left', state: { 2: 'closed', 0: 'open' } },

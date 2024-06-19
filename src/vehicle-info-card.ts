@@ -573,10 +573,10 @@ export class VehicleCard extends LitElement {
 
   private _renderLockAttributes(): TemplateResult {
     const state: Record<string, any> = {};
-
+    const lockStateMap = StateMapping.lockAttributes;
     // Iterate over the keys of the lockAttrMapping object
 
-    Object.keys(StateMapping.lockAttributeStates).forEach((attribute) => {
+    Object.keys(lockStateMap).forEach((attribute) => {
       const attributeState = this.getEntityAttribute(this.vehicleEntities.lockSensor?.entity_id, attribute);
       if (attributeState !== undefined && attributeState !== null) {
         state[attribute] = attributeState;
@@ -591,12 +591,12 @@ export class VehicleCard extends LitElement {
         ${Object.keys(state).map((attribute) => {
           const rawState = state[attribute];
           // Check if the state is valid and the attribute mapping exists
-          if (rawState !== undefined && rawState !== null && StateMapping.lockAttributeStates[attribute]) {
-            const readableState = StateMapping.lockAttributeStates[attribute].state[rawState] || 'Unknown';
+          if (rawState !== undefined && rawState !== null && lockStateMap[attribute]) {
+            const readableState = lockStateMap[attribute].state[rawState] || 'Unknown';
             const classState = rawState ? 'warning' : '';
             return html`
               <div class="data-row">
-                <span>${StateMapping.lockAttributeStates[attribute].name} </span>
+                <span>${lockStateMap[attribute].name} </span>
                 <div class="data-value-unit">
                   <span style="text-transform: capitalize" class="${classState}">${readableState}</span>
                 </div>
@@ -612,7 +612,7 @@ export class VehicleCard extends LitElement {
 
   private _renderWindowAttributes(): TemplateResult {
     const windowAttributeStates: Record<string, any> = {};
-    const windowsStateMapping = StateMapping.windowsAttributesState;
+    const windowsStateMapping = StateMapping.windowAttributes;
 
     // Iterate over the keys of the Windows object
     Object.keys(windowsStateMapping).forEach((attribute) => {
@@ -650,7 +650,7 @@ export class VehicleCard extends LitElement {
 
   private _renderDoorAttributes(): TemplateResult {
     const doorAttributeStates: Record<string, any> = {};
-    const doorsStateMapping = StateMapping.doorsAttrStates;
+    const doorsStateMapping = StateMapping.doorAttributes;
 
     // Iterate over the keys of the Doors object
     Object.keys(doorsStateMapping).forEach((attribute) => {
@@ -847,7 +847,7 @@ export class VehicleCard extends LitElement {
         } else {
           const windowAttributeStates: Record<number, any> = {};
 
-          Object.keys(StateMapping.windowsAttributesState).forEach((attribute) => {
+          Object.keys(StateMapping.windowAttributes).forEach((attribute) => {
             const attributeState = this.getEntityAttribute(vehicleEntity.entity_id, attribute);
             if (attributeState !== undefined && attributeState !== null) {
               windowAttributeStates[attribute] = attributeState;
