@@ -6,9 +6,6 @@ declare global {
     'vehicle-info-card-editor': LovelaceCardEditor;
     'hui-error-card': LovelaceCard;
   }
-  interface Window {
-    BenzCard: VehicleCard | undefined;
-  }
 }
 /**
  * ExtendedThemes extends the existing Themes interface with additional properties.

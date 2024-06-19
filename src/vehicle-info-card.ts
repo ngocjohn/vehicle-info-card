@@ -47,6 +47,12 @@ import { over } from 'lodash';
 
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
 
+declare global {
+  interface Window {
+    BenzCard: VehicleCard | undefined;
+  }
+}
+
 @customElement('vehicle-info-card')
 export class VehicleCard extends LitElement {
   public static async getConfigElement(): Promise<LovelaceCardEditor> {
@@ -67,11 +73,11 @@ export class VehicleCard extends LitElement {
 
   @state() private chargingInfoVisible = false;
 
-  get isCharging() {
-    return this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'chargingactive');
-  }
+  // get isCharging() {
+  //   return this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'chargingactive');
+  // }
 
-  // isCharging = true;
+  isCharging = true;
 
   get isDark(): boolean {
     return this.hass.themes.darkMode;
@@ -134,11 +140,13 @@ export class VehicleCard extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
-    window.BenzCard = this;
+    if (process.env.ROLLUP_WATCH === 'true') {
+      window.BenzCard = this;
+    }
   }
 
   disconnectedCallback(): void {
-    if (window.BenzCard === this) {
+    if (process.env.ROLLUP_WATCH === 'true' && window.BenzCard === this) {
       window.BenzCard = undefined;
     }
     super.disconnectedCallback();
