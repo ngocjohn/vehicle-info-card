@@ -83,6 +83,7 @@ export const sensorDeviceFilters: {
   maxSoc: { prefix: 'sensor.', suffix: '_max_state_of_charge' },
   soc: { prefix: 'sensor.', suffix: 'soc' },
   chargingPower: { suffix: '_chargingpowerkw' },
+  iginitionState: { suffix: '_ignitionstate' },
 };
 
 export const combinedFilters = { ...binarySensorsFilters, ...sensorDeviceFilters };

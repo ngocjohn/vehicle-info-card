@@ -65,11 +65,11 @@ export class VehicleCard extends LitElement {
 
   @state() private chargingInfoVisible = false;
 
-  // get isCharging() {
-  //   return this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'chargingactive');
-  // }
+  get isCharging() {
+    return this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'chargingactive');
+  }
 
-  isCharging = true;
+  // isCharging = true;
 
   get isDark(): boolean {
     return this.hass.themes.darkMode;
@@ -508,7 +508,7 @@ export class VehicleCard extends LitElement {
           <span>${name}</span>
         </div>
         <div class="data-value-unit" @click=${() => toggleAttributes(key)}>
-          <span class=${!active ? 'warning' : ''}>${state}</span>
+          <span class=${!active ? 'warning' : ''} style="text-transform: capitalize;">${state}</span>
           <ha-icon class="subcard-icon ${subCardIconActive(key)}" icon="mdi:chevron-right"></ha-icon>
         </div>
       </div>
@@ -770,7 +770,7 @@ export class VehicleCard extends LitElement {
         const parkBrakeState = this.getBooleanState(vehicleEntity.entity_id);
         return {
           ...defaultInfo,
-          name: name ?? 'Park brake',
+          name: name ?? 'Parking brake',
           state: parkBrakeState ? 'Engaged' : 'Released',
           active: parkBrakeState,
         };
@@ -803,6 +803,17 @@ export class VehicleCard extends LitElement {
           name: name || 'Windows',
           state: windowState,
           active: windowsState,
+        };
+      }
+
+      case 'ignitionState': {
+        const shortValue = this.getEntityAttribute(vehicleEntity.entity_id, 'value_short');
+        const realState = this.getEntityState(vehicleEntity.entity_id);
+        const activeState = realState === '0' || realState === '1' ? true : false;
+        return {
+          ...defaultInfo,
+          state: shortValue || 'Unknown',
+          active: activeState,
         };
       }
 

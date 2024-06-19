@@ -21,7 +21,12 @@ export const tripFromStart = [
   { key: 'electricConsumptionStart', name: 'Consumption start' },
 ];
 
-export const vehicleOverview = [{ key: 'lockSensor' }, { key: 'windowsClosed' }, { key: 'parkBrake' }];
+export const vehicleOverview = [
+  { key: 'lockSensor', name: 'Lock status' },
+  { key: 'windowsClosed' },
+  { key: 'parkBrake' },
+  { key: 'ignitionState' },
+];
 
 export const vehicleWarnings = [
   { key: 'lowCoolantLevel' },
