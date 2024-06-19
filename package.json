@@ -23,9 +23,7 @@
     "apexcharts": "^3.49.1",
     "custom-card-helpers": "^1.7.2",
     "home-assistant-js-websocket": "^9.4.0",
-    "js-yaml": "^4.1.0",
-    "lit": "^3.1.4",
-    "lodash": "^4.17.21"
+    "lit": "^3.1.4"
   },
   "devDependencies": {
     "@babel/core": "^7.17.8",
@@ -36,10 +34,10 @@
     "@rollup/plugin-replace": "^5.0.7",
     "@types/leaflet": "^1.9.12",
     "@types/leaflet-providers": "^1.2.4",
-    "@typescript-eslint/eslint-plugin": "^5.16.0",
-    "@typescript-eslint/parser": "^5.16.0",
+    "@typescript-eslint/eslint-plugin": "^7.13.1",
+    "@typescript-eslint/parser": "^7.13.1",
     "devcert": "^1.2.2",
-    "eslint": "^9.5.0",
+    "eslint": "^8.9.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.25.4",
@@ -70,7 +68,7 @@
   "scripts": {
     "dev": "rollup -c --watch",
     "build": "npm run lint && npm run rollup",
-    "lint": "eslint src/const/*.ts",
+    "lint": "eslint src/*.ts",
     "rollup": "rollup -c",
     "local-copy": "cp dist/vehicle-info-card.js /Volumes/config/www/dashboard-resources/vehicle-info-card.js"
   }
