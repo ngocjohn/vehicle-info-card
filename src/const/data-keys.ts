@@ -8,15 +8,15 @@ export const tripOverview = [
 ];
 
 export const tripFromReset = [
-  { key: 'distanceReset' },
-  { key: 'averageSpeedReset', icon: 'mdi:speedometer' },
+  { key: 'distanceReset', name: 'Distance traveled' },
+  { key: 'averageSpeedReset', icon: 'mdi:speedometer', name: 'Average speed' },
   { key: 'liquidConsumptionReset', name: 'Consumption reset' },
   { key: 'electricConsumptionReset', name: 'Consumption reset' },
 ];
 
 export const tripFromStart = [
-  { key: 'distanceStart' },
-  { key: 'averageSpeedStart', icon: 'mdi:speedometer-slow' },
+  { key: 'distanceStart', name: 'Distance traveled' },
+  { key: 'averageSpeedStart', icon: 'mdi:speedometer-slow', name: 'Average speed' },
   { key: 'liquidConsumptionStart', name: 'Consumption start' },
   { key: 'electricConsumptionStart', name: 'Consumption start' },
 ];
@@ -29,11 +29,12 @@ export const vehicleOverview = [
 ];
 
 export const vehicleWarnings = [
-  { key: 'lowCoolantLevel' },
-  { key: 'lowBrakeFluid' },
-  { key: 'lowWashWater' },
-  { key: 'tirePressureWarning' },
-  { key: 'engineLight' },
+  { key: 'starterBatteryState', name: 'Starter battery' },
+  { key: 'lowCoolantLevel', name: 'Coolant' },
+  { key: 'lowBrakeFluid', name: 'Brake fluid' },
+  { key: 'lowWashWater', name: 'Washer fluid' },
+  { key: 'tirePressureWarning', name: 'Tire pressure' },
+  { key: 'engineLight', name: 'Engine light' },
 ];
 
 export const ecoScores = [

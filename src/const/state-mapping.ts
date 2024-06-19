@@ -64,3 +64,11 @@ export const windowsAttributesState = {
   windowstatusfrontleftblind: { name: 'Window front left blind', state: { 2: 'closed', 0: 'open' } },
   windowstatusfrontrightblind: { name: 'Window front right blind', state: { 2: 'closed', 0: 'open' } },
 };
+
+export const starterBattery = {
+  '0': 'OK',
+  '1': 'Partly charged',
+  '2': 'Not available',
+  '3': 'Remote service disabled',
+  '4': 'Vehicle no longer available',
+};

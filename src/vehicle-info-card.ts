@@ -505,7 +505,7 @@ export class VehicleCard extends LitElement {
             .icon="${icon}"
             @click=${() => toggleMoreInfo(key)}
           ></ha-icon>
-          <span>${name}</span>
+          <span style="text-transform: none;">${name}</span>
         </div>
         <div class="data-value-unit" @click=${() => toggleAttributes(key)}>
           <span class=${!active ? 'warning' : ''} style="text-transform: capitalize;">${state}</span>
@@ -830,6 +830,15 @@ export class VehicleCard extends LitElement {
         };
       }
 
+      case 'starterBatteryState': {
+        const stateValue = this.getEntityState(vehicleEntity.entity_id);
+        const stateFormated = StateMapping.starterBattery[stateValue] || 'Unknown';
+
+        return {
+          ...defaultInfo,
+          state: stateFormated,
+        };
+      }
       default:
         if (DataKeys.vehicleWarnings.map((key) => key.key).includes(key)) {
           const warningState = this.getBooleanState(vehicleEntity.entity_id);
