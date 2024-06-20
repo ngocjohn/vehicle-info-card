@@ -125,16 +125,9 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
     return html`
       <div class="base-config">
-        ${this._renderFormSelectors()} ${this._renderMapPopupConfig()} ${this._renderImageConfig()}
-        <div class="panel-container">
-          <ha-expansion-panel .expanded=${false} .outlined=${true}>
-            <h3 slot="header"><ha-icon icon="mdi:format-list-bulleted"></ha-icon> Buttons configuration</h3>
-            <div class="card-config">
-              <ha-alert alert-type="info">Select the card you want to configure.</ha-alert>
-              ${this._renderCardButtons()}
-            </div>
-          </ha-expansion-panel>
-        </div>
+        ${this._renderFormSelectors()} ${this._renderCardEditorButtons()} ${this._renderMapPopupConfig()}
+        ${this._renderImageConfig()}
+
         <div class="switches">${this._renderSwitches()}</div>
         <div class="note">
           <p>version: ${CARD_VERSION}</p>
@@ -143,15 +136,21 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     `;
   }
 
-  private _renderCardButtons(): TemplateResult {
-    return html`
-      <div class="cards-buttons">
-        <ha-button @click=${() => (this.isTripCardEditor = true)}>Trip Card</ha-button>
-        <ha-button @click=${() => (this.isVehicleCardEditor = true)}>Vehicle Card</ha-button>
-        <ha-button @click=${() => (this.isEcoCardEditor = true)}>Eco Card</ha-button>
-        <ha-button @click=${() => (this.isTyreCardEditor = true)}>Tyre Card</ha-button>
-      </div>
-    `;
+  private _renderCardEditorButtons(): TemplateResult {
+    return html` <div class="panel-container">
+      <ha-expansion-panel .expanded=${false} .outlined=${true}>
+        <h3 slot="header"><ha-icon icon="mdi:format-list-bulleted"></ha-icon> Buttons configuration</h3>
+        <div class="card-config">
+          <ha-alert alert-type="info">Select the card you want to configure.</ha-alert>
+          <div class="cards-buttons">
+            <ha-button @click=${() => (this.isTripCardEditor = true)}>Trip Card</ha-button>
+            <ha-button @click=${() => (this.isVehicleCardEditor = true)}>Vehicle Card</ha-button>
+            <ha-button @click=${() => (this.isEcoCardEditor = true)}>Eco Card</ha-button>
+            <ha-button @click=${() => (this.isTyreCardEditor = true)}>Tyre Card</ha-button>
+          </div>
+        </div>
+      </ha-expansion-panel>
+    </div>`;
   }
 
   private _renderSubCardConfig(cardType: string, isEditorOpen: boolean): TemplateResult {
