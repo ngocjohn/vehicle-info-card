@@ -2366,10 +2366,10 @@ function(){function t(t){t.remember("_draggable",this),this.el=t}t.prototype.ini
           autocomplete-entities
           autocomplete-icons
           .value=${Uo.stringify((null===(i=this._config)||void 0===i?void 0:i[`${t}_card`])||[])}
-          @value-changed=${e=>this._handleCardConfigChange(e,`${t}_card`)}
+          @blur=${e=>this._handleCardConfigChange(e,`${t}_card`)}
         ></ha-code-editor>
       </div>
-    `:G``}_handleBackClick(){this.isVehicleCardEditor=!1,this.isTripCardEditor=!1,this.isEcoCardEditor=!1,this.isTyreCardEditor=!1}_closeEditor(t){this[`is${t.charAt(0).toUpperCase()+t.slice(1)}CardEditor`]=!1}_getCardTitle(t){return`${t.charAt(0).toUpperCase()+t.slice(1)} Card Configuration`}_renderSwitches(){var t,e,i;return G` <ha-formfield .label=${"Show slides"}>
+    `:G``}_handleBackClick(){this.isVehicleCardEditor=!1,this.isTripCardEditor=!1,this.isEcoCardEditor=!1,this.isTyreCardEditor=!1}_getCardTitle(t){return`${t.charAt(0).toUpperCase()+t.slice(1)} Card Configuration`}_renderSwitches(){var t,e,i;return G` <ha-formfield .label=${"Show slides"}>
         <ha-switch
           .disabled=${!(null===(t=this._config)||void 0===t?void 0:t.images)||0===(null===(e=this._config)||void 0===e?void 0:e.images.length)}
           .checked=${!1!==this._show_slides}
