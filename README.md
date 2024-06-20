@@ -66,7 +66,7 @@ https://github.com/ngocjohn/vehicle-info-card
 
 ## Configuration
 
-Basic options can be configured in the GUI editor. This card also offers optional advanced features for enhanced customization. You can enable a slideshow to display images of your car, with the ability to swipe sideways to navigate between images. Additionally, you can display the car's position on a map along with the generated address. To use the map feature, you need to add a device tracker entity. For these options, you will need to use the code editor with YAML configuration.
+Basic options can be configured in the GUI editor. This card also offers optional advanced features for enhanced customization. You can enable a slideshow to display images of your car, with the ability to swipe sideways to navigate between images. Additionally, you can display the car's position on a map along with the generated address.
 
 > [!TIP]
 > For the best quality images of your vehicle, use the [Mercedes-Benz API service](https://developer.mercedes-benz.com/products/vehicle_images/docs#) to download them. You can find the Python script for downloading images [here](https://gist.github.com/ngocjohn/b1c1f3730cc6f7079ae0d2b3bddd57ad).
@@ -95,8 +95,6 @@ Below is the basic configuration for the custom card:
 | `tyre_card`        | object list | Optional    | Configuration objects for the tire pressure card.                                                                                                                                                                             |
 
 ### Examples
-
-For advanced options such as the slideshow or map display, you will need to use the code editor,with YAML configuration.
 
 Below is the configuration replaced entities card for `Vehicle status` button.
 
@@ -148,6 +146,7 @@ Below is the configuration replaced entities card for `Vehicle status` button.
 
 <img src="https://raw.githubusercontent.com/ngocjohn/vehicle-info-card/main/assets/card-dark.png" />
 <img src="https://raw.githubusercontent.com/ngocjohn/vehicle-info-card/main/assets/card-light.png" />
+<img src="https://raw.githubusercontent.com/ngocjohn/vehicle-info-card/main/assets/sub-cards.png" />
 
 <br />
 

@@ -1,6 +1,19 @@
 # CHANGELOG.md
 
-## 1.0.3 (2024-06-15)
+## [1.0.4](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.0.4) (2024-06-20)
+
+### Changes
+
+- **Sub Card Setup via UI**: Added a new function to set up individual sub cards through the user interface for improved clarity.
+- **Enhanced Status Information**: Added more detailed status information for windows and doors, including the number of open doors or windows.
+- **New Sensors**: Added new sensors for the starter battery and ignition, and updated to display their values for better monitoring and management.
+
+### Fixes
+
+- **Charge Power Status Display**: Fixed the issue with the charge power status display to show values accurately to two decimal places.
+- **State of Charge Indicator Icons**: Corrected the display of icons for the state of charge indicator, ensuring they reflect the accurate state.
+
+## [1.0.3](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.0.3) (2024-06-15)
 
 ### Features
 
