@@ -2358,7 +2358,7 @@ function(){function t(t){t.remember("_draggable",this),this.el=t}t.prototype.ini
     </div>`}_renderSubCardConfig(t,e){var i;return e?G`
       <div class="sub-card-config">
         <div class="sub-card-header">
-          <ha-icon icon="mdi:arrow-left" @click=${()=>this._handleBackClick} style="cursor: pointer"></ha-icon>
+          <ha-icon icon="mdi:arrow-left" @click=${()=>this._handleBackClick()} style="cursor: pointer"></ha-icon>
           <h3>${this._getCardTitle(t)}</h3>
         </div>
         <ha-code-editor
