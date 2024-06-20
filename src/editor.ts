@@ -128,7 +128,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         ${this._renderFormSelectors()} ${this._renderMapPopupConfig()} ${this._renderImageConfig()}
         <div class="panel-container">
           <ha-expansion-panel .expanded=${false} .outlined=${true}>
-            <h3 slot="header"><ha-icon icon="mdi:format-list-bulleted"></ha-icon> Card Configuration</h3>
+            <h3 slot="header"><ha-icon icon="mdi:format-list-bulleted"></ha-icon> Buttons configuration</h3>
             <div class="card-config">
               <ha-alert alert-type="info">Select the card you want to configure.</ha-alert>
               ${this._renderCardButtons()}
@@ -138,7 +138,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         <div class="switches">${this._renderSwitches()}</div>
         <div class="note">
           <p>version: ${CARD_VERSION}</p>
-          <ha-alert alert-type="info">Note: For another card configuration, use code editor.</ha-alert>
         </div>
       </div>
     `;
@@ -288,8 +287,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     }
     return html` <div class="panel-container">
       <ha-expansion-panel .expanded=${false} .outlined=${true}>
-        <h3 slot="header"><ha-icon icon="mdi:code-brackets"></ha-icon>Images configuration</h3>
-        <span slot="secondary">(Optional)</span>
+        <h3 slot="header"><ha-icon icon="mdi:code-brackets"></ha-icon> Images configuration</h3>
 
         <div class="code-editor">
           <ha-alert alert-type="info"
@@ -316,7 +314,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         <ha-expansion-panel .open=${false} .outlined=${true}>
           <h3 slot="header">
             <ha-icon icon="mdi:map"></ha-icon>
-            Map Popup Configuration
+            Map Popup configuration
           </h3>
           <div class="map-config">
             <ha-textfield
