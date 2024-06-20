@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { LitElement, html, TemplateResult, PropertyValues, CSSResultGroup } from 'lit';
 import { customElement, property, state } from 'lit/decorators';
 
@@ -17,8 +16,8 @@ import {
 
 // Custom Types and Constants
 import { ExtendedThemes, VehicleCardConfig, defaultConfig, EntityConfig, VehicleEntities } from './types';
-import { cardTypes } from './const';
 
+import { cardTypes } from './const';
 import * as DataKeys from './const/data-keys';
 import * as StateMapping from './const/state-mapping';
 
@@ -34,24 +33,8 @@ import './components/eco-chart';
 // Functions
 import { formatTimestamp } from './utils/helpers';
 import { getVehicleEntities, setupCardListeners } from './utils/get-device-entities';
-import { over } from 'lodash';
-
-(window as any).customCards = (window as any).customCards || [];
-(window as any).customCards.push({
-  type: 'vehicle-info-card',
-  name: 'Vehicle Card',
-  preview: true,
-  description: 'A custom card to display vehicle data with a map and additional cards.',
-  documentationURL: 'https://github.com/ngocjohn/vehicle-info-card?tab=readme-ov-file#configuration',
-});
 
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
-
-declare global {
-  interface Window {
-    BenzCard: VehicleCard | undefined;
-  }
-}
 
 @customElement('vehicle-info-card')
 export class VehicleCard extends LitElement {
@@ -67,19 +50,18 @@ export class VehicleCard extends LitElement {
   @state() private additionalCards: { [key: string]: any[] } = {};
   @state() private activeCardType: string | null = null;
 
-  @property({ type: Boolean }) lockAttributesVisible = false;
-  @property({ type: Boolean }) windowAttributesVisible = false;
-  @property({ type: Boolean }) doorsAttributesVisible = false;
+  @property({ type: Boolean }) private lockAttributesVisible = false;
+  @property({ type: Boolean }) private windowAttributesVisible = false;
+  @property({ type: Boolean }) private doorsAttributesVisible = false;
+  @property({ type: Boolean }) private chargingInfoVisible = false;
 
-  @state() private chargingInfoVisible = false;
+  private get isCharging() {
+    return this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'chargingactive');
+  }
 
-  // get isCharging() {
-  //   return this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'chargingactive');
-  // }
+  // isCharging = true;
 
-  isCharging = true;
-
-  get isDark(): boolean {
+  private get isDark(): boolean {
     return this.hass.themes.darkMode;
   }
 
@@ -102,6 +84,7 @@ export class VehicleCard extends LitElement {
     this.config = {
       ...config,
     };
+
     for (const cardType of cardTypes) {
       if (this.config[cardType.config]) {
         this.createCards(this.config[cardType.config], cardType.type);
@@ -168,13 +151,6 @@ export class VehicleCard extends LitElement {
 
   protected updated(changedProps: PropertyValues) {
     super.updated(changedProps);
-    if (changedProps.has('hass')) {
-      Object.values(this.additionalCards).forEach((cards) => {
-        cards.forEach((card) => {
-          card.hass = this.hass;
-        });
-      });
-    }
     if (changedProps.has('activeCardType') && this.activeCardType !== 'mapDialog') {
       const cardElement = this.shadowRoot?.querySelector('.card-element');
       if (!cardElement) return;
@@ -532,10 +508,11 @@ export class VehicleCard extends LitElement {
   /* ADDED CARD FUNCTIONALITY                                                   */
   /* -------------------------------------------------------------------------- */
 
-  private toggleCard = (action?: 'next' | 'prev' | 'close'): void => {
+  private toggleCard(action?: 'next' | 'prev' | 'close'): void {
     forwardHaptic('light');
     const cardElement = this.shadowRoot?.querySelector('.card-element') as HTMLElement;
     if (!this.activeCardType || !cardElement) return;
+
     if (action === 'next' || action === 'prev') {
       const currentIndex = cardTypes.findIndex((card) => card.type === this.activeCardType);
       const newIndex =
@@ -552,18 +529,18 @@ export class VehicleCard extends LitElement {
     } else if (action === 'close') {
       this.activeCardType = null;
     }
-  };
+  }
 
-  private toggleCardFromButtons = (cardType: string): void => {
+  private toggleCardFromButtons(cardType: string): void {
     forwardHaptic('light');
     setTimeout(() => {
       this.activeCardType = this.activeCardType === cardType ? null : cardType;
     }, 200);
-  };
+  }
 
   /* --------------------- SUBCARDS METHODS AND RENDERING --------------------- */
 
-  private _renderOverviewDataWithSubCard() {
+  private _renderOverviewDataWithSubCard(): TemplateResult {
     const overViewData = this.createDataArray(DataKeys.vehicleOverview);
 
     const toggleAttributes = (key: string) => {
@@ -610,29 +587,27 @@ export class VehicleCard extends LitElement {
       }
     };
 
-    const renderDataRow = (key: string, name?: string, icon?: string, state?: string, active?: boolean) => html`
-      <div class="data-row">
-        <div>
-          <ha-icon
-            class="data-icon ${!active ? 'warning' : ''}"
-            .icon="${icon}"
-            @click=${() => toggleMoreInfo(key)}
-          ></ha-icon>
-          <span style="text-transform: none;">${name}</span>
-        </div>
-        <div class="data-value-unit" @click=${() => toggleAttributes(key)}>
-          <span class=${!active ? 'warning' : ''} style="text-transform: capitalize;">${state}</span>
-          <ha-icon class="subcard-icon ${subCardIconActive(key)}" icon="mdi:chevron-right"></ha-icon>
-        </div>
-      </div>
-      ${subCardElements(key)}
+    return html`
+      ${overViewData.map(
+        ({ key, name, icon, state, active }) => html`
+          <div class="data-row">
+            <div>
+              <ha-icon
+                class="data-icon ${!active ? 'warning' : ''}"
+                .icon="${icon}"
+                @click=${() => toggleMoreInfo(key)}
+              ></ha-icon>
+              <span style="text-transform: none;">${name}</span>
+            </div>
+            <div class="data-value-unit" @click=${() => toggleAttributes(key)}>
+              <span class=${!active ? 'warning' : ''} style="text-transform: capitalize;">${state}</span>
+              <ha-icon class="subcard-icon ${subCardIconActive(key)}" icon="mdi:chevron-right"></ha-icon>
+            </div>
+          </div>
+          ${subCardElements(key)}
+        `,
+      )}
     `;
-
-    const overViewItems = overViewData.map(({ key, name, icon, state, active }) =>
-      renderDataRow(key, name, icon, state, active),
-    );
-
-    return overViewItems;
   }
 
   private _renderSubCard(attributeType: 'lock' | 'window' | 'door'): TemplateResult {
@@ -721,7 +696,7 @@ export class VehicleCard extends LitElement {
   /* GET ENTITIES STATE AND ATTRIBUTES                                          */
   /* -------------------------------------------------------------------------- */
 
-  private createItemDataRow = (title: string, data: EntityConfig[]): TemplateResult => {
+  private createItemDataRow(title: string, data: EntityConfig[]): TemplateResult {
     return html`
       <div class="default-card">
         <div class="data-header">${title}</div>
@@ -744,13 +719,13 @@ export class VehicleCard extends LitElement {
         })}
       </div>
     `;
-  };
+  }
 
-  private createDataArray = (keys: EntityConfig[]): ReturnType<VehicleCard['getEntityInfoByKey']>[] => {
+  private createDataArray(keys: EntityConfig[]): ReturnType<VehicleCard['getEntityInfoByKey']>[] {
     return keys.map((config) => this.getEntityInfoByKey(config));
-  };
+  }
 
-  private getEntityInfoByKey = ({ key, name, icon, unit, state }: EntityConfig): EntityConfig => {
+  private getEntityInfoByKey({ key, name, icon, unit, state }: EntityConfig): EntityConfig {
     const vehicleEntity = this.vehicleEntities[key];
 
     if (!vehicleEntity) {
@@ -908,14 +883,14 @@ export class VehicleCard extends LitElement {
         }
         return defaultInfo;
     }
-  };
+  }
 
-  private getStateDisplay = (entityId: string | undefined): string => {
+  private getStateDisplay(entityId: string | undefined): string {
     if (!entityId || !this.hass.states[entityId] || !this.hass.locale) return '';
     return computeStateDisplay(this.hass.localize, this.hass.states[entityId], this.hass.locale);
-  };
+  }
 
-  private getSecondaryInfo = (cardType: string): string => {
+  private getSecondaryInfo(cardType: string): string {
     const { odometer, lockSensor, ecoScoreBonusRange } = this.vehicleEntities;
 
     switch (cardType) {
@@ -937,36 +912,36 @@ export class VehicleCard extends LitElement {
       default:
         return 'Unknown Card';
     }
-  };
+  }
 
   /* --------------------------- GET INFO FROM HASS --------------------------- */
 
-  private getEntityInfo = (entity: string): { state: string; unit: string } => {
+  private getEntityInfo(entity: string): { state: string; unit: string } {
     const state = this.getEntityState(entity);
     const unit = this.getEntityAttribute(entity, 'unit_of_measurement');
     return { state, unit };
-  };
+  }
 
-  private getBooleanState = (entity: string | undefined): boolean => {
+  private getBooleanState(entity: string | undefined): boolean {
     if (!entity || !this.hass.states[entity]) return false;
     return this.hass.states[entity].state === 'on';
-  };
+  }
 
-  private getEntityState = (entity: string | undefined): string => {
+  private getEntityState(entity: string | undefined): string {
     if (!entity || !this.hass.states[entity]) return '';
     return this.hass.states[entity].state;
-  };
+  }
 
-  private getEntityAttribute = (entity: string | undefined, attribute: string): any => {
+  private getEntityAttribute(entity: string | undefined, attribute: string): any {
     if (!entity || !this.hass.states[entity] || !this.hass.states[entity].attributes) return undefined;
     return this.hass.states[entity].attributes[attribute];
-  };
+  }
 
-  private toggleMoreInfo = (entity: string): void => {
+  private toggleMoreInfo(entity: string): void {
     fireEvent(this, 'hass-more-info', { entityId: entity });
-  };
+  }
 
-  private getMinMaxTyrePressure = () => {
+  private getMinMaxTyrePressure() {
     const { vehicleEntities } = this;
     const pressuresWithUnits = DataKeys.tyreAttributes.map((key) => ({
       pressure: this.getEntityState(vehicleEntities[key]?.entity_id) || '',
@@ -982,5 +957,20 @@ export class VehicleCard extends LitElement {
     const formattedMinPressure = minPressure % 1 === 0 ? minPressure.toFixed(0) : minPressure.toFixed(1);
     const formattedMaxPressure = maxPressure % 1 === 0 ? maxPressure.toFixed(0) : maxPressure.toFixed(1);
     return `${formattedMinPressure} - ${formattedMaxPressure} ${tireUnit}`;
-  };
+  }
+}
+
+(window as any).customCards = (window as any).customCards || [];
+(window as any).customCards.push({
+  type: 'vehicle-info-card',
+  name: 'Vehicle Card',
+  preview: true,
+  description: 'A custom card to display vehicle data with a map and additional cards.',
+  documentationURL: 'https://github.com/ngocjohn/vehicle-info-card?tab=readme-ov-file#configuration',
+});
+
+declare global {
+  interface Window {
+    BenzCard: VehicleCard | undefined;
+  }
 }

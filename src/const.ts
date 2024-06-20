@@ -2,37 +2,10 @@ import { version } from '../package.json';
 
 export const CARD_VERSION = version;
 
-export const cardTypes = [
-  {
-    type: 'tripCards',
-    name: 'Trip data',
-    icon: 'mdi:map-marker-path',
-    config: 'trip_card',
-  },
-  {
-    type: 'vehicleCards',
-    name: 'Vehicle status',
-    icon: 'mdi:car-info',
-    config: 'vehicle_card',
-  },
-  {
-    type: 'ecoCards',
-    name: 'Eco display',
-    icon: 'mdi:leaf',
-    config: 'eco_card',
-  },
-  {
-    type: 'tyreCards',
-    name: 'Tyre pressure',
-    icon: 'mdi:tire',
-    config: 'tyre_card',
-  },
-];
-
 /**
  * Filters for binary sensors.
  */
-export const binarySensorsFilters: {
+const binarySensorsFilters: {
   [key: string]: { prefix?: string; suffix: string };
 } = {
   lock: { prefix: 'lock', suffix: '_lock' },
@@ -52,7 +25,7 @@ export const binarySensorsFilters: {
 /**
  * Filters for sensor devices.
  */
-export const sensorDeviceFilters: {
+const sensorDeviceFilters: {
   [key: string]: { prefix?: string; suffix: string };
 } = {
   lockSensor: { prefix: 'sensor.', suffix: '_lock' },
@@ -87,3 +60,30 @@ export const sensorDeviceFilters: {
 };
 
 export const combinedFilters = { ...binarySensorsFilters, ...sensorDeviceFilters };
+
+export const cardTypes = [
+  {
+    type: 'tripCards',
+    name: 'Trip data',
+    icon: 'mdi:map-marker-path',
+    config: 'trip_card',
+  },
+  {
+    type: 'vehicleCards',
+    name: 'Vehicle status',
+    icon: 'mdi:car-info',
+    config: 'vehicle_card',
+  },
+  {
+    type: 'ecoCards',
+    name: 'Eco display',
+    icon: 'mdi:leaf',
+    config: 'eco_card',
+  },
+  {
+    type: 'tyreCards',
+    name: 'Tyre pressure',
+    icon: 'mdi:tire',
+    config: 'tyre_card',
+  },
+];

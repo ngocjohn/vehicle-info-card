@@ -1,12 +1,12 @@
 import { ActionConfig, LovelaceCard, LovelaceCardConfig, LovelaceCardEditor, Themes } from 'custom-card-helpers';
 
-import { VehicleCard } from './vehicle-info-card';
 declare global {
   interface HTMLElementTagNameMap {
     'vehicle-info-card-editor': LovelaceCardEditor;
     'hui-error-card': LovelaceCard;
   }
 }
+
 /**
  * ExtendedThemes extends the existing Themes interface with additional properties.
  */
