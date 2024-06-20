@@ -145,10 +145,12 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private _renderCardButtons(): TemplateResult {
     return html`
-      <ha-button @click=${() => (this.isVehicleCardEditor = true)}>Vehicle Card</ha-button>
-      <ha-button @click=${() => (this.isTripCardEditor = true)}>Trip Card</ha-button>
-      <ha-button @click=${() => (this.isEcoCardEditor = true)}>Eco Card</ha-button>
-      <ha-button @click=${() => (this.isTyreCardEditor = true)}>Tyre Card</ha-button>
+      <div class="cards-buttons">
+        <ha-button @click=${() => (this.isTripCardEditor = true)}>Trip Card</ha-button>
+        <ha-button @click=${() => (this.isVehicleCardEditor = true)}>Vehicle Card</ha-button>
+        <ha-button @click=${() => (this.isEcoCardEditor = true)}>Eco Card</ha-button>
+        <ha-button @click=${() => (this.isTyreCardEditor = true)}>Tyre Card</ha-button>
+      </div>
     `;
   }
 
@@ -158,7 +160,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     return html`
       <div class="sub-card-config">
         <div class="sub-card-header">
-          <ha-icon icon="mdi:chevron-left-circle" @click=${() => this._closeEditor(cardType)}></ha-icon>
+          <ha-icon icon="mdi:arrow-left" @click=${() => this._closeEditor(cardType)} style="cursor: pointer"></ha-icon>
           <h3>${this._getCardTitle(cardType)}</h3>
         </div>
         <ha-code-editor
@@ -362,9 +364,10 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
     try {
       newValue = YAML.parse(target.value); // Parse YAML content
-      if (!Array.isArray(newValue)) {
-        console.error(`Invalid structure for ${configKey}:`, newValue);
-        return;
+
+      // If the parsed value is null or not an array, set it to an empty array
+      if (!newValue || !Array.isArray(newValue)) {
+        newValue = [];
       }
     } catch (e) {
       console.error(`Parsing error for ${configKey}:`, e);
@@ -472,12 +475,16 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       color: var(--secondary-text-color);
       text-align: start;
     }
+    .cards-buttons {
+      display: flex;
+      justify-content: space-around;
+    }
 
     .sub-card-header {
       display: flex;
       width: 100%;
       justify-content: space-between;
-      padding: 0.5rem 0;
+      padding: 0.5rem 0 1rem;
       align-items: center;
       border-bottom: 1px solid var(--divider-color);
     }
