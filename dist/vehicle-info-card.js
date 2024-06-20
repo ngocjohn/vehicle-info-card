@@ -2358,7 +2358,7 @@ function(){function t(t){t.remember("_draggable",this),this.el=t}t.prototype.ini
     </div>`}_renderSubCardConfig(t,e){var i;return e?G`
       <div class="sub-card-config">
         <div class="sub-card-header">
-          <ha-icon icon="mdi:arrow-left" @click=${()=>this._closeEditor(t)} style="cursor: pointer"></ha-icon>
+          <ha-icon icon="mdi:arrow-left" @click=${()=>this._handleBackClick} style="cursor: pointer"></ha-icon>
           <h3>${this._getCardTitle(t)}</h3>
         </div>
         <ha-code-editor
@@ -2369,7 +2369,7 @@ function(){function t(t){t.remember("_draggable",this),this.el=t}t.prototype.ini
           @value-changed=${e=>this._handleCardConfigChange(e,`${t}_card`)}
         ></ha-code-editor>
       </div>
-    `:G``}_closeEditor(t){this[`is${t.charAt(0).toUpperCase()+t.slice(1)}CardEditor`]=!1}_getCardTitle(t){return`${t.charAt(0).toUpperCase()+t.slice(1)} Card Configuration`}_renderSwitches(){var t,e,i;return G` <ha-formfield .label=${"Show slides"}>
+    `:G``}_handleBackClick(){this.isVehicleCardEditor=!1,this.isTripCardEditor=!1,this.isEcoCardEditor=!1,this.isTyreCardEditor=!1}_closeEditor(t){this[`is${t.charAt(0).toUpperCase()+t.slice(1)}CardEditor`]=!1}_getCardTitle(t){return`${t.charAt(0).toUpperCase()+t.slice(1)} Card Configuration`}_renderSwitches(){var t,e,i;return G` <ha-formfield .label=${"Show slides"}>
         <ha-switch
           .disabled=${!(null===(t=this._config)||void 0===t?void 0:t.images)||0===(null===(e=this._config)||void 0===e?void 0:e.images.length)}
           .checked=${!1!==this._show_slides}
@@ -2501,7 +2501,7 @@ function(){function t(t){t.remember("_draggable",this),this.el=t}t.prototype.ini
           </div>
         </ha-expansion-panel>
       </div>
-    `}async loadCardHelpers(){this._helpers=await window.loadCardHelpers()}_handleCardConfigChange(t,e){if(!this._config||!this.hass)return;const i=t.target;let a;try{a=Uo.parse(i.value),a&&Array.isArray(a)||(a=[])}catch(t){return}this._config=Object.assign(Object.assign({},this._config),{[e]:a}),Bt(this,"config-changed",{config:this._config})}_valueChanged(t){if(!this._config||!this.hass)return;const e=t.target,i=e.configValue;if(this[`_${i}`]===e.value)return;let a;if("images"===i?a=e.value.split("\n").map((t=>t.trim())).filter((t=>t)):["hours_to_show","default_zoom"].includes(i)?(a=""===e.value?void 0:Number(e.value),isNaN(a)||(this._config=Object.assign(Object.assign({},this._config),{map_popup_config:Object.assign(Object.assign({},this._config.map_popup_config),{[i]:a})}))):"theme_mode"===i?(a=e.value,this._config=Object.assign(Object.assign({},this._config),{map_popup_config:Object.assign(Object.assign({},this._config.map_popup_config),{[i]:a})})):(a=void 0!==e.checked?e.checked:e.value,this._config=Object.assign(Object.assign({},this._config),{[i]:a})),a&&0===a.length){const t=Object.assign({},this._config);delete t[i],this._config=t}Bt(this,"config-changed",{config:this._config})}};Qo.styles=o`
+    `}async loadCardHelpers(){this._helpers=await window.loadCardHelpers()}_handleCardConfigChange(t,e){if(!this._config||!this.hass)return;const i=t.target;let a;try{a=Uo.parse(i.value),a&&Array.isArray(a)||(a=[])}catch(t){return}this._config=Object.assign(Object.assign({},this._config),{[e]:a}),Bt(this,"config-changed",{config:this._config})}_valueChanged(t){if(!this._config||!this.hass)return;const e=t.target,i=e.configValue;if(this[`_${i}`]===e.value)return;let a;if("images"===i?(a=e.value.split("\n").map((t=>t.trim())).filter((t=>t)),this._config=Object.assign(Object.assign({},this._config),{images:a})):["hours_to_show","default_zoom"].includes(i)?(a=""===e.value?void 0:Number(e.value),isNaN(a)||(this._config=Object.assign(Object.assign({},this._config),{map_popup_config:Object.assign(Object.assign({},this._config.map_popup_config),{[i]:a})}))):"theme_mode"===i?(a=e.value,this._config=Object.assign(Object.assign({},this._config),{map_popup_config:Object.assign(Object.assign({},this._config.map_popup_config),{[i]:a})})):(a=void 0!==e.checked?e.checked:e.value,this._config=Object.assign(Object.assign({},this._config),{[i]:a})),a&&0===a.length){const t=Object.assign({},this._config);delete t[i],this._config=t}Bt(this,"config-changed",{config:this._config})}};Qo.styles=o`
     .card-config {
       width: 100%;
     }
