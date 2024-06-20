@@ -167,7 +167,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           autocomplete-entities
           autocomplete-icons
           .value=${YAML.stringify(this._config?.[`${cardType}_card`] || [])}
-          @value-changed=${(ev: CustomEvent) => this._handleCardConfigChange(ev, `${cardType}_card`)}
+          @blur=${(ev: CustomEvent) => this._handleCardConfigChange(ev, `${cardType}_card`)}
         ></ha-code-editor>
       </div>
     `;
@@ -178,10 +178,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     this.isTripCardEditor = false;
     this.isEcoCardEditor = false;
     this.isTyreCardEditor = false;
-  }
-
-  private _closeEditor(cardType: string): void {
-    this[`is${cardType.charAt(0).toUpperCase() + cardType.slice(1)}CardEditor`] = false;
   }
 
   private _getCardTitle(cardType: string): string {
