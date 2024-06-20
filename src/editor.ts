@@ -159,7 +159,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     return html`
       <div class="sub-card-config">
         <div class="sub-card-header">
-          <ha-icon icon="mdi:arrow-left" @click=${() => this._closeEditor(cardType)} style="cursor: pointer"></ha-icon>
+          <ha-icon icon="mdi:arrow-left" @click=${() => this._handleBackClick} style="cursor: pointer"></ha-icon>
           <h3>${this._getCardTitle(cardType)}</h3>
         </div>
         <ha-code-editor
@@ -171,6 +171,13 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         ></ha-code-editor>
       </div>
     `;
+  }
+
+  private _handleBackClick(): void {
+    this.isVehicleCardEditor = false;
+    this.isTripCardEditor = false;
+    this.isEcoCardEditor = false;
+    this.isTyreCardEditor = false;
   }
 
   private _closeEditor(cardType: string): void {
@@ -399,6 +406,10 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         .split('\n')
         .map((line: string) => line.trim())
         .filter((line: string) => line); // Remove empty lines
+      this._config = {
+        ...this._config,
+        images: newValue,
+      };
     } else if (['hours_to_show', 'default_zoom'].includes(configValue)) {
       newValue = target.value === '' ? undefined : Number(target.value);
       if (!isNaN(newValue)) {
