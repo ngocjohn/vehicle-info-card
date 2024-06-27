@@ -6,7 +6,7 @@
 
 ## Home Assistant Custom Card for Mercedes Vehicles
 
-This custom card displays essential information about your Mercedes vehicle. It retrieves data using the Custom Component for Mercedes cars by [ReneNulschDE](https://github.com/ReneNulschDE/mbapi2020) available at [mbapi2020](https://github.com/ReneNulschDE/mbapi2020). The card features four primary buttons: Trip Data, Vehicle Status, Eco Display, and Tire Pressure. These buttons can be easily replaced with any Lovelace card within Home Assistant, allowing for flexible and customizable vehicle data display.
+<p style="text-align: justify;">This custom card displays essential information about your Mercedes vehicle. It retrieves data using the Custom Component for Mercedes cars by <a href="https://github.com/ReneNulschDE">ReneNulschDE</a> available at <a href="https://github.com/ReneNulschDE/mbapi2020">mbapi2020</a>. The card features four primary buttons: Trip Data, Vehicle Status, Eco Display, and Tire Pressure. These buttons can be easily replaced with any Lovelace card within Home Assistant, allowing for flexible and customizable vehicle data display.</p>
 
 <div align="center">
   <a href="#"> <img src="https://raw.githubusercontent.com/ngocjohn/vehicle-info-card/main/assets/default-card.gif"></a>
@@ -48,25 +48,35 @@ https://github.com/ngocjohn/vehicle-info-card
 3. Select `Lovelace`
 1. Press add icon and search for `Vehicle Info Card`
 1. Select Vehicle Info Card repo and install
-1. Force refresh the Home Assistant page (`Ctrl` + `F5` / (`Shift` +) `⌘` + `R`)
+1. Force refresh the Home Assistant page `Ctrl` + `F5` / `Shift` + `⌘` + `R`
 1. Add vehicle-info-card to your page
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=ngocjohn&repository=vehicle-info-card&category=plugin)
 
 ### Manual
 
-1. Download the [vehicle-info-card.js](https://github.com/ngocjohn/vehicle-info-card/releases/latest)
-1. Place the downloaded file on your Home Assistant machine in the `config/www` folder (when there is no `www` folder in the folder where your `configuration.yaml` file is, create it and place the file there)
-1. In Home Assistant go to `Configuration->Lovelace Dashboards->Resources` (When there is no `resources` tag on the `Lovelace Dashboard` page, enable advanced mode in your account settings, and retry this step)
-1. Add a new resource
-   1. Url = `/local/vehicle-info-card.js`
-   1. Resource type = `module`
-1. Force refresh the Home Assistant page (`Ctrl` + `F5` / (`Shift` +) `⌘` + `R`)
-1. Add vehicle-info-card to your page
+<details>
+  <summary>Manual instalation</summary>
+  </br>
+  <ol>
+    <li>Download the <a href="https://github.com/ngocjohn/vehicle-info-card/releases/latest">vehicle-info-card.js</a></li>
+    <li>Place the downloaded file on your Home Assistant machine in the <code>config/www</code> folder (when there is no <code>www</code> folder in the folder where your <code>configuration.yaml</code> file is, create it and place the file there)</li>
+    <li>In Home Assistant go to <code>Configuration->Lovelace Dashboards->Resources</code> (When there is no <code>resources</code> tag on the <code>Lovelace Dashboard</code> page, enable advanced mode in your account settings, and retry this step)</li>
+    <li>Add a new resource
+      <ul>
+        <li>Url = <code>/local/vehicle-info-card.js</code></li>
+        <li>Resource type = <code>module</code></li>
+      </ul>
+    </li>
+    <li>Force refresh the Home Assistant page <code>Ctrl</code> + <code>F5</code> / <code>Shift</code> + <code>⌘</code> + <code>R</code></li>
+    <li>Add vehicle-info-card to your page</li>
+  </ol>
+</details>
+</br>
 
 ## Configuration
 
-Basic options can be configured in the GUI editor. This card also offers optional advanced features for enhanced customization. You can enable a slideshow to display images of your car, with the ability to swipe sideways to navigate between images. Additionally, you can display the car's position on a map along with the generated address.
+<p style="text-align: justify;">Basic options can be configured in the GUI editor. This card also offers optional advanced features for enhanced customization. You can enable a slideshow to display images of your car, with the ability to swipe sideways to navigate between images. Additionally, you can display the car's position on a map along with the generated address.</p>
 
 > [!TIP]
 > For the best quality images of your vehicle, use the [Mercedes-Benz API service](https://developer.mercedes-benz.com/products/vehicle_images/docs#) to download them. You can find the Python script for downloading images [here](https://gist.github.com/ngocjohn/b1c1f3730cc6f7079ae0d2b3bddd57ad).
