@@ -60,7 +60,10 @@ export class VehicleCard extends LitElement {
     return this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'chargingactive');
   }
 
-  // isCharging = true;
+  private get carVinNumber(): string {
+    if (!this.config.entity) return '';
+    return this.getEntityAttribute(this.config.entity, 'vin');
+  }
 
   private get isDark(): boolean {
     return this.hass.themes.darkMode;
