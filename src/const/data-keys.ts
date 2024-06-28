@@ -1,6 +1,7 @@
 export const tripOverview = [
   { key: 'odometer', icon: 'mdi:counter' },
   { key: 'fuelLevel' },
+  { key: 'adBlueLevel', icon: 'mdi:fuel' },
   { key: 'rangeLiquid', name: 'Range' },
   { key: 'rangeElectric', name: 'Range' },
   { key: 'soc' },
