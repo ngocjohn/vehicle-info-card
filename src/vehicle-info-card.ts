@@ -24,7 +24,7 @@ import * as StateMapping from './const/state-mapping';
 
 // Styles and Assets
 import styles from './css/styles.css';
-import { amgBlack, amgWhite } from './const/imgconst';
+import { amgBlack, amgWhite, tyreBg } from './const/imgconst';
 
 // Components
 import './components/map-card';
@@ -496,9 +496,29 @@ export class VehicleCard extends LitElement {
       ${this.createItemDataRow('Scores', ecoData)}`;
   }
 
-  private _renderDefaultTyreCard(): TemplateResult | void {
-    const tyreData = this.createDataArray(DataKeys.tyrePressures);
-    return this.createItemDataRow('Tyre pressures', tyreData);
+  private _renderDefaultTyreCard(): TemplateResult {
+    const isPressureWarning = this.getBooleanState(this.vehicleEntities.tirePressureWarning?.entity_id);
+    const tyreInfo = isPressureWarning ? 'Pressure loss detected. Check tyres.' : 'No pressure loss detected';
+    const infoClass = isPressureWarning ? 'warning' : '';
+
+    return html`
+      <div class="default-card">
+        <div class="data-header">Tyre pressures</div>
+        <div class="tyre-wrapper">
+          <div class="background" style="background-image: url(${tyreBg})"></div>
+          ${DataKeys.tyrePressures.map(
+            (tyre) =>
+              html` <div class="tyre-box ${tyre.key.replace('tirePressure', '').toLowerCase()}">
+                <span class="tyre-value">${this.getStateDisplay(this.vehicleEntities[tyre.key]?.entity_id)}</span>
+                <span class="tyre-name">${tyre.name}</span>
+              </div>`,
+          )}
+        </div>
+        <div class="tyre-info ${infoClass}">
+          <span>${tyreInfo}</span>
+        </div>
+      </div>
+    `;
   }
 
   private _showWarning(warning: string): TemplateResult {
