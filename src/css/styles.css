@@ -83,6 +83,7 @@ header h1 {
   flex-wrap: wrap;
   transition: all 0.5s ease;
 }
+
 .info-box {
   --mdc-icon-size: 17px;
   display: flex;
@@ -108,7 +109,7 @@ header h1 {
   }
 }
 
-.item.chargeinfo {
+.item.active-btn {
   cursor: pointer;
 }
 

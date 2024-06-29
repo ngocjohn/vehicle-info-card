@@ -227,7 +227,7 @@ export class VehicleCard extends LitElement {
     });
 
     const addedChargingInfo = this.isCharging
-      ? html` <div class="item chargeinfo" @click=${() => (this.chargingInfoVisible = !this.chargingInfoVisible)}>
+      ? html` <div class="item active-btn" @click=${() => (this.chargingInfoVisible = !this.chargingInfoVisible)}>
           <ha-icon icon=${'mdi:ev-station'}></ha-icon>
           <div>
             <span>Charging</span>
@@ -238,7 +238,21 @@ export class VehicleCard extends LitElement {
         </div>`
       : html``;
 
-    return html`<div class="info-box">${defaultIdicator} ${addedChargingInfo}</div> `;
+    const serviceControl = this.config.enable_services_control
+      ? html`
+          <div class="item active-btn" @click=${() => this.toggleCardFromButtons('servicesCard')}>
+            <ha-icon icon="mdi:car-cog"></ha-icon>
+            <div>
+              <span>Services</span>
+              <div class="subcard-icon" style="margin-bottom: 2px">
+                <ha-icon icon="mdi:chevron-right"></ha-icon>
+              </div>
+            </div>
+          </div>
+        `
+      : html``;
+
+    return html`<div class="info-box">${defaultIdicator} ${serviceControl} ${addedChargingInfo}</div> `;
   }
 
   private _renderChargingInfo(): TemplateResult | void {
@@ -402,6 +416,10 @@ export class VehicleCard extends LitElement {
         config: [],
         defaultRender: () => this.additionalCards['mapDialog'],
       },
+      servicesCard: {
+        config: [],
+        defaultRender: this._renderServiceControl.bind(this),
+      },
     };
 
     const cardInfo = cardConfigMap[this.activeCardType];
@@ -520,6 +538,17 @@ export class VehicleCard extends LitElement {
         <div class="tyre-info ${infoClass}">
           <span>${tyreInfo}</span>
         </div>
+      </div>
+    `;
+  }
+
+  private _renderServiceControl(): TemplateResult | void {
+    return html`
+      <div class="service-control">
+        <button>Lock doors</button>
+        <button>Unlock doors</button>
+        <button>Start engine</button>
+        <button>Stop engine</button>
       </div>
     `;
   }
