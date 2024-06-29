@@ -383,7 +383,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
                 ([key, label]) => html`
                   <ha-formfield .label=${label}>
                     <ha-switch
-                      .checked=${services[key] !== false}
+                      .checked=${services[key] !== undefined ? services[key] : false}
                       .configValue="${key}"
                       @change=${this._servicesValueChanged}
                     ></ha-switch>
