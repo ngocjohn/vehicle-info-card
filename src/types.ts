@@ -69,6 +69,19 @@ export const defaultConfig: Partial<VehicleCardConfig> = {
   show_buttons: true,
   show_background: true,
   enable_map_popup: false,
+  enable_services_control: false,
+  services: {
+    auxheat: false,
+    doorsLock: false,
+    chargeProgram: false,
+    engine: false,
+    windows: false,
+    sunroof: false,
+    sigPos: false,
+    preheat: false,
+    batteryMaxSoc: false,
+    sendRoute: false,
+  },
 };
 
 export interface VehicleEntities {
