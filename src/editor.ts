@@ -3,6 +3,7 @@ import { LitElement, html, TemplateResult, css, CSSResultGroup } from 'lit';
 import { HomeAssistant, fireEvent, LovelaceCardEditor, LovelaceCardConfig } from 'custom-card-helpers';
 import YAML from 'yaml';
 import { VehicleCardConfig } from './types';
+import { ServicesConfig } from './types';
 import { customElement, property, state } from 'lit/decorators';
 import { CARD_VERSION } from './const';
 
@@ -105,6 +106,10 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     return this._config?.google_api_key || '';
   }
 
+  get _enable_services_control(): boolean {
+    return this._config?.enable_services_control || false;
+  }
+
   protected render(): TemplateResult | void {
     if (!this.hass || !this._helpers) {
       return html``;
@@ -126,7 +131,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     return html`
       <div class="base-config">
         ${this._renderFormSelectors()} ${this._renderCardEditorButtons()} ${this._renderMapPopupConfig()}
-        ${this._renderImageConfig()}
+        ${this._renderImageConfig()} ${this._renderServicesConfig()}
 
         <div class="switches">${this._renderSwitches()}</div>
         <div class="note">
@@ -223,6 +228,13 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           .disabled=${this._show_map === false || this._show_map === undefined || !this._config?.device_tracker}
           .checked=${this._enable_map_popup !== false}
           .configValue=${'enable_map_popup'}
+          @change=${this._valueChanged}
+        ></ha-switch>
+      </ha-formfield>
+      <ha-formfield .label=${`Enable services control`}>
+        <ha-switch
+          .checked=${this._enable_services_control !== false}
+          .configValue=${'enable_services_control'}
           @change=${this._valueChanged}
         ></ha-switch>
       </ha-formfield>`;
@@ -352,6 +364,52 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     `;
   }
 
+  private _renderServicesConfig(): TemplateResult {
+    const services = this._config?.services || {}; // Ensure services object exists and default to empty object if undefined
+
+    return html`
+      <div class="panel-container">
+        <ha-expansion-panel .open=${false} .outlined=${true}>
+          <h3 slot="header">
+            <ha-icon icon="mdi:car-cog"></ha-icon>
+            Services configuration
+          </h3>
+          <div class="services-config">
+            <ha-alert alert-type="info">
+              Choose which services you want to enable. If a service is disabled, it will not be shown in the card.
+            </ha-alert>
+            <div class="switches">
+              ${Object.entries(this.servicesConfig).map(
+                ([key, label]) => html`
+                  <ha-formfield .label=${label}>
+                    <ha-switch
+                      .checked=${services[key] !== false}
+                      .configValue="${key}"
+                      @change=${this._servicesValueChanged}
+                    ></ha-switch>
+                  </ha-formfield>
+                `,
+              )}
+            </div>
+          </div>
+        </ha-expansion-panel>
+      </div>
+    `;
+  }
+
+  private servicesConfig: Record<keyof ServicesConfig, string> = {
+    auxheat: 'Auxheat',
+    doorsLock: 'Doors Lock',
+    chargeProgram: 'Charge Program',
+    engine: 'Engine',
+    windows: 'Windows',
+    sunroof: 'Sunroof',
+    sigPos: 'SigPos',
+    preheat: 'Preheat',
+    batteryMaxSoc: 'Battery Max Soc',
+    sendRoute: 'Send Route',
+  };
+
   private async loadCardHelpers(): Promise<void> {
     this._helpers = await (window as any).loadCardHelpers();
   }
@@ -379,6 +437,29 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     this._config = {
       ...this._config,
       [configKey]: newValue,
+    };
+
+    fireEvent(this, 'config-changed', { config: this._config });
+  }
+
+  private _servicesValueChanged(ev): void {
+    if (!this._config || !this.hass) {
+      return;
+    }
+
+    const target = ev.target;
+    const configValue = target.configValue;
+
+    if (this[`${configValue}`] === target.checked) {
+      return;
+    }
+
+    this._config = {
+      ...this._config,
+      services: {
+        ...this._config.services,
+        [configValue]: target.checked,
+      },
     };
 
     fireEvent(this, 'config-changed', { config: this._config });
