@@ -72,15 +72,15 @@ export const defaultConfig: Partial<VehicleCardConfig> = {
   enable_services_control: false,
   services: {
     auxheat: false,
-    doorsLock: false,
-    chargeProgram: false,
-    engine: false,
-    windows: false,
-    sunroof: false,
-    sigPos: false,
-    preheat: false,
     batteryMaxSoc: false,
+    chargeProgram: false,
+    doorsLock: false,
+    engine: false,
+    preheat: false,
     sendRoute: false,
+    sigPos: false,
+    sunroof: false,
+    windows: false,
   },
 };
 

@@ -30,6 +30,7 @@ import { amgBlack, amgWhite, tyreBg } from './const/imgconst';
 import './components/map-card';
 import './components/header-slide';
 import './components/eco-chart';
+import './components/remote-control';
 
 // Functions
 import { formatTimestamp } from './utils/helpers';
@@ -543,12 +544,20 @@ export class VehicleCard extends LitElement {
   }
 
   private _renderServiceControl(): TemplateResult | void {
+    const hass = this.hass;
+    const serviceControl = this.config.services;
+    const carVin = this.carVinNumber;
+    const carLockEntity = this.vehicleEntities.lock?.entity_id;
     return html`
-      <div class="service-control">
-        <button>Lock doors</button>
-        <button>Unlock doors</button>
-        <button>Start engine</button>
-        <button>Stop engine</button>
+      <div class="default-card">
+        <div class="data-header">Remote control</div>
+        <remote-control
+          .hass=${hass}
+          .servicesConfig=${serviceControl}
+          .carVin=${carVin}
+          .carLockEntity=${carLockEntity}
+          .darkMode=${this.isDark}
+        ></remote-control>
       </div>
     `;
   }
