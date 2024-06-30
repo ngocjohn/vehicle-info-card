@@ -32,8 +32,8 @@ export const vehicleOverview = [
 
 export const vehicleWarnings = [
   { key: 'starterBatteryState', name: 'Starter battery' },
-  { key: 'lowCoolantLevel', name: 'Coolant' },
-  { key: 'lowBrakeFluid', name: 'Brake fluid' },
+  { key: 'lowCoolantLevel', name: 'Coolant', icon: 'mdi:car-coolant-level' },
+  { key: 'lowBrakeFluid', name: 'Brake fluid', icon: 'mdi:car-brake-fluid-level' },
   { key: 'lowWashWater', name: 'Washer fluid' },
   { key: 'tirePressureWarning', name: 'Tire pressure' },
   { key: 'engineLight', name: 'Engine light' },

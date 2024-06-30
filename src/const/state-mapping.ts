@@ -73,23 +73,3 @@ export const starterBattery = {
   '3': 'Remote service disabled',
   '4': 'Vehicle no longer available',
 };
-
-export const servicesCtrl = {
-  auxheat: { name: 'Auxiliary heating', icon: 'mdi:car-seat-heater' },
-  batteryMaxSoc: { name: 'Battery max soc', icon: 'mdi:battery-charging' },
-  chargeProgram: { name: 'Charge program', icon: 'mdi:ev-station' },
-  doorsLock: { name: 'Lock doors', icon: 'mdi:lock' },
-  engine: { name: 'Engine', icon: 'mdi:engine' },
-  preheat: { name: 'Preheat', icon: 'mdi:car-defrost-rear' },
-  sendRoute: { name: 'Send route', icon: 'mdi:map-marker-path' },
-  sigPos: { name: 'Signal position', icon: 'mdi:bugle' },
-  sunroof: { name: 'Sunroof', icon: 'mdi:window-open' },
-  windows: { name: 'Windows', icon: 'mdi:car-door' },
-};
-
-export const windowPositions = {
-  FRONT_LEFT: 0,
-  FRONT_RIGHT: 0,
-  REAR_LEFT: 0,
-  REAR_RIGHT: 0,
-};
