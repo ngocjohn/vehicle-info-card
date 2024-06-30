@@ -398,16 +398,16 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private servicesConfig: Record<keyof ServicesConfig, string> = {
-    auxheat: 'Auxheat',
-    doorsLock: 'Doors Lock',
-    chargeProgram: 'Charge Program',
+    auxheat: 'Auxiliary heating',
+    batteryMaxSoc: 'Battery max soc',
+    chargeProgram: 'Charge program',
+    doorsLock: 'Doors',
     engine: 'Engine',
-    windows: 'Windows',
-    sunroof: 'Sunroof',
-    sigPos: 'SigPos',
     preheat: 'Preheat',
-    batteryMaxSoc: 'Battery Max Soc',
-    sendRoute: 'Send Route',
+    sendRoute: 'Send route',
+    sigPos: 'Signal position',
+    sunroof: 'Sunroof',
+    windows: 'Windows',
   };
 
   private async loadCardHelpers(): Promise<void> {
@@ -553,6 +553,9 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       --mdc-theme-secondary: var(--switch-checked-color);
     }
 
+    ha-expansion-panel .container {
+      padding: 0px 1rem !important;
+    }
     h3 {
       color: var(--secondary-text-color);
       margin-block: 0;

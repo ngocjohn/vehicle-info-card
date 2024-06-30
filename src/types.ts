@@ -49,15 +49,15 @@ export interface MapPopupConfig {
 
 export interface ServicesConfig {
   auxheat?: boolean;
-  doorsLock?: boolean;
-  chargeProgram?: boolean;
-  engine?: boolean;
-  windows?: boolean;
-  sunroof?: boolean;
-  sigPos?: boolean;
-  preheat?: boolean;
   batteryMaxSoc?: boolean;
+  chargeProgram?: boolean;
+  doorsLock?: boolean;
+  engine?: boolean;
+  preheat?: boolean;
   sendRoute?: boolean;
+  sigPos?: boolean;
+  sunroof?: boolean;
+  windows?: boolean;
 }
 
 export const defaultConfig: Partial<VehicleCardConfig> = {

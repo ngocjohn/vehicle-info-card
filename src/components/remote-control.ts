@@ -1,10 +1,12 @@
 import { LitElement, html, TemplateResult, css, CSSResultGroup, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { HomeAssistant, fireEvent } from 'custom-card-helpers';
+import { HomeAssistant, fireEvent, LovelaceCardConfig } from 'custom-card-helpers';
 import { ServicesConfig } from '../types';
-import { servicesCtrl, windowPositions } from '../const/state-mapping';
+import * as Srvc from '../const/remote-control-keys';
 import styles from '../css/remote-control.css';
 import mainstyle from '../css/styles.css';
+
+const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
 
 @customElement('remote-control')
 export class RemoteControl extends LitElement {
@@ -16,13 +18,13 @@ export class RemoteControl extends LitElement {
 
   @state() private subcardType: string | null = null;
 
-  private windowPositions = windowPositions;
-
+  private windowPositions = Srvc.windowPositions;
   static get styles(): CSSResultGroup {
     return [styles, mainstyle];
   }
 
   protected updated(changedProperties: PropertyValues): void {
+    super.updated(changedProperties);
     if (changedProperties.has('darkMode')) {
       this.updateCSSVariables();
     }
@@ -35,7 +37,6 @@ export class RemoteControl extends LitElement {
       this.style.setProperty('--remote-control-btn-color', '#eeeeee');
     }
   }
-  // State management for window positions
 
   protected render(): TemplateResult {
     return html`
@@ -50,22 +51,23 @@ export class RemoteControl extends LitElement {
     if (!this.subcardType) return;
 
     const subCardMap = {
+      doorsLock: this._renderLockControl(),
       windows: this._renderWindowsMove(),
     };
 
     const subCard = subCardMap[this.subcardType];
 
     if (!subCard) return;
-    return html`<div class="sub-card-wrapper">${subCard}</div>`;
+    return html`<div class="sub-card-wrapper fade-in">${subCard}</div>`;
   }
 
   private _renderControlBtn(): TemplateResult {
     const activeServices = Object.entries(this.servicesConfig ?? {})
-      .filter(([_, isActive]) => isActive === true) // Filter to include only true values
-      .map(([type, _]) => type as keyof ServicesConfig); // Extract keys as keyof ServicesConfig
+      .filter(([_, isActive]) => isActive === true)
+      .map(([type, _]) => type as keyof ServicesConfig);
 
     const controlBtns = activeServices.map((type) => {
-      const { name, icon } = servicesCtrl[type]; // Get name and icon from servicesCtrl
+      const { name, icon } = Srvc.servicesCtrl[type]; // Get name and icon from servicesCtrl
       const activeClass = this.subcardType === type ? 'active' : '';
       return html`
         <div @click=${() => this._handleSubCardClick(type)} class="control-btn-rounded ${activeClass} click-shrink ">
@@ -78,13 +80,61 @@ export class RemoteControl extends LitElement {
     return html`${controlBtns}`;
   }
 
-  private _renderWindowsMove(): TemplateResult {
-    const moveItems = ['FRONT_LEFT', 'FRONT_RIGHT', 'REAR_LEFT', 'REAR_RIGHT'];
+  /* ----------------------------- SUBCARD RENDERS ---------------------------- */
 
-    const moveElements = moveItems.map((item) => {
+  private _renderLockControl(): TemplateResult {
+    const lockState = this.hass.states[this.carLockEntity].state;
+    const config = {
+      locked: {
+        icon: 'mdi:lock',
+        stateDisplay: 'UNLOCK CAR',
+        command: 'doors_unlock',
+        bgColor: 'var(--state-lock-locked-color)',
+      },
+      unlocked: {
+        icon: 'mdi:lock-open',
+        stateDisplay: 'LOCK CAR',
+        command: 'doors_lock',
+        bgColor: 'var(--state-lock-unlocked-color)',
+      },
+      unlocking: {
+        icon: 'mdi:lock-clock',
+        stateDisplay: lockState,
+        command: '',
+        bgColor: 'var(--state-lock-unlocking-color)',
+      },
+    };
+
+    const { icon, stateDisplay, command, bgColor } = config[lockState];
+
+    return html`
+      <div class="head-sub-row">
+        <div
+          class="control-btn-sm click-shrink"
+          style="background-color: ${bgColor};"
+          @click=${() => this.callService(command)}
+        >
+          <ha-icon icon=${icon}></ha-icon><span>${stateDisplay}</span>
+        </div>
+        <div class="control-btn-sm click-shrink" @click=${this.lockMoreInfo}>
+          <ha-icon icon="mdi:information"></ha-icon><span>MORE INFO</span>
+        </div>
+      </div>
+    `;
+  }
+
+  private _renderWindowsMove(): TemplateResult {
+    const moveItems = {
+      FRONT_LEFT: 'Front Left',
+      FRONT_RIGHT: 'Front Right',
+      REAR_LEFT: 'Rear Left',
+      REAR_RIGHT: 'Rear Right',
+    };
+
+    const moveElements = Object.entries(moveItems).map(([item, label]) => {
       return html`
         <div class="items-row">
-          <div>${item}</div>
+          <div>${label}</div>
           <div class="items-control">
             <div class="control-btn click-shrink" @click=${() => this._handleValueChange(item, -10)}>
               <ha-icon icon="mdi:chevron-down"></ha-icon>
@@ -104,11 +154,15 @@ export class RemoteControl extends LitElement {
         <ha-icon icon="mdi:restore"></ha-icon><span>RESET</span>
       </div>
       <div class="head-sub-row">
-        <div class="control-btn-sm click-shrink"><ha-icon icon="mdi:arrow-up-bold"></ha-icon><span>OPEN</span></div>
+        <div class="control-btn-sm click-shrink" @click=${() => this.callService('windows_open')}>
+          <ha-icon icon="mdi:arrow-up-bold"></ha-icon><span>OPEN</span>
+        </div>
         <div class="control-btn-sm click-shrink" @click=${this._moveWindows}>
           <ha-icon icon="mdi:swap-vertical-bold"></ha-icon><span>MOVE</span>
         </div>
-        <div class="control-btn-sm click-shrink"><ha-icon icon="mdi:arrow-down-bold"></ha-icon><span>CLOSE</span></div>
+        <div class="control-btn-sm click-shrink" @click=${() => this.callService('windows_close')}>
+          <ha-icon icon="mdi:arrow-down-bold"></ha-icon><span>CLOSE</span>
+        </div>
       </div>
     `;
   }

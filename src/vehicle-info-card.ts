@@ -544,6 +544,9 @@ export class VehicleCard extends LitElement {
   }
 
   private _renderServiceControl(): TemplateResult | void {
+    if (!this.config.services) {
+      return html`<hui-warning>Select services to display</hui-warning>`;
+    }
     const hass = this.hass;
     const serviceControl = this.config.services;
     const carVin = this.carVinNumber;
