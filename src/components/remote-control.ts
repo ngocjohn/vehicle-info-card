@@ -19,6 +19,8 @@ export class RemoteControl extends LitElement {
   @state() private subcardType: string | null = null;
 
   private windowPositions = Srvc.windowPositions;
+  private auxheatConfig = Srvc.auxheatConfig;
+
   static get styles(): CSSResultGroup {
     return [styles, mainstyle];
   }
@@ -53,6 +55,7 @@ export class RemoteControl extends LitElement {
     const subCardMap = {
       doorsLock: this._renderLockControl(),
       windows: this._renderWindowsMove(),
+      auxheat: this._renderAuxHeatControl(),
     };
 
     const subCard = subCardMap[this.subcardType];
@@ -81,6 +84,87 @@ export class RemoteControl extends LitElement {
   }
 
   /* ----------------------------- SUBCARD RENDERS ---------------------------- */
+
+  private _renderAuxHeatControl(): TemplateResult {
+    const timeItems = {
+      time_1: 'Time 1',
+      time_2: 'Time 2',
+      time_3: 'Time 3',
+    };
+
+    const timeElements = Object.entries(timeItems).map(([item, label]) => {
+      return html`
+        <div class="items-row">
+          <div>${label}</div>
+          <div class="items-control">
+            <div class="time-form">
+              <input
+                type="number"
+                min="0"
+                max="1439"
+                step="1"
+                .value=${this.auxheatConfig[item]}
+                @change=${(e) => this.auxHeatTimeChange(item, e)}
+              />
+              <span>min</span>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    const timeSelectEl = html`
+      <div class="items-row">
+        <div>Time Selection</div>
+        <ha-select
+          .value=${this.auxheatConfig.time_selection}
+          @change=${(e) => this.auxHeatTimeChange('time_selection', e)}
+        >
+          <mwc-list-item value="0">No select</mwc-list-item>
+          <mwc-list-item value="1">Time 1</mwc-list-item>
+          <mwc-list-item value="2">Time 2</mwc-list-item>
+          <mwc-list-item value="3">Time 3</mwc-list-item>
+        </ha-select>
+      </div>
+    `;
+
+    timeElements.unshift(timeSelectEl);
+
+    return html`
+      <div class="sub-row">${timeElements}</div>
+      <div class="head-sub-row">
+        <div class="control-btn-sm click-shrink" @click=${() => this.callService('auxheat_start')}>
+          <ha-icon icon="mdi:radiator"></ha-icon> <span>START</span>
+        </div>
+        <div class="control-btn-sm click-shrink" @click=${this.auxheatConfigureCall}>
+          <ha-icon icon="mdi:cog"></ha-icon> <span>SAVE CONFIG </span>
+        </div>
+        <div class="control-btn-sm click-shrink" @click=${() => this.callService('auxheat_stop')}>
+          <ha-icon icon="mdi:radiator-off"></ha-icon> <span>STOP</span>
+        </div>
+      </div>
+    `;
+  }
+
+  private auxheatConfigureCall(): void {
+    const data = {
+      time_selection: this.auxheatConfig.time_selection,
+      time_1: this.auxheatConfig.time_1,
+      time_2: this.auxheatConfig.time_2,
+      time_3: this.auxheatConfig.time_3,
+    };
+
+    console.log(data);
+    // this.callService('auxheat_configure', data);
+  }
+  private auxHeatTimeChange(item: string, e: Event | number): void {
+    const value = typeof e === 'number' ? e : (e.target as HTMLInputElement).value;
+    this.auxheatConfig = {
+      ...this.auxheatConfig,
+      [item]: value,
+    };
+    this.requestUpdate(); // Trigger re-render to update UI after change
+  }
 
   private _renderLockControl(): TemplateResult {
     const lockState = this.hass.states[this.carLockEntity].state;
@@ -131,33 +215,33 @@ export class RemoteControl extends LitElement {
       REAR_RIGHT: 'Rear Right',
     };
 
-    const moveElements = Object.entries(moveItems).map(([item, label]) => {
+    const moveEl = Object.entries(moveItems).map(([item, label]) => {
       return html`
         <div class="items-row">
           <div>${label}</div>
           <div class="items-control">
-            <div class="control-btn click-shrink" @click=${() => this._handleValueChange(item, -10)}>
-              <ha-icon icon="mdi:chevron-down"></ha-icon>
-            </div>
-            <span class="value">${this.windowPositions[item]}</span>
-            <div class="control-btn click-shrink" @click=${() => this._handleValueChange(item, 10)}>
-              <ha-icon icon="mdi:chevron-up"></ha-icon>
-            </div>
+            <ha-control-number-buttons
+              .min=${0}
+              .max=${100}
+              .step=${10}
+              .value=${this.windowPositions[item]}
+              @value-changed=${(e) => this.windowPositionChange(item, e.detail.value - this.windowPositions[item])}
+            ></ha-control-number-buttons>
           </div>
         </div>
       `;
     });
 
     return html`
-      <div class="sub-row">${moveElements}</div>
-      <div class="control-btn-sm reset click-shrink" @click=${this._resetWindowPositions}>
+      <div class="sub-row">${moveEl}</div>
+      <div class="control-btn-sm reset click-shrink" @click=${this.resetWindowPositions}>
         <ha-icon icon="mdi:restore"></ha-icon><span>RESET</span>
       </div>
       <div class="head-sub-row">
         <div class="control-btn-sm click-shrink" @click=${() => this.callService('windows_open')}>
           <ha-icon icon="mdi:arrow-up-bold"></ha-icon><span>OPEN</span>
         </div>
-        <div class="control-btn-sm click-shrink" @click=${this._moveWindows}>
+        <div class="control-btn-sm click-shrink" @click=${this.moveWindows}>
           <ha-icon icon="mdi:swap-vertical-bold"></ha-icon><span>MOVE</span>
         </div>
         <div class="control-btn-sm click-shrink" @click=${() => this.callService('windows_close')}>
@@ -196,20 +280,12 @@ export class RemoteControl extends LitElement {
     }, 0);
   }
 
-  private _handleValueChange(item: string, change: number): void {
-    this.windowPositions[item] += change;
-
-    // Ensure values stay within the range of 0 to 100
-    if (this.windowPositions[item] < 0) {
-      this.windowPositions[item] = 0;
-    } else if (this.windowPositions[item] > 100) {
-      this.windowPositions[item] = 100;
-    }
-
-    this.requestUpdate(); // Trigger re-render to update UI after state change
+  private windowPositionChange(item: string, value: number): void {
+    this.windowPositions[item] += value;
+    this.requestUpdate(); // Trigger re-render to update UI after change
   }
 
-  private _resetWindowPositions(): void {
+  private resetWindowPositions(): void {
     this.windowPositions = {
       FRONT_LEFT: 0,
       FRONT_RIGHT: 0,
@@ -219,7 +295,7 @@ export class RemoteControl extends LitElement {
     this.requestUpdate(); // Trigger re-render to update UI after reset
   }
 
-  private _moveWindows(): void {
+  private moveWindows(): void {
     const data = {
       front_left: this.windowPositions['FRONT_LEFT'],
       front_right: this.windowPositions['FRONT_RIGHT'],
@@ -227,7 +303,7 @@ export class RemoteControl extends LitElement {
       rear_right: this.windowPositions['REAR_RIGHT'],
     };
 
-    this.callService('windows_move', data); // Adjusted service name
+    this.callService('windows_move', data);
   }
 
   private lockMoreInfo(): void {

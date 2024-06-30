@@ -132,6 +132,17 @@
   align-items: center;
 }
 
+.items-control input[type='number'] {
+  height: 2.5rem;
+  width: fit-content;
+  background-color: var(--remote-control-btn-color);
+  color: var(--primary-text-color);
+  border-radius: 4px;
+  padding: 0 0.5rem;
+  border: none;
+  text-align: center;
+  font-size: 1rem;
+}
 .control-btn {
   width: 1.2rem;
   height: 1.2rem;

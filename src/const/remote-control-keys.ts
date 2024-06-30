@@ -19,8 +19,8 @@ export const windowPositions = {
 };
 
 export const auxheatConfig = {
-  time_selection: 0 | 1 | 2 | 3,
-  time_1: null as number | null,
-  time_2: null as number | null,
-  time_3: null as number | null,
+  time_selection: 0,
+  time_1: 0,
+  time_2: 0,
+  time_3: 0,
 };
