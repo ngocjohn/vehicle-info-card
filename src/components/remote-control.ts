@@ -48,6 +48,7 @@ export class RemoteControl extends LitElement {
         <div class="head-row">${this._renderControlBtn()}</div>
         ${this._renderSubCard()}
       </div>
+      ${this._renderToast()}
     `;
   }
 
@@ -72,11 +73,19 @@ export class RemoteControl extends LitElement {
       .filter(([_, isActive]) => isActive === true)
       .map(([type, _]) => type as keyof ServicesConfig);
 
+    const handleClick = (type: string) => {
+      if (type === 'sigPos') {
+        this.callService('sigpos_start');
+      } else {
+        this._handleSubCardClick(type);
+      }
+    };
+
     const controlBtns = activeServices.map((type) => {
       const { name, icon } = Srvc.servicesCtrl[type]; // Get name and icon from servicesCtrl
       const activeClass = this.subcardType === type ? 'active' : '';
       return html`
-        <div @click=${() => this._handleSubCardClick(type)} class="control-btn-rounded ${activeClass} click-shrink ">
+        <div @click=${() => handleClick(type)} class="control-btn-rounded ${activeClass} click-shrink">
           <ha-icon icon=${icon}></ha-icon>
           <span>${name}</span>
         </div>
@@ -84,6 +93,14 @@ export class RemoteControl extends LitElement {
     });
 
     return html`${controlBtns}`;
+  }
+
+  private _renderToast(): TemplateResult {
+    return html`
+      <div id="toast">
+        <ha-alert alert-type="success"> Command sent success! </ha-alert>
+      </div>
+    `;
   }
 
   /* ----------------------------- SUBCARD RENDERS ---------------------------- */
@@ -370,8 +387,8 @@ export class RemoteControl extends LitElement {
       rear_left: this.windowPositions['REAR_LEFT'],
       rear_right: this.windowPositions['REAR_RIGHT'],
     };
-
-    this.callService('windows_move', data);
+    console.log(data);
+    // this.callService('windows_move', data);
   }
 
   private lockMoreInfo(): void {
@@ -385,5 +402,16 @@ export class RemoteControl extends LitElement {
       vin: this.carVin,
       ...data,
     });
+    this.launchToast();
+  }
+
+  private launchToast(): void {
+    const toast = this.shadowRoot?.getElementById('toast') as HTMLElement;
+    if (!toast) return;
+
+    toast.classList.add('show');
+    setTimeout(() => {
+      toast.classList.remove('show');
+    }, 3000);
   }
 }
