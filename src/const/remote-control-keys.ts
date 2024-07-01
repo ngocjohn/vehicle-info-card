@@ -1,7 +1,6 @@
 export const servicesCtrl = {
   auxheat: { name: 'Auxiliary heating', icon: 'mdi:radiator' },
-  batteryMaxSoc: { name: 'Battery max soc', icon: 'mdi:battery-charging' },
-  chargeProgram: { name: 'Charge program', icon: 'mdi:ev-station' },
+  charge: { name: 'Charge program', icon: 'mdi:ev-station' },
   doorsLock: { name: 'Doors', icon: 'mdi:key-chain' },
   engine: { name: 'Engine', icon: 'mdi:engine' },
   preheat: { name: 'Preheat', icon: 'mdi:car-seat-heater' },

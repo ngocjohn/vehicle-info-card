@@ -20,6 +20,8 @@ export class RemoteControl extends LitElement {
 
   private windowPositions = Srvc.windowPositions;
   private auxheatConfig = Srvc.auxheatConfig;
+  private chargePrograms = 0;
+  private maxSocConfig = 50;
 
   static get styles(): CSSResultGroup {
     return [styles, mainstyle];
@@ -56,6 +58,7 @@ export class RemoteControl extends LitElement {
       doorsLock: this._renderLockControl(),
       windows: this._renderWindowsMove(),
       auxheat: this._renderAuxHeatControl(),
+      charge: this._renderChargeControl(),
     };
 
     const subCard = subCardMap[this.subcardType];
@@ -84,6 +87,50 @@ export class RemoteControl extends LitElement {
   }
 
   /* ----------------------------- SUBCARD RENDERS ---------------------------- */
+
+  private _renderChargeControl(): TemplateResult {
+    const chargePrograms = {
+      DEFAULT: 0,
+      HOME: 2,
+      WORK: 3,
+    };
+
+    const selectChargeProgram = html`
+      <div class="items-row">
+        <div>Charge Program</div>
+        <ha-select .value=${this.chargePrograms} @change=${this.handleChargeProgramChange}>
+          ${Object.entries(chargePrograms).map(([label, value]) => {
+            return html`<mwc-list-item value=${value}>${label}</mwc-list-item>`;
+          })}
+        </ha-select>
+      </div>
+    `;
+
+    const maxSoc = html`
+      <div class="items-row">
+        <div>Max SoC</div>
+        <ha-control-number-buttons
+          .min=${50}
+          .max=${100}
+          .step=${10}
+          .value=${this.maxSocConfig}
+          @value-changed=${this.handleMaxSocChange}
+        ></ha-control-number-buttons>
+
+        </ha-select>
+      </div>
+    `;
+
+    return html`
+      <div class="sub-row">${selectChargeProgram}</div>
+      <div class="sub-row">${maxSoc}</div>
+      <div class="head-sub-row">
+        <div class="control-btn-sm click-shrink" @click=${() => this.saveChargeConfig()}>
+          <ha-icon icon="mdi:cog"></ha-icon> <span>SAVE CONFIG</span>
+        </div>
+      </div>
+    `;
+  }
 
   private _renderAuxHeatControl(): TemplateResult {
     const timeItems = {
@@ -144,26 +191,6 @@ export class RemoteControl extends LitElement {
         </div>
       </div>
     `;
-  }
-
-  private auxheatConfigureCall(): void {
-    const data = {
-      time_selection: this.auxheatConfig.time_selection,
-      time_1: this.auxheatConfig.time_1,
-      time_2: this.auxheatConfig.time_2,
-      time_3: this.auxheatConfig.time_3,
-    };
-
-    console.log(data);
-    // this.callService('auxheat_configure', data);
-  }
-  private auxHeatTimeChange(item: string, e: Event | number): void {
-    const value = typeof e === 'number' ? e : (e.target as HTMLInputElement).value;
-    this.auxheatConfig = {
-      ...this.auxheatConfig,
-      [item]: value,
-    };
-    this.requestUpdate(); // Trigger re-render to update UI after change
   }
 
   private _renderLockControl(): TemplateResult {
@@ -252,6 +279,47 @@ export class RemoteControl extends LitElement {
   }
 
   /* ----------------------------- HANDLER METHODS ---------------------------- */
+
+  private handleMaxSocChange(e: Event): void {
+    const value = (e.target as HTMLSelectElement).value;
+    this.maxSocConfig = parseInt(value);
+    this.requestUpdate(); // Trigger re-render to update UI after change
+  }
+
+  private handleChargeProgramChange(e: Event): void {
+    const value = (e.target as HTMLSelectElement).value;
+    this.chargePrograms = parseInt(value);
+    this.requestUpdate(); // Trigger re-render to update UI after change
+  }
+
+  private saveChargeConfig(): void {
+    const data = {
+      charge_program: this.chargePrograms,
+      max_soc: this.maxSocConfig,
+    };
+    console.log(data);
+    // this.callService('battery_max_soc_configure', data);
+  }
+
+  private auxheatConfigureCall(): void {
+    const data = {
+      time_selection: this.auxheatConfig.time_selection,
+      time_1: this.auxheatConfig.time_1,
+      time_2: this.auxheatConfig.time_2,
+      time_3: this.auxheatConfig.time_3,
+    };
+
+    console.log(data);
+    // this.callService('auxheat_configure', data);
+  }
+  private auxHeatTimeChange(item: string, e: Event | number): void {
+    const value = typeof e === 'number' ? e : (e.target as HTMLInputElement).value;
+    this.auxheatConfig = {
+      ...this.auxheatConfig,
+      [item]: value,
+    };
+    this.requestUpdate(); // Trigger re-render to update UI after change
+  }
 
   private _handleSubCardClick(type: string): void {
     this.subcardType = this.subcardType === type ? null : type;

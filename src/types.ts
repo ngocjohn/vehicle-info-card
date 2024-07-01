@@ -49,8 +49,7 @@ export interface MapPopupConfig {
 
 export interface ServicesConfig {
   auxheat?: boolean;
-  batteryMaxSoc?: boolean;
-  chargeProgram?: boolean;
+  charge?: boolean;
   doorsLock?: boolean;
   engine?: boolean;
   preheat?: boolean;
@@ -72,8 +71,7 @@ export const defaultConfig: Partial<VehicleCardConfig> = {
   enable_services_control: false,
   services: {
     auxheat: false,
-    batteryMaxSoc: false,
-    chargeProgram: false,
+    charge: false,
     doorsLock: false,
     engine: false,
     preheat: false,

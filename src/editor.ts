@@ -399,8 +399,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private servicesConfig: Record<keyof ServicesConfig, string> = {
     auxheat: 'Auxiliary heating',
-    batteryMaxSoc: 'Battery max soc',
-    chargeProgram: 'Charge program',
+    charge: 'Charge program',
     doorsLock: 'Doors',
     engine: 'Engine',
     preheat: 'Preheat',
