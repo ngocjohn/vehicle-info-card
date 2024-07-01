@@ -1,5 +1,23 @@
 # CHANGELOG.md
 
+## [1.0.5](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.0.5) (2024-07-02)
+
+### Features:
+
+- **New Remote Control Card**:
+  - Introduced a new remote control card encompassing all available services offered by the integration.
+  - This feature can be activated in the editor, allowing customization of which services are displayed on the tab.
+  - Once activated, a new 'services' indicator will appear in the tab header, guiding you to the control tab.
+  - Each service is represented by its own button, providing further configurations specific to that service.
+  - For each service, the VIN/FIN is automatically set from the car entity ID.
+
+### Updates:
+
+- **Trip Card Enhancement**:
+  - Added the AdBlue level to the trip card status summary for more comprehensive trip information.
+- **Tire Pressures Tab Update**:
+  - Changed the display of the tire pressures tab. Now, the background of the car and the tire data are displayed for the specific tires.
+
 ## [1.0.4](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.0.4) (2024-06-20)
 
 ### Changes
