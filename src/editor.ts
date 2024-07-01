@@ -3,7 +3,7 @@ import { LitElement, html, TemplateResult, css, CSSResultGroup } from 'lit';
 import { HomeAssistant, fireEvent, LovelaceCardEditor, LovelaceCardConfig } from 'custom-card-helpers';
 import YAML from 'yaml';
 import { VehicleCardConfig } from './types';
-import { ServicesConfig } from './types';
+import { servicesCtrl } from './const/remote-control-keys';
 import { customElement, property, state } from 'lit/decorators';
 import { CARD_VERSION } from './const';
 
@@ -379,9 +379,9 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
               Choose which services you want to enable. If a service is disabled, it will not be shown in the card.
             </ha-alert>
             <div class="switches">
-              ${Object.entries(this.servicesConfig).map(
-                ([key, label]) => html`
-                  <ha-formfield .label=${label}>
+              ${Object.entries(servicesCtrl).map(
+                ([key, { name }]) => html`
+                  <ha-formfield .label=${name}>
                     <ha-switch
                       .checked=${services[key] !== undefined ? services[key] : false}
                       .configValue="${key}"
@@ -396,18 +396,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       </div>
     `;
   }
-
-  private servicesConfig: Record<keyof ServicesConfig, string> = {
-    auxheat: 'Auxiliary heating',
-    charge: 'Charge program',
-    doorsLock: 'Doors',
-    engine: 'Engine',
-    preheat: 'Preheat',
-    sendRoute: 'Send route',
-    sigPos: 'Signal position',
-    sunroof: 'Sunroof',
-    windows: 'Windows',
-  };
 
   private async loadCardHelpers(): Promise<void> {
     this._helpers = await (window as any).loadCardHelpers();

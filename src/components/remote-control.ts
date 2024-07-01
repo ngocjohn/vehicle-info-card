@@ -42,6 +42,14 @@ export class RemoteControl extends LitElement {
     return this.serviceData.batteryChargeConfig;
   }
 
+  private get sendRouteConfig() {
+    return this.serviceData.sendRouteConfig;
+  }
+
+  private get sunroofConfig() {
+    return this.serviceData.sunroofConfigData;
+  }
+
   static get styles(): CSSResultGroup {
     return [styles, mainstyle];
   }
@@ -81,6 +89,8 @@ export class RemoteControl extends LitElement {
       charge: this._renderChargeControl(),
       engine: this._renderEngineControl(),
       preheat: this._renderPreheatControl(),
+      sendRoute: this._renderSendRouteControl(),
+      sunroof: this._renderSunroofControl(),
     };
 
     const subCard = subCardMap[this.subcardType];
@@ -146,6 +156,65 @@ export class RemoteControl extends LitElement {
 
   /* ----------------------------- SUBCARD RENDERS ---------------------------- */
 
+  private _renderSunroofControl(): TemplateResult {
+    const { sunroofConfig } = this;
+    const service = sunroofConfig.service;
+
+    return html`
+      <div class="head-sub-row">
+        ${Object.entries(service).map(([key, data]) => {
+          return this._renderServiceBtn(key, data);
+        })}
+      </div>
+    `;
+  }
+
+  private _renderSendRouteControl(): TemplateResult {
+    const { sendRouteConfig } = this;
+    const data = sendRouteConfig.data;
+
+    const sampleData = {
+      data: {
+        title: { label: 'Title', value: 'Brandenburger Tor' },
+        latitude: { label: 'Latitude', value: 52.5163 },
+        longitude: { label: 'Longitude', value: 13.3777 },
+        city: { label: 'City', value: 'Berlin' },
+        postcode: { label: 'Postcode', value: '10117' },
+        street: { label: 'Street', value: 'Pariser Platz' },
+      },
+    };
+
+    const setSampleData = () => {
+      this.sendRouteConfig.data = cloneDeep(sampleData.data);
+      this.requestUpdate();
+    };
+
+    const formElements = Object.entries(data).map(([key, { label, value }]) => {
+      return html`
+        <div class="items-row">
+          <div>${label}</div>
+          <div class="items-control">
+            <ha-textfield .value=${String(value)} @input=${(e) => this.handleSendRouteChange(key, e)}></ha-textfield>
+          </div>
+        </div>
+      `;
+    });
+
+    return html`
+      <div class="sub-row">${formElements}</div>
+
+      <div class="head-sub-row">
+        ${this._renderResetBtn()}
+        <div class="control-btn-sm click-shrink" @click=${setSampleData}>
+          <ha-icon icon="mdi:file-document-edit"></ha-icon><span>Sample</span>
+        </div>
+        ${Object.entries(sendRouteConfig.service).map(([key, data]) => {
+          return this._renderServiceBtn(key, data);
+        })}
+      </div>
+    `;
+  }
+
   private _renderPreheatControl(): TemplateResult {
     const { preheatConfig } = this;
     const { time } = preheatConfig.data;
@@ -173,7 +242,7 @@ export class RemoteControl extends LitElement {
     return html`
       <div class="sub-row">${preheatDepartureTimeEL}</div>
       ${this._renderResetBtn()}
-      <div class="head-sub-row">
+      <div class="head-sub-row preheat">
         ${Object.entries(service).map(([key, data]) => {
           return this._renderServiceBtn(key, data);
         })}
@@ -417,9 +486,24 @@ export class RemoteControl extends LitElement {
         this.callService(service, dataWindows);
         break;
 
+      case 'send_route':
+        const dataRoute = Object.entries(this.sendRouteConfig.data).reduce((acc, [key, { value }]) => {
+          acc[key] = value;
+          return acc;
+        }, {});
+        this.callService(service, dataRoute);
+        break;
+
       default:
         break;
     }
+  }
+
+  private handleSendRouteChange(key: string, e: Event): void {
+    const value = (e.target as HTMLInputElement).value;
+
+    this.sendRouteConfig.data[key].value = value;
+    this.requestUpdate(); // Trigger re-render to update UI after change
   }
 
   private handleChargeProgramChange(type: string, e: Event): void {
@@ -501,7 +585,6 @@ export class RemoteControl extends LitElement {
     });
     console.log('call-service:', service, data);
     this.launchToast();
-    this.resetConfig();
   }
 
   private launchToast(): void {

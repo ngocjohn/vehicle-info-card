@@ -29,8 +29,8 @@
   position: relative;
 }
 
-.head-sub-row {
-  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+.head-sub-row.preheat {
+  grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
 }
 
 @keyframes fade-in {
