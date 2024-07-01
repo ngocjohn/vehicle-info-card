@@ -2,7 +2,10 @@ import { LitElement, html, TemplateResult, css, CSSResultGroup, PropertyValues }
 import { customElement, property, state } from 'lit/decorators.js';
 import { HomeAssistant, fireEvent, LovelaceCardConfig } from 'custom-card-helpers';
 import { ServicesConfig } from '../types';
+
+import { cloneDeep } from '../utils/helpers';
 import * as Srvc from '../const/remote-control-keys';
+
 import styles from '../css/remote-control.css';
 import mainstyle from '../css/styles.css';
 
@@ -17,11 +20,27 @@ export class RemoteControl extends LitElement {
   @property({ type: Boolean }) darkMode!: boolean;
 
   @state() private subcardType: string | null = null;
+  @state() private serviceData = cloneDeep(Srvc.serviceData);
 
-  private windowPositions = Srvc.windowPositions;
-  private auxheatConfig = Srvc.auxheatConfig;
-  private chargePrograms = 0;
-  private maxSocConfig = 50;
+  private get auxheatConfig() {
+    return this.serviceData.auxheatConfig;
+  }
+
+  private get windowsConfig() {
+    return this.serviceData.windowsConfig;
+  }
+
+  private get preheatConfig() {
+    return this.serviceData.preheatConfig;
+  }
+
+  private get engineConfig() {
+    return this.serviceData.engineConfig;
+  }
+
+  private get chargeConfig() {
+    return this.serviceData.batteryChargeConfig;
+  }
 
   static get styles(): CSSResultGroup {
     return [styles, mainstyle];
@@ -57,9 +76,11 @@ export class RemoteControl extends LitElement {
 
     const subCardMap = {
       doorsLock: this._renderLockControl(),
-      windows: this._renderWindowsMove(),
+      windows: this._renderWindowsControl(),
       auxheat: this._renderAuxHeatControl(),
       charge: this._renderChargeControl(),
+      engine: this._renderEngineControl(),
+      preheat: this._renderPreheatControl(),
     };
 
     const subCard = subCardMap[this.subcardType];
@@ -103,35 +124,105 @@ export class RemoteControl extends LitElement {
     `;
   }
 
+  /* ---------------------------- TEMPLATE RENDERS ---------------------------- */
+
+  private _renderServiceBtn(serviceKey: string, serviceItem): TemplateResult {
+    const { command, icon, label } = serviceItem;
+    const handleClick = serviceKey.includes('DATA_')
+      ? () => this.saveConfigChange(command)
+      : () => this.callService(command);
+    return html`
+      <div class="control-btn-sm click-shrink" @click=${handleClick}>
+        <ha-icon icon=${icon}></ha-icon><span>${label}</span>
+      </div>
+    `;
+  }
+
+  private _renderResetBtn(): TemplateResult {
+    return html` <div class="control-btn-sm reset click-shrink" @click=${() => this.resetConfig()}>
+      <ha-icon icon="mdi:restore"></ha-icon><span>RESET</span>
+    </div>`;
+  }
+
   /* ----------------------------- SUBCARD RENDERS ---------------------------- */
 
+  private _renderPreheatControl(): TemplateResult {
+    const { preheatConfig } = this;
+    const { time } = preheatConfig.data;
+    const service = preheatConfig.service;
+
+    const preheatDepartureTimeEL = html`
+      <div class="items-row">
+        <div>Departure Time</div>
+        <div class="items-control">
+          <div class="time-form">
+            <input
+              type="number"
+              min="0"
+              max="1439"
+              step="1"
+              .value=${String(time.value)}
+              @change=${this.handlePreheatTimeChange}
+            />
+            <span>min</span>
+          </div>
+        </div>
+      </div>
+    `;
+
+    return html`
+      <div class="sub-row">${preheatDepartureTimeEL}</div>
+      ${this._renderResetBtn()}
+      <div class="head-sub-row">
+        ${Object.entries(service).map(([key, data]) => {
+          return this._renderServiceBtn(key, data);
+        })}
+      </div>
+    `;
+  }
+
+  private _renderEngineControl(): TemplateResult {
+    return html`
+      <div class="head-sub-row">
+        ${Object.entries(this.engineConfig.service).map(([key, data]) => {
+          return this._renderServiceBtn(key, data);
+        })}
+      </div>
+    `;
+  }
+
   private _renderChargeControl(): TemplateResult {
-    const chargePrograms = {
-      DEFAULT: 0,
-      HOME: 2,
-      WORK: 3,
-    };
+    const { chargeConfig } = this;
+    const data = chargeConfig.data;
+    const selectedProgram = data.selected_program;
+    const programOptions = data.program_options;
+    const maxSoc = data.max_soc;
+
+    const services = chargeConfig.service;
 
     const selectChargeProgram = html`
       <div class="items-row">
         <div>Charge Program</div>
-        <ha-select .value=${this.chargePrograms} @change=${this.handleChargeProgramChange}>
-          ${Object.entries(chargePrograms).map(([label, value]) => {
+        <ha-select
+          .value=${String(selectedProgram)}
+          @change=${(e: Event) => this.handleChargeProgramChange('selected_program', e)}
+        >
+          ${Object.entries(programOptions).map(([value, label]) => {
             return html`<mwc-list-item value=${value}>${label}</mwc-list-item>`;
           })}
         </ha-select>
       </div>
     `;
 
-    const maxSoc = html`
+    const maxSocConfig = html`
       <div class="items-row">
-        <div>Max SoC</div>
+        <div>${maxSoc.label}</div>
         <ha-control-number-buttons
           .min=${50}
           .max=${100}
           .step=${10}
-          .value=${this.maxSocConfig}
-          @value-changed=${this.handleMaxSocChange}
+          .value=${maxSoc.value}
+          @value-changed=${(e) => this.handleChargeProgramChange('max_soc', e)}
         ></ha-control-number-buttons>
 
         </ha-select>
@@ -140,23 +231,25 @@ export class RemoteControl extends LitElement {
 
     return html`
       <div class="sub-row">${selectChargeProgram}</div>
-      <div class="sub-row">${maxSoc}</div>
+      <div class="sub-row">${maxSocConfig}</div>
+      ${this._renderResetBtn()}
       <div class="head-sub-row">
-        <div class="control-btn-sm click-shrink" @click=${() => this.saveChargeConfig()}>
-          <ha-icon icon="mdi:cog"></ha-icon> <span>SAVE CONFIG</span>
-        </div>
+        ${Object.entries(services).map(([key, data]) => {
+          return this._renderServiceBtn(key, data);
+        })}
       </div>
     `;
   }
 
   private _renderAuxHeatControl(): TemplateResult {
-    const timeItems = {
-      time_1: 'Time 1',
-      time_2: 'Time 2',
-      time_3: 'Time 3',
-    };
+    const { auxheatConfig } = this;
+    const timeItems = auxheatConfig.data.items;
+    const selectedTimeSelection = auxheatConfig.data.time_selection;
+    const timeSelectOptions = auxheatConfig.data.time_selection_options;
 
-    const timeElements = Object.entries(timeItems).map(([item, label]) => {
+    const service = auxheatConfig.service;
+
+    const timeElements = Object.entries(timeItems).map(([item, { label, value }]) => {
       return html`
         <div class="items-row">
           <div>${label}</div>
@@ -167,8 +260,8 @@ export class RemoteControl extends LitElement {
                 min="0"
                 max="1439"
                 step="1"
-                .value=${this.auxheatConfig[item]}
-                @change=${(e) => this.auxHeatTimeChange(item, e)}
+                .value=${String(value)}
+                @change=${(e) => this.handleAuxheatChange('items', item, e)}
               />
               <span>min</span>
             </div>
@@ -181,32 +274,24 @@ export class RemoteControl extends LitElement {
       <div class="items-row">
         <div>Time Selection</div>
         <ha-select
-          .value=${this.auxheatConfig.time_selection}
-          @change=${(e) => this.auxHeatTimeChange('time_selection', e)}
+          .value=${String(selectedTimeSelection)}
+          @change=${(e: Event) => this.handleAuxheatChange('time_selection', '', e)}
         >
-          <mwc-list-item value="0">No select</mwc-list-item>
-          <mwc-list-item value="1">Time 1</mwc-list-item>
-          <mwc-list-item value="2">Time 2</mwc-list-item>
-          <mwc-list-item value="3">Time 3</mwc-list-item>
+          ${Object.entries(timeSelectOptions).map(([value, label]) => {
+            return html`<mwc-list-item value=${value}>${label}</mwc-list-item>`;
+          })}
         </ha-select>
       </div>
     `;
 
-    timeElements.unshift(timeSelectEl);
+    const serviceBtns = Object.entries(service).map(([key, data]) => {
+      return this._renderServiceBtn(key, data);
+    });
 
     return html`
-      <div class="sub-row">${timeElements}</div>
-      <div class="head-sub-row">
-        <div class="control-btn-sm click-shrink" @click=${() => this.callService('auxheat_start')}>
-          <ha-icon icon="mdi:radiator"></ha-icon> <span>START</span>
-        </div>
-        <div class="control-btn-sm click-shrink" @click=${this.auxheatConfigureCall}>
-          <ha-icon icon="mdi:cog"></ha-icon> <span>SAVE CONFIG </span>
-        </div>
-        <div class="control-btn-sm click-shrink" @click=${() => this.callService('auxheat_stop')}>
-          <ha-icon icon="mdi:radiator-off"></ha-icon> <span>STOP</span>
-        </div>
-      </div>
+      <div class="sub-row">${timeSelectEl} ${timeElements}</div>
+      ${this._renderResetBtn()}
+      <div class="head-sub-row">${serviceBtns}</div>
     `;
   }
 
@@ -251,15 +336,12 @@ export class RemoteControl extends LitElement {
     `;
   }
 
-  private _renderWindowsMove(): TemplateResult {
-    const moveItems = {
-      FRONT_LEFT: 'Front Left',
-      FRONT_RIGHT: 'Front Right',
-      REAR_LEFT: 'Rear Left',
-      REAR_RIGHT: 'Rear Right',
-    };
+  private _renderWindowsControl(): TemplateResult {
+    const { windowsConfig } = this;
+    const positionItems = windowsConfig.data.positions;
+    const service = windowsConfig.service;
 
-    const moveEl = Object.entries(moveItems).map(([item, label]) => {
+    const moveEl = Object.entries(positionItems).map(([key, { label, value }]) => {
       return html`
         <div class="items-row">
           <div>${label}</div>
@@ -268,8 +350,8 @@ export class RemoteControl extends LitElement {
               .min=${0}
               .max=${100}
               .step=${10}
-              .value=${this.windowPositions[item]}
-              @value-changed=${(e) => this.windowPositionChange(item, e.detail.value - this.windowPositions[item])}
+              .value=${value}
+              @value-changed=${(e) => this.handleWindowsChange(key, e)}
             ></ha-control-number-buttons>
           </div>
         </div>
@@ -278,63 +360,99 @@ export class RemoteControl extends LitElement {
 
     return html`
       <div class="sub-row">${moveEl}</div>
-      <div class="control-btn-sm reset click-shrink" @click=${this.resetWindowPositions}>
-        <ha-icon icon="mdi:restore"></ha-icon><span>RESET</span>
-      </div>
+      ${this._renderResetBtn()}
+
       <div class="head-sub-row">
-        <div class="control-btn-sm click-shrink" @click=${() => this.callService('windows_open')}>
-          <ha-icon icon="mdi:arrow-up-bold"></ha-icon><span>OPEN</span>
-        </div>
-        <div class="control-btn-sm click-shrink" @click=${this.moveWindows}>
-          <ha-icon icon="mdi:swap-vertical-bold"></ha-icon><span>MOVE</span>
-        </div>
-        <div class="control-btn-sm click-shrink" @click=${() => this.callService('windows_close')}>
-          <ha-icon icon="mdi:arrow-down-bold"></ha-icon><span>CLOSE</span>
-        </div>
+        ${Object.entries(service).map(([key, data]) => {
+          return this._renderServiceBtn(key, data);
+        })}
       </div>
     `;
   }
 
   /* ----------------------------- HANDLER METHODS ---------------------------- */
 
-  private handleMaxSocChange(e: Event): void {
-    const value = (e.target as HTMLSelectElement).value;
-    this.maxSocConfig = parseInt(value);
+  private saveConfigChange(service: string): void {
+    switch (service) {
+      case 'preheat_start_departure_time':
+        const data = {
+          time: this.preheatConfig.data.time.value,
+        };
+        this.callService(service, data);
+        break;
+
+      case 'auxheat_configure':
+        const items = Object.entries(this.auxheatConfig.data.items).reduce((acc, [key, { value }]) => {
+          acc[key] = value;
+          return acc;
+        }, {});
+
+        const dataAux = {
+          time_selection: this.auxheatConfig.data.time_selection,
+          ...items,
+        };
+        this.callService(service, dataAux);
+        break;
+
+      case 'battery_max_soc_configure':
+        const dataCharge = {
+          charge_program: this.chargeConfig.data.selected_program,
+          max_soc: this.chargeConfig.data.max_soc.value,
+        };
+        this.callService(service, dataCharge);
+        break;
+      case 'charge_program_configure':
+        const dataProgram = {
+          charge_program: this.chargeConfig.data.selected_program,
+        };
+        this.callService(service, dataProgram);
+        break;
+
+      case 'windows_move':
+        const dataWindows = Object.entries(this.windowsConfig.data.positions).reduce((acc, [key, { value }]) => {
+          acc[key] = value;
+          return acc;
+        }, {});
+
+        this.callService(service, dataWindows);
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  private handleChargeProgramChange(type: string, e: Event): void {
+    const value = (e.target as HTMLInputElement | HTMLSelectElement).value;
+    if (type === 'max_soc') {
+      this.chargeConfig.data[type].value = parseInt(value, 10);
+    } else {
+      this.chargeConfig.data[type] = parseInt(value, 10);
+    }
+
     this.requestUpdate(); // Trigger re-render to update UI after change
   }
 
-  private handleChargeProgramChange(e: Event): void {
-    const value = (e.target as HTMLSelectElement).value;
-    this.chargePrograms = parseInt(value);
+  private handlePreheatTimeChange(e: Event): void {
+    const value = (e.target as HTMLInputElement).value;
+    this.preheatConfig.data.time.value = parseInt(value, 10);
     this.requestUpdate(); // Trigger re-render to update UI after change
   }
 
-  private saveChargeConfig(): void {
-    const data = {
-      charge_program: this.chargePrograms,
-      max_soc: this.maxSocConfig,
-    };
-    console.log(data);
-    // this.callService('battery_max_soc_configure', data);
+  private handleAuxheatChange(type: string, item: string, e: Event): void {
+    const value = (e.target as HTMLInputElement | HTMLSelectElement).value;
+
+    if (type === 'time_selection') {
+      this.auxheatConfig.data.time_selection = parseInt(value, 10);
+    } else {
+      this.auxheatConfig.data[type][item].value = parseInt(value, 10);
+    }
+
+    this.requestUpdate(); // Trigger re-render to update UI after change
   }
 
-  private auxheatConfigureCall(): void {
-    const data = {
-      time_selection: this.auxheatConfig.time_selection,
-      time_1: this.auxheatConfig.time_1,
-      time_2: this.auxheatConfig.time_2,
-      time_3: this.auxheatConfig.time_3,
-    };
-
-    console.log(data);
-    // this.callService('auxheat_configure', data);
-  }
-  private auxHeatTimeChange(item: string, e: Event | number): void {
-    const value = typeof e === 'number' ? e : (e.target as HTMLInputElement).value;
-    this.auxheatConfig = {
-      ...this.auxheatConfig,
-      [item]: value,
-    };
+  private handleWindowsChange(key: string, e: CustomEvent): void {
+    this.windowsConfig.data.positions[key].value = e.detail.value;
     this.requestUpdate(); // Trigger re-render to update UI after change
   }
 
@@ -365,30 +483,9 @@ export class RemoteControl extends LitElement {
     }, 0);
   }
 
-  private windowPositionChange(item: string, value: number): void {
-    this.windowPositions[item] += value;
-    this.requestUpdate(); // Trigger re-render to update UI after change
-  }
-
-  private resetWindowPositions(): void {
-    this.windowPositions = {
-      FRONT_LEFT: 0,
-      FRONT_RIGHT: 0,
-      REAR_LEFT: 0,
-      REAR_RIGHT: 0,
-    };
+  private resetConfig(): void {
+    this.serviceData = cloneDeep(Srvc.serviceData);
     this.requestUpdate(); // Trigger re-render to update UI after reset
-  }
-
-  private moveWindows(): void {
-    const data = {
-      front_left: this.windowPositions['FRONT_LEFT'],
-      front_right: this.windowPositions['FRONT_RIGHT'],
-      rear_left: this.windowPositions['REAR_LEFT'],
-      rear_right: this.windowPositions['REAR_RIGHT'],
-    };
-    console.log(data);
-    // this.callService('windows_move', data);
   }
 
   private lockMoreInfo(): void {
@@ -402,7 +499,9 @@ export class RemoteControl extends LitElement {
       vin: this.carVin,
       ...data,
     });
+    console.log('call-service:', service, data);
     this.launchToast();
+    this.resetConfig();
   }
 
   private launchToast(): void {

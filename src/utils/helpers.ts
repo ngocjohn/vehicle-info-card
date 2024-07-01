@@ -10,3 +10,7 @@ export function formatTimestamp(timestamp: string | number | Date) {
 
   return `${day}. ${month}. ${year} - ${hours}:${minutes}`;
 }
+
+export function cloneDeep<T>(obj: T): T {
+  return JSON.parse(JSON.stringify(obj));
+}

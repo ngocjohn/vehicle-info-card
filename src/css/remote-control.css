@@ -11,11 +11,13 @@
 #toast {
   visibility: hidden;
   opacity: 0;
+  max-height: 0;
 }
 
 #toast.show {
   visibility: visible;
   opacity: 1;
+  max-height: 100px;
   animation: fade-in 0.3s ease-in-out forwards;
 }
 
@@ -67,8 +69,7 @@
   gap: 1rem;
   padding: 1rem 0.6rem;
   margin-top: 0.5rem;
-  overflow: hidden;
-  min-height: 220px;
+  height: auto;
 }
 
 .control-btn-sm,
