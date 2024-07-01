@@ -258,6 +258,7 @@ header h1 {
   color: var(--secondary-text-color);
   margin-top: 0.5rem;
   opacity: 0.5;
+  font-size: 0.8rem;
 }
 #cards-wrapper {
   animation: fadeIn 0.5s ease-in-out;

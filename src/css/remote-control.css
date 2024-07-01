@@ -8,6 +8,17 @@
   margin-block: 1rem;
 }
 
+#toast {
+  visibility: hidden;
+  opacity: 0;
+}
+
+#toast.show {
+  visibility: visible;
+  opacity: 1;
+  animation: fade-in 0.3s ease-in-out forwards;
+}
+
 .head-sub-row,
 .head-row {
   display: grid;
@@ -19,6 +30,7 @@
 .head-sub-row {
   grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
 }
+
 @keyframes fade-in {
   from {
     opacity: 0;
