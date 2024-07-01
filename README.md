@@ -8,6 +8,14 @@
 
 <p style="text-align: justify;">This custom card displays essential information about your Mercedes vehicle. It retrieves data using the Custom Component for Mercedes cars by <a href="https://github.com/ReneNulschDE">ReneNulschDE</a> available at <a href="https://github.com/ReneNulschDE/mbapi2020">mbapi2020</a>. The card features four primary buttons: Trip Data, Vehicle Status, Eco Display, and Tire Pressure. These buttons can be easily replaced with any Lovelace card within Home Assistant, allowing for flexible and customizable vehicle data display.</p>
 
+### Features of the Card
+
+- **Comprehensive Vehicle Information**: Provides essential information about the car all in one place.
+- **Vehicle Position Display**: Shows the current location of the vehicle on a map, with the option to track routes.
+- **Visual Slideshow**: Features a visual slideshow of the vehicle.
+- **Centralized Remote Control**: Offers available remote control functions and settings, all accessible from a single card.
+- **Individual Sub-Card Customization**: Allows customization for each individual sub-card to suit specific needs and preferences.
+
 <div align="center">
   <a href="#"> <img src="https://raw.githubusercontent.com/ngocjohn/vehicle-info-card/main/assets/default-card.gif"></a>
 </div>
@@ -157,6 +165,12 @@ Below is the basic configuration for the custom card:
       <td>Set to <code>true</code> to enable map popup function. Default is <code>false</code>.</td>
     </tr>
     <tr>
+      <td><code>enable_services_control</code></td>
+      <td>boolean</td>
+      <td>Optional</td>
+      <td>Set to <code>true</code> to enable remote control tab. Default is <code>false</code>.</td>
+    </tr>
+    <tr>
       <td><code>map_popup_config</code></td>
       <td>object</td>
       <td>Optional</td>
@@ -192,9 +206,85 @@ Below is the basic configuration for the custom card:
       <td>Optional</td>
       <td>Configuration objects for the tire pressure card.</td>
     </tr>
+    <tr>
+      <td><code>services</code></td>
+      <td>object list</td>
+      <td>Optional</td>
+      <td>Configure the available services for the integration. <a href="#services-configuration">Here</a> are the available services that can be enabled or disabled.</td>
+    </tr>
   </tbody>
 </table>
 </div>
+
+### Services configuration
+
+> [!NOTE]
+> Some services require that the security PIN is created in your mobile Android/IOS app. Please store the pin in the options dialog of the integration. <a href="https://github.com/ReneNulschDE/mbapi2020?tab=readme-ov-file#services">More info</a>
+
+<table>
+  <thead>
+    <tr>
+      <th>Service</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>charge</code></td>
+      <td>Manage the charging process.</td>
+    </tr>
+    <tr>
+      <td><code>auxheat</code></td>
+      <td>Control the auxiliary heating.</td>
+    </tr>
+    <tr>
+      <td><code>doorsLock</code></td>
+      <td>Lock the car doors.</td>
+    </tr>
+    <tr>
+      <td><code>preheat</code></td>
+      <td>Control the preheating for zero emission cars.</td>
+    </tr>
+    <tr>
+      <td><code>sigPos</code></td>
+      <td>Start light signaling.</td>
+    </tr>
+    <tr>
+      <td><code>sunroof</code></td>
+      <td>Control the sunroof (open, tilt, close).</td>
+    </tr>
+    <tr>
+      <td><code>sendRoute</code></td>
+      <td>Send a route to the car.</td>
+    </tr>
+    <tr>
+      <td><code>engine</code></td>
+      <td>Control the engine (start, stop).</td>
+    </tr>
+    <tr>
+      <td><code>windows</code></td>
+      <td>Control the windows (open, close, move).</td>
+    </tr>
+  </tbody>
+</table>
+
+<details>
+<summary> Yaml configuration </summary>
+
+```yaml
+services:
+  charge: true
+  auxheat: true
+  doorsLock: true
+  preheat: true
+  sigPos: true
+  sunroof: true
+  sendRoute: true
+  engine: true
+  windows: true
+```
+
+</details>
 
 ### Examples
 
@@ -205,7 +295,7 @@ Below is the configuration replaced entities card for `Vehicle status` button.
 
 <details>
 
-<summary>Yaml Configuration</summary>
+<summary>Yaml configuration</summary>
 
 <br />
 
