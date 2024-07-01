@@ -22,6 +22,11 @@ export class RemoteControl extends LitElement {
   @state() private subcardType: string | null = null;
   @state() private serviceData = cloneDeep(Srvc.serviceData);
 
+  private isAnyServiceEnabled(): boolean {
+    if (!this.servicesConfig) return false;
+    return Object.values(this.servicesConfig).some((service) => service);
+  }
+
   private get auxheatConfig() {
     return this.serviceData.auxheatConfig;
   }
@@ -70,6 +75,8 @@ export class RemoteControl extends LitElement {
   }
 
   protected render(): TemplateResult {
+    if (!this.isAnyServiceEnabled()) return html`<hui-warning>No service selected.</hui-warning>`;
+
     return html`
       <div class="service-control">
         <div class="head-row">${this._renderControlBtn()}</div>
