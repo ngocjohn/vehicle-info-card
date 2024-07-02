@@ -2272,23 +2272,14 @@ function(){function t(t){t.remember("_draggable",this),this.el=t}t.prototype.ini
 
 .head-sub-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
   position: relative;
   grid-gap: 0.5rem;
   gap: 0.5rem;
 }
 
 .head-sub-row.preheat {
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-}
-
-@media screen and (max-width: 768px) {
-  .head-sub-row {
-    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-  }
-  .head-sub-row.preheat {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  }
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
 }
 
 @keyframes fade-in {
