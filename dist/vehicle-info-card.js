@@ -426,6 +426,11 @@ header h1 {
   margin-bottom: 0px;
   font-weight: 400;
 }
+.default-card.remote-tab {
+  border: none !important;
+  background: none !important;
+  padding: 0px;
+}
 .data-row {
   display: flex;
   justify-content: space-between;
@@ -2233,7 +2238,7 @@ function(){function t(t){t.remember("_draggable",this),this.el=t}t.prototype.ini
     .apexcharts-radialbar-hollow {
       fill: var(--ha-card-background, var(--card-background-color, #fff));
     }
-  `,t([mt({type:Object})],Ma.prototype,"ecoData",void 0),t([vt()],Ma.prototype,"chart",void 0),Ma=t([pt("eco-chart")],Ma);const Oa={auxheat:{name:"Auxiliary heating",icon:"mdi:radiator"},charge:{name:"Charge program",icon:"mdi:ev-station"},doorsLock:{name:"Security",icon:"mdi:key-chain"},engine:{name:"Engine control",icon:"mdi:engine"},preheat:{name:"Preheat settings",icon:"mdi:car-seat-heater"},sendRoute:{name:"Send route",icon:"mdi:map-marker-path"},sigPos:{name:"Signal position",icon:"mdi:bugle"},sunroof:{name:"Sunroof",icon:"mdi:window-open"},windows:{name:"Windows",icon:"mdi:car-door"}},ka={auxheatConfig:{service:{START:{command:"auxheat_start",icon:"mdi:radiator",label:"Start"},STOP:{command:"auxheat_stop",icon:"mdi:radiator-off",label:"Stop"},DATA_CONFIGURE:{command:"auxheat_configure",icon:"mdi:cog",label:"save"}},data:{time_selection:0,time_selection_options:{0:"No selection",1:"Time 1",2:"Time 2",3:"Time 3"},items:{time_1:{label:"Time 1",value:0},time_2:{label:"Time 2",value:0},time_3:{label:"Time 3",value:0}}}},windowsConfig:{service:{OPEN:{command:"windows_open",icon:"mdi:arrow-up-bold",label:"Open"},CLOSE:{command:"windows_close",icon:"mdi:arrow-down-bold",label:"Close"},DATA_MOVE:{command:"windows_move",icon:"mdi:swap-vertical-bold",label:"Move"}},data:{positions:{front_left:{label:"Front left",value:0},front_right:{label:"Front right",value:0},rear_left:{label:"Rear left",value:0},rear_right:{label:"Rear right",value:0}}}},preheatConfig:{service:{DATA_START_DEP_TIME:{command:"preheat_start_departure_time",icon:"mdi:cog",label:"start time"},STOP_DEP_TIME:{command:"preheat_stop_departure_time",icon:"mdi:cog-off",label:"stop time"},START:{command:"preheat_start",icon:"mdi:car-seat-heater",label:"Start"},STOP:{command:"preheat_stop",icon:"mdi:car-seat",label:"Stop"}},data:{time:{label:"Departure time",value:0}}},engineConfig:{service:{START:{command:"engine_start",icon:"mdi:engine",label:"Start"},STOP:{command:"engine_stop",icon:"mdi:engine-off",label:"Stop"}}},batteryChargeConfig:{service:{DATA_MAX_SOC_CONFIGURE:{command:"battery_max_soc_configure",icon:"mdi:battery-charging-high",label:"set max soc"},DATA_CHARGE_PROGRAM:{command:"charge_program_configure",icon:"mdi:ev-station",label:"set program"}},data:{selected_program:0,program_options:{0:"DEFAULT",2:"HOME",3:"WORK"},max_soc:{label:"Max state of charge",value:50}}},sendRouteConfig:{service:{DATA_SEND_ROUTE:{command:"send_route",icon:"mdi:map-marker",label:"send"}},data:{title:{label:"Title",value:""},latitude:{label:"Latitude",value:0},longitude:{label:"Longitude",value:0},city:{label:"City",value:""},postcode:{label:"Postcode",value:""},street:{label:"Street",value:""}}},sunroofConfigData:{service:{OPEN:{command:"sunroof_open",icon:"mdi:window-open",label:"Open"},CLOSE:{command:"sunroof_close",icon:"mdi:window-close",label:"Close"},TILT:{command:"sunroof_tilt",icon:"mdi:window-shutter",label:"Tilt"}}}};var La=o`:host {
+  `,t([mt({type:Object})],Ma.prototype,"ecoData",void 0),t([vt()],Ma.prototype,"chart",void 0),Ma=t([pt("eco-chart")],Ma);const Oa={auxheat:{name:"Auxiliary heating",icon:"mdi:radiator"},charge:{name:"Charge program",icon:"mdi:ev-station"},doorsLock:{name:"Security",icon:"mdi:key-chain"},engine:{name:"Engine control",icon:"mdi:engine"},preheat:{name:"Preheat settings",icon:"mdi:car-seat-heater"},sendRoute:{name:"Send route",icon:"mdi:map-marker-path"},sigPos:{name:"Signal position",icon:"mdi:bugle"},sunroof:{name:"Sunroof",icon:"mdi:window-open"},windows:{name:"Windows",icon:"mdi:car-door"}},ka={auxheatConfig:{service:{START:{command:"auxheat_start",icon:"mdi:radiator",label:"Start"},STOP:{command:"auxheat_stop",icon:"mdi:radiator-off",label:"Stop"},DATA_CONFIGURE:{command:"auxheat_configure",icon:"mdi:cog",label:"save"}},data:{time_selection:0,time_selection_options:{0:"No selection",1:"Time 1",2:"Time 2",3:"Time 3"},items:{time_1:{label:"Time 1",value:0},time_2:{label:"Time 2",value:0},time_3:{label:"Time 3",value:0}}}},windowsConfig:{service:{OPEN:{command:"windows_open",icon:"mdi:arrow-up-bold",label:"Open"},CLOSE:{command:"windows_close",icon:"mdi:arrow-down-bold",label:"Close"},DATA_MOVE:{command:"windows_move",icon:"mdi:swap-vertical-bold",label:"Move"}},data:{positions:{front_left:{label:"Front left",value:0},front_right:{label:"Front right",value:0},rear_left:{label:"Rear left",value:0},rear_right:{label:"Rear right",value:0}}}},preheatConfig:{service:{DATA_START_DEP_TIME:{command:"preheat_start_departure_time",icon:"mdi:cog",label:"start time"},STOP_DEP_TIME:{command:"preheat_stop_departure_time",icon:"mdi:cog-off",label:"stop time"},START:{command:"preheat_start",icon:"mdi:car-seat-heater",label:"Start"},STOP:{command:"preheat_stop",icon:"mdi:car-seat",label:"Stop"}},data:{time:{label:"Departure time",value:0}}},engineConfig:{service:{START:{command:"engine_start",icon:"mdi:engine",label:"Start"},STOP:{command:"engine_stop",icon:"mdi:engine-off",label:"Stop"}}},batteryChargeConfig:{service:{DATA_MAX_SOC_CONFIGURE:{command:"battery_max_soc_configure",icon:"mdi:battery-charging-high",label:"set max soc"},DATA_CHARGE_PROGRAM:{command:"charge_program_configure",icon:"mdi:ev-station",label:"set program"}},data:{selected_program:0,program_options:{0:"DEFAULT",2:"HOME",3:"WORK"},max_soc:{label:"Max state of charge",value:50}}},sendRouteConfig:{service:{DATA_SEND_ROUTE:{command:"send_route",icon:"mdi:map-marker",label:"send"}},data:{title:{label:"Title",value:"",placeholder:"Brandenburger Tor"},latitude:{label:"Latitude",value:"",placeholder:"52.5163"},longitude:{label:"Longitude",value:"",placeholder:"13.3777"},city:{label:"City",value:"",placeholder:"Berlin"},postcode:{label:"Postcode",value:"",placeholder:"10117"},street:{label:"Street",value:"",placeholder:"Pariser Platz"}}},sunroofConfigData:{service:{OPEN:{command:"sunroof_open",icon:"mdi:window-open",label:"Open"},CLOSE:{command:"sunroof_close",icon:"mdi:window-close",label:"Close"},TILT:{command:"sunroof_tilt",icon:"mdi:window-shutter",label:"Tilt"}}}};var La=o`:host {
   --control-icon-size: 32px;
   --control-btn-radius: 0.5;
 }
@@ -2282,7 +2287,7 @@ function(){function t(t){t.remember("_draggable",this),this.el=t}t.prototype.ini
     grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
   }
   .head-sub-row.preheat {
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   }
 }
 
@@ -2330,8 +2335,8 @@ function(){function t(t){t.remember("_draggable",this),this.el=t}t.prototype.ini
   align-items: center;
   justify-content: center;
   padding: 0.5rem 1rem;
-  background-color: var(--remote-control-btn-color);
-  box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 10px 0px;
+  background-color: #fff;
+  background-color: var(--ha-card-background, var(--card-background-color, #fff));
   box-sizing: border-box;
   border-radius: 12px;
   border-radius: var(--ha-card-border-radius, 12px);
@@ -2355,8 +2360,8 @@ function(){function t(t){t.remember("_draggable",this),this.el=t}t.prototype.ini
 }
 
 .control-btn-rounded.active {
-  background-color: rgba(var(--rgb-primary-color), 0.4);
   color: var(--primary-color);
+  background-color: rgba(var(--rgb-primary-color), 0.1);
 }
 
 .control-btn-rounded ha-icon {
@@ -2374,11 +2379,13 @@ function(){function t(t){t.remember("_draggable",this),this.el=t}t.prototype.ini
   padding: 0;
   opacity: 0.5;
 }
+
 .sub-row {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
+
 .items-row {
   display: inline-flex;
   width: 100%;
@@ -2403,13 +2410,12 @@ function(){function t(t){t.remember("_draggable",this),this.el=t}t.prototype.ini
 }
 
 .items-control input[type='number'] {
-  height: 2.5rem;
   width: -moz-fit-content;
-  width: fit-content;
-  background-color: var(--remote-control-btn-color);
+  width: -moz-max-content;
+  width: max-content;
+  background-color: var(--card-background-color);
   color: var(--primary-text-color);
-  border-radius: 4px;
-  padding: 0 0.5rem;
+  padding: 0.5rem 1rem;
   border: none;
   text-align: center;
   font-size: 1rem;
@@ -2422,13 +2428,7 @@ function(){function t(t){t.remember("_draggable",this),this.el=t}t.prototype.ini
   align-items: center;
   cursor: pointer;
 }
-
-.value {
-  min-width: 2rem;
-  text-align: center;
-  font-size: 0.9rem;
-}
-`;le(La),window.loadCardHelpers&&window.loadCardHelpers();let Va=class extends dt{constructor(){super(...arguments),this.subcardType=null,this.serviceData=Sa(ka)}isAnyServiceEnabled(){return!!this.servicesConfig&&Object.values(this.servicesConfig).some((t=>t))}get auxheatConfig(){return this.serviceData.auxheatConfig}get windowsConfig(){return this.serviceData.windowsConfig}get preheatConfig(){return this.serviceData.preheatConfig}get engineConfig(){return this.serviceData.engineConfig}get chargeConfig(){return this.serviceData.batteryChargeConfig}get sendRouteConfig(){return this.serviceData.sendRouteConfig}get sunroofConfig(){return this.serviceData.sunroofConfigData}static get styles(){return[La,ce]}updated(t){super.updated(t),t.has("darkMode")&&this.updateCSSVariables()}updateCSSVariables(){this.darkMode?this.style.setProperty("--remote-control-btn-color","#292929"):this.style.setProperty("--remote-control-btn-color","#eeeeee")}render(){return this.isAnyServiceEnabled()?Z`
+`;le(La),window.loadCardHelpers&&window.loadCardHelpers();let Va=class extends dt{constructor(){super(...arguments),this.subcardType=null,this.serviceData=Sa(ka)}isAnyServiceEnabled(){return!!this.servicesConfig&&Object.values(this.servicesConfig).some((t=>t))}get auxheatConfig(){return this.serviceData.auxheatConfig}get windowsConfig(){return this.serviceData.windowsConfig}get preheatConfig(){return this.serviceData.preheatConfig}get engineConfig(){return this.serviceData.engineConfig}get chargeConfig(){return this.serviceData.batteryChargeConfig}get sendRouteConfig(){return this.serviceData.sendRouteConfig}get sunroofConfig(){return this.serviceData.sunroofConfigData}static get styles(){return[La,ce]}render(){return this.isAnyServiceEnabled()?Z`
       <div class="service-control">
         <div class="head-row">${this._renderControlBtn()}</div>
         ${this._renderSubCard()}
@@ -2447,44 +2447,43 @@ function(){function t(t){t.remember("_draggable",this),this.el=t}t.prototype.ini
       <div class="control-btn-sm click-shrink" @click=${n}>
         <ha-icon icon=${a}></ha-icon><span>${s}</span>
       </div>
-    `}_renderResetBtn(){return Z` <div class="control-btn-sm reset click-shrink" @click=${()=>this.resetConfig()}>
+    `}_renderResetBtn(){return Z` <div class="control-btn-sm click-shrink" @click=${()=>this.resetConfig()}>
       <ha-icon icon="mdi:restore"></ha-icon><span>RESET</span>
     </div>`}_renderSunroofControl(){const{sunroofConfig:t}=this,e=t.service;return Z`
       <div class="head-sub-row">
         ${Object.entries(e).map((([t,e])=>this._renderServiceBtn(t,e)))}
       </div>
-    `}_renderSendRouteControl(){const{sendRouteConfig:t}=this,e=t.data,i={title:{label:"Title",value:"Brandenburger Tor"},latitude:{label:"Latitude",value:52.5163},longitude:{label:"Longitude",value:13.3777},city:{label:"City",value:"Berlin"},postcode:{label:"Postcode",value:"10117"},street:{label:"Street",value:"Pariser Platz"}},a=Object.entries(e).map((([t,{label:e,value:i}])=>Z`
+    `}_renderSendRouteControl(){const{sendRouteConfig:t}=this,e=t.data,i=Object.entries(e).map((([t,{label:e,value:i,placeholder:a}])=>Z`
         <div class="items-row">
           <div>${e}</div>
           <div class="items-control">
-            <ha-textfield .value=${String(i)} @input=${e=>this.handleSendRouteChange(t,e)}></ha-textfield>
+            <ha-textfield
+              .value=${String(i)}
+              .placeholder=${a}
+              @input=${e=>this.handleSendRouteChange(t,e)}
+            ></ha-textfield>
           </div>
         </div>
       `));return Z`
-      <div class="sub-row">${a}</div>
+      <div class="sub-row">${i}</div>
 
       <div class="head-sub-row">
         ${this._renderResetBtn()}
-        <div class="control-btn-sm click-shrink" @click=${()=>{this.sendRouteConfig.data=Sa(i),this.requestUpdate()}}>
-          <ha-icon icon="mdi:file-document-edit"></ha-icon><span>Sample</span>
-        </div>
         ${Object.entries(t.service).map((([t,e])=>this._renderServiceBtn(t,e)))}
       </div>
     `}_renderPreheatControl(){const{preheatConfig:t}=this,{time:e}=t.data,i=t.service,a=Z`
       <div class="items-row">
         <div>Departure Time</div>
         <div class="items-control">
-          <div class="time-form">
-            <input
-              type="number"
-              min="0"
-              max="1439"
-              step="1"
-              .value=${String(e.value)}
-              @change=${this.handlePreheatTimeChange}
-            />
-            <span>min</span>
-          </div>
+          <input
+            type="number"
+            min="0"
+            max="1439"
+            step="1"
+            .value=${String(e.value)}
+            @change=${this.handlePreheatTimeChange}
+          />
+          <span>min</span>
         </div>
       </div>
     `;return Z`
@@ -2521,8 +2520,7 @@ function(){function t(t){t.remember("_draggable",this),this.el=t}t.prototype.ini
         </ha-select>
       </div>
     `;return Z`
-      <div class="sub-row">${r}</div>
-      <div class="sub-row">${o}</div>
+      <div class="sub-row">${r}${o}</div>
       ${this._renderResetBtn()}
       <div class="head-sub-row">
         ${Object.entries(n).map((([t,e])=>this._renderServiceBtn(t,e)))}
@@ -2589,7 +2587,7 @@ function(){function t(t){t.remember("_draggable",this),this.el=t}t.prototype.ini
       <div class="head-sub-row">
         ${Object.entries(i).map((([t,e])=>this._renderServiceBtn(t,e)))}
       </div>
-    `}saveConfigChange(t){switch(t){case"preheat_start_departure_time":const e={time:this.preheatConfig.data.time.value};this.callService(t,e);break;case"auxheat_configure":const i=Object.entries(this.auxheatConfig.data.items).reduce(((t,[e,{value:i}])=>(t[e]=i,t)),{}),a=Object.assign({time_selection:this.auxheatConfig.data.time_selection},i);this.callService(t,a);break;case"battery_max_soc_configure":const s={charge_program:this.chargeConfig.data.selected_program,max_soc:this.chargeConfig.data.max_soc.value};this.callService(t,s);break;case"charge_program_configure":const n={charge_program:this.chargeConfig.data.selected_program};this.callService(t,n);break;case"windows_move":const r=Object.entries(this.windowsConfig.data.positions).reduce(((t,[e,{value:i}])=>(t[e]=i,t)),{});this.callService(t,r);break;case"send_route":const o=Object.entries(this.sendRouteConfig.data).reduce(((t,[e,{value:i}])=>(t[e]=i,t)),{});this.callService(t,o)}}handleSendRouteChange(t,e){const i=e.target.value;this.sendRouteConfig.data[t].value=i,this.requestUpdate()}handleChargeProgramChange(t,e){const i=e.target.value;"max_soc"===t?this.chargeConfig.data[t].value=parseInt(i,10):this.chargeConfig.data[t]=parseInt(i,10),this.requestUpdate()}handlePreheatTimeChange(t){const e=t.target.value;this.preheatConfig.data.time.value=parseInt(e,10),this.requestUpdate()}handleAuxheatChange(t,e,i){const a=i.target.value;"time_selection"===t?this.auxheatConfig.data.time_selection=parseInt(a,10):this.auxheatConfig.data[t][e].value=parseInt(a,10),this.requestUpdate()}handleWindowsChange(t,e){this.windowsConfig.data.positions[t].value=e.detail.value,this.requestUpdate()}_handleSubCardClick(t){this.subcardType=this.subcardType===t?null:t,setTimeout((()=>{var t;const e=null===(t=this.shadowRoot)||void 0===t?void 0:t.querySelectorAll(".control-btn-rounded:not(.active).click-shrink");null==e||e.forEach((t=>{t.classList.remove("fade-in","fade-out","hidden"),null===this.subcardType?(t.classList.add("fade-in"),t.classList.remove("hidden")):(t.classList.add("fade-out"),t.addEventListener("animationend",(()=>{t.classList.add("hidden")}),{once:!0}))}))}),0)}resetConfig(){this.serviceData=Sa(ka),this.requestUpdate()}lockMoreInfo(){Rt(this,"hass-more-info",{entityId:this.carLockEntity})}callService(t,e){this.hass.callService("mbapi2020",t,Object.assign({vin:this.carVin},e)),this.launchToast()}launchToast(){var t;const e=null===(t=this.shadowRoot)||void 0===t?void 0:t.getElementById("toast");e&&(e.classList.add("show"),setTimeout((()=>{e.classList.remove("show")}),3e3))}};async function Ia(t,e){const i=await t.callWS({type:"config/entity_registry/list"}),a=i.find((t=>t.entity_id===e.entity));if(!a)return{};const s=i.filter((t=>t.device_id===a.device_id)),n={};for(const t of Object.keys(Ht)){const{prefix:e,suffix:i}=Ht[t];if(e){if("soc"===t){const e="State of Charge",i=s.find((t=>t.original_name===e));i&&(n[t]={entity_id:i.entity_id,original_name:i.original_name,unique_id:i.unique_id,device_id:i.device_id})}else if("maxSoc"===t){const e="Max State of Charge",i=s.find((t=>t.original_name===e));i&&(n[t]={entity_id:i.entity_id,original_name:i.original_name,unique_id:i.unique_id,device_id:i.device_id})}const a=s.find((t=>t.entity_id.startsWith(e)&&t.entity_id.endsWith(i)));a&&(n[t]={entity_id:a.entity_id,original_name:a.original_name,unique_id:a.unique_id,device_id:a.device_id})}else{const e=s.find((t=>t.unique_id.endsWith(i)));e&&(n[t]={entity_id:e.entity_id,original_name:e.original_name,device_id:e.device_id})}}return n}function qa(t,e){if(!t)return;let i=null,a=null,s=null,n=null,r=!1;const o=e=>{e.stopImmediatePropagation(),e instanceof TouchEvent?(i=e.touches[0].clientX,a=e.touches[0].clientY):e instanceof MouseEvent&&(i=e.clientX,a=e.clientY),["touchmove","mousemove"].forEach((e=>{t.addEventListener(e,l)})),["touchend","mouseup"].forEach((e=>{t.addEventListener(e,c)}))},l=t=>{null!==i&&null!==a&&(t instanceof TouchEvent?(s=i-t.touches[0].clientX,n=a-t.touches[0].clientY):t instanceof MouseEvent&&(s=i-t.clientX,n=a-t.clientY),null!==s&&null!==n&&Math.abs(s)>1&&Math.abs(n)>1&&(r=!0))},c=o=>{o.stopImmediatePropagation(),["touchmove","mousemove"].forEach((e=>{t.removeEventListener(e,l)})),["touchend","mouseup"].forEach((e=>{t.removeEventListener(e,c)}));const h=t.clientWidth;r&&null!==s&&null!==n&&(Math.abs(s)>Math.abs(n)&&Math.abs(s)>h/3&&(s>0?(t.classList.add("swiping-left"),setTimeout((()=>{e("next"),t.classList.remove("swiping-left")}),300)):(t.classList.add("swiping-right"),setTimeout((()=>{e("prev"),t.classList.remove("swiping-right")}),300))),s=n=i=a=null,r=!1)};["touchstart","mousedown"].forEach((e=>{t.addEventListener(e,o)}))}t([mt({attribute:!1})],Va.prototype,"hass",void 0),t([mt({type:Object})],Va.prototype,"servicesConfig",void 0),t([mt({type:String})],Va.prototype,"carVin",void 0),t([mt({type:String})],Va.prototype,"carLockEntity",void 0),t([mt({type:Boolean})],Va.prototype,"darkMode",void 0),t([vt()],Va.prototype,"subcardType",void 0),t([vt()],Va.prototype,"serviceData",void 0),Va=t([pt("remote-control")],Va);const Ba=window.loadCardHelpers?window.loadCardHelpers():void 0;let Ra=class extends dt{constructor(){super(...arguments),this.vehicleEntities={},this.additionalCards={},this.activeCardType=null,this.lockAttributesVisible=!1,this.windowAttributesVisible=!1,this.doorsAttributesVisible=!1,this.chargingInfoVisible=!1}static async getConfigElement(){return await Promise.resolve().then((function(){return il})),document.createElement("vehicle-info-card-editor")}get isCharging(){var t;return this.getEntityAttribute(null===(t=this.vehicleEntities.rangeElectric)||void 0===t?void 0:t.entity_id,"chargingactive")}get carVinNumber(){return this.config.entity?this.getEntityAttribute(this.config.entity,"vin"):""}get isDark(){return this.hass.themes.darkMode}static get styles(){return ce}async setConfig(t){var e,i,a;if(!t)throw new Error("Invalid configuration");this.config=Object.assign({},t);for(const t of Yt)this.config[t.config]&&this.createCards(this.config[t.config],t.type);if(this.config.device_tracker){const t={type:"map",default_zoom:null===(e=this.config.map_popup_config)||void 0===e?void 0:e.default_zoom,hours_to_show:null===(i=this.config.map_popup_config)||void 0===i?void 0:i.hours_to_show,theme_mode:null===(a=this.config.map_popup_config)||void 0===a?void 0:a.theme_mode,entities:[{entity:this.config.device_tracker}]};this.createCards([t],"mapDialog")}}getCardSize(){return 3}firstUpdated(t){super.firstUpdated(t),this.configureAsync()}async configureAsync(){this.vehicleEntities=await Ia(this.hass,this.config),this.requestUpdate()}connectedCallback(){super.connectedCallback()}disconnectedCallback(){super.disconnectedCallback()}async createCards(t,e){if(Ba){const i=await Ba,a=await Promise.all(t.map((async t=>{const e=await i.createCardElement(t);return e.hass=this.hass,e})));this.additionalCards[e]=a}}updated(t){var e;if(super.updated(t),t.has("activeCardType")&&"mapDialog"!==this.activeCardType){const t=null===(e=this.shadowRoot)||void 0===e?void 0:e.querySelector(".card-element");if(!t)return;qa(t,this.toggleCard.bind(this))}}shouldUpdate(t){return!!this.config&&(!!t.has("hass")||Nt(this,t,!1))}render(){if(!this.config||!this.hass)return Z``;const t=this.isDark?"dark":"",e=this.config.name||"";return Z`
+    `}saveConfigChange(t){switch(t){case"preheat_start_departure_time":const e={time:this.preheatConfig.data.time.value};this.callService(t,e);break;case"auxheat_configure":const i=Object.entries(this.auxheatConfig.data.items).reduce(((t,[e,{value:i}])=>(t[e]=i,t)),{}),a=Object.assign({time_selection:this.auxheatConfig.data.time_selection},i);this.callService(t,a);break;case"battery_max_soc_configure":const s={charge_program:this.chargeConfig.data.selected_program,max_soc:this.chargeConfig.data.max_soc.value};this.callService(t,s);break;case"charge_program_configure":const n={charge_program:this.chargeConfig.data.selected_program};this.callService(t,n);break;case"windows_move":const r=Object.entries(this.windowsConfig.data.positions).reduce(((t,[e,{value:i}])=>(t[e]=i,t)),{});this.callService(t,r);break;case"send_route":const o=Object.entries(this.sendRouteConfig.data).reduce(((t,[e,{value:i}])=>(t[e]=i,t)),{});this.callService(t,o)}}handleSendRouteChange(t,e){const i=e.target.value;this.sendRouteConfig.data[t].value=i,this.requestUpdate()}handleChargeProgramChange(t,e){const i=e.target.value;"max_soc"===t?this.chargeConfig.data[t].value=parseInt(i,10):this.chargeConfig.data[t]=parseInt(i,10),this.requestUpdate()}handlePreheatTimeChange(t){const e=t.target.value;this.preheatConfig.data.time.value=parseInt(e,10),this.requestUpdate()}handleAuxheatChange(t,e,i){const a=i.target.value;"time_selection"===t?this.auxheatConfig.data.time_selection=parseInt(a,10):this.auxheatConfig.data[t][e].value=parseInt(a,10),this.requestUpdate()}handleWindowsChange(t,e){this.windowsConfig.data.positions[t].value=e.detail.value,this.requestUpdate()}_handleSubCardClick(t){Xt("light"),this.subcardType=this.subcardType===t?null:t,setTimeout((()=>{var t;const e=null===(t=this.shadowRoot)||void 0===t?void 0:t.querySelectorAll(".control-btn-rounded:not(.active).click-shrink");null==e||e.forEach((t=>{t.classList.remove("fade-in","fade-out","hidden"),null===this.subcardType?(t.classList.add("fade-in"),t.classList.remove("hidden")):(t.classList.add("fade-out"),t.addEventListener("animationend",(()=>{t.classList.add("hidden")}),{once:!0}))}))}),0)}resetConfig(){this.serviceData=Sa(ka),this.requestUpdate()}lockMoreInfo(){Rt(this,"hass-more-info",{entityId:this.carLockEntity})}callService(t,e){Xt("success"),this.hass.callService("mbapi2020",t,Object.assign({vin:this.carVin},e)),this.launchToast()}launchToast(){var t;const e=null===(t=this.shadowRoot)||void 0===t?void 0:t.getElementById("toast");e&&(e.classList.add("show"),setTimeout((()=>{e.classList.remove("show")}),3e3))}};async function Ia(t,e){const i=await t.callWS({type:"config/entity_registry/list"}),a=i.find((t=>t.entity_id===e.entity));if(!a)return{};const s=i.filter((t=>t.device_id===a.device_id)),n={};for(const t of Object.keys(Ht)){const{prefix:e,suffix:i}=Ht[t];if(e){if("soc"===t){const e="State of Charge",i=s.find((t=>t.original_name===e));i&&(n[t]={entity_id:i.entity_id,original_name:i.original_name,unique_id:i.unique_id,device_id:i.device_id})}else if("maxSoc"===t){const e="Max State of Charge",i=s.find((t=>t.original_name===e));i&&(n[t]={entity_id:i.entity_id,original_name:i.original_name,unique_id:i.unique_id,device_id:i.device_id})}const a=s.find((t=>t.entity_id.startsWith(e)&&t.entity_id.endsWith(i)));a&&(n[t]={entity_id:a.entity_id,original_name:a.original_name,unique_id:a.unique_id,device_id:a.device_id})}else{const e=s.find((t=>t.unique_id.endsWith(i)));e&&(n[t]={entity_id:e.entity_id,original_name:e.original_name,device_id:e.device_id})}}return n}function qa(t,e){if(!t)return;let i=null,a=null,s=null,n=null,r=!1;const o=e=>{e.stopImmediatePropagation(),e instanceof TouchEvent?(i=e.touches[0].clientX,a=e.touches[0].clientY):e instanceof MouseEvent&&(i=e.clientX,a=e.clientY),["touchmove","mousemove"].forEach((e=>{t.addEventListener(e,l)})),["touchend","mouseup"].forEach((e=>{t.addEventListener(e,c)}))},l=t=>{null!==i&&null!==a&&(t instanceof TouchEvent?(s=i-t.touches[0].clientX,n=a-t.touches[0].clientY):t instanceof MouseEvent&&(s=i-t.clientX,n=a-t.clientY),null!==s&&null!==n&&Math.abs(s)>1&&Math.abs(n)>1&&(r=!0))},c=o=>{o.stopImmediatePropagation(),["touchmove","mousemove"].forEach((e=>{t.removeEventListener(e,l)})),["touchend","mouseup"].forEach((e=>{t.removeEventListener(e,c)}));const h=t.clientWidth;r&&null!==s&&null!==n&&(Math.abs(s)>Math.abs(n)&&Math.abs(s)>h/3&&(s>0?(t.classList.add("swiping-left"),setTimeout((()=>{e("next"),t.classList.remove("swiping-left")}),300)):(t.classList.add("swiping-right"),setTimeout((()=>{e("prev"),t.classList.remove("swiping-right")}),300))),s=n=i=a=null,r=!1)};["touchstart","mousedown"].forEach((e=>{t.addEventListener(e,o)}))}t([mt({attribute:!1})],Va.prototype,"hass",void 0),t([mt({type:Object})],Va.prototype,"servicesConfig",void 0),t([mt({type:String})],Va.prototype,"carVin",void 0),t([mt({type:String})],Va.prototype,"carLockEntity",void 0),t([vt()],Va.prototype,"subcardType",void 0),t([vt()],Va.prototype,"serviceData",void 0),Va=t([pt("remote-control")],Va);const Ba=window.loadCardHelpers?window.loadCardHelpers():void 0;let Ra=class extends dt{constructor(){super(...arguments),this.vehicleEntities={},this.additionalCards={},this.activeCardType=null,this.lockAttributesVisible=!1,this.windowAttributesVisible=!1,this.doorsAttributesVisible=!1,this.chargingInfoVisible=!1}static async getConfigElement(){return await Promise.resolve().then((function(){return il})),document.createElement("vehicle-info-card-editor")}get isCharging(){var t;return this.getEntityAttribute(null===(t=this.vehicleEntities.rangeElectric)||void 0===t?void 0:t.entity_id,"chargingactive")}get carVinNumber(){return this.config.entity?this.getEntityAttribute(this.config.entity,"vin"):""}get isDark(){return this.hass.themes.darkMode}static get styles(){return ce}async setConfig(t){var e,i,a;if(!t)throw new Error("Invalid configuration");this.config=Object.assign({},t);for(const t of Yt)this.config[t.config]&&this.createCards(this.config[t.config],t.type);if(this.config.device_tracker){const t={type:"map",default_zoom:null===(e=this.config.map_popup_config)||void 0===e?void 0:e.default_zoom,hours_to_show:null===(i=this.config.map_popup_config)||void 0===i?void 0:i.hours_to_show,theme_mode:null===(a=this.config.map_popup_config)||void 0===a?void 0:a.theme_mode,entities:[{entity:this.config.device_tracker}]};this.createCards([t],"mapDialog")}}getCardSize(){return 3}firstUpdated(t){super.firstUpdated(t),this.configureAsync()}async configureAsync(){this.vehicleEntities=await Ia(this.hass,this.config),this.requestUpdate()}connectedCallback(){super.connectedCallback()}disconnectedCallback(){super.disconnectedCallback()}async createCards(t,e){if(Ba){const i=await Ba,a=await Promise.all(t.map((async t=>{const e=await i.createCardElement(t);return e.hass=this.hass,e})));this.additionalCards[e]=a}}updated(t){var e;if(super.updated(t),t.has("activeCardType")&&"mapDialog"!==this.activeCardType){const t=null===(e=this.shadowRoot)||void 0===e?void 0:e.querySelector(".card-element");if(!t)return;qa(t,this.toggleCard.bind(this))}}shouldUpdate(t){return!!this.config&&(!!t.has("hass")||Nt(this,t,!1))}render(){if(!this.config||!this.hass)return Z``;const t=this.isDark?"dark":"",e=this.config.name||"";return Z`
       <ha-card class=${t}>
         ${this._renderHeaderBackground()}
         <header>
@@ -2743,15 +2741,14 @@ function(){function t(t){t.remember("_draggable",this),this.el=t}t.prototype.ini
           <span>${i}</span>
         </div>
       </div>
-    `}_renderServiceControl(){var t;if(!this.config.services)return Z`<hui-warning>Select services to display</hui-warning>`;const e=this.hass,i=this.config.services,a=this.carVinNumber,s=null===(t=this.vehicleEntities.lock)||void 0===t?void 0:t.entity_id;return Z`
-      <div class="default-card">
+    `}_renderServiceControl(){var t;const e=this.hass,i=this.config.services,a=this.carVinNumber,s=null===(t=this.vehicleEntities.lock)||void 0===t?void 0:t.entity_id;return Z`
+      <div class="default-card remote-tab">
         <div class="data-header">Remote control</div>
         <remote-control
           .hass=${e}
           .servicesConfig=${i}
           .carVin=${a}
           .carLockEntity=${s}
-          .darkMode=${this.isDark}
         ></remote-control>
       </div>
     `}_showWarning(t){return Z` <hui-warning>${t}</hui-warning> `}toggleCard(t){var e;Xt("light");const i=null===(e=this.shadowRoot)||void 0===e?void 0:e.querySelector(".card-element");if(this.activeCardType&&i)if("next"===t||"prev"===t){const e=Yt.findIndex((t=>t.type===this.activeCardType)),a="next"===t?(e+1)%Yt.length:(e-1+Yt.length)%Yt.length;i.style.animation="none",setTimeout((()=>{this.activeCardType=Yt[a].type,i.style.animation="fadeIn 0.3s ease"}),300)}else"close"===t&&(this.activeCardType=null)}toggleCardFromButtons(t){Xt("light"),setTimeout((()=>{this.activeCardType=this.activeCardType===t?null:t}),200)}_renderOverviewDataWithSubCard(){const t=this.createDataArray(Qt),e=t=>{if("lockSensor"===t)this.lockAttributesVisible=!this.lockAttributesVisible;else if("windowsClosed"===t)this.windowAttributesVisible=!this.windowAttributesVisible;else{if("doorStatusOverall"!==t)return;this.doorsAttributesVisible=!this.doorsAttributesVisible}},i=t=>{if(["lockSensor","windowsClosed","doorStatusOverall"].includes(t)){return("lockSensor"===t?this.lockAttributesVisible:"windowsClosed"===t?this.windowAttributesVisible:this.doorsAttributesVisible)?"active":""}return"hidden"},a=t=>["lockSensor","windowsClosed","doorStatusOverall"].includes(t)?"lockSensor"===t?this._renderSubCard("lock"):"windowsClosed"===t?this._renderSubCard("window"):this._renderSubCard("door"):null,s=t=>{var e,i;["lockSensor","doorStatusOverall"].includes(t)?this.toggleMoreInfo(null===(e=this.vehicleEntities.lockSensor)||void 0===e?void 0:e.entity_id):this.toggleMoreInfo(null===(i=this.vehicleEntities[t])||void 0===i?void 0:i.entity_id)};return Z`
