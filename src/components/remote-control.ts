@@ -421,15 +421,13 @@ export class RemoteControl extends LitElement {
       return html`
         <div class="items-row">
           <div>${label}</div>
-          <div class="items-control">
-            <ha-control-number-buttons
-              .min=${0}
-              .max=${100}
-              .step=${10}
-              .value=${value}
-              @value-changed=${(e) => this.handleWindowsChange(key, e)}
-            ></ha-control-number-buttons>
-          </div>
+          <ha-control-number-buttons
+            .min=${0}
+            .max=${100}
+            .step=${10}
+            .value=${value}
+            @value-changed=${(e) => this.handleWindowsChange(key, e)}
+          ></ha-control-number-buttons>
         </div>
       `;
     });

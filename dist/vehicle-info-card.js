@@ -2240,8 +2240,8 @@ function(){function t(t){t.remember("_draggable",this),this.el=t}t.prototype.ini
 .service-control {
   display: flex;
   flex-direction: column;
-  margin-top: 1rem;
-  margin-bottom: 1rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 #toast {
@@ -2274,7 +2274,7 @@ function(){function t(t){t.remember("_draggable",this),this.el=t}t.prototype.ini
 }
 
 .head-sub-row.preheat {
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
 }
 
 @media screen and (max-width: 768px) {
@@ -2320,8 +2320,7 @@ function(){function t(t){t.remember("_draggable",this),this.el=t}t.prototype.ini
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  padding: 1rem 0.6rem;
-  margin-top: 0.5rem;
+  margin-top: 1rem;
   height: auto;
 }
 
@@ -2366,7 +2365,6 @@ function(){function t(t){t.remember("_draggable",this),this.el=t}t.prototype.ini
 
 .control-btn-sm {
   padding: 0.5rem !important;
-  border-radius: 8px;
   text-transform: uppercase;
 }
 .control-btn-sm.reset {
@@ -2576,15 +2574,13 @@ function(){function t(t){t.remember("_draggable",this),this.el=t}t.prototype.ini
     `}_renderWindowsControl(){const{windowsConfig:t}=this,e=t.data.positions,i=t.service,a=Object.entries(e).map((([t,{label:e,value:i}])=>Z`
         <div class="items-row">
           <div>${e}</div>
-          <div class="items-control">
-            <ha-control-number-buttons
-              .min=${0}
-              .max=${100}
-              .step=${10}
-              .value=${i}
-              @value-changed=${e=>this.handleWindowsChange(t,e)}
-            ></ha-control-number-buttons>
-          </div>
+          <ha-control-number-buttons
+            .min=${0}
+            .max=${100}
+            .step=${10}
+            .value=${i}
+            @value-changed=${e=>this.handleWindowsChange(t,e)}
+          ></ha-control-number-buttons>
         </div>
       `));return Z`
       <div class="sub-row">${a}</div>
