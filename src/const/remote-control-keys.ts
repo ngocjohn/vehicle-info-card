@@ -3,7 +3,7 @@ export const servicesCtrl = {
   charge: { name: 'Charge program', icon: 'mdi:ev-station' },
   doorsLock: { name: 'Security', icon: 'mdi:key-chain' },
   engine: { name: 'Engine control', icon: 'mdi:engine' },
-  preheat: { name: 'Preheat settings', icon: 'mdi:car-seat-heater' },
+  preheat: { name: 'Pre-conditioning', icon: 'mdi:car-seat-heater' },
   sendRoute: { name: 'Send route', icon: 'mdi:map-marker-path' },
   sigPos: { name: 'Signal position', icon: 'mdi:bugle' },
   sunroof: { name: 'Sunroof', icon: 'mdi:window-open' },
