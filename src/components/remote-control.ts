@@ -1,6 +1,6 @@
 import { LitElement, html, TemplateResult, css, CSSResultGroup, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { HomeAssistant, fireEvent, LovelaceCardConfig } from 'custom-card-helpers';
+import { HomeAssistant, fireEvent, forwardHaptic } from 'custom-card-helpers';
 import { ServicesConfig } from '../types';
 
 import { cloneDeep } from '../utils/helpers';
@@ -17,7 +17,6 @@ export class RemoteControl extends LitElement {
   @property({ type: Object }) servicesConfig?: ServicesConfig;
   @property({ type: String }) carVin!: string;
   @property({ type: String }) carLockEntity!: string;
-  @property({ type: Boolean }) darkMode!: boolean;
 
   @state() private subcardType: string | null = null;
   @state() private serviceData = cloneDeep(Srvc.serviceData);
@@ -57,21 +56,6 @@ export class RemoteControl extends LitElement {
 
   static get styles(): CSSResultGroup {
     return [styles, mainstyle];
-  }
-
-  protected updated(changedProperties: PropertyValues): void {
-    super.updated(changedProperties);
-    if (changedProperties.has('darkMode')) {
-      this.updateCSSVariables();
-    }
-  }
-
-  private updateCSSVariables(): void {
-    if (this.darkMode) {
-      this.style.setProperty('--remote-control-btn-color', '#292929');
-    } else {
-      this.style.setProperty('--remote-control-btn-color', '#eeeeee');
-    }
   }
 
   protected render(): TemplateResult {
@@ -156,7 +140,7 @@ export class RemoteControl extends LitElement {
   }
 
   private _renderResetBtn(): TemplateResult {
-    return html` <div class="control-btn-sm reset click-shrink" @click=${() => this.resetConfig()}>
+    return html` <div class="control-btn-sm click-shrink" @click=${() => this.resetConfig()}>
       <ha-icon icon="mdi:restore"></ha-icon><span>RESET</span>
     </div>`;
   }
@@ -180,28 +164,16 @@ export class RemoteControl extends LitElement {
     const { sendRouteConfig } = this;
     const data = sendRouteConfig.data;
 
-    const sampleData = {
-      data: {
-        title: { label: 'Title', value: 'Brandenburger Tor' },
-        latitude: { label: 'Latitude', value: 52.5163 },
-        longitude: { label: 'Longitude', value: 13.3777 },
-        city: { label: 'City', value: 'Berlin' },
-        postcode: { label: 'Postcode', value: '10117' },
-        street: { label: 'Street', value: 'Pariser Platz' },
-      },
-    };
-
-    const setSampleData = () => {
-      this.sendRouteConfig.data = cloneDeep(sampleData.data);
-      this.requestUpdate();
-    };
-
-    const formElements = Object.entries(data).map(([key, { label, value }]) => {
+    const formElements = Object.entries(data).map(([key, { label, value, placeholder }]) => {
       return html`
         <div class="items-row">
           <div>${label}</div>
           <div class="items-control">
-            <ha-textfield .value=${String(value)} @input=${(e) => this.handleSendRouteChange(key, e)}></ha-textfield>
+            <ha-textfield
+              .value=${String(value)}
+              .placeholder=${placeholder}
+              @input=${(e) => this.handleSendRouteChange(key, e)}
+            ></ha-textfield>
           </div>
         </div>
       `;
@@ -212,9 +184,6 @@ export class RemoteControl extends LitElement {
 
       <div class="head-sub-row">
         ${this._renderResetBtn()}
-        <div class="control-btn-sm click-shrink" @click=${setSampleData}>
-          <ha-icon icon="mdi:file-document-edit"></ha-icon><span>Sample</span>
-        </div>
         ${Object.entries(sendRouteConfig.service).map(([key, data]) => {
           return this._renderServiceBtn(key, data);
         })}
@@ -231,17 +200,15 @@ export class RemoteControl extends LitElement {
       <div class="items-row">
         <div>Departure Time</div>
         <div class="items-control">
-          <div class="time-form">
-            <input
-              type="number"
-              min="0"
-              max="1439"
-              step="1"
-              .value=${String(time.value)}
-              @change=${this.handlePreheatTimeChange}
-            />
-            <span>min</span>
-          </div>
+          <input
+            type="number"
+            min="0"
+            max="1439"
+            step="1"
+            .value=${String(time.value)}
+            @change=${this.handlePreheatTimeChange}
+          />
+          <span>min</span>
         </div>
       </div>
     `;
@@ -298,7 +265,7 @@ export class RemoteControl extends LitElement {
           .max=${100}
           .step=${10}
           .value=${maxSoc.value}
-          @value-changed=${(e) => this.handleChargeProgramChange('max_soc', e)}
+          @value-changed=${(e: Event) => this.handleChargeProgramChange('max_soc', e)}
         ></ha-control-number-buttons>
 
         </ha-select>
@@ -306,8 +273,7 @@ export class RemoteControl extends LitElement {
     `;
 
     return html`
-      <div class="sub-row">${selectChargeProgram}</div>
-      <div class="sub-row">${maxSocConfig}</div>
+      <div class="sub-row">${selectChargeProgram}${maxSocConfig}</div>
       ${this._renderResetBtn()}
       <div class="head-sub-row">
         ${Object.entries(services).map(([key, data]) => {
@@ -546,6 +512,7 @@ export class RemoteControl extends LitElement {
   }
 
   private _handleSubCardClick(type: string): void {
+    forwardHaptic('light');
     this.subcardType = this.subcardType === type ? null : type;
 
     setTimeout(() => {
@@ -584,6 +551,7 @@ export class RemoteControl extends LitElement {
   }
 
   private callService(service: string, data?: any): void {
+    forwardHaptic('success');
     this.hass.callService('mbapi2020', service, {
       vin: this.carVin,
       ...data,

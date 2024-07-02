@@ -544,22 +544,18 @@ export class VehicleCard extends LitElement {
   }
 
   private _renderServiceControl(): TemplateResult | void {
-    if (!this.config.services) {
-      return html`<hui-warning>Select services to display</hui-warning>`;
-    }
     const hass = this.hass;
     const serviceControl = this.config.services;
     const carVin = this.carVinNumber;
     const carLockEntity = this.vehicleEntities.lock?.entity_id;
     return html`
-      <div class="default-card">
+      <div class="default-card remote-tab">
         <div class="data-header">Remote control</div>
         <remote-control
           .hass=${hass}
           .servicesConfig=${serviceControl}
           .carVin=${carVin}
           .carLockEntity=${carLockEntity}
-          .darkMode=${this.isDark}
         ></remote-control>
       </div>
     `;

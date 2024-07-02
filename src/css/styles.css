@@ -351,6 +351,11 @@ header h1 {
   margin-block: 0px;
   font-weight: 400;
 }
+.default-card.remote-tab {
+  border: none !important;
+  background: none !important;
+  padding: 0px;
+}
 .data-row {
   display: flex;
   justify-content: space-between;

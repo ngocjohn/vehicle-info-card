@@ -93,12 +93,12 @@ export const serviceData = {
       DATA_SEND_ROUTE: { command: 'send_route', icon: 'mdi:map-marker', label: 'send' },
     },
     data: {
-      title: { label: 'Title', value: '' },
-      latitude: { label: 'Latitude', value: 0 },
-      longitude: { label: 'Longitude', value: 0 },
-      city: { label: 'City', value: '' },
-      postcode: { label: 'Postcode', value: '' },
-      street: { label: 'Street', value: '' },
+      title: { label: 'Title', value: '', placeholder: 'Brandenburger Tor' },
+      latitude: { label: 'Latitude', value: '', placeholder: '52.5163' },
+      longitude: { label: 'Longitude', value: '', placeholder: '13.3777' },
+      city: { label: 'City', value: '', placeholder: 'Berlin' },
+      postcode: { label: 'Postcode', value: '', placeholder: '10117' },
+      street: { label: 'Street', value: '', placeholder: 'Pariser Platz' },
     },
   },
 

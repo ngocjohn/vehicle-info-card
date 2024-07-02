@@ -44,7 +44,7 @@
     grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
   }
   .head-sub-row.preheat {
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   }
 }
 
@@ -92,8 +92,7 @@
   align-items: center;
   justify-content: center;
   padding: 0.5rem 1rem;
-  background-color: var(--remote-control-btn-color);
-  box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 10px 0px;
+  background-color: var(--ha-card-background, var(--card-background-color, #fff));
   box-sizing: border-box;
   border-radius: var(--ha-card-border-radius, 12px);
   border-width: var(--ha-card-border-width, 1px);
@@ -113,8 +112,8 @@
 }
 
 .control-btn-rounded.active {
-  background-color: rgba(var(--rgb-primary-color), 0.4);
   color: var(--primary-color);
+  background-color: rgba(var(--rgb-primary-color), 0.1);
 }
 
 .control-btn-rounded ha-icon {
@@ -131,11 +130,13 @@
   padding: 0;
   opacity: 0.5;
 }
+
 .sub-row {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
+
 .items-row {
   display: inline-flex;
   width: 100%;
@@ -160,12 +161,11 @@
 }
 
 .items-control input[type='number'] {
-  height: 2.5rem;
-  width: fit-content;
-  background-color: var(--remote-control-btn-color);
+  width: -moz-fit-content;
+  width: max-content;
+  background-color: var(--card-background-color);
   color: var(--primary-text-color);
-  border-radius: 4px;
-  padding: 0 0.5rem;
+  padding: 0.5rem 1rem;
   border: none;
   text-align: center;
   font-size: 1rem;
@@ -177,10 +177,4 @@
   justify-content: center;
   align-items: center;
   cursor: pointer;
-}
-
-.value {
-  min-width: 2rem;
-  text-align: center;
-  font-size: 0.9rem;
 }
