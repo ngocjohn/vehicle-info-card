@@ -4,3 +4,5 @@ package-lock.json
 /dev
 .vscode
 src/utils/testdata.ts
+all-keys.asc
+all-secret-keys.asc
