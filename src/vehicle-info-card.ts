@@ -23,6 +23,7 @@ import {
   defaultConfig,
   EntityConfig,
   VehicleEntities,
+  EcoData,
 } from './types';
 
 import { cardTypes } from './const';
@@ -361,14 +362,14 @@ export class VehicleCard extends LitElement {
   private _renderEcoChart(): TemplateResult | void {
     if (this.activeCardType !== 'ecoCards') return html``;
 
-    const ecoData = {
-      bonusRange: parseFloat(this.getEntityState(this.vehicleEntities.ecoScoreBonusRange?.entity_id)) || 0,
-      acceleration: parseFloat(this.getEntityState(this.vehicleEntities.ecoScoreAcceleraion?.entity_id)) || 0,
-      constant: parseFloat(this.getEntityState(this.vehicleEntities.ecoScoreConstant?.entity_id)) || 0,
-      freeWheel: parseFloat(this.getEntityState(this.vehicleEntities.ecoScoreFreeWheel?.entity_id)) || 0,
-    };
+    const getEcoScore = (entity: any): number => parseFloat(this.getEntityState(entity?.entity_id)) || 0;
 
-    return html`<eco-chart .ecoData=${ecoData}></eco-chart>`;
+    const ecoDataObj = DataKeys.ecoScores.reduce((acc, score) => {
+      acc[score.apexProp] = getEcoScore(this.vehicleEntities[score.key]);
+      return acc;
+    }, {} as EcoData);
+
+    return html`<eco-chart .ecoData=${ecoDataObj}></eco-chart>`;
   }
 
   private _renderButtons(): TemplateResult {

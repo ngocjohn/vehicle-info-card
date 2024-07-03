@@ -42,10 +42,10 @@ export const vehicleWarnings = [
 ];
 
 export const ecoScores = [
-  { key: 'ecoScoreBonusRange', name: 'Bonus range' },
-  { key: 'ecoScoreAcceleraion', name: 'Acceleration' },
-  { key: 'ecoScoreConstant', name: 'Constant' },
-  { key: 'ecoScoreFreeWheel', name: 'Free wheel' },
+  { key: 'ecoScoreBonusRange', name: 'Bonus range', apexProp: 'bonusRange' },
+  { key: 'ecoScoreAcceleraion', name: 'Acceleration', apexProp: 'acceleration' },
+  { key: 'ecoScoreConstant', name: 'Constant', apexProp: 'constant' },
+  { key: 'ecoScoreFreeWheel', name: 'Free wheel', apexProp: 'freeWheel' },
 ];
 
 export const tyrePressures = [

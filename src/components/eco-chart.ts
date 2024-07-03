@@ -1,17 +1,13 @@
 import { LitElement, html, TemplateResult, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
+import type { EcoData } from '../types';
 // Third-party Libraries
 import ApexCharts from 'apexcharts';
 
 @customElement('eco-chart')
 export class EcoChart extends LitElement {
-  @property({ type: Object }) ecoData: {
-    bonusRange: number;
-    acceleration: number;
-    constant: number;
-    freeWheel: number;
-  } = { bonusRange: 0, acceleration: 0, constant: 0, freeWheel: 0 };
+  @property({ type: Object }) ecoData!: EcoData;
 
   @state() private chart: ApexCharts | undefined;
 
@@ -121,8 +117,18 @@ export class EcoChart extends LitElement {
       width: 100%;
       max-height: 350px;
       margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
-        'Open Sans', 'Helvetica Neue', sans-serif !important;
+      font-family:
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        'Segoe UI',
+        Roboto,
+        Oxygen,
+        Ubuntu,
+        Cantarell,
+        'Open Sans',
+        'Helvetica Neue',
+        sans-serif !important;
     }
     .apexcharts-datalabels-group .apexcharts-text {
       font-size: 1.2rem;

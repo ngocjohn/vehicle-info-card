@@ -108,3 +108,10 @@ export interface EntityConfig {
   state?: string;
   active?: boolean;
 }
+
+export interface EcoData {
+  bonusRange: number;
+  acceleration: number;
+  constant: number;
+  freeWheel: number;
+}
