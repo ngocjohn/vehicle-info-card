@@ -105,11 +105,12 @@ export class VehicleCard extends LitElement {
     }
 
     if (this.config.device_tracker) {
+      const { default_zoom, hours_to_show, theme_mode } = this.config.map_popup_config || {};
       const haMapConfig = {
         type: 'map',
-        default_zoom: this.config.map_popup_config?.default_zoom,
-        hours_to_show: this.config.map_popup_config?.hours_to_show,
-        theme_mode: this.config.map_popup_config?.theme_mode,
+        default_zoom: default_zoom,
+        hours_to_show: hours_to_show,
+        theme_mode: theme_mode,
         entities: [
           {
             entity: this.config.device_tracker,
@@ -359,7 +360,7 @@ export class VehicleCard extends LitElement {
     `;
   }
 
-  private _renderEcoChart(): TemplateResult | void {
+  private _renderEcoChart(): TemplateResult {
     if (this.activeCardType !== 'ecoCards') return html``;
 
     const getEcoScore = (entity: any): number => parseFloat(this.getEntityState(entity?.entity_id)) || 0;
@@ -787,7 +788,7 @@ export class VehicleCard extends LitElement {
     return keys.map((config) => this.getEntityInfoByKey(config));
   }
 
-  private getEntityInfoByKey({ key, name, icon, unit, state }: EntityConfig): EntityConfig {
+  private getEntityInfoByKey = ({ key, name, icon, state, unit }: EntityConfig): EntityConfig => {
     const vehicleEntity = this.vehicleEntities[key];
 
     if (!vehicleEntity) {
@@ -829,7 +830,7 @@ export class VehicleCard extends LitElement {
         const timeStartValue = timeStartState ? convertMinutes(parseInt(timeStartState)) : '';
         return { key, name: 'Driving time', icon: 'mdi:clock', state: timeStartValue, unit };
       }
-      return { key, name, icon, state: '', unit };
+      return { key, name, icon, state, unit };
     }
 
     const defaultInfo = {
@@ -959,7 +960,7 @@ export class VehicleCard extends LitElement {
         }
         return defaultInfo;
     }
-  }
+  };
 
   private getStateDisplay(entityId: string | undefined): string {
     if (!entityId || !this.hass.states[entityId]) return '';
