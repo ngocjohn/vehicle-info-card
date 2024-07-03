@@ -16,7 +16,14 @@ import {
 } from 'custom-card-helpers';
 
 // Custom Types and Constants
-import { ExtendedThemes, VehicleCardConfig, defaultConfig, EntityConfig, VehicleEntities } from './types';
+import {
+  ExtendedThemes,
+  AdditionalFormatMethods,
+  VehicleCardConfig,
+  defaultConfig,
+  EntityConfig,
+  VehicleEntities,
+} from './types';
 
 import { cardTypes } from './const';
 import * as DataKeys from './const/data-keys';
@@ -45,7 +52,7 @@ export class VehicleCard extends LitElement {
     return document.createElement('vehicle-info-card-editor');
   }
 
-  @property({ attribute: false }) public hass!: HomeAssistant & { themes: ExtendedThemes };
+  @property({ attribute: false }) public hass!: HomeAssistant & { themes: ExtendedThemes } & AdditionalFormatMethods;
   @property({ type: Object }) private config!: VehicleCardConfig;
 
   @state() private vehicleEntities: VehicleEntities = {};
@@ -286,45 +293,38 @@ export class VehicleCard extends LitElement {
   private _renderRangeInfo(): TemplateResult | void {
     if (this.chargingInfoVisible) return;
 
-    const { fuelLevel, rangeLiquid, rangeElectric, soc } = this.vehicleEntities;
+    const getEntityInfo = (entity: string | undefined) => {
+      if (!entity) return null;
+      const state = parseInt(this.getEntityState(entity));
+      const stateDisplay = this.getStateDisplay(entity);
+      return { state, stateDisplay };
+    };
 
-    const fuelInfo = this.getEntityInfo(fuelLevel?.entity_id);
-    const rangeLiquidInfo = this.getEntityInfo(rangeLiquid?.entity_id);
-    const rangeElectricInfo = this.getEntityInfo(rangeElectric?.entity_id);
-    const socInfo = this.getEntityInfo(soc?.entity_id);
+    const entities = ['fuelLevel', 'rangeLiquid', 'rangeElectric', 'soc'];
+    const [fuelInfo, rangeLiquidInfo, rangeElectricInfo, socInfo] = entities.map((entity) =>
+      getEntityInfo(this.vehicleEntities[entity]?.entity_id),
+    );
 
-    const renderInfoBox = (icon: string, state: string, unit: string, rangeState: string, rangeUnit: string) => html`
+    const renderInfoBox = (icon: string, state: number, fuelInfo: string, rangeInfo: string) => html`
       <div class="info-box">
         <div class="item">
           <ha-icon icon="${icon}"></ha-icon>
-          <div><span>${state} ${unit}</span></div>
+          <div><span>${fuelInfo}</span></div>
         </div>
         <div class="fuel-wrapper">
           <div class="fuel-level-bar" style="width: ${state}%;"></div>
         </div>
         <div class="item">
-          <span>${rangeState} ${rangeUnit}</span>
+          <span>${rangeInfo}</span>
         </div>
       </div>
     `;
 
-    if (fuelInfo.state && rangeLiquidInfo.state) {
-      return renderInfoBox(
-        'mdi:gas-station',
-        fuelInfo.state,
-        fuelInfo.unit,
-        rangeLiquidInfo.state,
-        rangeLiquidInfo.unit,
-      );
-    } else if (rangeElectricInfo.state && socInfo.state) {
-      return renderInfoBox(
-        'mdi:ev-station',
-        socInfo.state,
-        socInfo.unit,
-        rangeElectricInfo.state,
-        rangeElectricInfo.unit,
-      );
-    }
+    return fuelInfo?.state && rangeLiquidInfo?.state
+      ? renderInfoBox('mdi:gas-station', fuelInfo.state, fuelInfo.stateDisplay, rangeLiquidInfo.stateDisplay)
+      : rangeElectricInfo?.state && socInfo?.state
+        ? renderInfoBox('mdi:ev-station', socInfo.state, socInfo.stateDisplay, rangeElectricInfo.stateDisplay)
+        : undefined;
   }
 
   private _renderHeaderSlides(): TemplateResult {
@@ -961,8 +961,8 @@ export class VehicleCard extends LitElement {
   }
 
   private getStateDisplay(entityId: string | undefined): string {
-    if (!entityId || !this.hass.states[entityId] || !this.hass.locale) return '';
-    return computeStateDisplay(this.hass.localize, this.hass.states[entityId], this.hass.locale);
+    if (!entityId || !this.hass.states[entityId]) return '';
+    return this.hass.formatEntityState(this.hass.states[entityId]);
   }
 
   private getSecondaryInfo(cardType: string): string {
@@ -973,9 +973,7 @@ export class VehicleCard extends LitElement {
         return this.getStateDisplay(odometer?.entity_id);
 
       case 'vehicleCards':
-        const lockedDisplayText =
-          StateMapping.lockStates[this.getEntityState(lockSensor?.entity_id)] || StateMapping.lockStates['4'];
-        return lockedDisplayText;
+        return this.getStateDisplay(lockSensor?.entity_id);
 
       case 'ecoCards':
         return this.getStateDisplay(ecoScoreBonusRange?.entity_id);
@@ -990,12 +988,6 @@ export class VehicleCard extends LitElement {
   }
 
   /* --------------------------- GET INFO FROM HASS --------------------------- */
-
-  private getEntityInfo(entity: string): { state: string; unit: string } {
-    const state = this.getEntityState(entity);
-    const unit = this.getEntityAttribute(entity, 'unit_of_measurement');
-    return { state, unit };
-  }
 
   private getBooleanState(entity: string | undefined): boolean {
     if (!entity || !this.hass.states[entity]) return false;

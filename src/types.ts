@@ -1,5 +1,5 @@
 import { ActionConfig, LovelaceCard, LovelaceCardConfig, LovelaceCardEditor, Themes } from 'custom-card-helpers';
-
+import { HassEntity, HassEntities } from 'home-assistant-js-websocket';
 declare global {
   interface HTMLElementTagNameMap {
     'vehicle-info-card-editor': LovelaceCardEditor;
@@ -12,6 +12,12 @@ declare global {
  */
 export interface ExtendedThemes extends Themes {
   darkMode: boolean;
+}
+
+export interface AdditionalFormatMethods {
+  formatEntityState: (stateObj: HassEntity) => string;
+  formatAttributeName: (entityId: string, attribute: string) => string;
+  formatEntityAttributeValue: (entityId: string, attribute: string) => string;
 }
 
 /**
