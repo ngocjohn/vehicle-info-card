@@ -14,3 +14,27 @@ export function formatTimestamp(timestamp: string | number | Date) {
 export function cloneDeep<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj));
 }
+
+export function convertMinutes(totalMinutes: number) {
+  const days = Math.floor(totalMinutes / 1440); // There are 1440 minutes in a day
+  const hours = Math.floor((totalMinutes % 1440) / 60); // Remaining minutes divided by 60 gives hours
+  const minutes = totalMinutes % 60; // Remaining minutes
+
+  let result = '';
+
+  if (days > 0) {
+    result += `${days} day${days > 1 ? 's' : ''}`;
+  }
+
+  if (hours > 0) {
+    if (result) result += ' ';
+    result += `${hours} h${hours > 1 ? 'rs' : ''}`;
+  }
+
+  if (minutes > 0) {
+    if (result) result += ' ';
+    result += `${minutes} min`;
+  }
+
+  return result;
+}

@@ -10,6 +10,7 @@ export const tripOverview = [
 
 export const tripFromReset = [
   { key: 'distanceReset', name: 'Distance traveled' },
+  { key: 'drivenTimeReset' },
   { key: 'averageSpeedReset', icon: 'mdi:speedometer', name: 'Average speed' },
   { key: 'liquidConsumptionReset', name: 'Consumption reset' },
   { key: 'electricConsumptionReset', name: 'Consumption reset' },
@@ -17,6 +18,7 @@ export const tripFromReset = [
 
 export const tripFromStart = [
   { key: 'distanceStart', name: 'Distance traveled' },
+  { key: 'drivenTimeStart' },
   { key: 'averageSpeedStart', icon: 'mdi:speedometer-slow', name: 'Average speed' },
   { key: 'liquidConsumptionStart', name: 'Consumption start' },
   { key: 'electricConsumptionStart', name: 'Consumption start' },

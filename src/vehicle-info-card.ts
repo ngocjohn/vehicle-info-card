@@ -33,7 +33,7 @@ import './components/eco-chart';
 import './components/remote-control';
 
 // Functions
-import { formatTimestamp } from './utils/helpers';
+import { formatTimestamp, convertMinutes } from './utils/helpers';
 import { getVehicleEntities, setupCardListeners } from './utils/get-device-entities';
 
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
@@ -813,6 +813,20 @@ export class VehicleCard extends LitElement {
           active: activeState,
           unit,
         };
+      } else if (key === 'drivenTimeReset') {
+        const timeResetState = this.getEntityAttribute(
+          this.vehicleEntities.distanceReset?.entity_id,
+          'drivenTimeReset',
+        );
+        const timeResetValue = timeResetState ? convertMinutes(parseInt(timeResetState)) : '';
+        return { key, name: 'Driving time', icon: 'mdi:clock', state: timeResetValue, unit };
+      } else if (key === 'drivenTimeStart') {
+        const timeStartState = this.getEntityAttribute(
+          this.vehicleEntities.distanceStart?.entity_id,
+          'drivenTimeStart',
+        );
+        const timeStartValue = timeStartState ? convertMinutes(parseInt(timeStartState)) : '';
+        return { key, name: 'Driving time', icon: 'mdi:clock', state: timeStartValue, unit };
       }
       return { key, name, icon, state: '', unit };
     }
