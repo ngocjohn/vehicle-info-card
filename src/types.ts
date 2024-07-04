@@ -1,5 +1,5 @@
 import { ActionConfig, LovelaceCard, LovelaceCardConfig, LovelaceCardEditor, Themes } from 'custom-card-helpers';
-import { HassEntity, HassEntities } from 'home-assistant-js-websocket';
+import { HassEntity } from 'home-assistant-js-websocket';
 declare global {
   interface HTMLElementTagNameMap {
     'vehicle-info-card-editor': LovelaceCardEditor;

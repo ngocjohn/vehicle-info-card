@@ -12,7 +12,6 @@ import {
   HomeAssistant,
   LovelaceCardConfig,
   LovelaceCardEditor,
-  computeStateDisplay,
 } from 'custom-card-helpers';
 
 // Custom Types and Constants
