@@ -59,11 +59,10 @@ export class VehicleCard extends LitElement {
   @state() private vehicleEntities: VehicleEntities = {};
   @state() private additionalCards: { [key: string]: any[] } = {};
   @state() private activeCardType: string | null = null;
-
-  @property({ type: Boolean }) private lockAttributesVisible = false;
-  @property({ type: Boolean }) private windowAttributesVisible = false;
-  @property({ type: Boolean }) private doorsAttributesVisible = false;
-  @property({ type: Boolean }) private chargingInfoVisible = false;
+  @state() private lockAttributesVisible!: boolean;
+  @state() private windowAttributesVisible!: boolean;
+  @state() private doorsAttributesVisible!: boolean;
+  @state() private chargingInfoVisible!: boolean;
 
   private get isCharging() {
     return this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'chargingactive');
