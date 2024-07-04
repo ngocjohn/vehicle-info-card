@@ -355,8 +355,4 @@ Below is the configuration replaced entities card for `Vehicle status` button.
 
 [https://github.com/ngocjohn/](https://github.com/ngocjohn/)
 
-<a href="https://buymeacoffee.com/ngocjohn" target="_blank">
-  <img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 24px;width: auto;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" >
-</a>
-
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
