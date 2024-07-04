@@ -1,6 +1,11 @@
-name: Validate
+name: HACS
 
 on:
+  push:
+    paths:
+      - 'dist/**'
+  release:
+    types: [published]
   schedule:
     - cron: '0 0 * * *'
 
