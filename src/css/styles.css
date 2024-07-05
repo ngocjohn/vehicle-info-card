@@ -337,6 +337,19 @@ header h1 {
   position: relative;
 }
 
+.default-card:not(:first-child) {
+  animation: slideUpDown 0.3s linear;
+}
+
+@keyframes slideUpDown {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
 .default-card:last-child {
   margin-bottom: 0;
 }
