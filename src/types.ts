@@ -1,9 +1,9 @@
-import { ActionConfig, LovelaceCard, LovelaceCardConfig, LovelaceCardEditor, Themes } from 'custom-card-helpers';
+import { ActionConfig, LovelaceCardConfig, LovelaceCardEditor, Themes, HomeAssistant } from 'custom-card-helpers';
 import { HassEntity } from 'home-assistant-js-websocket';
+
 declare global {
   interface HTMLElementTagNameMap {
     'vehicle-info-card-editor': LovelaceCardEditor;
-    'hui-error-card': LovelaceCard;
   }
 }
 
@@ -14,30 +14,28 @@ export interface ExtendedThemes extends Themes {
   darkMode: boolean;
 }
 
-export interface AdditionalFormatMethods {
+/**
+ * HomeAssistantExtended extends the existing HomeAssistant interface with additional properties.
+ */
+
+export type HomeAssistantExtended = HomeAssistant & {
+  themes: ExtendedThemes;
   formatEntityState: (stateObj: HassEntity) => string;
   formatAttributeName: (entityId: string, attribute: string) => string;
   formatEntityAttributeValue: (entityId: string, attribute: string) => string;
-}
+};
 
 /**
  * Configuration interface for the Vehicle Card.
  */
 export interface VehicleCardConfig extends LovelaceCardConfig {
-  type: string;
   name?: string;
   entity?: string;
   device_tracker?: string;
   google_api_key?: string;
   images?: string[];
-  show_slides?: boolean;
-  show_map?: boolean;
-  show_buttons?: boolean;
-  show_background?: boolean;
-  enable_map_popup?: boolean;
-  enable_services_control?: boolean;
-  services?: ServicesConfig;
-  map_popup_config?: MapPopupConfig;
+  services: ServicesConfig;
+  map_popup_config: MapPopupConfig;
   vehicle_card?: LovelaceCardConfig[];
   trip_card?: LovelaceCardConfig[];
   eco_card?: LovelaceCardConfig[];
@@ -47,23 +45,32 @@ export interface VehicleCardConfig extends LovelaceCardConfig {
   double_tap_action?: ActionConfig;
 }
 
+export interface ShowOptions extends VehicleCardConfig {
+  show_slides: boolean;
+  show_map: boolean;
+  show_buttons: boolean;
+  show_background: boolean;
+  enable_map_popup: boolean;
+  enable_services_control: boolean;
+}
+
 export interface MapPopupConfig {
   hours_to_show?: number;
   default_zoom?: number;
   theme_mode?: 'dark' | 'light' | 'auto';
 }
 
-export interface ServicesConfig {
-  auxheat?: boolean;
-  charge?: boolean;
-  doorsLock?: boolean;
-  engine?: boolean;
-  preheat?: boolean;
-  sendRoute?: boolean;
-  sigPos?: boolean;
-  sunroof?: boolean;
-  windows?: boolean;
-}
+export type ServicesConfig = {
+  auxheat: boolean;
+  charge: boolean;
+  doorsLock: boolean;
+  engine: boolean;
+  preheat: boolean;
+  sendRoute: boolean;
+  sigPos: boolean;
+  sunroof: boolean;
+  windows: boolean;
+};
 
 export const defaultConfig: Partial<VehicleCardConfig> = {
   type: 'custom:vehicle-info-card',
@@ -100,14 +107,14 @@ export interface VehicleEntity {
   translation_key?: string;
 }
 
-export interface EntityConfig {
+export type EntityConfig = {
   key: string;
   name?: string;
   icon?: string;
   unit?: string;
   state?: string;
   active?: boolean;
-}
+};
 
 export interface EcoData {
   bonusRange: number;
