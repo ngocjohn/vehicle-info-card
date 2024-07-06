@@ -99,13 +99,13 @@ export interface VehicleEntities {
   [key: string]: VehicleEntity;
 }
 
-export interface VehicleEntity {
+export type VehicleEntity = {
   entity_id: string;
   original_name: string;
   device_id?: string;
   unique_id?: string;
   translation_key?: string;
-}
+};
 
 export type EntityConfig = {
   key: string;
