@@ -250,7 +250,8 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
     const device_trackers = Object.keys(this.hass.states).filter((entity) => entity.startsWith('device_tracker'));
 
-    return html` <ha-textfield
+    return html`
+      <ha-textfield
         label="Name (Optional)"
         .value=${this._name}
         .configValue=${'name'}
@@ -290,7 +291,19 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         .value=${this._google_api_key}
         .configValue=${'google_api_key'}
         @input=${this._valueChanged}
-      ></ha-textfield>`;
+      ></ha-textfield>
+      <ha-select
+        label="Theme mode"
+        .value=${this._config?.theme}
+        .configValue=${'card_theme'}
+        @selected=${this._valueChanged}
+        @closed=${(ev) => ev.stopPropagation()}
+      >
+        <mwc-list-item value="auto">Auto</mwc-list-item>
+        <mwc-list-item value="dark">Dark</mwc-list-item>
+        <mwc-list-item value="light">Light</mwc-list-item>
+      </ha-select>
+    `;
   }
 
   private _renderImageConfig(): TemplateResult {
@@ -493,6 +506,12 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           ...this._config.map_popup_config,
           [configValue]: newValue,
         },
+      };
+    } else if (configValue === 'card_theme') {
+      newValue = target.value;
+      this._config = {
+        ...this._config,
+        theme: newValue,
       };
     } else {
       newValue = target.checked !== undefined ? target.checked : target.value;
