@@ -45,6 +45,10 @@ export interface VehicleCardConfig extends LovelaceCardConfig {
   double_tap_action?: ActionConfig;
 }
 
+export interface ThemesConfig extends VehicleCardConfig {
+  theme?: 'auto' | 'light' | 'dark';
+}
+
 export interface ShowOptions extends VehicleCardConfig {
   show_slides: boolean;
   show_map: boolean;
