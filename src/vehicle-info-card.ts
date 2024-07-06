@@ -9,15 +9,13 @@ import {
   formatNumber,
   forwardHaptic,
   hasConfigOrEntityChanged,
-  HomeAssistant,
   LovelaceCardConfig,
   LovelaceCardEditor,
 } from 'custom-card-helpers';
 
 // Custom Types and Constants
 import {
-  ExtendedThemes,
-  AdditionalFormatMethods,
+  HomeAssistantExtended as HomeAssistant,
   VehicleCardConfig,
   defaultConfig,
   EntityConfig,
@@ -25,13 +23,13 @@ import {
   EcoData,
 } from './types';
 
-import { cardTypes } from './const';
 import * as DataKeys from './const/data-keys';
 import * as StateMapping from './const/state-mapping';
+import { cardTypes } from './const/data-keys';
 
 // Styles and Assets
-import styles from './css/styles.css';
 import { amgBlack, amgWhite, tyreBg } from './const/imgconst';
+import styles from './css/styles.css';
 
 // Components
 import './components/map-card';
@@ -52,7 +50,7 @@ export class VehicleCard extends LitElement {
     return document.createElement('vehicle-info-card-editor');
   }
 
-  @property({ attribute: false }) public hass!: HomeAssistant & { themes: ExtendedThemes } & AdditionalFormatMethods;
+  @property({ attribute: false }) public hass!: HomeAssistant;
   @property({ type: Object }) private config!: VehicleCardConfig;
 
   @state() private vehicleEntities: VehicleEntities = {};
@@ -63,9 +61,10 @@ export class VehicleCard extends LitElement {
   @state() private doorsAttributesVisible!: boolean;
   @state() private chargingInfoVisible!: boolean;
 
-  private get isCharging() {
-    return this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'chargingactive');
-  }
+  private isCharging = true;
+  // private get isCharging(): boolean {
+  //   return this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'chargingactive');
+  // }
 
   private get carVinNumber(): string {
     if (!this.config.entity) return '';
@@ -103,7 +102,7 @@ export class VehicleCard extends LitElement {
     }
 
     if (this.config.device_tracker) {
-      const { default_zoom, hours_to_show, theme_mode } = this.config.map_popup_config || {};
+      const { default_zoom, hours_to_show, theme_mode } = this.config.map_popup_config;
       const haMapConfig = {
         type: 'map',
         default_zoom: default_zoom,
@@ -603,7 +602,6 @@ export class VehicleCard extends LitElement {
 
   private _renderOverviewDataWithSubCard(): TemplateResult {
     const overViewData = this.createDataArray(DataKeys.vehicleOverview);
-
     const toggleAttributes = (key: string) => {
       if (key === 'lockSensor') {
         this.lockAttributesVisible = !this.lockAttributesVisible;
@@ -712,13 +710,14 @@ export class VehicleCard extends LitElement {
   }
 
   private getEntityTypeId(attributeType: 'lock' | 'window' | 'door'): string | undefined {
+    const { lockSensor, windowsClosed } = this.vehicleEntities;
     switch (attributeType) {
       case 'lock':
-        return this.vehicleEntities.lockSensor?.entity_id;
+        return lockSensor?.entity_id;
       case 'window':
-        return this.vehicleEntities.windowsClosed?.entity_id;
+        return windowsClosed?.entity_id;
       case 'door':
-        return this.vehicleEntities.lockSensor?.entity_id;
+        return lockSensor?.entity_id;
     }
   }
 
@@ -1030,7 +1029,7 @@ export class VehicleCard extends LitElement {
 (window as any).customCards = (window as any).customCards || [];
 (window as any).customCards.push({
   type: 'vehicle-info-card',
-  name: 'Vehicle Card',
+  name: 'Vehicle Info Card',
   preview: true,
   description: 'A custom card to display vehicle data with a map and additional cards.',
   documentationURL: 'https://github.com/ngocjohn/vehicle-info-card?tab=readme-ov-file#configuration',

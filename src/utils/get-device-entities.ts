@@ -1,5 +1,5 @@
 import { HomeAssistant } from 'custom-card-helpers';
-import { VehicleEntities } from '../types';
+import { VehicleEntities, VehicleEntity } from '../types';
 import { combinedFilters } from '../const';
 
 /**
@@ -9,66 +9,44 @@ import { combinedFilters } from '../const';
  */
 
 export async function getVehicleEntities(hass: HomeAssistant, config: { entity?: string }): Promise<VehicleEntities> {
-  const allEntities = await hass.callWS<
-    { entity_id: string; device_id: string; original_name: string; unique_id: string; translation_key: string }[]
-  >({
+  const allEntities = await hass.callWS<Required<VehicleEntity>[]>({
     type: 'config/entity_registry/list',
   });
-
   const carEntity = allEntities.find((e) => e.entity_id === config.entity);
   if (!carEntity) {
     return {};
   }
-
   const deviceEntities = allEntities.filter((e) => e.device_id === carEntity.device_id);
 
   const entityIds: VehicleEntities = {};
 
   for (const entityName of Object.keys(combinedFilters)) {
     const { prefix, suffix } = combinedFilters[entityName];
-    if (!prefix) {
-      const entity = deviceEntities.find((e) => e.unique_id.endsWith(suffix));
-      if (entity) {
-        entityIds[entityName] = {
-          entity_id: entity.entity_id,
-          original_name: entity.original_name,
-          device_id: entity.device_id,
-        };
-      }
-    } else {
-      if (entityName === 'soc') {
-        const socName = 'State of Charge';
-        const entity = deviceEntities.find((e) => e.original_name === socName);
-        if (entity) {
-          entityIds[entityName] = {
-            entity_id: entity.entity_id,
-            original_name: entity.original_name,
-            unique_id: entity.unique_id,
-            device_id: entity.device_id,
-          };
-        }
-      } else if (entityName === 'maxSoc') {
-        const maxSocName = 'Max State of Charge';
-        const entity = deviceEntities.find((e) => e.original_name === maxSocName);
-        if (entity) {
-          entityIds[entityName] = {
-            entity_id: entity.entity_id,
-            original_name: entity.original_name,
-            unique_id: entity.unique_id,
-            device_id: entity.device_id,
-          };
-        }
-      }
 
-      const entity = deviceEntities.find((e) => e.entity_id.startsWith(prefix) && e.entity_id.endsWith(suffix));
+    if (entityName === 'soc' || entityName === 'maxSoc') {
+      const specialName = entityName === 'soc' ? 'State of Charge' : 'Max State of Charge';
+      const entity = deviceEntities.find((e) => e.original_name === specialName);
       if (entity) {
         entityIds[entityName] = {
           entity_id: entity.entity_id,
           original_name: entity.original_name,
-          unique_id: entity.unique_id,
-          device_id: entity.device_id,
         };
       }
+      continue;
+    }
+
+    const entity = deviceEntities.find((e) => {
+      if (prefix) {
+        return e.entity_id.startsWith(prefix) && e.entity_id.endsWith(suffix);
+      }
+      return e.unique_id.endsWith(suffix);
+    });
+
+    if (entity) {
+      entityIds[entityName] = {
+        entity_id: entity.entity_id,
+        original_name: entity.original_name,
+      };
     }
   }
   return entityIds;
