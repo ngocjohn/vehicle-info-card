@@ -24,9 +24,9 @@ ha-card {
   width: 100%;
   height: auto;
   padding: 1rem;
-  background-color: #eeeeee;
+  background-color: var(--secondary-background-color, #eeeeee);
 }
-ha-card.dark {
+ha-card.--dark {
   background-color: #0c0c0c;
 }
 
@@ -93,7 +93,7 @@ header h1 {
   width: 100%;
   height: fit-content;
   gap: 1rem;
-  opacity: 0.8;
+  /* opacity: 0.8; */
   /* text-transform: capitalize; */
 }
 

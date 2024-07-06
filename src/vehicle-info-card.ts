@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { LitElement, html, TemplateResult, PropertyValues, CSSResultGroup } from 'lit';
 import { customElement, property, state } from 'lit/decorators';
+import { classMap } from 'lit/directives/class-map.js';
 
 // Custom Helpers
 import {
@@ -61,10 +62,11 @@ export class VehicleCard extends LitElement {
   @state() private doorsAttributesVisible!: boolean;
   @state() private chargingInfoVisible!: boolean;
 
-  private isCharging = true;
-  // private get isCharging(): boolean {
-  //   return this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'chargingactive');
-  // }
+  @state() private foregroundColor: string = '';
+
+  private get isCharging(): boolean {
+    return this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'chargingactive');
+  }
 
   private get carVinNumber(): string {
     if (!this.config.entity) return '';
@@ -190,10 +192,9 @@ export class VehicleCard extends LitElement {
       return html``;
     }
 
-    const isDark = this.isDark ? 'dark' : '';
     const name = this.config.name || '';
     return html`
-      <ha-card class=${isDark}>
+      <ha-card class=${this.computeClasses()}>
         ${this._renderHeaderBackground()}
         <header>
           <h1>${name}</h1>
@@ -563,7 +564,13 @@ export class VehicleCard extends LitElement {
   private _showWarning(warning: string): TemplateResult {
     return html` <hui-warning>${warning}</hui-warning> `;
   }
+  /* --------------------------- ADDITIONAL METHODS --------------------------- */
 
+  private computeClasses() {
+    return classMap({
+      '--dark': this.isDark,
+    });
+  }
   /* -------------------------------------------------------------------------- */
   /* ADDED CARD FUNCTIONALITY                                                   */
   /* -------------------------------------------------------------------------- */
