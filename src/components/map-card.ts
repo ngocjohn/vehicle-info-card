@@ -99,10 +99,11 @@ export class VehicleMap extends LitElement {
           height: 100%;
           width: 100%;
           background: transparent !important;
-          mask-image: linear-gradient(to right, transparent 0%, black 25%, black 90%, transparent 100%),
-            linear-gradient(to bottom, transparent 20%, black 35%, black 90%, transparent 100%);
+          mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%),
+            linear-gradient(to bottom, transparent 10%, black 20%, black 90%, transparent 100%);
           mask-composite: intersect;
         }
+
         .marker {
           position: relative;
           width: 46px;
@@ -111,6 +112,7 @@ export class VehicleMap extends LitElement {
         .marker.dark {
           filter: brightness(0.5);
         }
+
         .dot {
           position: absolute;
           width: 14px;
