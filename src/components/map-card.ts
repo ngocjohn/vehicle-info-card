@@ -1,7 +1,8 @@
-import { LitElement, html, css, TemplateResult, CSSResultGroup } from 'lit';
+import { LitElement, html, css, TemplateResult, PropertyValues, CSSResultGroup } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
-import { HomeAssistant } from 'custom-card-helpers';
+import { HomeAssistantExtended as HomeAssistant } from '../types';
+import { VehicleCardConfig } from '../types';
 
 import L from 'leaflet';
 import 'leaflet-providers/leaflet-providers.js';
@@ -20,9 +21,7 @@ interface Address {
 @customElement('vehicle-map')
 export class VehicleMap extends LitElement {
   @property({ attribute: false }) hass!: HomeAssistant;
-  @property({ type: String }) deviceTracker = '';
-  @property({ type: Boolean }) darkMode = false;
-  @property({ type: Boolean }) popup = false;
+  @property({ type: Object }) config!: VehicleCardConfig;
 
   @state() private map: L.Map | null = null;
   @state() private marker: L.Marker | null = null;
@@ -34,18 +33,29 @@ export class VehicleMap extends LitElement {
   @state() private enableAdress = false;
   @state() private apiKey = '';
 
+  private get darkMode(): boolean {
+    if (this.config?.selected_theme?.mode === 'dark') {
+      return true;
+    } else if (this.config?.selected_theme?.mode === 'light') {
+      return false;
+    }
+    return this.hass.themes.darkMode;
+  }
+
   firstUpdated(): void {
     this.setEntityAttribute();
   }
 
-  updated(changedProperties: Map<string | number | symbol, unknown>): void {
+  updated(changedProperties: PropertyValues): void {
     if (changedProperties.has('darkMode')) {
       this.updateCSSVariables();
+      this.updateMap();
     }
   }
 
   setEntityAttribute(): void {
-    const deviceTracker = this.hass.states[this.deviceTracker];
+    if (!this.config.device_tracker) return;
+    const deviceTracker = this.hass.states[this.config.device_tracker];
     if (deviceTracker) {
       this.lat = deviceTracker.attributes.latitude;
       this.lon = deviceTracker.attributes.longitude;
@@ -211,7 +221,7 @@ export class VehicleMap extends LitElement {
     // Add marker to map
     this.marker = L.marker([this.lat, this.lon], { icon: customIcon }).addTo(this.map);
     // Add click event listener to marker
-    if (this.popup) {
+    if (this.config.enable_map_popup) {
       this.marker.on('click', () => {
         this.togglePopup();
       });
