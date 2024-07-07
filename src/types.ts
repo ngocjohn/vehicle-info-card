@@ -45,6 +45,7 @@ export type HomeAssistantExtended = HomeAssistant & {
  * Configuration interface for the Vehicle Card.
  */
 export interface VehicleCardConfig extends LovelaceCardConfig {
+  type: string;
   name?: string;
   entity?: string;
   device_tracker?: string;
@@ -64,7 +65,7 @@ export interface VehicleCardConfig extends LovelaceCardConfig {
 
 export interface ThemesConfig {
   theme: string;
-  mode: 'auto' | 'dark' | 'light';
+  mode: 'system' | 'dark' | 'light';
 }
 
 export interface ShowOptions extends VehicleCardConfig {

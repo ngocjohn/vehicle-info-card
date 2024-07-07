@@ -12,6 +12,7 @@ import {
   hasConfigOrEntityChanged,
   LovelaceCardConfig,
   LovelaceCardEditor,
+  applyThemesOnElement,
 } from 'custom-card-helpers';
 
 // Custom Types and Constants
@@ -62,8 +63,6 @@ export class VehicleCard extends LitElement {
   @state() private doorsAttributesVisible!: boolean;
   @state() private chargingInfoVisible!: boolean;
 
-  @state() private foregroundColor: string = '';
-
   private get isCharging(): boolean {
     return this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'chargingactive');
   }
@@ -74,6 +73,11 @@ export class VehicleCard extends LitElement {
   }
 
   private get isDark(): boolean {
+    if (this.config?.selected_theme?.mode === 'dark') {
+      return true;
+    } else if (this.config?.selected_theme?.mode === 'light') {
+      return false;
+    }
     return this.hass.themes.darkMode;
   }
 
@@ -118,6 +122,9 @@ export class VehicleCard extends LitElement {
       };
       this.createCards([haMapConfig], 'mapDialog');
     }
+    if (this.config.selected_theme) {
+      this.applyTheme(this.config.selected_theme.theme);
+    }
   }
 
   public getCardSize(): number {
@@ -127,6 +134,9 @@ export class VehicleCard extends LitElement {
   protected firstUpdated(changedProperties: PropertyValues) {
     super.firstUpdated(changedProperties);
     this.configureAsync();
+    if (this.config.selected_theme) {
+      this.applyTheme(this.config.selected_theme.theme);
+    }
   }
 
   private async configureAsync(): Promise<void> {
@@ -173,12 +183,13 @@ export class VehicleCard extends LitElement {
 
   // https://lit.dev/docs/components/lifecycle/#reactive-update-cycle-performing
   protected shouldUpdate(changedProps: PropertyValues): boolean {
-    if (!this.config) {
+    if (!this.config || !this.hass) {
       return false;
     }
-    if (changedProps.has('hass')) {
+    if (changedProps.has('hass') || changedProps.has('config')) {
       return true;
     }
+
     return hasConfigOrEntityChanged(this, changedProps, false);
   }
 
@@ -343,15 +354,13 @@ export class VehicleCard extends LitElement {
     if (!config.device_tracker && config.show_map) {
       return this._showWarning('No device_tracker entity provided.');
     }
-    const darkMode = this.isDark;
+
     return html`
       <div id="map-box">
         <vehicle-map
           .hass=${hass}
-          .darkMode=${darkMode}
+          .config=${config}
           .apiKey=${this.config.google_api_key || ''}
-          .deviceTracker=${config.device_tracker || ''}
-          .popup=${config.enable_map_popup || false}
           @toggle-map-popup=${() => (this.activeCardType = 'mapDialog')}
         ></vehicle-map>
       </div>
@@ -568,9 +577,50 @@ export class VehicleCard extends LitElement {
 
   private computeClasses() {
     return classMap({
-      '--dark': this.isDark,
+      '--dark': this.isDark && this.config.selected_theme?.theme === 'Default',
     });
   }
+
+  private applyTheme(theme: string): void {
+    if (!this.hass) return;
+    if (theme === 'Default') {
+      this.resetTheme();
+      return;
+    }
+
+    const themeData = this.hass.themes.themes[theme];
+    if (themeData) {
+      // Filter out only top-level properties for CSS variables and the modes property
+      const filteredThemeData = Object.keys(themeData)
+        .filter((key) => key !== 'modes')
+        .reduce(
+          (obj, key) => {
+            obj[key] = themeData[key];
+            return obj;
+          },
+          {} as Record<string, string>,
+        );
+
+      // Get the current mode (light or dark)
+      const mode = this.isDark ? 'dark' : 'light';
+      const modeData = themeData.modes && typeof themeData.modes === 'object' ? themeData.modes[mode] : {};
+
+      // Merge the top-level and mode-specific variables
+      const allThemeData = { ...filteredThemeData, ...modeData };
+
+      applyThemesOnElement(
+        this,
+        { themes: { [theme]: allThemeData }, default_theme: this.hass.themes.default_theme },
+        theme,
+        false,
+      );
+    }
+  }
+
+  private resetTheme(): void {
+    applyThemesOnElement(this, this.hass.themes, this.hass.themes.default_theme, false);
+  }
+
   /* -------------------------------------------------------------------------- */
   /* ADDED CARD FUNCTIONALITY                                                   */
   /* -------------------------------------------------------------------------- */
