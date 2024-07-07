@@ -146,6 +146,8 @@ export class VehicleCard extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
+    this._editorEventsHandler = this._editorEventsHandler.bind(this);
+    window.addEventListener('editor-event', this._editorEventsHandler);
     if (process.env.ROLLUP_WATCH === 'true') {
       window.BenzCard = this;
     }
@@ -155,6 +157,7 @@ export class VehicleCard extends LitElement {
     if (process.env.ROLLUP_WATCH === 'true' && window.BenzCard === this) {
       window.BenzCard = undefined;
     }
+    window.removeEventListener('editor-event', this._editorEventsHandler);
     super.disconnectedCallback();
   }
 
@@ -1081,6 +1084,13 @@ export class VehicleCard extends LitElement {
     const formattedMaxPressure = maxPressure % 1 === 0 ? maxPressure.toFixed(0) : maxPressure.toFixed(1);
     return `${formattedMinPressure} - ${formattedMaxPressure} ${tireUnit}`;
   }
+
+  /* ----------------------------- EVENTS HANDLERS ---------------------------- */
+  private _editorEventsHandler(e: Event): void {
+    const cardType = (e as CustomEvent).detail;
+    this.activeCardType = cardType;
+    this.requestUpdate(); // Trigger a re-render
+  }
 }
 
 (window as any).customCards = (window as any).customCards || [];
@@ -1095,5 +1105,8 @@ export class VehicleCard extends LitElement {
 declare global {
   interface Window {
     BenzCard: VehicleCard | undefined;
+  }
+  interface HTMLElementTagNameMap {
+    'vehicle-info-card': VehicleCard;
   }
 }
