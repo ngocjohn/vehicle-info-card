@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { LitElement, html, TemplateResult, css, CSSResultGroup } from 'lit';
-import { HomeAssistant, fireEvent, LovelaceCardEditor, LovelaceCardConfig } from 'custom-card-helpers';
+import { fireEvent, LovelaceCardEditor, LovelaceCardConfig } from 'custom-card-helpers';
 import YAML from 'yaml';
-import { VehicleCardConfig } from './types';
+import { HomeAssistantExtended as HomeAssistant, VehicleCardConfig } from './types';
 import { servicesCtrl } from './const/remote-control-keys';
 import { customElement, property, state } from 'lit/decorators';
 import { CARD_VERSION } from './const';
@@ -131,7 +131,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     return html`
       <div class="base-config">
         ${this._renderFormSelectors()} ${this._renderCardEditorButtons()} ${this._renderMapPopupConfig()}
-        ${this._renderImageConfig()} ${this._renderServicesConfig()}
+        ${this._renderImageConfig()} ${this._renderServicesConfig()} ${this._renderThemesConfig()}
 
         <div class="switches">${this._renderSwitches()}</div>
         <div class="note">
@@ -250,7 +250,8 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
     const device_trackers = Object.keys(this.hass.states).filter((entity) => entity.startsWith('device_tracker'));
 
-    return html` <ha-textfield
+    return html`
+      <ha-textfield
         label="Name (Optional)"
         .value=${this._name}
         .configValue=${'name'}
@@ -290,7 +291,44 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         .value=${this._google_api_key}
         .configValue=${'google_api_key'}
         @input=${this._valueChanged}
-      ></ha-textfield>`;
+      ></ha-textfield>
+    `;
+  }
+
+  private _renderThemesConfig(): TemplateResult {
+    if (!this.hass) return html``;
+    const customThemes = Object.keys(this.hass.themes.themes);
+    const themesOpts = ['Default', ...customThemes];
+    return html`
+      <div class="panel-container">
+        <ha-expansion-panel .open=${false} .outlined=${true}>
+          <h3 slot="header"><ha-icon icon="mdi:theme-light-dark"></ha-icon> Theme configuration</h3>
+          <div class="theme-config">
+            <ha-select
+              label="Theme"
+              .value=${this._config?.selected_theme?.theme || 'Default'}
+              .configValue=${'theme'}
+              @selected=${this._valueChanged}
+              @closed=${(ev) => ev.stopPropagation()}
+            >
+              ${themesOpts.map((theme) => html`<mwc-list-item value=${theme}>${theme}</mwc-list-item> `)}
+            </ha-select>
+
+            <ha-select
+              label="Theme mode"
+              .value=${this._config?.selected_theme?.mode || 'system'}
+              .configValue=${'mode'}
+              @selected=${this._valueChanged}
+              @closed=${(ev) => ev.stopPropagation()}
+            >
+              <mwc-list-item value="system">System</mwc-list-item>
+              <mwc-list-item value="dark">Dark</mwc-list-item>
+              <mwc-list-item value="light">Light</mwc-list-item>
+            </ha-select>
+          </div>
+        </ha-expansion-panel>
+      </div>
+    `;
   }
 
   private _renderImageConfig(): TemplateResult {
@@ -491,6 +529,15 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         ...this._config,
         map_popup_config: {
           ...this._config.map_popup_config,
+          [configValue]: newValue,
+        },
+      };
+    } else if (['theme', 'mode'].includes(configValue)) {
+      newValue = target.value;
+      this._config = {
+        ...this._config,
+        selected_theme: {
+          ...this._config.selected_theme,
           [configValue]: newValue,
         },
       };

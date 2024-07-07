@@ -1,4 +1,11 @@
-import { ActionConfig, LovelaceCardConfig, LovelaceCardEditor, Themes, HomeAssistant } from 'custom-card-helpers';
+import {
+  ActionConfig,
+  LovelaceCardConfig,
+  LovelaceCardEditor,
+  Themes,
+  HomeAssistant,
+  Theme,
+} from 'custom-card-helpers';
 import { HassEntity } from 'home-assistant-js-websocket';
 
 declare global {
@@ -7,11 +14,20 @@ declare global {
   }
 }
 
-/**
- * ExtendedThemes extends the existing Themes interface with additional properties.
- */
+export interface ModeSpecificTheme {
+  light: Partial<Theme>;
+  dark: Partial<Theme>;
+}
+
+export interface ExtendedTheme extends Theme {
+  modes?: ModeSpecificTheme;
+}
+
 export interface ExtendedThemes extends Themes {
   darkMode: boolean;
+  themes: {
+    [key: string]: ExtendedTheme;
+  };
 }
 
 /**
@@ -29,6 +45,7 @@ export type HomeAssistantExtended = HomeAssistant & {
  * Configuration interface for the Vehicle Card.
  */
 export interface VehicleCardConfig extends LovelaceCardConfig {
+  type: string;
   name?: string;
   entity?: string;
   device_tracker?: string;
@@ -36,6 +53,7 @@ export interface VehicleCardConfig extends LovelaceCardConfig {
   images?: string[];
   services: ServicesConfig;
   map_popup_config: MapPopupConfig;
+  selected_theme: ThemesConfig;
   vehicle_card?: LovelaceCardConfig[];
   trip_card?: LovelaceCardConfig[];
   eco_card?: LovelaceCardConfig[];
@@ -43,6 +61,11 @@ export interface VehicleCardConfig extends LovelaceCardConfig {
   tap_action?: ActionConfig;
   hold_action?: ActionConfig;
   double_tap_action?: ActionConfig;
+}
+
+export interface ThemesConfig {
+  theme: string;
+  mode: 'system' | 'dark' | 'light';
 }
 
 export interface ShowOptions extends VehicleCardConfig {
