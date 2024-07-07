@@ -316,12 +316,12 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
             <ha-select
               label="Theme mode"
-              .value=${this._config?.selected_theme?.mode || 'auto'}
+              .value=${this._config?.selected_theme?.mode || 'system'}
               .configValue=${'mode'}
               @selected=${this._valueChanged}
               @closed=${(ev) => ev.stopPropagation()}
             >
-              <mwc-list-item value="auto">Auto</mwc-list-item>
+              <mwc-list-item value="system">System</mwc-list-item>
               <mwc-list-item value="dark">Dark</mwc-list-item>
               <mwc-list-item value="light">Light</mwc-list-item>
             </ha-select>
