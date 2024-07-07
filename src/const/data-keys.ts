@@ -4,24 +4,28 @@ export const cardTypes = [
     name: 'Trip data',
     icon: 'mdi:map-marker-path',
     config: 'trip_card',
+    editor: 'isTripCardEditor',
   },
   {
     type: 'vehicleCards',
     name: 'Vehicle status',
     icon: 'mdi:car-info',
     config: 'vehicle_card',
+    editor: 'isVehicleCardEditor',
   },
   {
     type: 'ecoCards',
     name: 'Eco display',
     icon: 'mdi:leaf',
     config: 'eco_card',
+    editor: 'isEcoCardEditor',
   },
   {
     type: 'tyreCards',
     name: 'Tyre pressure',
     icon: 'mdi:tire',
     config: 'tyre_card',
+    editor: 'isTyreCardEditor',
   },
 ];
 
