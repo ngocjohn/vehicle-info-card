@@ -1,18 +1,6 @@
-import {
-  ActionConfig,
-  LovelaceCardConfig,
-  LovelaceCardEditor,
-  Themes,
-  HomeAssistant,
-  Theme,
-} from 'custom-card-helpers';
+// Cutom card helpers:
+import { ActionConfig, LovelaceCardConfig, Themes, HomeAssistant, Theme } from 'custom-card-helpers';
 import { HassEntity } from 'home-assistant-js-websocket';
-
-declare global {
-  interface HTMLElementTagNameMap {
-    'vehicle-info-card-editor': LovelaceCardEditor;
-  }
-}
 
 export interface ModeSpecificTheme {
   light: Partial<Theme>;
@@ -95,6 +83,7 @@ export type ServicesConfig = {
   windows: boolean;
 };
 
+// Default configuration for the Vehicle Card.
 export const defaultConfig: Partial<VehicleCardConfig> = {
   type: 'custom:vehicle-info-card',
   name: 'Mercedes Benz',
