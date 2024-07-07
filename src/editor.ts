@@ -132,8 +132,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       <div class="base-config">
         ${this._renderFormSelectors()} ${this._renderCardEditorButtons()} ${this._renderMapPopupConfig()}
         ${this._renderImageConfig()} ${this._renderServicesConfig()} ${this._renderThemesConfig()}
-
-        <div class="switches">${this._renderSwitches()}</div>
+        ${this._renderSwitches()}
         <div class="note">
           <p>version: ${CARD_VERSION}</p>
         </div>
@@ -190,7 +189,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _renderSwitches(): TemplateResult {
-    return html` <ha-formfield .label=${`Show slides`}>
+    const switches = html` <ha-formfield .label=${`Show slides`}>
         <ha-switch
           .disabled=${!this._config?.images || this._config?.images.length === 0}
           .checked=${this._show_slides !== false}
@@ -238,6 +237,15 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           @change=${this._valueChanged}
         ></ha-switch>
       </ha-formfield>`;
+    return html` <div class="panel-container">
+      <ha-expansion-panel .open=${false} .outlined=${true}>
+        <h3 slot="header"><ha-icon icon="mdi:toggle-switch"></ha-icon> Show options</h3>
+        <div class="card-config">
+          <ha-alert alert-type="info">Enable or disable the options to show in card.</ha-alert>
+          <div class="switches">${switches}</div>
+        </div>
+      </ha-expansion-panel>
+    </div>`;
   }
 
   private _renderFormSelectors(): TemplateResult {
@@ -303,7 +311,8 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       <div class="panel-container">
         <ha-expansion-panel .open=${false} .outlined=${true}>
           <h3 slot="header"><ha-icon icon="mdi:theme-light-dark"></ha-icon> Theme configuration</h3>
-          <div class="theme-config">
+          <ha-alert alert-type="info"> Choose the theme and mode for the card.</ha-alert>
+          <div class="card-config">
             <ha-select
               label="Theme"
               .value=${this._config?.selected_theme?.theme || 'Default'}
@@ -343,11 +352,11 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       <ha-expansion-panel .expanded=${false} .outlined=${true}>
         <h3 slot="header"><ha-icon icon="mdi:code-brackets"></ha-icon> Images configuration</h3>
 
-        <div class="code-editor">
-          <ha-alert alert-type="info"
-            >There is no need to add a '-' for each line. Each line will be treated as a separate URL
-            automatically.</ha-alert
-          >
+        <ha-alert alert-type="info"
+          >There is no need to add a '-' for each line. Each line will be treated as a separate URL
+          automatically.</ha-alert
+        >
+        <div class="card-config">
           <ha-code-editor
             autofocus
             autocomplete-entities
@@ -370,7 +379,10 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
             <ha-icon icon="mdi:map"></ha-icon>
             Map Popup configuration
           </h3>
-          <div class="map-config">
+          <ha-alert alert-type="info">
+            Configure the map popup settings. The map popup will show the location of the vehicle on the map.
+          </ha-alert>
+          <div class="card-config">
             <ha-textfield
               label="Hours to show"
               type="number"
@@ -562,16 +574,17 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   static styles: CSSResultGroup = css`
     .card-config {
       width: 100%;
+      margin-block: 0.5rem;
     }
     .panel-container {
-      margin-top: 16px;
+      margin-top: 1rem;
     }
 
     .switches {
+      margin: 0.5rem;
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      margin-block: 2rem;
+      grid-gap: 1rem;
     }
     ha-select,
     ha-textfield {
