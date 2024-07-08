@@ -9,3 +9,4 @@ all-secret-keys.asc
 scripts/
 vehicle-info-card.code-workspace
 src/test/
+.env
