@@ -24,11 +24,12 @@ ha-card {
   width: 100%;
   height: auto;
   padding: 1rem;
-  background-color: var(--secondary-background-color, #eeeeee);
+  background-color: var(--card-background-color);
 }
-ha-card.--dark {
+
+/* ha-card.--dark {
   background-color: #0c0c0c;
-}
+} */
 
 header h1 {
   color: var(--ha-card-header-color, --primary-text-color);
@@ -176,7 +177,7 @@ header h1 {
   gap: 1rem;
   align-items: center;
   padding: 0.5rem 1rem;
-  background: var(--ha-card-background, var(--card-background-color, #fff));
+  background: var(--secondary-background-color, var(--card-background-color, #fff));
   box-shadow: var(--ha-card-box-shadow, none);
   box-sizing: border-box;
   border-radius: var(--ha-card-border-radius, 12px);
@@ -325,7 +326,7 @@ header h1 {
 .default-card {
   align-items: center;
   padding: 0.5rem 1rem;
-  background: var(--ha-card-background, var(--card-background-color, #fff));
+  background: var(--ha-card-background-color, var(--secondary-background-color));
   box-shadow: var(--ha-card-box-shadow, none);
   box-sizing: border-box;
   border-radius: var(--ha-card-border-radius, 12px);
