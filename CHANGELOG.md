@@ -1,8 +1,22 @@
 # CHANGELOG.md
 
+## [1.0.6](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.0.6) (2024-07-08)
+
+This update focuses on enhancing the visual aspects of the card and includes minor changes in the editor to improve user experience.
+
+### Features
+
+- **Theme Picker:** Added a new option to select a theme for the card. Users can now set the theme independently of system settings, providing more flexibility and customization.
+
+### Updates
+
+- **New Statuses:** Added two new statuses to the trip info card:
+  - **Driving Time from Reset:** Displays the driving time since the last reset.
+  - **Driving Time from Start:** Shows the driving time from the start of the trip.
+
 ## [1.0.5](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.0.5) (2024-07-02)
 
-### Features:
+### Features
 
 - **New Remote Control Card**:
   - Introduced a new remote control card encompassing all available services offered by the integration.
@@ -11,7 +25,7 @@
   - Each service is represented by its own button, providing further configurations specific to that service.
   - For each service, the VIN/FIN is automatically set from the car entity ID.
 
-### Updates:
+### Updates
 
 - **Trip Card Enhancement**:
   - Added the AdBlue level to the trip card status summary for more comprehensive trip information.
