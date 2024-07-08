@@ -10,3 +10,4 @@ scripts/
 vehicle-info-card.code-workspace
 src/test/
 .env
+.DS_Store
