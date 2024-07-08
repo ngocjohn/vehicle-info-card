@@ -128,7 +128,7 @@ export class VehicleCard extends LitElement {
   }
 
   public getCardSize(): number {
-    return 3;
+    return 5;
   }
 
   protected firstUpdated(changedProperties: PropertyValues) {
@@ -363,6 +363,7 @@ export class VehicleCard extends LitElement {
         <vehicle-map
           .hass=${hass}
           .config=${config}
+          .darkMode=${this.isDark}
           .apiKey=${this.config.google_api_key || ''}
           @toggle-map-popup=${() => (this.activeCardType = 'mapDialog')}
         ></vehicle-map>
