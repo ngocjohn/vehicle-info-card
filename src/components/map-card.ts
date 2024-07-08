@@ -46,6 +46,9 @@ export class VehicleMap extends LitElement {
           --vic-map-tiles-dark-filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3)
             brightness(0.7);
           --vic-map-tiles-filter: var(--vic-map-tiles-light-filter);
+          --vic-marker-dark-filter: brightness(1) contrast(1.2) saturate(6) brightness(1.3);
+          --vic-marker-light-filter: none;
+          --vic-maker-filter: var(--vic-marker-light-filter);
           --vic-map-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%),
             linear-gradient(to bottom, transparent 10%, black 20%, black 90%, transparent 100%);
         }
@@ -80,9 +83,7 @@ export class VehicleMap extends LitElement {
           position: relative;
           width: 46px;
           height: 46px;
-        }
-        .marker.dark {
-          filter: brightness(0.5);
+          filter: var(--vic-marker-filter);
         }
 
         .dot {
@@ -110,7 +111,7 @@ export class VehicleMap extends LitElement {
           opacity: 0.6;
         }
         .marker:hover .dot {
-          transform: scale(1.2);
+          filter: brightness(1.2);
         }
         .leaflet-control-container {
           display: none;
@@ -183,9 +184,11 @@ export class VehicleMap extends LitElement {
   private updateCSSVariables(): void {
     if (this.darkMode) {
       this.style.setProperty('--vic-map-marker-color', 'var(--accent-color)');
+      this.style.setProperty('--vic-marker-filter', 'var(--vic-marker-dark-filter)');
       this.style.setProperty('--vic-map-tiles-filter', 'var(--vic-map-tiles-dark-filter)');
     } else {
       this.style.setProperty('--vic-map-marker-color', 'var(--primary-color)');
+      this.style.setProperty('--vic-marker-filter', 'var(--vic-marker-light-filter)');
       this.style.setProperty('--vic-map-tiles-filter', 'var(--vic-map-tiles-light-filter)');
     }
   }
