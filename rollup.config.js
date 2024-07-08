@@ -13,15 +13,17 @@ import filesize from 'rollup-plugin-filesize';
 import replace from '@rollup/plugin-replace';
 import { version } from './package.json';
 import { logCardInfo } from './rollup.config.dev.mjs';
+import dotenv from 'dotenv';
 
+dotenv.config();
 const dev = process.env.ROLLUP_WATCH;
 const port = process.env.PORT || 8235;
-
 const currentVersion = dev ? 'DEVELOPMENT' : `v${version}`;
 const custombanner = logCardInfo(currentVersion);
 
 const replaceOpts = {
   'process.env.ROLLUP_WATCH': JSON.stringify(dev),
+  'process.env.MAPBOX_API': JSON.stringify(process.env.MAPBOX_API),
   preventAssignment: true,
 };
 
