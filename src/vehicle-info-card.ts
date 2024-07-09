@@ -850,175 +850,214 @@ export class VehicleCard extends LitElement {
     const vehicleEntity = this.vehicleEntities[key];
 
     if (!vehicleEntity) {
-      if (key === 'selectedProgram') {
-        return {
-          key,
-          name: 'Program',
-          icon: 'mdi:ev-station',
-          state:
-            StateMapping.chargeSelectedProgram[
-              this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'selectedChargeProgram')
-            ],
-          unit,
-        };
-      } else if (key === 'doorStatusOverall') {
-        const doorValue = this.getEntityAttribute(this.vehicleEntities.lockSensor?.entity_id, 'doorStatusOverall');
-        const doorFormatted = StateMapping.doorStatus[doorValue] || 'Unknown';
-        const activeState = doorValue === '1' ? true : false;
-        return {
-          key,
-          name: 'Doors',
-          icon: 'mdi:car-door-lock',
-          state: doorFormatted,
-          active: activeState,
-          unit,
-        };
-      } else if (key === 'drivenTimeReset') {
-        const timeResetState = this.getEntityAttribute(
-          this.vehicleEntities.distanceReset?.entity_id,
-          'drivenTimeReset',
-        );
-        const timeResetValue = timeResetState ? convertMinutes(parseInt(timeResetState)) : '';
-        return { key, name: 'Driving time', icon: 'mdi:clock', state: timeResetValue, unit };
-      } else if (key === 'drivenTimeStart') {
-        const timeStartState = this.getEntityAttribute(
-          this.vehicleEntities.distanceStart?.entity_id,
-          'drivenTimeStart',
-        );
-        const timeStartValue = timeStartState ? convertMinutes(parseInt(timeStartState)) : '';
-        return { key, name: 'Driving time', icon: 'mdi:clock', state: timeStartValue, unit };
-      }
-      return { key, name, icon, state, unit };
+      return this.getFallbackEntityInfo({ key, name, icon, state, unit });
     }
 
-    const defaultInfo = {
+    const defaultInfo = this.getDefaultEntityInfo({ key, name, icon, state, unit }, vehicleEntity);
+
+    switch (key) {
+      case 'soc': {
+        return this.getSocInfo(defaultInfo, vehicleEntity);
+      }
+      case 'maxSoc': {
+        return this.getMaxSocInfo(defaultInfo, vehicleEntity);
+      }
+      case 'chargingPower': {
+        return this.getChargingPowerInfo(defaultInfo, vehicleEntity);
+      }
+      case 'parkBrake': {
+        return this.getParkBrakeInfo(defaultInfo, vehicleEntity);
+      }
+
+      case 'windowsClosed': {
+        return this.getWindowsClosedInfo(defaultInfo, vehicleEntity);
+      }
+      case 'ignitionState': {
+        return this.getIgnitionStateInfo(defaultInfo, vehicleEntity);
+      }
+
+      case 'lockSensor': {
+        return this.getLockSensorInfo(defaultInfo, vehicleEntity);
+      }
+
+      case 'starterBatteryState': {
+        return this.getStarterBatteryInfo(defaultInfo, vehicleEntity);
+      }
+      default:
+        return this.getWarningOrDefaultInfo(defaultInfo, key, vehicleEntity);
+    }
+  };
+
+  /* --------------------------- ENTITY INFO BY KEYS -------------------------- */
+
+  private getFallbackEntityInfo = ({ key, name, icon, state, unit }: EntityConfig): EntityConfig => {
+    if (key === 'selectedProgram') {
+      return {
+        key,
+        name: 'Program',
+        icon: 'mdi:ev-station',
+        state:
+          StateMapping.chargeSelectedProgram[
+            this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'selectedChargeProgram')
+          ],
+        unit,
+      };
+    }
+    if (key === 'doorStatusOverall') {
+      const doorValue = this.getEntityAttribute(this.vehicleEntities.lockSensor?.entity_id, 'doorStatusOverall');
+      const doorFormatted = StateMapping.doorStatus[doorValue] || 'Unknown';
+      const activeState = doorValue === '1' ? true : false;
+      return {
+        key,
+        name: 'Doors',
+        icon: 'mdi:car-door-lock',
+        state: doorFormatted,
+        active: activeState,
+        unit,
+      };
+    }
+
+    if (key === 'drivenTimeReset' || key === 'drivenTimeStart') {
+      const entityKey = key === 'drivenTimeReset' ? 'distanceReset' : 'distanceStart';
+      const timeState = this.getEntityAttribute(this.vehicleEntities[entityKey]?.entity_id, key);
+      const timeValue = timeState ? convertMinutes(parseInt(timeState)) : '';
+      return { key, name: 'Driving time', icon: 'mdi:clock', state: timeValue, unit };
+    }
+    return { key, name, icon, state, unit };
+  };
+
+  private getDefaultEntityInfo = ({ key, name, icon, state, unit }: EntityConfig, vehicleEntity: any): EntityConfig => {
+    return {
       key,
       name: name ?? vehicleEntity.original_name,
       icon: icon ?? this.getEntityAttribute(vehicleEntity.entity_id, 'icon'),
       state: state ?? this.getStateDisplay(vehicleEntity.entity_id),
       unit: unit ?? this.getEntityAttribute(vehicleEntity.entity_id, 'unit_of_measurement'),
     };
-
-    switch (key) {
-      case 'soc': {
-        const currentState = this.getEntityState(vehicleEntity.entity_id);
-        const stateValue = currentState ? parseFloat(currentState) : 0;
-        let socIcon: string;
-        if (stateValue < 35) {
-          socIcon = 'mdi:battery-charging-low';
-        } else if (stateValue < 70) {
-          socIcon = 'mdi:battery-charging-medium';
-        } else {
-          socIcon = 'mdi:battery-charging-high';
-        }
-        return { ...defaultInfo, icon: socIcon };
-      }
-      case 'maxSoc': {
-        const maxSocState = this.getEntityState(vehicleEntity.entity_id);
-        const maxSocStateValue = maxSocState ? parseFloat(maxSocState) : 0;
-        const iconValue = Math.round(maxSocStateValue / 10) * 10;
-        const maxSocIcon = `mdi:battery-charging-${iconValue}`;
-
-        return { ...defaultInfo, icon: maxSocIcon };
-      }
-
-      case 'chargingPower': {
-        const powerState = this.getEntityState(vehicleEntity.entity_id);
-        const powerStateValue = powerState ? parseFloat(powerState) : 0;
-        const powerStateUnit = this.getEntityAttribute(vehicleEntity.entity_id, 'unit_of_measurement') || 'kW';
-
-        const powerStateDecimals = formatNumber(powerStateValue, this.hass.locale);
-        const powerStateDislay = powerStateDecimals + ' ' + powerStateUnit;
-
-        return { ...defaultInfo, state: powerStateDislay };
-      }
-
-      case 'parkBrake': {
-        const parkBrakeState = this.getBooleanState(vehicleEntity.entity_id);
-        return {
-          ...defaultInfo,
-          name: name ?? 'Parking brake',
-          state: parkBrakeState ? 'Engaged' : 'Released',
-          active: parkBrakeState,
-        };
-      }
-
-      case 'windowsClosed': {
-        let windowState: string;
-        const windowsState = this.getBooleanState(vehicleEntity.entity_id);
-        if (windowsState) {
-          windowState = 'Closed';
-        } else {
-          const windowAttributeStates: Record<number, any> = {};
-
-          Object.keys(StateMapping.windowAttributes).forEach((attribute) => {
-            const attributeState = this.getEntityAttribute(vehicleEntity.entity_id, attribute);
-            if (attributeState !== undefined && attributeState !== null) {
-              windowAttributeStates[attribute] = attributeState;
-            }
-          });
-
-          const openWindows = Object.keys(windowAttributeStates).filter(
-            (attribute) => windowAttributeStates[attribute] === '0',
-          );
-
-          const totalOpenWindows = openWindows.length;
-          windowState = `${totalOpenWindows} window${totalOpenWindows !== 1 ? 's' : ''} open`;
-        }
-        return {
-          ...defaultInfo,
-          name: name || 'Windows',
-          state: windowState,
-          active: windowsState,
-        };
-      }
-
-      case 'ignitionState': {
-        const shortValue = this.getEntityAttribute(vehicleEntity.entity_id, 'value_short');
-        const realState = this.getEntityState(vehicleEntity.entity_id);
-        const activeState = realState === '0' || realState === '1' ? true : false;
-        return {
-          ...defaultInfo,
-          state: shortValue || 'Unknown',
-          active: activeState,
-        };
-      }
-
-      case 'lockSensor': {
-        const lockState = this.getEntityState(vehicleEntity.entity_id);
-        const lockStateFormatted = StateMapping.lockStates[lockState] || StateMapping.lockStates['4'];
-        const lockIcon = lockState === '2' || lockState === '1' ? 'mdi:lock' : 'mdi:lock-open';
-
-        return {
-          ...defaultInfo,
-          icon: lockIcon,
-          state: lockStateFormatted,
-          active: lockState === '2' || lockState === '1' ? true : false,
-        };
-      }
-
-      case 'starterBatteryState': {
-        const stateValue = this.getEntityState(vehicleEntity.entity_id);
-        const stateFormated = StateMapping.starterBattery[stateValue] || 'Unknown';
-
-        return {
-          ...defaultInfo,
-          state: stateFormated,
-        };
-      }
-      default:
-        if (DataKeys.vehicleWarnings.map((key) => key.key).includes(key)) {
-          const warningState = this.getBooleanState(vehicleEntity.entity_id);
-
-          return {
-            ...defaultInfo,
-            state: warningState ? 'Problem' : 'Ok',
-            active: warningState,
-          };
-        }
-        return defaultInfo;
-    }
   };
+
+  private getSocInfo = (defaultInfo: EntityConfig, vehicleEntity: any): EntityConfig => {
+    const currentState = this.getEntityState(vehicleEntity.entity_id);
+    const stateValue = currentState ? parseFloat(currentState) : 0;
+    let socIcon: string;
+    if (stateValue < 35) {
+      socIcon = 'mdi:battery-charging-low';
+    } else if (stateValue < 70) {
+      socIcon = 'mdi:battery-charging-medium';
+    } else {
+      socIcon = 'mdi:battery-charging-high';
+    }
+    return { ...defaultInfo, icon: socIcon };
+  };
+
+  private getMaxSocInfo = (defaultInfo: EntityConfig, vehicleEntity: any): EntityConfig => {
+    const maxSocState = this.getEntityState(vehicleEntity.entity_id);
+    const maxSocStateValue = maxSocState ? parseFloat(maxSocState) : 0;
+    const iconValue = Math.round(maxSocStateValue / 10) * 10;
+    const maxSocIcon = `mdi:battery-charging-${iconValue}`;
+
+    return { ...defaultInfo, icon: maxSocIcon };
+  };
+
+  private getChargingPowerInfo = (defaultInfo: EntityConfig, vehicleEntity: any): EntityConfig => {
+    const powerState = this.getEntityState(vehicleEntity.entity_id);
+    const powerStateValue = powerState ? parseFloat(powerState) : 0;
+    const powerStateUnit = this.getEntityAttribute(vehicleEntity.entity_id, 'unit_of_measurement') || 'kW';
+
+    const powerStateDecimals = formatNumber(powerStateValue, this.hass.locale);
+    const powerStateDislay = powerStateDecimals + ' ' + powerStateUnit;
+
+    return { ...defaultInfo, state: powerStateDislay };
+  };
+
+  private getParkBrakeInfo = (defaultInfo: EntityConfig, vehicleEntity: any): EntityConfig => {
+    const parkBrakeState = this.getBooleanState(vehicleEntity.entity_id);
+    return {
+      ...defaultInfo,
+      name: 'Parking brake',
+      state: parkBrakeState ? 'Engaged' : 'Released',
+      active: parkBrakeState,
+    };
+  };
+
+  private getWindowsClosedInfo = (defaultInfo: EntityConfig, vehicleEntity: any): EntityConfig => {
+    let windowState: string;
+    const windowsState = this.getBooleanState(vehicleEntity.entity_id);
+    if (windowsState) {
+      windowState = 'Closed';
+    } else {
+      const windowAttributeStates: Record<number, any> = {};
+
+      Object.keys(StateMapping.windowAttributes).forEach((attribute) => {
+        const attributeState = this.getEntityAttribute(vehicleEntity.entity_id, attribute);
+        if (attributeState !== undefined && attributeState !== null) {
+          windowAttributeStates[attribute] = attributeState;
+        }
+      });
+
+      const openWindows = Object.keys(windowAttributeStates).filter(
+        (attribute) => windowAttributeStates[attribute] === '0',
+      );
+
+      const totalOpenWindows = openWindows.length;
+      windowState = `${totalOpenWindows} window${totalOpenWindows !== 1 ? 's' : ''} open`;
+    }
+    return {
+      ...defaultInfo,
+      name: 'Windows',
+      state: windowState,
+      active: windowsState,
+    };
+  };
+
+  private getIgnitionStateInfo = (defaultInfo: EntityConfig, vehicleEntity: any): EntityConfig => {
+    const shortValue = this.getEntityAttribute(vehicleEntity.entity_id, 'value_short');
+    const realState = this.getEntityState(vehicleEntity.entity_id);
+    const activeState = realState === '0' || realState === '1' ? true : false;
+    return {
+      ...defaultInfo,
+      state: shortValue || 'Unknown',
+      active: activeState,
+    };
+  };
+
+  private getLockSensorInfo = (defaultInfo: EntityConfig, vehicleEntity: any): EntityConfig => {
+    const lockState = this.getEntityState(vehicleEntity.entity_id);
+    const lockStateFormatted = StateMapping.lockStates[lockState] || StateMapping.lockStates['4'];
+    const lockIcon = lockState === '2' || lockState === '1' ? 'mdi:lock' : 'mdi:lock-open';
+
+    return {
+      ...defaultInfo,
+      icon: lockIcon,
+      state: lockStateFormatted,
+      active: lockState === '2' || lockState === '1' ? true : false,
+    };
+  };
+
+  private getStarterBatteryInfo = (defaultInfo: EntityConfig, vehicleEntity: any): EntityConfig => {
+    const stateValue = this.getEntityState(vehicleEntity.entity_id);
+    const stateFormated = StateMapping.starterBattery[stateValue] || 'Unknown';
+
+    return {
+      ...defaultInfo,
+      state: stateFormated,
+    };
+  };
+
+  private getWarningOrDefaultInfo = (defaultInfo: EntityConfig, key: string, vehicleEntity: any): EntityConfig => {
+    if (DataKeys.vehicleWarnings.map((key) => key.key).includes(key)) {
+      const warningState = this.getBooleanState(vehicleEntity.entity_id);
+
+      return {
+        ...defaultInfo,
+        state: warningState ? 'Problem' : 'Ok',
+        active: warningState,
+      };
+    }
+    return defaultInfo;
+  };
+
+  /* --------------------- GET ENTITY STATE AND ATTRIBUTES -------------------- */
 
   private getStateDisplay(entityId: string | undefined): string {
     if (!entityId || !this.hass.states[entityId]) return '';
@@ -1046,8 +1085,6 @@ export class VehicleCard extends LitElement {
         return 'Unknown Card';
     }
   }
-
-  /* --------------------------- GET INFO FROM HASS --------------------------- */
 
   private getBooleanState(entity: string | undefined): boolean {
     if (!entity || !this.hass.states[entity]) return false;
