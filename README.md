@@ -16,30 +16,22 @@
 - **Centralized Remote Control**: Offers available remote control functions and settings, all accessible from a single card.
 - **Individual Sub-Card Customization**: Allows customization for each individual sub-card to suit specific needs and preferences.
 
-<div align="center">
+<p align="center">
   <a href="#"> <img src="https://raw.githubusercontent.com/ngocjohn/vehicle-info-card/main/assets/default-card.gif"></a>
-</div>
+</p>
 
 <details>
   <summary>Table of Contents</summary>
-  <ol>
-    <li>
-      <a href="#installation">Installation</a>
-      <ul>
-        <li><a href="#hacs-home-assistant-community-store">HACS</a></li>
-        <li><a href="#manual">Manual</a></li>
-      </ul>
-    </li>
-    <li>
-      <a href="#usage">Usage</a>
-      <ul>
-        <li><a href="#configuration">Configuration</a></li>
-        <li><a href="#options">Options</a></li>
-        <li><a href="#examples">Examples</a></li>
-      </ul>
-    </li>
-    <li><a href="#screenshots">Screenshots</a></li>
-  </ol>
+
+1. [Installation](#installation)
+   - [HACS](#hacs-home-assistant-community-store)
+   - [Manual](#manual)
+2. [Usage](#usage)
+   - [Configuration](#configuration)
+   - [Options](#options)
+   - [Examples](#examples)
+3. [Screenshots](#screenshots)
+
 </details>
 
 ## Installation
@@ -47,7 +39,7 @@
 ### [HACS](https://hacs.xyz) (Home Assistant Community Store)
 
 1. Go to HACS page on your Home Assistant instance
-1. Add this repository via HACS Custom repositories [How to add Custom Repositories](https://hacs.xyz/docs/faq/custom_repositories/)
+2. Add this repository via HACS Custom repositories [How to add Custom Repositories](https://hacs.xyz/docs/faq/custom_repositories/)
 
 ```
 https://github.com/ngocjohn/vehicle-info-card
@@ -64,23 +56,18 @@ https://github.com/ngocjohn/vehicle-info-card
 ### Manual
 
 <details>
-  <summary>Manual instalation</summary>
-  </br>
-  <ol>
-    <li>Download the <a href="https://github.com/ngocjohn/vehicle-info-card/releases/latest">vehicle-info-card.js</a></li>
-    <li>Place the downloaded file on your Home Assistant machine in the <code>config/www</code> folder (when there is no <code>www</code> folder in the folder where your <code>configuration.yaml</code> file is, create it and place the file there)</li>
-    <li>In Home Assistant go to <code>Configuration->Lovelace Dashboards->Resources</code> (When there is no <code>resources</code> tag on the <code>Lovelace Dashboard</code> page, enable advanced mode in your account settings, and retry this step)</li>
-    <li>Add a new resource
-      <ul>
-        <li>Url = <code>/local/vehicle-info-card.js</code></li>
-        <li>Resource type = <code>module</code></li>
-      </ul>
-    </li>
-    <li>Force refresh the Home Assistant page <code>Ctrl</code> + <code>F5</code> / <code>Shift</code> + <code>⌘</code> + <code>R</code></li>
-    <li>Add vehicle-info-card to your page</li>
-  </ol>
+  <summary>Click to expand installation instructions</summary>
+
+1. Download the [vehicle-info-card.js](https://github.com/ngocjohn/vehicle-info-card/releases/latest).
+2. Place the downloaded file on your Home Assistant machine in the `config/www` folder (when there is no `www` folder in the folder where your `configuration.yaml` file is, create it and place the file there).
+3. In Home Assistant go to `Configuration->Lovelace Dashboards->Resources` (When there is no `resources` tag on the `Lovelace Dashboard` page, enable advanced mode in your account settings, and retry this step).
+4. Add a new resource:
+   - Url = `/local/vehicle-info-card.js`
+   - Resource type = `module`
+5. Force refresh the Home Assistant page `Ctrl` + `F5` / `Shift` + `⌘` + `R`.
+6. Add vehicle-info-card to your page.
+
 </details>
-</br>
 
 ## Configuration
 
@@ -93,180 +80,43 @@ https://github.com/ngocjohn/vehicle-info-card
 
 Below is the basic configuration for the custom card:
 
-<div>
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Type</th>
-      <th>Requirement</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>type</code></td>
-      <td>string</td>
-      <td>Required</td>
-      <td><code>custom:vehicle-info-card</code>.</td>
-    </tr>
-    <tr>
-      <td><code>entity</code></td>
-      <td>string</td>
-      <td>Required</td>
-      <td>The entity ID of the car sensor, e.g., <code>sensor.license_plate_car</code>.</td>
-    </tr>
-    <tr>
-      <td><code>name</code></td>
-      <td>string</td>
-      <td>Optional</td>
-      <td>The name to be displayed on the card. Default is vehicle model name.</td>
-    </tr>
-    <tr>
-      <td><code>device_tracker</code></td>
-      <td>string</td>
-      <td>Optional</td>
-      <td>The entity ID of the device tracker for map display.</td>
-    </tr>
-    <tr>
-      <td><code>google_api_key</code></td>
-      <td>string</td>
-      <td>Optional</td>
-      <td>Google Maps API key for generating address from coordinates. Default is using OpenStreetMap service.</td>
-    </tr>
-    <tr>
-      <td><code>show_slides</code></td>
-      <td>boolean</td>
-      <td>Optional</td>
-      <td>Set to <code>true</code> to enable slideshow of car images. Default is <code>false</code>.</td>
-    </tr>
-    <tr>
-      <td><code>show_map</code></td>
-      <td>boolean</td>
-      <td>Optional</td>
-      <td>Set to <code>true</code> to display the car's position on a map. Default is <code>false</code>.</td>
-    </tr>
-    <tr>
-      <td><code>show_buttons</code></td>
-      <td>boolean</td>
-      <td>Optional</td>
-      <td>Set to <code>true</code> to show the buttons. Default is <code>true</code>.</td>
-    </tr>
-    <tr>
-      <td><code>show_background</code></td>
-      <td>boolean</td>
-      <td>Optional</td>
-      <td>Set to <code>true</code> to show a background image. Default is <code>true</code>.</td>
-    </tr>
-    <tr>
-      <td><code>enable_map_popup</code></td>
-      <td>boolean</td>
-      <td>Optional</td>
-      <td>Set to <code>true</code> to enable map popup function. Default is <code>false</code>.</td>
-    </tr>
-    <tr>
-      <td><code>enable_services_control</code></td>
-      <td>boolean</td>
-      <td>Optional</td>
-      <td>Set to <code>true</code> to enable remote control tab. Default is <code>false</code>.</td>
-    </tr>
-    <tr>
-      <td><code>map_popup_config</code></td>
-      <td>object</td>
-      <td>Optional</td>
-      <td>Configuration including <code>theme_mode</code> to control the map’s appearance (<code>light</code> <code>dark</code> <code>auto</code>), <code>hours_to_show</code> to specify the number of hours of data to display, and <code>default_zoom</code> to set the initial zoom level of the map.</td>
-    </tr>
-    <tr>
-      <td><code>images</code></td>
-      <td>list</td>
-      <td>Optional</td>
-      <td>List of image URLs or Paths from config/www folder for the slideshow. Images render better with a transparent background and a maximum width of 500px to fit the card.</td>
-    </tr>
-    <tr>
-      <td><code>trip_card</code></td>
-      <td>object list</td>
-      <td>Optional</td>
-      <td>Configuration objects for the trip card.</td>
-    </tr>
-    <tr>
-      <td><code>vehicle_card</code></td>
-      <td>object list</td>
-      <td>Optional</td>
-      <td>Configuration objects for the vehicle card.</td>
-    </tr>
-    <tr>
-      <td><code>eco_card</code></td>
-      <td>object list</td>
-      <td>Optional</td>
-      <td>Configuration objects for the eco display card.</td>
-    </tr>
-    <tr>
-      <td><code>tyre_card</code></td>
-      <td>object list</td>
-      <td>Optional</td>
-      <td>Configuration objects for the tire pressure card.</td>
-    </tr>
-    <tr>
-      <td><code>services</code></td>
-      <td>object list</td>
-      <td>Optional</td>
-      <td>Configure the available services for the integration. <a href="#services-configuration">Here</a> are the available services that can be enabled or disabled.</td>
-    </tr>
-  </tbody>
-</table>
-</div>
+| Name                      | Type        | Requirement | Description                                                                                                                                                                                                                   |
+| ------------------------- | ----------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `type`                    | string      | Required    | `custom:vehicle-info-card`.                                                                                                                                                                                                   |
+| `entity`                  | string      | Required    | The entity ID of the car sensor, e.g., `sensor.license_plate_car`.                                                                                                                                                            |
+| `name`                    | string      | Optional    | The name to be displayed on the card. Default is vehicle model name.                                                                                                                                                          |
+| `device_tracker`          | string      | Optional    | The entity ID of the device tracker for map display.                                                                                                                                                                          |
+| `google_api_key`          | string      | Optional    | Google Maps API key for generating address from coordinates. Default is using OpenStreetMap service.                                                                                                                          |
+| `show_slides`             | boolean     | Optional    | Set to `true` to enable slideshow of car images. Default is `false`.                                                                                                                                                          |
+| `show_map`                | boolean     | Optional    | Set to `true` to display the car's position on a map. Default is `false`.                                                                                                                                                     |
+| `show_buttons`            | boolean     | Optional    | Set to `true` to show the buttons. Default is `true`.                                                                                                                                                                         |
+| `show_background`         | boolean     | Optional    | Set to `true` to show a background image. Default is `true`.                                                                                                                                                                  |
+| `enable_map_popup`        | boolean     | Optional    | Set to `true` to enable map popup function. Default is `false`.                                                                                                                                                               |
+| `enable_services_control` | boolean     | Optional    | Set to `true` to enable remote control tab. Default is `false`.                                                                                                                                                               |
+| `map_popup_config`        | object      | Optional    | Configuration including `theme_mode` to control the map’s appearance (`light` `dark` `auto`), `hours_to_show` to specify the number of hours of data to display, and `default_zoom` to set the initial zoom level of the map. |
+| `images`                  | list        | Optional    | List of image URLs or Paths from config/www folder for the slideshow. Images render better with a transparent background and a maximum width of 500px to fit the card.                                                        |
+| `trip_card`               | object list | Optional    | Configuration objects for the trip card.                                                                                                                                                                                      |
+| `vehicle_card`            | object list | Optional    | Configuration objects for the vehicle card.                                                                                                                                                                                   |
+| `eco_card`                | object list | Optional    | Configuration objects for the eco display card.                                                                                                                                                                               |
+| `tyre_card`               | object list | Optional    | Configuration objects for the tire pressure card.                                                                                                                                                                             |
+| `services`                | object list | Optional    | Configure the available services for the integration. [Here](#services-configuration) are the available services that can be enabled or disabled.                                                                             |
 
 ### Services configuration
 
 > [!NOTE]
 > Some services require that the security PIN is created in your mobile Android/IOS app. Please store the pin in the options dialog of the integration. <a href="https://github.com/ReneNulschDE/mbapi2020?tab=readme-ov-file#services">More info</a>
 
-<table>
-  <thead>
-    <tr>
-      <th>Service</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>charge</code></td>
-      <td>Manage the charging process.</td>
-    </tr>
-    <tr>
-      <td><code>auxheat</code></td>
-      <td>Control the auxiliary heating.</td>
-    </tr>
-    <tr>
-      <td><code>doorsLock</code></td>
-      <td>Lock the car doors.</td>
-    </tr>
-    <tr>
-      <td><code>preheat</code></td>
-      <td>Control the preheating for zero emission cars.</td>
-    </tr>
-    <tr>
-      <td><code>sigPos</code></td>
-      <td>Start light signaling.</td>
-    </tr>
-    <tr>
-      <td><code>sunroof</code></td>
-      <td>Control the sunroof (open, tilt, close).</td>
-    </tr>
-    <tr>
-      <td><code>sendRoute</code></td>
-      <td>Send a route to the car.</td>
-    </tr>
-    <tr>
-      <td><code>engine</code></td>
-      <td>Control the engine (start, stop).</td>
-    </tr>
-    <tr>
-      <td><code>windows</code></td>
-      <td>Control the windows (open, close, move).</td>
-    </tr>
-  </tbody>
-</table>
+| Service     | Description                                    |
+| ----------- | ---------------------------------------------- |
+| `charge`    | Manage the charging process.                   |
+| `auxheat`   | Control the auxiliary heating.                 |
+| `doorsLock` | Lock the car doors.                            |
+| `preheat`   | Control the preheating for zero emission cars. |
+| `sigPos`    | Start light signaling.                         |
+| `sunroof`   | Control the sunroof (open, tilt, close).       |
+| `sendRoute` | Send a route to the car.                       |
+| `engine`    | Control the engine (start, stop).              |
+| `windows`   | Control the windows (open, close, move).       |
 
 <details>
 <summary> Yaml configuration </summary>
@@ -296,8 +146,6 @@ Below is the configuration replaced entities card for `Vehicle status` button.
 <details>
 
 <summary>Yaml configuration</summary>
-
-<br />
 
 ```yaml
 - type: custom:vehicle-info-card
@@ -339,8 +187,6 @@ Below is the configuration replaced entities card for `Vehicle status` button.
 <img src="https://raw.githubusercontent.com/ngocjohn/vehicle-info-card/main/assets/card-dark.png" />
 <img src="https://raw.githubusercontent.com/ngocjohn/vehicle-info-card/main/assets/card-light.png" />
 <img src="https://raw.githubusercontent.com/ngocjohn/vehicle-info-card/main/assets/sub-cards.png" />
-
-<br />
 
 <details>
   <summary> More screenshots </summary>

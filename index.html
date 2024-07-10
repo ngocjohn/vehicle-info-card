@@ -83,7 +83,7 @@
       code {
         padding: 0.2em 0.4em;
         margin: 0;
-        font-size: 1rem;
+        /* font-size: 1rem; */
         white-space: break-spaces;
         background-color: var(--bgColor-neutral-muted, var(--color-neutral-muted));
         border-radius: 6px;
@@ -108,6 +108,7 @@
 
     <script>
       const converter = new showdown.Converter();
+      converter.setFlavor('github');
       const githubRepoUrl = 'README.md';
 
       // Fetch the Markdown content from the GitHub repository
