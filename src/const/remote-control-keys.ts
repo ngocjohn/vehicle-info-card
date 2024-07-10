@@ -26,9 +26,9 @@ export const serviceData = {
         3: 'Time 3',
       },
       items: {
-        time_1: { label: 'Time 1', value: 0 },
-        time_2: { label: 'Time 2', value: 0 },
-        time_3: { label: 'Time 3', value: 0 },
+        time_1: { label: 'Time 1', value: 0, hour: '00', minute: '00' },
+        time_2: { label: 'Time 2', value: 0, hour: '00', minute: '00' },
+        time_3: { label: 'Time 3', value: 0, hour: '00', minute: '00' },
       },
     },
   },
@@ -57,7 +57,7 @@ export const serviceData = {
       STOP: { command: 'preheat_stop', icon: 'mdi:car-seat', label: 'Stop' },
     },
     data: {
-      time: { label: 'Departure time', value: 0 },
+      time: { label: 'Departure time', value: 0, hour: '00', minute: '00' },
     },
   },
 
