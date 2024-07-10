@@ -1,3 +1,5 @@
+import { parse } from '@babel/core';
+
 // Format timestamp to human readable format (dd.mm.yyyy - hh:mm)
 export function formatTimestamp(timestamp: string | number | Date) {
   const date = new Date(timestamp);
@@ -37,4 +39,8 @@ export function convertMinutes(totalMinutes: number) {
   }
 
   return result;
+}
+
+export function convertToMinutes(hour: string, minute: string): any {
+  return Number(hour) * 60 + minute;
 }

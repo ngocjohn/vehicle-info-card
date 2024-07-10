@@ -3,7 +3,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { HomeAssistant, fireEvent, forwardHaptic } from 'custom-card-helpers';
 import { ServicesConfig } from '../types';
 
-import { cloneDeep } from '../utils/helpers';
+import { cloneDeep, convertToMinutes } from '../utils/helpers';
 import * as Srvc from '../const/remote-control-keys';
 
 import styles from '../css/remote-control.css';
@@ -193,22 +193,37 @@ export class RemoteControl extends LitElement {
 
   private _renderPreheatControl(): TemplateResult {
     const { preheatConfig } = this;
-    const { time } = preheatConfig.data;
+    const time = preheatConfig.data.time;
     const service = preheatConfig.service;
 
     const preheatDepartureTimeEL = html`
       <div class="items-row">
         <div>Departure Time</div>
-        <div class="items-control">
-          <input
+        <div class="time-input-wrap">
+          <ha-textfield
             type="number"
+            inputmode="numeric"
+            .value=${time.hour}
+            .label=${'hh'}
+            .configValue=${'_hours'}
+            maxlength="2"
             min="0"
-            max="1439"
-            step="1"
-            .value=${String(time.value)}
-            @change=${this.handlePreheatTimeChange}
-          />
-          <span>min</span>
+            max=${String(23)}
+            @change=${(e: Event) => this.handlePreheatTimeChange(e)}
+          >
+          </ha-textfield>
+          <ha-textfield
+            type="number"
+            inputmode="numeric"
+            .value=${time.minute}
+            .label=${'mm'}
+            .configValue=${'_mins'}
+            maxlength="2"
+            min="0"
+            max=${String(59)}
+            @change=${(e: Event) => this.handlePreheatTimeChange(e)}
+          >
+          </ha-textfield>
         </div>
       </div>
     `;
@@ -291,27 +306,6 @@ export class RemoteControl extends LitElement {
 
     const service = auxheatConfig.service;
 
-    const timeElements = Object.entries(timeItems).map(([item, { label, value }]) => {
-      return html`
-        <div class="items-row">
-          <div>${label}</div>
-          <div class="items-control">
-            <div class="time-form">
-              <input
-                type="number"
-                min="0"
-                max="1439"
-                step="1"
-                .value=${String(value)}
-                @change=${(e) => this.handleAuxheatChange('items', item, e)}
-              />
-              <span>min</span>
-            </div>
-          </div>
-        </div>
-      `;
-    });
-
     const timeSelectEl = html`
       <div class="items-row">
         <div>Time Selection</div>
@@ -330,8 +324,42 @@ export class RemoteControl extends LitElement {
       return this._renderServiceBtn(key, data);
     });
 
+    const timeInput = Object.entries(timeItems).map(([item, { label, hour, minute }]) => {
+      return html`
+        <div class="items-row">
+          <div>${label}</div>
+          <div class="time-input-wrap">
+            <ha-textfield
+              type="number"
+              inputmode="numeric"
+              .value=${hour}
+              .label=${'hh'}
+              .configValue=${`_hours`}
+              maxlength="2"
+              min="0"
+              max=${String(23)}
+              @change=${(e: Event) => this.handleAuxheatChange('hours', item, e)}
+            >
+            </ha-textfield>
+            <ha-textfield
+              type="number"
+              inputmode="numeric"
+              .value=${minute}
+              .label=${'mm'}
+              .configValue=${'_mins'}
+              maxlength="2"
+              min="0"
+              max=${String(59)}
+              @change=${(e: Event) => this.handleAuxheatChange('mins', item, e)}
+            >
+            </ha-textfield>
+          </div>
+        </div>
+      `;
+    });
+
     return html`
-      <div class="sub-row">${timeSelectEl} ${timeElements}</div>
+      <div class="sub-row">${timeSelectEl}${timeInput}</div>
       ${this._renderResetBtn()}
       <div class="head-sub-row">${serviceBtns}</div>
     `;
@@ -416,20 +444,21 @@ export class RemoteControl extends LitElement {
     switch (service) {
       case 'preheat_start_departure_time':
         const data = {
-          time: this.preheatConfig.data.time.value,
+          time: convertToMinutes(this.preheatConfig.data.time.hour, this.preheatConfig.data.time.minute),
         };
         this.callService(service, data);
         break;
 
       case 'auxheat_configure':
-        const items = Object.entries(this.auxheatConfig.data.items).reduce((acc, [key, { value }]) => {
-          acc[key] = value;
+        const { items, time_selection } = this.auxheatConfig.data;
+        const times: Record<string, number> = Object.entries(items).reduce((acc, [key, { hour, minute }]) => {
+          acc[key] = convertToMinutes(hour, minute);
           return acc;
         }, {});
 
         const dataAux = {
-          time_selection: this.auxheatConfig.data.time_selection,
-          ...items,
+          time_selection,
+          ...times,
         };
         this.callService(service, dataAux);
         break;
@@ -488,21 +517,42 @@ export class RemoteControl extends LitElement {
     this.requestUpdate(); // Trigger re-render to update UI after change
   }
 
-  private handlePreheatTimeChange(e: Event): void {
-    const value = (e.target as HTMLInputElement).value;
-    this.preheatConfig.data.time.value = parseInt(value, 10);
+  private handlePreheatTimeChange(e): void {
+    const target = e.target;
+    const value = target.value;
+    const configValue = target.configValue;
+    const time = this.preheatConfig.data.time;
+    let newValue: any;
+    if (configValue === '_hours') {
+      newValue = parseInt(value, 10);
+      time.hour = newValue;
+    } else if (configValue === '_mins') {
+      newValue = parseInt(value, 10);
+      time.minute = newValue;
+    }
+
+    console.log('data:', this.preheatConfig.data.time);
     this.requestUpdate(); // Trigger re-render to update UI after change
   }
 
-  private handleAuxheatChange(type: string, item: string, e: Event): void {
-    const value = (e.target as HTMLInputElement | HTMLSelectElement).value;
+  private handleAuxheatChange(type: string, item: string, e): void {
+    const target = e.target;
+    const value = target.value;
+    const configValue = target.configValue;
+    const data = this.auxheatConfig.data;
+    let newValue: any;
 
     if (type === 'time_selection') {
-      this.auxheatConfig.data.time_selection = parseInt(value, 10);
-    } else {
-      this.auxheatConfig.data[type][item].value = parseInt(value, 10);
+      data.time_selection = parseInt(value, 10);
+    } else if (configValue === '_hours') {
+      newValue = parseInt(value, 10);
+      data.items[item].hour = newValue;
+    } else if (configValue === '_mins') {
+      newValue = parseInt(value, 10);
+      data.items[item].minute = newValue;
     }
 
+    console.log('data:', data.items[item]);
     this.requestUpdate(); // Trigger re-render to update UI after change
   }
 
