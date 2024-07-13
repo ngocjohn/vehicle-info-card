@@ -107,6 +107,10 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     return this._config?.enable_map_popup || false;
   }
 
+  get _show_error_notify(): boolean {
+    return this._config?.show_error_notify || false;
+  }
+
   get _google_api_key(): string {
     return this._config?.google_api_key || '';
   }
@@ -202,7 +206,8 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _renderSwitches(): TemplateResult {
-    const switches = html` <ha-formfield .label=${`Show slides`}>
+    const switches = html`
+      <ha-formfield .label=${`Show slides`}>
         <ha-switch
           .disabled=${!this._config?.images || this._config?.images.length === 0}
           .checked=${this._show_slides !== false}
@@ -249,7 +254,15 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           .configValue=${'enable_services_control'}
           @change=${this._valueChanged}
         ></ha-switch>
-      </ha-formfield>`;
+      </ha-formfield>
+      <ha-formfield .label=${`Show error notification`}>
+        <ha-switch
+          .checked=${this._show_error_notify !== false}
+          .configValue=${'show_error_notify'}
+          @change=${this._valueChanged}
+        ></ha-switch>
+      </ha-formfield>
+    `;
 
     return html` <div class="panel-container">
       <ha-expansion-panel

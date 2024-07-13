@@ -63,6 +63,7 @@ export interface ShowOptions extends VehicleCardConfig {
   show_background: boolean;
   enable_map_popup: boolean;
   enable_services_control: boolean;
+  show_error_notify: boolean;
 }
 
 export interface MapPopupConfig {
@@ -94,6 +95,7 @@ export const defaultConfig: Partial<VehicleCardConfig> = {
   show_background: true,
   enable_map_popup: false,
   enable_services_control: false,
+  show_error_notify: false,
   services: {
     auxheat: false,
     charge: false,
