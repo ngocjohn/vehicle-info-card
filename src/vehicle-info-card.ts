@@ -385,6 +385,7 @@ export class VehicleCard extends LitElement {
   }
 
   private _renderButtons(): TemplateResult {
+    const showError = this.config.show_error_notify;
     if (!this.config.show_buttons) return html``;
 
     return html`
@@ -399,6 +400,13 @@ export class VehicleCard extends LitElement {
                 <span class="primary">${cardType.name}</span>
                 <span class="secondary">${this.getSecondaryInfo(cardType.type)}</span>
               </div>
+              ${showError
+                ? html`
+                    <div class="item-notify ${this.getErrorNotify(cardType.type) ? '' : 'hidden'}">
+                      <ha-icon icon="mdi:alert-circle"></ha-icon>
+                    </div>
+                  `
+                : ''}
             </div>
           `,
         )}
@@ -1121,6 +1129,27 @@ export class VehicleCard extends LitElement {
     const formattedMinPressure = minPressure % 1 === 0 ? minPressure.toFixed(0) : minPressure.toFixed(1);
     const formattedMaxPressure = maxPressure % 1 === 0 ? maxPressure.toFixed(0) : maxPressure.toFixed(1);
     return `${formattedMinPressure} - ${formattedMaxPressure} ${tireUnit}`;
+  }
+
+  private getErrorNotify(cardType: string): boolean {
+    const { vehicleEntities } = this;
+    switch (cardType) {
+      case 'tripCards':
+        return false;
+      case 'vehicleCards':
+        const baseWarnKeys = DataKeys.vehicleWarnings.map((key) => key.key);
+        const warnKeys = [...baseWarnKeys, 'windowsClosed', 'doorStatusOverall'];
+        const hasWarning = warnKeys.some((key) => this.getBooleanState(vehicleEntities[key]?.entity_id));
+        console.log(hasWarning);
+
+        return hasWarning;
+      case 'ecoCards':
+        return false;
+      case 'tyreCards':
+        return this.getBooleanState(vehicleEntities.tirePressureWarning?.entity_id);
+      default:
+        return false;
+    }
   }
 
   /* ----------------------------- EVENTS HANDLERS ---------------------------- */
