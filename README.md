@@ -1,14 +1,16 @@
 <a name="readme-top"></a>
 
-# VEHICLE INFO CARD
-
 [![Validate](https://github.com/ngocjohn/vehicle-info-card/actions/workflows/validate.yaml/badge.svg)](https://github.com/ngocjohn/vehicle-info-card/actions/workflows/validate.yaml) ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/ngocjohn/vehicle-info-card/total?style=flat&logo=homeassistantcommunitystore&logoSize=auto&label=Downloads&color=%2318BCF2) ![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/ngocjohn/vehicle-info-card/latest/total?style=flat&logo=homeassistantcommunitystore&logoSize=auto)
 
-## Home Assistant Custom Card for Mercedes Vehicles
+# 🚙 Vehicle info card
+
+<img src="https://raw.githubusercontent.com/ngocjohn/vehicle-info-card/main/assets/vehicle-header.gif" style="border-radius: 8px" />
+
+<br>
 
 <p style="text-align: justify;">This custom card displays essential information about your Mercedes vehicle. It retrieves data using the Custom Component for Mercedes cars by <a href="https://github.com/ReneNulschDE">ReneNulschDE</a> available at <a href="https://github.com/ReneNulschDE/mbapi2020">mbapi2020</a>. The card features four primary buttons: Trip Data, Vehicle Status, Eco Display, and Tire Pressure. These buttons can be easily replaced with any Lovelace card within Home Assistant, allowing for flexible and customizable vehicle data display.</p>
 
-### Features of the Card
+## Features of the Card
 
 - **Comprehensive Vehicle Information**: Provides essential information about the car all in one place.
 - **Vehicle Position Display**: Shows the current location of the vehicle on a map, with the option to track routes.
@@ -16,9 +18,15 @@
 - **Centralized Remote Control**: Offers available remote control functions and settings, all accessible from a single card.
 - **Individual Sub-Card Customization**: Allows customization for each individual sub-card to suit specific needs and preferences.
 
-<p align="center">
-  <a href="#"> <img src="https://raw.githubusercontent.com/ngocjohn/vehicle-info-card/main/assets/default-card.gif"></a>
-</p>
+### View options
+
+<img src="https://raw.githubusercontent.com/ngocjohn/vehicle-info-card/main/assets/card-views.png">
+
+### Sub cards
+
+<img src="https://raw.githubusercontent.com/ngocjohn/vehicle-info-card/main/assets/card-summary.png">
+
+## Table of contents
 
 <details>
   <summary>Table of Contents</summary>
