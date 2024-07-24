@@ -1134,17 +1134,10 @@ export class VehicleCard extends LitElement {
   private getErrorNotify(cardType: string): boolean {
     const { vehicleEntities } = this;
     switch (cardType) {
-      case 'tripCards':
-        return false;
       case 'vehicleCards':
-        const baseWarnKeys = DataKeys.vehicleWarnings.map((key) => key.key);
-        const warnKeys = [...baseWarnKeys, 'windowsClosed', 'doorStatusOverall'];
+        const warnKeys = [...DataKeys.vehicleWarnings.map((key) => key.key), 'windowsClosed'];
         const hasWarning = warnKeys.some((key) => this.getBooleanState(vehicleEntities[key]?.entity_id));
-        console.log(hasWarning);
-
         return hasWarning;
-      case 'ecoCards':
-        return false;
       case 'tyreCards':
         return this.getBooleanState(vehicleEntities.tirePressureWarning?.entity_id);
       default:
