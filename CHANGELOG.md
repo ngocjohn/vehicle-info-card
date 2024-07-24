@@ -1,5 +1,15 @@
 # CHANGELOG.md
 
+## [1.0.7](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.0.7) (2024-07-25)
+
+### Features
+
+- **Warning notification:** The error notifications will be shown for specific card types based on the presence of warnings or other conditions. The feature can be enabled or disabled through the card editor.
+
+### Update
+
+- Auxheat and pre-conditioning updated to Hour:Minute input format.
+
 ## [1.0.6](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.0.6) (2024-07-08)
 
 This update focuses on enhancing the visual aspects of the card and includes minor changes in the editor to improve user experience.
