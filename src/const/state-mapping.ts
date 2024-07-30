@@ -1,75 +1,169 @@
+import { localize } from '../localize/localize';
+
 export const lockAttributes = {
-  doorlockstatusfrontleft: { name: 'Door lock front left', state: { false: 'locked', true: 'unlocked' } },
-  doorlockstatusfrontright: { name: 'Door lock front right', state: { false: 'locked', true: 'unlocked' } },
-  doorlockstatusrearleft: { name: 'Door lock rear left', state: { false: 'locked', true: 'unlocked' } },
-  doorlockstatusrearright: { name: 'Door lock rear right', state: { false: 'locked', true: 'unlocked' } },
-  doorlockstatusgas: { name: 'Gas lock', state: { false: 'locked', true: 'unlocked' } },
+  doorlockstatusfrontleft: {
+    state: { false: localize('common.stateLocked'), true: localize('common.stateUnlocked') },
+    name: localize('lockAttributes.doorlockstatusfrontleft'),
+  },
+  doorlockstatusfrontright: {
+    state: { false: localize('common.stateLocked'), true: localize('common.stateUnlocked') },
+    name: localize('lockAttributes.doorlockstatusfrontright'),
+  },
+  doorlockstatusrearleft: {
+    state: { false: localize('common.stateLocked'), true: localize('common.stateUnlocked') },
+    name: localize('lockAttributes.doorlockstatusrearleft'),
+  },
+  doorlockstatusrearright: {
+    state: { false: localize('common.stateLocked'), true: localize('common.stateUnlocked') },
+    name: localize('lockAttributes.doorlockstatusrearright'),
+  },
+  doorlockstatusgas: {
+    state: { false: localize('common.stateLocked'), true: localize('common.stateUnlocked') },
+    name: localize('lockAttributes.doorlockstatusgas'),
+  },
 };
 
 export const doorStatus = {
-  '0': 'Open',
-  '1': 'Closed',
-  '2': 'Not existing',
-  '3': 'Unknown',
+  '0': localize('common.stateOpen'), // Open
+  '1': localize('common.stateClosed'), // Closed
+  '2': localize('common.stateNotExisting'), // Not existing
+  '3': localize('common.stateUnknown'), // Unknown
 };
 
 export const doorAttributes = {
-  decklidstatus: { name: 'Deck lid', state: { false: 'closed', true: 'open' } },
-  doorstatusfrontleft: { name: 'Door front left', state: { false: 'closed', true: 'open' } },
-  doorstatusfrontright: { name: 'Door front right', state: { false: 'closed', true: 'open' } },
-  doorstatusrearleft: { name: 'Door rear left', state: { false: 'closed', true: 'open' } },
-  doorstatusrearright: { name: 'Door rear right', state: { false: 'closed', true: 'open' } },
-  enginehoodstatus: { name: 'Engine hood', state: { false: 'closed', true: 'open' } },
+  decklidstatus: {
+    name: localize('doorAttributes.decklidstatus'),
+    state: { false: localize('common.stateClosed'), true: localize('common.stateOpen') },
+  },
+  doorstatusfrontleft: {
+    name: localize('doorAttributes.doorstatusfrontleft'),
+    state: { false: localize('common.stateClosed'), true: localize('common.stateOpen') },
+  },
+  doorstatusfrontright: {
+    name: localize('doorAttributes.doorstatusfrontright'),
+    state: { false: localize('common.stateClosed'), true: localize('common.stateOpen') },
+  },
+  doorstatusrearleft: {
+    name: localize('doorAttributes.doorstatusrearleft'),
+    state: { false: localize('common.stateClosed'), true: localize('common.stateOpen') },
+  },
+  doorstatusrearright: {
+    name: localize('doorAttributes.doorstatusrearright'),
+    state: { false: localize('common.stateClosed'), true: localize('common.stateOpen') },
+  },
+  enginehoodstatus: {
+    name: localize('doorAttributes.enginehoodstatus'),
+    state: { false: localize('common.stateClosed'), true: localize('common.stateOpen') },
+  },
   sunroofstatus: {
-    name: 'Sunroof status',
+    name: localize('doorAttributes.sunroofstatus'),
     state: {
-      '0': 'closed',
-      '1': 'open',
-      '2': 'lifting open',
-      '3': 'running',
-      '4': 'anti-booming position',
-      '5': 'sliding intermediate',
-      '6': 'lifting intermediate',
-      '7': 'opening',
-      '8': 'closing',
-      '9': 'anti-booming lifting',
-      '10': 'intermediate position',
-      '11': 'opening lifting',
-      '12': 'closing lifting',
+      '0': localize('sunroofState.stateClosed'), // Default: Closed
+      '1': localize('sunroofState.stateOpen'), // Default: Open
+      '2': localize('sunroofState.liftingOpen'), // Default: Lifting open
+      '3': localize('sunroofState.running'), // Default: Running
+      '4': localize('sunroofState.antiBoomingPosition'), // Default: Anti-booming position
+      '5': localize('sunroofState.slidingIntermediate'), // Default: Sliding intermediate
+      '6': localize('sunroofState.liftingIntermediate'), // Default: Lifting intermediate
+      '7': localize('sunroofState.opening'), // Default: Opening
+      '8': localize('sunroofState.closing'), // Default: Closing
+      '9': localize('sunroofState.antiBoomingLifting'), // Default: Anti-booming lifting
+      '10': localize('sunroofState.intermediatePosition'), // Default: Intermediate position
+      '11': localize('sunroofState.openingLifting'), // Default: Opening lifting
+      '12': localize('sunroofState.closingLifting'), // Default: Closing lifting
     },
   },
 };
 
 export const lockStates = {
-  '0': 'Unlocked',
-  '1': 'Locked int',
-  '2': 'Locked',
-  '3': 'Partly unlocked',
-  '4': 'Unknown',
+  '0': localize('common.stateUnlocked'), // Unlocked
+  '1': localize('common.stateLockedInt'), // Locked int
+  '2': localize('common.stateLocked'), // Locked
+  '3': localize('common.statePartlyUnlocked'), // Partly unlocked
+  '4': localize('common.stateUnknown'), // Unknown
 };
 
 export const chargeSelectedProgram = {
   '0': 'Standard',
-  '1': 'Unknown',
+  '1': localize('common.stateUnknown'),
   '2': 'Home',
   '3': 'Work',
 };
 
+// export const windowAttributes = {
+//   windowstatusrearleft: { name: 'Window rear left', state: { 2: localize('common.stateClosed'), 0: localize('common.stateOpen') } },
+//   windowstatusrearright: { name: 'Window rear right', state: { 2: localize('common.stateClosed'), 0: localize('common.stateOpen') } },
+//   windowstatusfrontleft: { name: 'Window front left', state: { 2: localize('common.stateClosed'), 0: localize('common.stateOpen') } },
+//   windowstatusfrontright: { name: 'Window front right', state: { 2: localize('common.stateClosed'), 0: localize('common.stateOpen') } },
+//   windowstatusrearleftblind: { name: 'Window rear left blind', state: { 2: localize('common.stateClosed'), 0: localize('common.stateOpen') } },
+//   windowstatusrearrightblind: { name: 'Window rear right blind', state: { 2: localize('common.stateClosed'), 0: localize('common.stateOpen') } },
+//   windowstatusfrontleftblind: { name: 'Window front left blind', state: { 2: localize('common.stateClosed'), 0: localize('common.stateOpen') } },
+//   windowstatusfrontrightblind: { name: 'Window front right blind', state: { 2: localize('common.stateClosed'), 0: localize('common.stateOpen') } },
+// };
+
 export const windowAttributes = {
-  windowstatusrearleft: { name: 'Window rear left', state: { 2: 'closed', 0: 'open' } },
-  windowstatusrearright: { name: 'Window rear right', state: { 2: 'closed', 0: 'open' } },
-  windowstatusfrontleft: { name: 'Window front left', state: { 2: 'closed', 0: 'open' } },
-  windowstatusfrontright: { name: 'Window front right', state: { 2: 'closed', 0: 'open' } },
-  windowstatusrearleftblind: { name: 'Window rear left blind', state: { 2: 'closed', 0: 'open' } },
-  windowstatusrearrightblind: { name: 'Window rear right blind', state: { 2: 'closed', 0: 'open' } },
-  windowstatusfrontleftblind: { name: 'Window front left blind', state: { 2: 'closed', 0: 'open' } },
-  windowstatusfrontrightblind: { name: 'Window front right blind', state: { 2: 'closed', 0: 'open' } },
+  windowstatusrearleft: {
+    name: localize('windowAttributes.windowstatusrearleft'),
+    state: {
+      2: localize('common.stateClosed'),
+      0: localize('common.stateOpen'),
+    },
+  },
+  windowstatusrearright: {
+    name: localize('windowAttributes.windowstatusrearright'),
+    state: {
+      2: localize('common.stateClosed'),
+      0: localize('common.stateOpen'),
+    },
+  },
+  windowstatusfrontleft: {
+    name: localize('windowAttributes.windowstatusfrontleft'),
+    state: {
+      2: localize('common.stateClosed'),
+      0: localize('common.stateOpen'),
+    },
+  },
+  windowstatusfrontright: {
+    name: localize('windowAttributes.windowstatusfrontright'),
+    state: {
+      2: localize('common.stateClosed'),
+      0: localize('common.stateOpen'),
+    },
+  },
+  windowstatusrearleftblind: {
+    name: localize('windowAttributes.windowstatusrearleftblind'),
+    state: {
+      2: localize('common.stateClosed'),
+      0: localize('common.stateOpen'),
+    },
+  },
+  windowstatusrearrightblind: {
+    name: localize('windowAttributes.windowstatusrearrightblind'),
+    state: {
+      2: localize('common.stateClosed'),
+      0: localize('common.stateOpen'),
+    },
+  },
+  windowstatusfrontleftblind: {
+    name: localize('windowAttributes.windowstatusfrontleftblind'),
+    state: {
+      2: localize('common.stateClosed'),
+      0: localize('common.stateOpen'),
+    },
+  },
+  windowstatusfrontrightblind: {
+    name: localize('windowAttributes.windowstatusfrontrightblind'),
+    state: {
+      2: localize('common.stateClosed'),
+      0: localize('common.stateOpen'),
+    },
+  },
 };
 
 export const starterBattery = {
-  '0': 'OK',
-  '1': 'Partly charged',
-  '2': 'Not available',
-  '3': 'Remote service disabled',
-  '4': 'Vehicle no longer available',
+  '0': localize('starterBattery.stateOk'), // OK
+  '1': localize('starterBattery.partlyCharged'), // Partly charged
+  '2': localize('starterBattery.notAvailable'), // Not available
+  '3': localize('starterBattery.remoteServiceDisabled'), // Remote service disabled
+  '4': localize('starterBattery.vehicleNoLongerAvailable'), // Vehicle no longer available
 };
