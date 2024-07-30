@@ -1,0 +1,8 @@
+{
+	"cardType": {
+		"tripCards": "Údaje o cestě",
+		"vehicleCards": "Stav vozidla",
+		"ecoCards": "Eco displej",
+		"tyreCards": "Tlak v pneumatikách"
+	}
+}

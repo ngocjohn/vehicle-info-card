@@ -1,0 +1,8 @@
+{
+	"cardType": {
+		"tripCards": "Trip data",
+		"vehicleCards": "Vehicle status",
+		"ecoCards": "Eco display",
+		"tyreCards": "Tyre pressure"
+	}
+}
