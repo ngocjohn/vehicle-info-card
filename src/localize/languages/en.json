@@ -4,5 +4,125 @@
 		"vehicleCards": "Vehicle status",
 		"ecoCards": "Eco display",
 		"tyreCards": "Tyre pressure"
+	},
+	"tripCard": {
+		"overview": "Overview",
+		"fromStart": "From start",
+		"fromReset": "From reset",
+		"odometer": "Odometer",
+		"fuelLevel": "Fuel level",
+		"adBlueLevel": "AdBlue level",
+		"rangeLiquid": "Range",
+		"rangeElectric": "Range",
+		"soc": "State of charge",
+		"maxSoc": "Max state of charge",
+		"distanceReset": "Distance traveled",
+		"drivenTimeReset": "Driving time",
+		"averageSpeedReset": "Average speed",
+		"liquidConsumptionReset": "Consumption reset",
+		"electricConsumptionReset": "Consumption reset",
+		"distanceStart": "Distance traveled",
+		"drivenTimeStart": "Driving time",
+		"averageSpeedStart": "Average speed",
+		"liquidConsumptionStart": "Consumption start",
+		"electricConsumptionStart": "Consumption start"
+	},
+	"vehicleCard": {
+		"vehicleStatus": "Vehicle status",
+		"vehicleWarnings": "Warnings",
+		"lockSensor": "Lock status",
+		"windowsClosed": "Windows",
+		"doorStatusOverall": "Doors",
+		"parkBrake": "Parking brake",
+		"ignitionState": "Ignition state",
+		"starterBatteryState": "Starter battery",
+		"lowCoolantLevel": "Coolant",
+		"lowBrakeFluid": "Brake fluid",
+		"lowWashWater": "Washer fluid",
+		"tirePressureWarning": "Tire pressure",
+		"engineLight": "Engine light"
+	},
+	"ecoCard": {
+		"ecoDisplay": "Eco display",
+		"ecoScore": "Scores",
+		"ecoScoreBonusRange": "Bonus range",
+		"ecoScoreAcceleraion": "Acceleraion",
+		"ecoScoreConstant": "Constant",
+		"ecoScoreFreeWheel": "Free wheel"
+	},
+	"tyreCard": {
+		"tyrePressure": "Tyre pressures",
+		"tireWarningProblem": "Pressure loss detected. Check tyres.",
+		"tireWarningOk": "No pressure loss detected",
+		"tirePressureFrontLeft": "Front left",
+		"tirePressureFrontRight": "Front right",
+		"tirePressureRearLeft": "Rear left",
+		"tirePressureRearRight": "Rear right"
+	},
+	"chargingOverview": {
+		"chargingPower": "Power",
+		"soc": "Current state",
+		"maxSoc": "Maximum",
+		"selectedProgram": "Program"
+	},
+	"lockAttributes": {
+		"doorlockstatusfrontleft": "Door lock front left",
+		"doorlockstatusfrontright": "Door lock front right",
+		"doorlockstatusrearleft": "Door lock rear left",
+		"doorlockstatusrearright": "Door lock rear right",
+		"doorlockstatusgas": "Gas lock"
+	},
+	"doorAttributes": {
+		"decklidstatus": "Deck lid",
+		"doorstatusfrontleft": "Door front left",
+		"doorstatusfrontright": "Door front right",
+		"doorstatusrearleft": "Door rear left",
+		"doorstatusrearright": "Door rear right",
+		"enginehoodstatus": "Engine hood",
+		"sunroofstatus": "Sunroof"
+	},
+	"sunroofState": {
+		"stateClosed": "Closed",
+		"stateOpen": "Open",
+		"liftingOpen": "Lifting open",
+		"running": "Running",
+		"antiBoomingPosition": "Anti-booming position",
+		"slidingIntermediate": "Sliding intermediate",
+		"liftingIntermediate": "Lifting intermediate",
+		"opening": "Opening",
+		"closing": "Closing",
+		"antiBoomingLifting": "Anti-booming lifting",
+		"intermediatePosition": "Intermediate position",
+		"openingLifting": "Opening lifting",
+		"closingLifting": "Closing lifting"
+	},
+	"windowAttributes": {
+		"windowstatusfrontleft": "Window front left",
+		"windowstatusfrontright": "Window front right",
+		"windowstatusrearleft": "Window rear left",
+		"windowstatusrearright": "Window rear right",
+		"windowstatusrearleftblind": "Window rear left blind",
+		"windowstatusrearrightblind": "Window rear right blind",
+		"windowstatusfrontleftblind": "Window front left blind",
+		"windowstatusfrontrightblind": "Window front right blind"
+	},
+	"starterBattery": {
+		"stateOk": "Ok",
+		"partlyCharged": "Partly charged",
+		"notAvailable": "Not available",
+		"remoteServiceDisabled": "Remote service disabled",
+		"vehicleNoLongerAvailable": "Vehicle no longer available"
+	},
+	"common": {
+		"stateLocked": "Locked",
+		"stateUnlocked": "Unlocked",
+		"stateClosed": "Closed",
+		"stateOpen": "Open",
+		"stateNotExisting": "Not existing",
+		"stateUnknown": "Unknown",
+		"statePartlyUnlocked": "Partly unlocked",
+		"stateLockedInt": "Locked int",
+		"stateParkBrakeOn": "Engaged",
+		"stateParkBrakeOff": "Released"
 	}
 }
