@@ -2,6 +2,7 @@ import { LitElement, html, TemplateResult, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
 import type { EcoData } from '../types';
+import { localize } from '../localize/localize';
 // Third-party Libraries
 import ApexCharts from 'apexcharts';
 
@@ -42,7 +43,7 @@ export class EcoChart extends LitElement {
           },
           total: {
             show: true,
-            label: 'Bonus range',
+            label: localize('ecoCard.ecoScoreBonusRange'),
             formatter: () => {
               return `${this.ecoData.bonusRange || 0} km`;
             },
@@ -62,7 +63,11 @@ export class EcoChart extends LitElement {
       },
     },
     colors: ['#1ab7ea', '#0084ff', '#39539E'],
-    labels: ['Acceleration', 'Constant', 'Free wheel'],
+    labels: [
+      localize('ecoCard.ecoScoreAcceleraion'),
+      localize('ecoCard.ecoScoreConstant'),
+      localize('ecoCard.ecoScoreFreeWheel'),
+    ],
     responsive: [
       {
         breakpoint: 480,
