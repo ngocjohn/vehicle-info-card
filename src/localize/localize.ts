@@ -7,6 +7,11 @@ const languages: any = {
   cs: cs,
 };
 
+export const languageOptions = [
+  { key: 'en', name: 'English' },
+  { key: 'cs', name: 'Czech' },
+];
+
 export function localize(string: string, search = '', replace = ''): string {
   const lang = (localStorage.getItem('selectedLanguage') || 'en').replace(/['"]+/g, '').replace('-', '_');
 

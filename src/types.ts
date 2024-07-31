@@ -42,6 +42,7 @@ export interface VehicleCardConfig extends LovelaceCardConfig {
   services: ServicesConfig;
   map_popup_config: MapPopupConfig;
   selected_theme: ThemesConfig;
+  selected_language?: string | null;
   vehicle_card?: LovelaceCardConfig[];
   trip_card?: LovelaceCardConfig[];
   eco_card?: LovelaceCardConfig[];

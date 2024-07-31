@@ -64,11 +64,9 @@ export class VehicleCard extends LitElement {
   @state() private doorsAttributesVisible!: boolean;
   @state() private chargingInfoVisible!: boolean;
 
-  // private get isCharging(): boolean {
-  //   return this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'chargingactive');
-  // }
-
-  isCharging = true;
+  private get isCharging(): boolean {
+    return this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'chargingactive');
+  }
 
   private get carVinNumber(): string {
     if (!this.config.entity) return '';
@@ -380,7 +378,10 @@ export class VehicleCard extends LitElement {
     const getEcoScore = (entity: any): number => parseFloat(this.getEntityState(entity?.entity_id)) || 0;
 
     const ecoDataObj = DataKeys.ecoScores.reduce((acc, score) => {
-      acc[score.apexProp] = getEcoScore(this.vehicleEntities[score.key]);
+      if (score.apexProp) {
+        acc[score.apexProp] = getEcoScore(this.vehicleEntities[score.key]);
+      }
+
       return acc;
     }, {} as EcoData);
 
@@ -910,8 +911,8 @@ export class VehicleCard extends LitElement {
     if (key === 'selectedProgram') {
       return {
         key,
-        name: 'Program',
-        icon: 'mdi:ev-station',
+        name,
+        icon,
         state:
           StateMapping.chargeSelectedProgram[
             this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'selectedChargeProgram')
@@ -926,7 +927,7 @@ export class VehicleCard extends LitElement {
       return {
         key,
         name,
-        icon: 'mdi:car-door-lock',
+        icon,
         state: doorFormatted,
         active: activeState,
         unit,
