@@ -23,26 +23,13 @@ export async function getVehicleEntities(hass: HomeAssistant, config: { entity?:
   for (const entityName of Object.keys(combinedFilters)) {
     const { prefix, suffix } = combinedFilters[entityName];
 
-    if (
-      entityName === 'soc' ||
-      entityName === 'maxSoc' ||
-      entityName === 'rangeElectric' ||
-      entityName === 'adBlueLevel'
-    ) {
-      const specialName =
-        entityName === 'soc'
-          ? 'State of Charge'
-          : entityName === 'maxSoc'
-            ? 'Max State of Charge'
-            : entityName === 'rangeElectric'
-              ? 'Range Electric'
-              : 'AdBlue Level';
+    if (entityName === 'soc' || entityName === 'maxSoc') {
+      const specialName = entityName === 'soc' ? 'State of Charge' : 'Max State of Charge';
       const entity = deviceEntities.find((e) => e.original_name === specialName);
       if (entity) {
         entityIds[entityName] = {
           entity_id: entity.entity_id,
           original_name: entity.original_name,
-          unique_id: entity.unique_id,
         };
       }
       continue;
@@ -59,7 +46,6 @@ export async function getVehicleEntities(hass: HomeAssistant, config: { entity?:
       entityIds[entityName] = {
         entity_id: entity.entity_id,
         original_name: entity.original_name,
-        unique_id: entity.unique_id,
       };
     }
   }
