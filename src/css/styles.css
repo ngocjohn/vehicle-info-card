@@ -94,6 +94,7 @@ header h1 {
   width: 100%;
   height: fit-content;
   gap: 1rem;
+  flex-wrap: wrap;
   /* opacity: 0.8; */
   /* text-transform: capitalize; */
 }
@@ -102,12 +103,23 @@ header h1 {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  span {
-    font-size: 1rem;
-  }
+
   ha-icon {
     margin-bottom: 3px;
   }
+}
+
+@media screen and (max-width: 768px) {
+  ha-card {
+    padding: 0.5rem;
+  }
+  .info-box .item .base-menu {
+    font-size: 0.8rem;
+  }
+}
+
+.added-item-arrow {
+  display: flex;
 }
 
 .item.active-btn {
@@ -196,6 +208,7 @@ header h1 {
 @media screen and (max-width: 768px) {
   .grid-item {
     padding: 8px;
+    gap: 0.5rem;
   }
 }
 .grid-item .item-notify {

@@ -239,12 +239,13 @@ export class VehicleCard extends LitElement {
 
   private _renderWarnings(): TemplateResult {
     const defaultIndicData = this.createDataArray([{ key: 'lockSensor' }, { key: 'parkBrake' }]);
+    const isChargingVisible = this.isCharging && this.config.enable_services_control ? 'base-menu' : '';
 
     const defaultIdicator = defaultIndicData.map(({ state, icon }) => {
       return html`
         <div class="item">
           <ha-icon .icon=${icon}></ha-icon>
-          <div><span>${state}</span></div>
+          <div><span class="${isChargingVisible}">${state}</span></div>
         </div>
       `;
     });
@@ -252,8 +253,8 @@ export class VehicleCard extends LitElement {
     const addedChargingInfo = this.isCharging
       ? html` <div class="item active-btn" @click=${() => (this.chargingInfoVisible = !this.chargingInfoVisible)}>
           <ha-icon icon=${'mdi:ev-station'}></ha-icon>
-          <div>
-            <span>${localize('common.stateCharging')}</span>
+          <div class="added-item-arrow">
+            <span class="${isChargingVisible}">${localize('common.stateCharging')}</span>
             <div class="subcard-icon ${this.chargingInfoVisible ? 'active' : ''}" style="margin-bottom: 2px">
               <ha-icon icon="mdi:chevron-right"></ha-icon>
             </div>
@@ -265,8 +266,8 @@ export class VehicleCard extends LitElement {
       ? html`
           <div class="item active-btn" @click=${() => this.toggleCardFromButtons('servicesCard')}>
             <ha-icon icon="mdi:car-cog"></ha-icon>
-            <div>
-              <span>${localize('common.titleServices')}</span>
+            <div class="added-item-arrow">
+              <span class="${isChargingVisible}">${localize('common.titleServices')}</span>
               <div class="subcard-icon" style="margin-bottom: 2px">
                 <ha-icon icon="mdi:chevron-right"></ha-icon>
               </div>

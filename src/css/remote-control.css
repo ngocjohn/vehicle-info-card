@@ -91,7 +91,8 @@
   border-color: var(--ha-card-border-color, var(--divider-color, #e0e0e0));
   transition: all 0.3s ease !important;
   cursor: pointer;
-  text-wrap: nowrap;
+  text-wrap: balance;
+  text-align: center;
   gap: 0.5rem;
   &:hover {
     box-shadow: inset 0 0 50px var(--primary-color) !important;
