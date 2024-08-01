@@ -3,7 +3,7 @@
 		"tripCards": "Údaje o jízdě",
 		"vehicleCards": "Stav vozidla",
 		"ecoCards": "Ukazatel ECO",
-		"tyreCards": "Tlak v pneumatikách"
+		"tyreCards": "Tlak pneumatik"
 	},
 	"tripCard": {
 		"overview": "Přehled",

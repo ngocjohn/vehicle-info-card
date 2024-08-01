@@ -19,13 +19,13 @@
 		"distanceReset": "Distance traveled",
 		"drivenTimeReset": "Driving time",
 		"averageSpeedReset": "Average speed",
-		"liquidConsumptionReset": "Consumption reset",
-		"electricConsumptionReset": "Consumption reset",
+		"liquidConsumptionReset": "Average consumption",
+		"electricConsumptionReset": "Average consumption",
 		"distanceStart": "Distance traveled",
 		"drivenTimeStart": "Driving time",
 		"averageSpeedStart": "Average speed",
-		"liquidConsumptionStart": "Consumption start",
-		"electricConsumptionStart": "Consumption start"
+		"liquidConsumptionStart": "Average consumption",
+		"electricConsumptionStart": "Average consumption"
 	},
 	"vehicleCard": {
 		"vehicleStatus": "Vehicle status",
