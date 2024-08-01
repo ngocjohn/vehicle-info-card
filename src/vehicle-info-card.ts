@@ -40,6 +40,7 @@ import './components/eco-chart';
 import './components/remote-control';
 
 // Functions
+import { localize } from './localize/localize';
 import { formatTimestamp, convertMinutes } from './utils/helpers';
 import { getVehicleEntities, setupCardListeners } from './utils/get-device-entities';
 
@@ -252,7 +253,7 @@ export class VehicleCard extends LitElement {
       ? html` <div class="item active-btn" @click=${() => (this.chargingInfoVisible = !this.chargingInfoVisible)}>
           <ha-icon icon=${'mdi:ev-station'}></ha-icon>
           <div>
-            <span>Charging</span>
+            <span>${localize('common.stateCharging')}</span>
             <div class="subcard-icon ${this.chargingInfoVisible ? 'active' : ''}" style="margin-bottom: 2px">
               <ha-icon icon="mdi:chevron-right"></ha-icon>
             </div>
@@ -265,7 +266,7 @@ export class VehicleCard extends LitElement {
           <div class="item active-btn" @click=${() => this.toggleCardFromButtons('servicesCard')}>
             <ha-icon icon="mdi:car-cog"></ha-icon>
             <div>
-              <span>Services</span>
+              <span>${localize('common.titleServices')}</span>
               <div class="subcard-icon" style="margin-bottom: 2px">
                 <ha-icon icon="mdi:chevron-right"></ha-icon>
               </div>
@@ -377,7 +378,10 @@ export class VehicleCard extends LitElement {
     const getEcoScore = (entity: any): number => parseFloat(this.getEntityState(entity?.entity_id)) || 0;
 
     const ecoDataObj = DataKeys.ecoScores.reduce((acc, score) => {
-      acc[score.apexProp] = getEcoScore(this.vehicleEntities[score.key]);
+      if (score.apexProp) {
+        acc[score.apexProp] = getEcoScore(this.vehicleEntities[score.key]);
+      }
+
       return acc;
     }, {} as EcoData);
 
@@ -479,16 +483,18 @@ export class VehicleCard extends LitElement {
         <section class="card-element">
           ${isDefaultCard ? cards : cards.map((card: any) => html`<div class="added-card">${card}</div>`)}
         </section>
-        ${isDefaultCard ? html`<div class="last-update"><span>Last update: ${formattedDate}</span></div>` : ''}
+        ${isDefaultCard
+          ? html`<div class="last-update"><span>${localize('common.lastUpdate')}: ${formattedDate}</span></div>`
+          : ''}
       </main>
     `;
   }
 
   private _renderDefaultTripCard(): TemplateResult | void {
     const sections = [
-      { title: 'Overview', data: this.createDataArray(DataKeys.tripOverview) },
-      { title: 'From start', data: this.createDataArray(DataKeys.tripFromStart) },
-      { title: 'From reset', data: this.createDataArray(DataKeys.tripFromReset) },
+      { title: localize('tripCard.overview'), data: this.createDataArray(DataKeys.tripOverview) },
+      { title: localize('tripCard.fromStart'), data: this.createDataArray(DataKeys.tripFromStart) },
+      { title: localize('tripCard.fromReset'), data: this.createDataArray(DataKeys.tripFromReset) },
     ];
 
     return html` ${sections.map((section) => this.createItemDataRow(section.title, section.data))} `;
@@ -500,11 +506,11 @@ export class VehicleCard extends LitElement {
 
     return html`
       <div class="default-card">
-        <div class="data-header">Vehicle status</div>
+        <div class="data-header">${localize('vehicleCard.vehicleStatus')}</div>
         ${this._renderOverviewDataWithSubCard()}
       </div>
       <div class="default-card" .hidden=${subCardVisible}>
-        <div class="data-header">Warnings</div>
+        <div class="data-header">${localize('vehicleCard.vehicleWarnings')}</div>
         ${warningsData.map(
           ({ key, icon, state, name, active }) => html`
             <div class="data-row">
@@ -533,20 +539,25 @@ export class VehicleCard extends LitElement {
     const ecoData = this.createDataArray(DataKeys.ecoScores);
 
     return html`<div class="default-card">
-        <div class="data-header">Eco display</div>
+        <div class="data-header">${localize('ecoCard.ecoDisplay')}</div>
         ${this._renderEcoChart()}
       </div>
-      ${this.createItemDataRow('Scores', ecoData)}`;
+      ${this.createItemDataRow(localize('ecoCard.ecoScore'), ecoData)}`;
   }
 
   private _renderDefaultTyreCard(): TemplateResult {
     const isPressureWarning = this.getBooleanState(this.vehicleEntities.tirePressureWarning?.entity_id);
-    const tyreInfo = isPressureWarning ? 'Pressure loss detected. Check tyres.' : 'No pressure loss detected';
+
+    const tireCardTitle = localize('tyreCard.tyrePressure');
+    const tireWarningProblem = localize('tyreCard.tireWarningProblem');
+    const tireWarningOk = localize('tyreCard.tireWarningOk');
+
+    const tyreInfo = isPressureWarning ? tireWarningProblem : tireWarningOk;
     const infoClass = isPressureWarning ? 'warning' : '';
 
     return html`
       <div class="default-card">
-        <div class="data-header">Tyre pressures</div>
+        <div class="data-header">${tireCardTitle}</div>
         <div class="tyre-wrapper">
           <div class="background" style="background-image: url(${tyreBg})"></div>
           ${DataKeys.tyrePressures.map(
@@ -571,7 +582,7 @@ export class VehicleCard extends LitElement {
     const carLockEntity = this.vehicleEntities.lock?.entity_id;
     return html`
       <div class="default-card remote-tab">
-        <div class="data-header">Remote control</div>
+        <div class="data-header">${localize('common.titleRemoteControl')}</div>
         <remote-control
           .hass=${hass}
           .servicesConfig=${serviceControl}
@@ -902,8 +913,8 @@ export class VehicleCard extends LitElement {
     if (key === 'selectedProgram') {
       return {
         key,
-        name: 'Program',
-        icon: 'mdi:ev-station',
+        name,
+        icon,
         state:
           StateMapping.chargeSelectedProgram[
             this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'selectedChargeProgram')
@@ -917,8 +928,8 @@ export class VehicleCard extends LitElement {
       const activeState = doorValue === '1' ? true : false;
       return {
         key,
-        name: 'Doors',
-        icon: 'mdi:car-door-lock',
+        name,
+        icon,
         state: doorFormatted,
         active: activeState,
         unit,
@@ -929,7 +940,7 @@ export class VehicleCard extends LitElement {
       const entityKey = key === 'drivenTimeReset' ? 'distanceReset' : 'distanceStart';
       const timeState = this.getEntityAttribute(this.vehicleEntities[entityKey]?.entity_id, key);
       const timeValue = timeState ? convertMinutes(parseInt(timeState)) : '';
-      return { key, name: 'Driving time', icon: 'mdi:clock', state: timeValue, unit };
+      return { key, name, icon, state: timeValue, unit };
     }
     return { key, name, icon, state, unit };
   };
@@ -980,10 +991,11 @@ export class VehicleCard extends LitElement {
 
   private getParkBrakeInfo = (defaultInfo: EntityConfig, vehicleEntity: any): EntityConfig => {
     const parkBrakeState = this.getBooleanState(vehicleEntity.entity_id);
+    const parkBrakeOff = localize('common.stateParkBrakeOff');
+    const parkBrakeOn = localize('common.stateParkBrakeOn');
     return {
       ...defaultInfo,
-      name: 'Parking brake',
-      state: parkBrakeState ? 'Engaged' : 'Released',
+      state: parkBrakeState ? parkBrakeOn : parkBrakeOff,
       active: parkBrakeState,
     };
   };
@@ -992,7 +1004,7 @@ export class VehicleCard extends LitElement {
     let windowState: string;
     const windowsState = this.getBooleanState(vehicleEntity.entity_id);
     if (windowsState) {
-      windowState = 'Closed';
+      windowState = localize('common.stateClosed');
     } else {
       const windowAttributeStates: Record<number, any> = {};
 
@@ -1008,11 +1020,10 @@ export class VehicleCard extends LitElement {
       );
 
       const totalOpenWindows = openWindows.length;
-      windowState = `${totalOpenWindows} window${totalOpenWindows !== 1 ? 's' : ''} open`;
+      windowState = `${totalOpenWindows} ${localize('common.stateOpen')}`;
     }
     return {
       ...defaultInfo,
-      name: 'Windows',
       state: windowState,
       active: windowsState,
     };

@@ -25,7 +25,7 @@ export function convertMinutes(totalMinutes: number) {
   let result = '';
 
   if (days > 0) {
-    result += `${days} day${days > 1 ? 's' : ''}`;
+    result += `${days} d`;
   }
 
   if (hours > 0) {

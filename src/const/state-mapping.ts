@@ -1,75 +1,120 @@
+import { localize } from '../localize/localize';
+
+const createState = (locked: string, unlocked: string) => ({
+  state: { false: localize(locked), true: localize(unlocked) },
+});
+
+const createNameState = (nameKey: string, locked: string, unlocked: string) => ({
+  name: localize(nameKey),
+  ...createState(locked, unlocked),
+});
+
+const createNameStateWithMap = (nameKey: string, stateMap: { [key: string]: string }) => ({
+  name: localize(nameKey),
+  state: Object.keys(stateMap).reduce(
+    (acc, key) => {
+      acc[key] = localize(stateMap[key]);
+      return acc;
+    },
+    {} as { [key: string]: string },
+  ),
+});
+
 export const lockAttributes = {
-  doorlockstatusfrontleft: { name: 'Door lock front left', state: { false: 'locked', true: 'unlocked' } },
-  doorlockstatusfrontright: { name: 'Door lock front right', state: { false: 'locked', true: 'unlocked' } },
-  doorlockstatusrearleft: { name: 'Door lock rear left', state: { false: 'locked', true: 'unlocked' } },
-  doorlockstatusrearright: { name: 'Door lock rear right', state: { false: 'locked', true: 'unlocked' } },
-  doorlockstatusgas: { name: 'Gas lock', state: { false: 'locked', true: 'unlocked' } },
+  doorlockstatusfrontleft: createNameState(
+    'lockAttributes.doorlockstatusfrontleft',
+    'common.stateLocked',
+    'common.stateUnlocked',
+  ),
+  doorlockstatusfrontright: createNameState(
+    'lockAttributes.doorlockstatusfrontright',
+    'common.stateLocked',
+    'common.stateUnlocked',
+  ),
+  doorlockstatusrearleft: createNameState(
+    'lockAttributes.doorlockstatusrearleft',
+    'common.stateLocked',
+    'common.stateUnlocked',
+  ),
+  doorlockstatusrearright: createNameState(
+    'lockAttributes.doorlockstatusrearright',
+    'common.stateLocked',
+    'common.stateUnlocked',
+  ),
+  doorlockstatusgas: createNameState('lockAttributes.doorlockstatusgas', 'common.stateLocked', 'common.stateUnlocked'),
 };
 
 export const doorStatus = {
-  '0': 'Open',
-  '1': 'Closed',
-  '2': 'Not existing',
-  '3': 'Unknown',
+  '0': localize('common.stateOpen'),
+  '1': localize('common.stateClosed'),
+  '2': localize('common.stateNotExisting'),
+  '3': localize('common.stateUnknown'),
 };
 
 export const doorAttributes = {
-  decklidstatus: { name: 'Deck lid', state: { false: 'closed', true: 'open' } },
-  doorstatusfrontleft: { name: 'Door front left', state: { false: 'closed', true: 'open' } },
-  doorstatusfrontright: { name: 'Door front right', state: { false: 'closed', true: 'open' } },
-  doorstatusrearleft: { name: 'Door rear left', state: { false: 'closed', true: 'open' } },
-  doorstatusrearright: { name: 'Door rear right', state: { false: 'closed', true: 'open' } },
-  enginehoodstatus: { name: 'Engine hood', state: { false: 'closed', true: 'open' } },
-  sunroofstatus: {
-    name: 'Sunroof status',
-    state: {
-      '0': 'closed',
-      '1': 'open',
-      '2': 'lifting open',
-      '3': 'running',
-      '4': 'anti-booming position',
-      '5': 'sliding intermediate',
-      '6': 'lifting intermediate',
-      '7': 'opening',
-      '8': 'closing',
-      '9': 'anti-booming lifting',
-      '10': 'intermediate position',
-      '11': 'opening lifting',
-      '12': 'closing lifting',
-    },
-  },
+  decklidstatus: createNameState('doorAttributes.decklidstatus', 'common.stateClosed', 'common.stateOpen'),
+  doorstatusfrontleft: createNameState('doorAttributes.doorstatusfrontleft', 'common.stateClosed', 'common.stateOpen'),
+  doorstatusfrontright: createNameState(
+    'doorAttributes.doorstatusfrontright',
+    'common.stateClosed',
+    'common.stateOpen',
+  ),
+  doorstatusrearleft: createNameState('doorAttributes.doorstatusrearleft', 'common.stateClosed', 'common.stateOpen'),
+  doorstatusrearright: createNameState('doorAttributes.doorstatusrearright', 'common.stateClosed', 'common.stateOpen'),
+  enginehoodstatus: createNameState('doorAttributes.enginehoodstatus', 'common.stateClosed', 'common.stateOpen'),
+  sunroofstatus: createNameStateWithMap('doorAttributes.sunroofstatus', {
+    '0': 'sunroofState.stateClosed',
+    '1': 'sunroofState.stateOpen',
+    '2': 'sunroofState.liftingOpen',
+    '3': 'sunroofState.running',
+    '4': 'sunroofState.antiBoomingPosition',
+    '5': 'sunroofState.slidingIntermediate',
+    '6': 'sunroofState.liftingIntermediate',
+    '7': 'sunroofState.opening',
+    '8': 'sunroofState.closing',
+    '9': 'sunroofState.antiBoomingLifting',
+    '10': 'sunroofState.intermediatePosition',
+    '11': 'sunroofState.openingLifting',
+    '12': 'sunroofState.closingLifting',
+  }),
 };
 
 export const lockStates = {
-  '0': 'Unlocked',
-  '1': 'Locked int',
-  '2': 'Locked',
-  '3': 'Partly unlocked',
-  '4': 'Unknown',
+  '0': localize('common.stateUnlocked'),
+  '1': localize('common.stateLockedInt'),
+  '2': localize('common.stateLocked'),
+  '3': localize('common.statePartlyUnlocked'),
+  '4': localize('common.stateUnknown'),
 };
 
 export const chargeSelectedProgram = {
   '0': 'Standard',
-  '1': 'Unknown',
+  '1': localize('common.stateUnknown'),
   '2': 'Home',
   '3': 'Work',
 };
 
+const createWindowStatus = (nameKey: string) =>
+  createNameStateWithMap(nameKey, {
+    '2': 'common.stateClosed',
+    '0': 'common.stateOpen',
+  });
+
 export const windowAttributes = {
-  windowstatusrearleft: { name: 'Window rear left', state: { 2: 'closed', 0: 'open' } },
-  windowstatusrearright: { name: 'Window rear right', state: { 2: 'closed', 0: 'open' } },
-  windowstatusfrontleft: { name: 'Window front left', state: { 2: 'closed', 0: 'open' } },
-  windowstatusfrontright: { name: 'Window front right', state: { 2: 'closed', 0: 'open' } },
-  windowstatusrearleftblind: { name: 'Window rear left blind', state: { 2: 'closed', 0: 'open' } },
-  windowstatusrearrightblind: { name: 'Window rear right blind', state: { 2: 'closed', 0: 'open' } },
-  windowstatusfrontleftblind: { name: 'Window front left blind', state: { 2: 'closed', 0: 'open' } },
-  windowstatusfrontrightblind: { name: 'Window front right blind', state: { 2: 'closed', 0: 'open' } },
+  windowstatusrearleft: createWindowStatus('windowAttributes.windowstatusrearleft'),
+  windowstatusrearright: createWindowStatus('windowAttributes.windowstatusrearright'),
+  windowstatusfrontleft: createWindowStatus('windowAttributes.windowstatusfrontleft'),
+  windowstatusfrontright: createWindowStatus('windowAttributes.windowstatusfrontright'),
+  windowstatusrearleftblind: createWindowStatus('windowAttributes.windowstatusrearleftblind'),
+  windowstatusrearrightblind: createWindowStatus('windowAttributes.windowstatusrearrightblind'),
+  windowstatusfrontleftblind: createWindowStatus('windowAttributes.windowstatusfrontleftblind'),
+  windowstatusfrontrightblind: createWindowStatus('windowAttributes.windowstatusfrontrightblind'),
 };
 
 export const starterBattery = {
-  '0': 'OK',
-  '1': 'Partly charged',
-  '2': 'Not available',
-  '3': 'Remote service disabled',
-  '4': 'Vehicle no longer available',
+  '0': localize('starterBattery.stateOk'),
+  '1': localize('starterBattery.partlyCharged'),
+  '2': localize('starterBattery.notAvailable'),
+  '3': localize('starterBattery.remoteServiceDisabled'),
+  '4': localize('starterBattery.vehicleNoLongerAvailable'),
 };

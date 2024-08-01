@@ -1,89 +1,82 @@
+import { localize } from '../localize/localize';
+
+const createCard = (type: string, nameKey: string, icon: string, config: string, editor: string) => ({
+  type,
+  name: localize(nameKey),
+  icon,
+  config,
+  editor,
+});
+
+const createItem = (key: string, nameKey: string, icon?: string, apexProp?: string) => ({
+  key,
+  name: localize(nameKey),
+  ...(icon ? { icon } : {}),
+  ...(apexProp ? { apexProp } : {}),
+});
+
 export const cardTypes = [
-  {
-    type: 'tripCards',
-    name: 'Trip data',
-    icon: 'mdi:map-marker-path',
-    config: 'trip_card',
-    editor: 'isTripCardEditor',
-  },
-  {
-    type: 'vehicleCards',
-    name: 'Vehicle status',
-    icon: 'mdi:car-info',
-    config: 'vehicle_card',
-    editor: 'isVehicleCardEditor',
-  },
-  {
-    type: 'ecoCards',
-    name: 'Eco display',
-    icon: 'mdi:leaf',
-    config: 'eco_card',
-    editor: 'isEcoCardEditor',
-  },
-  {
-    type: 'tyreCards',
-    name: 'Tyre pressure',
-    icon: 'mdi:tire',
-    config: 'tyre_card',
-    editor: 'isTyreCardEditor',
-  },
+  createCard('tripCards', 'cardType.tripCards', 'mdi:map-marker-path', 'trip_card', 'isTripCardEditor'),
+  createCard('vehicleCards', 'cardType.vehicleCards', 'mdi:car-info', 'vehicle_card', 'isVehicleCardEditor'),
+  createCard('ecoCards', 'cardType.ecoCards', 'mdi:leaf', 'eco_card', 'isEcoCardEditor'),
+  createCard('tyreCards', 'cardType.tyreCards', 'mdi:tire', 'tyre_card', 'isTyreCardEditor'),
 ];
 
 export const tripOverview = [
-  { key: 'odometer', icon: 'mdi:counter' },
-  { key: 'fuelLevel' },
-  { key: 'adBlueLevel', icon: 'mdi:fuel' },
-  { key: 'rangeLiquid', name: 'Range' },
-  { key: 'rangeElectric', name: 'Range' },
-  { key: 'soc' },
-  { key: 'maxSoc' },
+  createItem('odometer', 'tripCard.odometer', 'mdi:counter'),
+  createItem('fuelLevel', 'tripCard.fuelLevel'),
+  createItem('adBlueLevel', 'tripCard.adBlueLevel', 'mdi:fuel'),
+  createItem('rangeLiquid', 'tripCard.rangeLiquid'),
+  createItem('rangeElectric', 'tripCard.rangeElectric'),
+  createItem('soc', 'tripCard.soc'),
+  createItem('maxSoc', 'tripCard.maxSoc'),
 ];
 
 export const tripFromReset = [
-  { key: 'distanceReset', name: 'Distance traveled' },
-  { key: 'drivenTimeReset' },
-  { key: 'averageSpeedReset', icon: 'mdi:speedometer', name: 'Average speed' },
-  { key: 'liquidConsumptionReset', name: 'Consumption reset' },
-  { key: 'electricConsumptionReset', name: 'Consumption reset' },
+  createItem('distanceReset', 'tripCard.distanceReset'),
+  createItem('drivenTimeReset', 'tripCard.drivenTimeReset', 'mdi:clock'),
+  createItem('averageSpeedReset', 'tripCard.averageSpeedReset', 'mdi:speedometer'),
+  createItem('liquidConsumptionReset', 'tripCard.liquidConsumptionReset'),
+  createItem('electricConsumptionReset', 'tripCard.electricConsumptionReset'),
 ];
 
 export const tripFromStart = [
-  { key: 'distanceStart', name: 'Distance traveled' },
-  { key: 'drivenTimeStart' },
-  { key: 'averageSpeedStart', icon: 'mdi:speedometer-slow', name: 'Average speed' },
-  { key: 'liquidConsumptionStart', name: 'Consumption start' },
-  { key: 'electricConsumptionStart', name: 'Consumption start' },
+  createItem('distanceStart', 'tripCard.distanceStart'),
+  createItem('drivenTimeStart', 'tripCard.drivenTimeStart', 'mdi:clock'),
+  createItem('averageSpeedStart', 'tripCard.averageSpeedStart', 'mdi:speedometer-slow'),
+  createItem('liquidConsumptionStart', 'tripCard.liquidConsumptionStart'),
+  createItem('electricConsumptionStart', 'tripCard.electricConsumptionStart'),
 ];
 
 export const vehicleOverview = [
-  { key: 'lockSensor', name: 'Lock status' },
-  { key: 'windowsClosed' },
-  { key: 'doorStatusOverall' },
-  { key: 'parkBrake' },
-  { key: 'ignitionState' },
+  createItem('lockSensor', 'vehicleCard.lockSensor'),
+  createItem('windowsClosed', 'vehicleCard.windowsClosed'),
+  createItem('doorStatusOverall', 'vehicleCard.doorStatusOverall', 'mdi:car-door-lock'),
+  createItem('parkBrake', 'vehicleCard.parkBrake'),
+  createItem('ignitionState', 'vehicleCard.ignitionState'),
 ];
 
 export const vehicleWarnings = [
-  { key: 'starterBatteryState', name: 'Starter battery' },
-  { key: 'lowCoolantLevel', name: 'Coolant', icon: 'mdi:car-coolant-level' },
-  { key: 'lowBrakeFluid', name: 'Brake fluid', icon: 'mdi:car-brake-fluid-level' },
-  { key: 'lowWashWater', name: 'Washer fluid' },
-  { key: 'tirePressureWarning', name: 'Tire pressure' },
-  { key: 'engineLight', name: 'Engine light' },
+  createItem('starterBatteryState', 'vehicleCard.starterBatteryState'),
+  createItem('lowCoolantLevel', 'vehicleCard.lowCoolantLevel', 'mdi:car-coolant-level'),
+  createItem('lowBrakeFluid', 'vehicleCard.lowBrakeFluid', 'mdi:car-brake-fluid-level'),
+  createItem('lowWashWater', 'vehicleCard.lowWashWater'),
+  createItem('tirePressureWarning', 'vehicleCard.tirePressureWarning'),
+  createItem('engineLight', 'vehicleCard.engineLight'),
 ];
 
 export const ecoScores = [
-  { key: 'ecoScoreBonusRange', name: 'Bonus range', apexProp: 'bonusRange' },
-  { key: 'ecoScoreAcceleraion', name: 'Acceleration', apexProp: 'acceleration' },
-  { key: 'ecoScoreConstant', name: 'Constant', apexProp: 'constant' },
-  { key: 'ecoScoreFreeWheel', name: 'Free wheel', apexProp: 'freeWheel' },
+  createItem('ecoScoreBonusRange', 'ecoCard.ecoScoreBonusRange', undefined, 'bonusRange'),
+  createItem('ecoScoreAcceleraion', 'ecoCard.ecoScoreAcceleraion', undefined, 'acceleration'),
+  createItem('ecoScoreConstant', 'ecoCard.ecoScoreConstant', undefined, 'constant'),
+  createItem('ecoScoreFreeWheel', 'ecoCard.ecoScoreFreeWheel', undefined, 'freeWheel'),
 ];
 
 export const tyrePressures = [
-  { key: 'tirePressureFrontLeft', name: 'Front left', icon: 'mdi:tire' },
-  { key: 'tirePressureFrontRight', name: 'Front right', icon: 'mdi:tire' },
-  { key: 'tirePressureRearLeft', name: 'Rear left', icon: 'mdi:tire' },
-  { key: 'tirePressureRearRight', name: 'Rear right', icon: 'mdi:tire' },
+  createItem('tirePressureFrontLeft', 'tyreCard.tirePressureFrontLeft', 'mdi:tire'),
+  createItem('tirePressureFrontRight', 'tyreCard.tirePressureFrontRight', 'mdi:tire'),
+  createItem('tirePressureRearLeft', 'tyreCard.tirePressureRearLeft', 'mdi:tire'),
+  createItem('tirePressureRearRight', 'tyreCard.tirePressureRearRight', 'mdi:tire'),
 ];
 
 export const tyreAttributes = [
@@ -94,8 +87,8 @@ export const tyreAttributes = [
 ];
 
 export const chargingOverview = [
-  { key: 'chargingPower', name: 'Power', icon: 'mdi:flash' },
-  { key: 'soc', name: 'Current state' },
-  { key: 'maxSoc', name: 'Maximum' },
-  { key: 'selectedProgram' },
+  createItem('chargingPower', 'chargingOverview.chargingPower', 'mdi:flash'),
+  createItem('soc', 'chargingOverview.soc'),
+  createItem('maxSoc', 'chargingOverview.maxSoc'),
+  createItem('selectedProgram', 'chargingOverview.selectedProgram', 'mdi:ev-station'),
 ];
