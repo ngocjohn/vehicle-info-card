@@ -5,6 +5,12 @@ const createItem = (nameKey: string, icon: string) => ({
   icon,
 });
 
+const createService = (command: string, icon: string, label: string) => ({
+  command,
+  icon,
+  label: localize(label),
+});
+
 export const servicesCtrl = {
   auxheat: createItem('servicesCtrl.auxheat', 'mdi:radiator'),
   charge: createItem('servicesCtrl.charge', 'mdi:ev-station'),
@@ -20,69 +26,69 @@ export const servicesCtrl = {
 export const serviceData = {
   auxheatConfig: {
     service: {
-      START: { command: 'auxheat_start', icon: 'mdi:radiator', label: 'Start' },
-      STOP: { command: 'auxheat_stop', icon: 'mdi:radiator-off', label: 'Stop' },
-      DATA_CONFIGURE: { command: 'auxheat_configure', icon: 'mdi:cog', label: 'save' },
+      START: createService('auxheat_start', 'mdi:radiator', 'serviceData.labelStart'),
+      STOP: createService('auxheat_stop', 'mdi:radiator-off', 'serviceData.labelStop'),
+      DATA_CONFIGURE: createService('auxheat_configure', 'mdi:cog', 'serviceData.labelSave'),
     },
     data: {
       time_selection: 0, // Store the selected value here
       time_selection_options: {
-        0: 'No selection',
-        1: 'Time 1',
-        2: 'Time 2',
-        3: 'Time 3',
+        0: localize('serviceData.labelNoSelection'),
+        1: localize('serviceData.labelTime1'),
+        2: localize('serviceData.labelTime2'),
+        3: localize('serviceData.labelTime3'),
       },
       items: {
-        time_1: { label: 'Time 1', value: 0, hour: '00', minute: '00' },
-        time_2: { label: 'Time 2', value: 0, hour: '00', minute: '00' },
-        time_3: { label: 'Time 3', value: 0, hour: '00', minute: '00' },
+        time_1: { label: localize('serviceData.labelTime1'), value: 0, hour: '00', minute: '00' },
+        time_2: { label: localize('serviceData.labelTime2'), value: 0, hour: '00', minute: '00' },
+        time_3: { label: localize('serviceData.labelTime3'), value: 0, hour: '00', minute: '00' },
       },
     },
   },
 
   windowsConfig: {
     service: {
-      OPEN: { command: 'windows_open', icon: 'mdi:arrow-up-bold', label: 'Open' },
-      CLOSE: { command: 'windows_close', icon: 'mdi:arrow-down-bold', label: 'Close' },
-      DATA_MOVE: { command: 'windows_move', icon: 'mdi:swap-vertical-bold', label: 'Move' },
+      OPEN: createService('windows_open', 'mdi:arrow-up-bold', 'serviceData.labelOpen'),
+      CLOSE: createService('windows_close', 'mdi:arrow-down-bold', 'serviceData.labelClose'),
+      DATA_MOVE: createService('windows_move', 'mdi:swap-vertical-bold', 'serviceData.labelMove'),
     },
     data: {
       positions: {
-        front_left: { label: 'Front left', value: 0 },
-        front_right: { label: 'Front right', value: 0 },
-        rear_left: { label: 'Rear left', value: 0 },
-        rear_right: { label: 'Rear right', value: 0 },
+        front_left: { label: localize('serviceData.labelWindowFrontLeft'), value: 0 },
+        front_right: { label: localize('serviceData.labelWindowFrontRight'), value: 0 },
+        rear_left: { label: localize('serviceData.labelWindowRearLeft'), value: 0 },
+        rear_right: { label: localize('serviceData.labelWindowRearRight'), value: 0 },
       },
     },
   },
 
   preheatConfig: {
     service: {
-      DATA_START_DEP_TIME: { command: 'preheat_start_departure_time', icon: 'mdi:cog', label: 'start time' },
-      STOP_DEP_TIME: { command: 'preheat_stop_departure_time', icon: 'mdi:cog-off', label: 'stop time' },
-      START: { command: 'preheat_start', icon: 'mdi:car-seat-heater', label: 'Start' },
-      STOP: { command: 'preheat_stop', icon: 'mdi:car-seat', label: 'Stop' },
+      DATA_START_DEP_TIME: createService('preheat_start_departure_time', 'mdi:cog', 'serviceData.labelStartTime'),
+      STOP_DEP_TIME: createService('preheat_stop_departure_time', 'mdi:cog', 'serviceData.labelStopTime'),
+      START: createService('preheat_start', 'mdi:car-seat-heater', 'serviceData.labelStart'),
+      STOP: createService('preheat_stop', 'mdi:car-seat', 'serviceData.labelStop'),
     },
     data: {
-      time: { label: 'Departure time', value: 0, hour: '00', minute: '00' },
+      time: { label: localize('serviceData.labelDepartureTime'), value: 0, hour: '00', minute: '00' },
     },
   },
 
   engineConfig: {
     service: {
-      START: { command: 'engine_start', icon: 'mdi:engine', label: 'Start' },
-      STOP: { command: 'engine_stop', icon: 'mdi:engine-off', label: 'Stop' },
+      START: createService('engine_start', 'mdi:engine-start', 'serviceData.labelStart'),
+      STOP: createService('engine_stop', 'mdi:engine-off', 'serviceData.labelStop'),
     },
   },
 
   batteryChargeConfig: {
     service: {
-      DATA_MAX_SOC_CONFIGURE: {
-        command: 'battery_max_soc_configure',
-        icon: 'mdi:battery-charging-high',
-        label: 'set max soc',
-      },
-      DATA_CHARGE_PROGRAM: { command: 'charge_program_configure', icon: 'mdi:ev-station', label: 'set program' },
+      DATA_MAX_SOC_CONFIGURE: createService(
+        'battery_max_soc_configure',
+        'mdi:battery-charging-high',
+        'serviceData.labelSetMaxSoc',
+      ),
+      DATA_CHARGE_PROGRAM: createService('charge_program_configure', 'mdi:ev-station', 'serviceData.labelSetProgram'),
     },
     data: {
       selected_program: 0, // Store the selected value here
@@ -91,29 +97,29 @@ export const serviceData = {
         2: 'HOME',
         3: 'WORK',
       },
-      max_soc: { label: 'Max state of charge', value: 50 },
+      max_soc: { label: localize('serviceData.labelMaxStateOfCharge'), value: 50 },
     },
   },
 
   sendRouteConfig: {
     service: {
-      DATA_SEND_ROUTE: { command: 'send_route', icon: 'mdi:map-marker', label: 'send' },
+      DATA_SEND_ROUTE: createService('send_route', 'mdi:map-marker', 'serviceData.labelSend'),
     },
     data: {
-      title: { label: 'Title', value: '', placeholder: 'Brandenburger Tor' },
-      latitude: { label: 'Latitude', value: '', placeholder: '52.5163' },
-      longitude: { label: 'Longitude', value: '', placeholder: '13.3777' },
-      city: { label: 'City', value: '', placeholder: 'Berlin' },
-      postcode: { label: 'Postcode', value: '', placeholder: '10117' },
-      street: { label: 'Street', value: '', placeholder: 'Pariser Platz' },
+      title: { label: localize('serviceData.labelTitle'), value: '', placeholder: 'Brandenburger Tor' },
+      latitude: { label: localize('serviceData.labelLatitude'), value: '', placeholder: '52.5163' },
+      longitude: { label: localize('serviceData.labelLongitude'), value: '', placeholder: '13.3777' },
+      city: { label: localize('serviceData.labelCity'), value: '', placeholder: 'Berlin' },
+      postcode: { label: localize('serviceData.labelPostCode'), value: '', placeholder: '10117' },
+      street: { label: localize('serviceData.labelStreet'), value: '', placeholder: 'Pariser Platz' },
     },
   },
 
   sunroofConfigData: {
     service: {
-      OPEN: { command: 'sunroof_open', icon: 'mdi:window-open', label: 'Open' },
-      CLOSE: { command: 'sunroof_close', icon: 'mdi:window-close', label: 'Close' },
-      TILT: { command: 'sunroof_tilt', icon: 'mdi:window-shutter', label: 'Tilt' },
+      OPEN: createService('sunroof_open', 'mdi:window-open', 'serviceData.labelOpen'),
+      CLOSE: createService('sunroof_close', 'mdi:window-closed', 'serviceData.labelClose'),
+      TILT: createService('sunroof_tilt', 'mdi:window-shutter', 'serviceData.labelTilt'),
     },
   },
 };

@@ -124,6 +124,42 @@
 		"sunroof": "Střešní okno",
 		"windows": "Okna"
 	},
+	"serviceData": {
+		"labelStart": "Start",
+		"labelStop": "Stop",
+		"labelSave": "Uložit",
+		"labelOpen": "Otevřít",
+		"labelClose": "Zavřít",
+		"labelMove": "Přesunout",
+		"labelSend": "Odeslat",
+		"labelTilt": "Náklon",
+		"labelUnlockCar": "Odemknout auto",
+		"labelLockCar": "Zamknout auto",
+		"labelMoreInfo": "Více",
+		"labelSetMaxSoc": "Nastavit maximum",
+		"labelSetProgram": "Nastavit program",
+		"labelWindowFrontLeft": "Přední vlevo",
+		"labelWindowFrontRight": "Přední vpravo",
+		"labelWindowRearLeft": "Zadní vlevo",
+		"labelWindowRearRight": "Zadní vpravo",
+		"labelTimeSelection": "Výběr času",
+		"labelNoSelection": "Žádný výběr",
+		"labelTime1": "Čas 1",
+		"labelTime2": "Čas 2",
+		"labelTime3": "Čas 3",
+		"labelStartTime": "Čas začátku",
+		"labelStopTime": "Čas konce",
+		"labelDurationTime": "Doba trvání",
+		"labelDepartureTime": "Čas odjezdu",
+		"labelTitle": "Název",
+		"labelLatitude": "Zeměpisná šířka",
+		"labelLongitude": "Zeměpisná délka",
+		"labelCity": "Město",
+		"labelPostCode": "PSČ",
+		"labelStreet": "Ulice",
+		"labelChargeProgram": "Program nabíjení",
+		"labelMaxStateOfCharge": "Maximální stav nabití"
+	},
 	"common": {
 		"lastUpdate": "Aktualizováno",
 		"stateLocked": "Zamknuté",
@@ -138,6 +174,7 @@
 		"stateParkBrakeOff": "Uvolněno",
 		"stateCharging": "Nabíjení",
 		"titleServices": "Služby",
-		"titleRemoteControl": "Vzdálené ovládání"
+		"titleRemoteControl": "Vzdálené ovládání",
+		"toastCommandSent": "Příkaz odeslán úspěšně!"
 	}
 }

@@ -90,17 +90,6 @@ export const chargeSelectedProgram = {
   '3': 'Work',
 };
 
-// export const windowAttributes = {
-//   windowstatusrearleft: { name: 'Window rear left', state: { 2: localize('common.stateClosed'), 0: localize('common.stateOpen') } },
-//   windowstatusrearright: { name: 'Window rear right', state: { 2: localize('common.stateClosed'), 0: localize('common.stateOpen') } },
-//   windowstatusfrontleft: { name: 'Window front left', state: { 2: localize('common.stateClosed'), 0: localize('common.stateOpen') } },
-//   windowstatusfrontright: { name: 'Window front right', state: { 2: localize('common.stateClosed'), 0: localize('common.stateOpen') } },
-//   windowstatusrearleftblind: { name: 'Window rear left blind', state: { 2: localize('common.stateClosed'), 0: localize('common.stateOpen') } },
-//   windowstatusrearrightblind: { name: 'Window rear right blind', state: { 2: localize('common.stateClosed'), 0: localize('common.stateOpen') } },
-//   windowstatusfrontleftblind: { name: 'Window front left blind', state: { 2: localize('common.stateClosed'), 0: localize('common.stateOpen') } },
-//   windowstatusfrontrightblind: { name: 'Window front right blind', state: { 2: localize('common.stateClosed'), 0: localize('common.stateOpen') } },
-// };
-
 export const windowAttributes = {
   windowstatusrearleft: {
     name: localize('windowAttributes.windowstatusrearleft'),

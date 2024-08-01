@@ -8,6 +8,7 @@ import * as Srvc from '../const/remote-control-keys';
 
 import styles from '../css/remote-control.css';
 import mainstyle from '../css/styles.css';
+import { localize } from '../localize/localize';
 
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
 
@@ -118,9 +119,10 @@ export class RemoteControl extends LitElement {
   }
 
   private _renderToast(): TemplateResult {
+    const toastMsg = localize('common.toastCommandSent');
     return html`
       <div id="toast">
-        <ha-alert alert-type="success"> Command sent success! </ha-alert>
+        <ha-alert alert-type="success">${toastMsg} </ha-alert>
       </div>
     `;
   }
@@ -195,10 +197,10 @@ export class RemoteControl extends LitElement {
     const { preheatConfig } = this;
     const time = preheatConfig.data.time;
     const service = preheatConfig.service;
-
+    const labelDepartureTime = localize('serviceData.labelDepartureTime');
     const preheatDepartureTimeEL = html`
       <div class="items-row">
-        <div>Departure Time</div>
+        <div>${labelDepartureTime}</div>
         <div class="time-input-wrap">
           <ha-textfield
             type="number"
@@ -257,10 +259,11 @@ export class RemoteControl extends LitElement {
     const maxSoc = data.max_soc;
 
     const services = chargeConfig.service;
-
+    const labelChargeProgram = localize('serviceData.labelChargeProgram');
+    const labelMaxSoc = localize('serviceData.labelMaxStateOfCharge');
     const selectChargeProgram = html`
       <div class="items-row">
-        <div>Charge Program</div>
+        <div>${labelChargeProgram}</div>
         <ha-select
           .value=${String(selectedProgram)}
           @change=${(e: Event) => this.handleChargeProgramChange('selected_program', e)}
@@ -305,10 +308,10 @@ export class RemoteControl extends LitElement {
     const timeSelectOptions = auxheatConfig.data.time_selection_options;
 
     const service = auxheatConfig.service;
-
+    const titleTimeSelection = localize('serviceData.labelTimeSelection');
     const timeSelectEl = html`
       <div class="items-row">
-        <div>Time Selection</div>
+        <div>${titleTimeSelection}</div>
         <ha-select
           .value=${String(selectedTimeSelection)}
           @change=${(e: Event) => this.handleAuxheatChange('time_selection', '', e)}

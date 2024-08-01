@@ -124,6 +124,42 @@
 		"sunroof": "Sunroof",
 		"windows": "Windows"
 	},
+	"serviceData": {
+		"labelStart": "Start",
+		"labelStop": "Stop",
+		"labelSave": "Save",
+		"labelOpen": "Open",
+		"labelClose": "Close",
+		"labelMove": "Move",
+		"labelSend": "Send",
+		"labelTilt": "Tilt",
+		"labelUnlockCar": "Unlock car",
+		"labelLockCar": "Lock car",
+		"labelMoreInfo": "More info",
+		"labelSetMaxSoc": "Set maximum",
+		"labelSetProgram": "Set program",
+		"labelWindowFrontLeft": "Front left",
+		"labelWindowFrontRight": "Front right",
+		"labelWindowRearLeft": "Rear left",
+		"labelWindowRearRight": "Rear right",
+		"labelTimeSelection": "Time selection",
+		"labelNoSelection": "No selection",
+		"labelTime1": "Time 1",
+		"labelTime2": "Time 2",
+		"labelTime3": "Time 3",
+		"labelStartTime": "Start time",
+		"labelStopTime": "Stop time",
+		"labelDurationTime": "Duration time",
+		"labelDepartureTime": "Departure time",
+		"labelTitle": "Title",
+		"labelLatitude": "Latitude",
+		"labelLongitude": "Longitude",
+		"labelCity": "City",
+		"labelPostCode": "Post code",
+		"labelStreet": "Street",
+		"labelChargeProgram": "Charge program",
+		"labelMaxStateOfCharge": "Max state of charge"
+	},
 	"common": {
 		"lastUpdate": "Last update",
 		"stateLocked": "Locked",
@@ -138,6 +174,7 @@
 		"stateParkBrakeOff": "Released",
 		"stateCharging": "Charging",
 		"titleServices": "Services",
-		"titleRemoteControl": "Remote control"
+		"titleRemoteControl": "Remote control",
+		"toastCommandSent": "Command sent sucess!"
 	}
 }
