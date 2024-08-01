@@ -113,7 +113,19 @@
 		"remoteServiceDisabled": "Remote service disabled",
 		"vehicleNoLongerAvailable": "Vehicle no longer available"
 	},
+	"servicesCtrl": {
+		"auxheat": "Auxiliary heating",
+		"charge": "Charge",
+		"doorsLock": "Security",
+		"engine": "Engine control",
+		"preheat": "Pre-conditioning",
+		"sendRoute": "Send route",
+		"sigPos": "Signal position",
+		"sunroof": "Sunroof",
+		"windows": "Windows"
+	},
 	"common": {
+		"lastUpdate": "Last update",
 		"stateLocked": "Locked",
 		"stateUnlocked": "Unlocked",
 		"stateClosed": "Closed",
@@ -123,6 +135,9 @@
 		"statePartlyUnlocked": "Partly unlocked",
 		"stateLockedInt": "Locked int",
 		"stateParkBrakeOn": "Engaged",
-		"stateParkBrakeOff": "Released"
+		"stateParkBrakeOff": "Released",
+		"stateCharging": "Charging",
+		"titleServices": "Services",
+		"titleRemoteControl": "Remote control"
 	}
 }

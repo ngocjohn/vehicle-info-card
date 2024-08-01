@@ -253,7 +253,7 @@ export class VehicleCard extends LitElement {
       ? html` <div class="item active-btn" @click=${() => (this.chargingInfoVisible = !this.chargingInfoVisible)}>
           <ha-icon icon=${'mdi:ev-station'}></ha-icon>
           <div>
-            <span>Charging</span>
+            <span>${localize('common.stateCharging')}</span>
             <div class="subcard-icon ${this.chargingInfoVisible ? 'active' : ''}" style="margin-bottom: 2px">
               <ha-icon icon="mdi:chevron-right"></ha-icon>
             </div>
@@ -266,7 +266,7 @@ export class VehicleCard extends LitElement {
           <div class="item active-btn" @click=${() => this.toggleCardFromButtons('servicesCard')}>
             <ha-icon icon="mdi:car-cog"></ha-icon>
             <div>
-              <span>Services</span>
+              <span>${localize('common.titleServices')}</span>
               <div class="subcard-icon" style="margin-bottom: 2px">
                 <ha-icon icon="mdi:chevron-right"></ha-icon>
               </div>
@@ -483,7 +483,9 @@ export class VehicleCard extends LitElement {
         <section class="card-element">
           ${isDefaultCard ? cards : cards.map((card: any) => html`<div class="added-card">${card}</div>`)}
         </section>
-        ${isDefaultCard ? html`<div class="last-update"><span>Last update: ${formattedDate}</span></div>` : ''}
+        ${isDefaultCard
+          ? html`<div class="last-update"><span>${localize('common.lastUpdate')}: ${formattedDate}</span></div>`
+          : ''}
       </main>
     `;
   }
@@ -580,7 +582,7 @@ export class VehicleCard extends LitElement {
     const carLockEntity = this.vehicleEntities.lock?.entity_id;
     return html`
       <div class="default-card remote-tab">
-        <div class="data-header">Remote control</div>
+        <div class="data-header">${localize('common.titleRemoteControl')}</div>
         <remote-control
           .hass=${hass}
           .servicesConfig=${serviceControl}

@@ -113,7 +113,19 @@
 		"remoteServiceDisabled": "Vzdálená služba zakázána",
 		"vehicleNoLongerAvailable": "Vozidlo již není k dispozici"
 	},
+	"servicesCtrl": {
+		"auxheat": "Pomocné vytápění",
+		"charge": "Nabíjení",
+		"doorsLock": "Zabezpečení",
+		"engine": "Ovládání motoru",
+		"preheat": "Předkondicionování",
+		"sendRoute": "Odeslat trasu",
+		"sigPos": "Signální pozice",
+		"sunroof": "Střešní okno",
+		"windows": "Okna"
+	},
 	"common": {
+		"lastUpdate": "Aktualizováno",
 		"stateLocked": "Zamknuté",
 		"stateUnlocked": "Odemknuté",
 		"stateClosed": "Zavřené",
@@ -123,6 +135,9 @@
 		"statePartlyUnlocked": "Částečně odemčeno",
 		"stateLockedInt": "Interně zamčeno",
 		"stateParkBrakeOn": "Přitaženo",
-		"stateParkBrakeOff": "Uvolněno"
+		"stateParkBrakeOff": "Uvolněno",
+		"stateCharging": "Nabíjení",
+		"titleServices": "Služby",
+		"titleRemoteControl": "Vzdálené ovládání"
 	}
 }

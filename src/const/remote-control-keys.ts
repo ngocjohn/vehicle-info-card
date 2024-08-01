@@ -1,13 +1,20 @@
+import { localize } from '../localize/localize';
+
+const createItem = (nameKey: string, icon: string) => ({
+  name: localize(nameKey),
+  icon,
+});
+
 export const servicesCtrl = {
-  auxheat: { name: 'Auxiliary heating', icon: 'mdi:radiator' },
-  charge: { name: 'Charge program', icon: 'mdi:ev-station' },
-  doorsLock: { name: 'Security', icon: 'mdi:key-chain' },
-  engine: { name: 'Engine control', icon: 'mdi:engine' },
-  preheat: { name: 'Pre-conditioning', icon: 'mdi:car-seat-heater' },
-  sendRoute: { name: 'Send route', icon: 'mdi:map-marker-path' },
-  sigPos: { name: 'Signal position', icon: 'mdi:bugle' },
-  sunroof: { name: 'Sunroof', icon: 'mdi:window-open' },
-  windows: { name: 'Windows', icon: 'mdi:car-door' },
+  auxheat: createItem('servicesCtrl.auxheat', 'mdi:radiator'),
+  charge: createItem('servicesCtrl.charge', 'mdi:ev-station'),
+  doorsLock: createItem('servicesCtrl.doorsLock', 'mdi:key-chain'),
+  engine: createItem('servicesCtrl.engine', 'mdi:engine'),
+  preheat: createItem('servicesCtrl.preheat', 'mdi:car-seat-heater'),
+  sendRoute: createItem('servicesCtrl.sendRoute', 'mdi:map-marker-path'),
+  sigPos: createItem('servicesCtrl.sigPos', 'mdi:bugle'),
+  sunroof: createItem('servicesCtrl.sunroof', 'mdi:window-open'),
+  windows: createItem('servicesCtrl.windows', 'mdi:car-door'),
 };
 
 export const serviceData = {
