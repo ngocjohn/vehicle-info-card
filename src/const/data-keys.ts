@@ -1,82 +1,88 @@
 import { localize } from '../localize/localize';
 
-const createCard = (type: string, nameKey: string, icon: string, config: string, editor: string) => ({
+export interface CardItem {
+  key: string;
+  name: string;
+  icon?: string;
+  apexProp?: string;
+}
+const createCard = (type: string, nameKey: string, icon: string, config: string, editor: string, lang: string) => ({
   type,
-  name: localize(nameKey),
+  name: localize(nameKey, lang),
   icon,
   config,
   editor,
 });
 
-const createItem = (key: string, nameKey: string, icon?: string, apexProp?: string) => ({
+const createItem = (key: string, nameKey: string, lang: string, icon?: string, apexProp?: string): CardItem => ({
   key,
-  name: localize(nameKey),
+  name: localize(nameKey, lang),
   ...(icon ? { icon } : {}),
   ...(apexProp ? { apexProp } : {}),
 });
 
-export const cardTypes = [
-  createCard('tripCards', 'cardType.tripCards', 'mdi:map-marker-path', 'trip_card', 'isTripCardEditor'),
-  createCard('vehicleCards', 'cardType.vehicleCards', 'mdi:car-info', 'vehicle_card', 'isVehicleCardEditor'),
-  createCard('ecoCards', 'cardType.ecoCards', 'mdi:leaf', 'eco_card', 'isEcoCardEditor'),
-  createCard('tyreCards', 'cardType.tyreCards', 'mdi:tire', 'tyre_card', 'isTyreCardEditor'),
+export const cardTypes = (lang: string) => [
+  createCard('tripCards', 'cardType.tripCards', 'mdi:map-marker-path', 'trip_card', 'isTripCardEditor', lang),
+  createCard('vehicleCards', 'cardType.vehicleCards', 'mdi:car-info', 'vehicle_card', 'isVehicleCardEditor', lang),
+  createCard('ecoCards', 'cardType.ecoCards', 'mdi:leaf', 'eco_card', 'isEcoCardEditor', lang),
+  createCard('tyreCards', 'cardType.tyreCards', 'mdi:tire', 'tyre_card', 'isTyreCardEditor', lang),
 ];
 
-export const tripOverview = [
-  createItem('odometer', 'tripCard.odometer', 'mdi:counter'),
-  createItem('fuelLevel', 'tripCard.fuelLevel'),
-  createItem('adBlueLevel', 'tripCard.adBlueLevel', 'mdi:fuel'),
-  createItem('rangeLiquid', 'tripCard.rangeLiquid'),
-  createItem('rangeElectric', 'tripCard.rangeElectric'),
-  createItem('soc', 'tripCard.soc'),
-  createItem('maxSoc', 'tripCard.maxSoc'),
+export const tripOverview = (lang: string): CardItem[] => [
+  createItem('odometer', 'tripCard.odometer', lang, 'mdi:counter'),
+  createItem('fuelLevel', 'tripCard.fuelLevel', lang),
+  createItem('adBlueLevel', 'tripCard.adBlueLevel', lang, 'mdi:fuel'),
+  createItem('rangeLiquid', 'tripCard.rangeLiquid', lang),
+  createItem('rangeElectric', 'tripCard.rangeElectric', lang),
+  createItem('soc', 'tripCard.soc', lang),
+  createItem('maxSoc', 'tripCard.maxSoc', lang),
 ];
 
-export const tripFromReset = [
-  createItem('distanceReset', 'tripCard.distanceReset'),
-  createItem('drivenTimeReset', 'tripCard.drivenTimeReset', 'mdi:clock'),
-  createItem('averageSpeedReset', 'tripCard.averageSpeedReset', 'mdi:speedometer'),
-  createItem('liquidConsumptionReset', 'tripCard.liquidConsumptionReset'),
-  createItem('electricConsumptionReset', 'tripCard.electricConsumptionReset'),
+export const tripFromReset = (lang: string): CardItem[] => [
+  createItem('distanceReset', 'tripCard.distanceReset', lang),
+  createItem('drivenTimeReset', 'tripCard.drivenTimeReset', lang, 'mdi:clock'),
+  createItem('averageSpeedReset', 'tripCard.averageSpeedReset', lang, 'mdi:speedometer'),
+  createItem('liquidConsumptionReset', 'tripCard.liquidConsumptionReset', lang),
+  createItem('electricConsumptionReset', 'tripCard.electricConsumptionReset', lang),
 ];
 
-export const tripFromStart = [
-  createItem('distanceStart', 'tripCard.distanceStart'),
-  createItem('drivenTimeStart', 'tripCard.drivenTimeStart', 'mdi:clock'),
-  createItem('averageSpeedStart', 'tripCard.averageSpeedStart', 'mdi:speedometer-slow'),
-  createItem('liquidConsumptionStart', 'tripCard.liquidConsumptionStart'),
-  createItem('electricConsumptionStart', 'tripCard.electricConsumptionStart'),
+export const tripFromStart = (lang: string): CardItem[] => [
+  createItem('distanceStart', 'tripCard.distanceStart', lang),
+  createItem('drivenTimeStart', 'tripCard.drivenTimeStart', lang, 'mdi:clock'),
+  createItem('averageSpeedStart', 'tripCard.averageSpeedStart', lang, 'mdi:speedometer-slow'),
+  createItem('liquidConsumptionStart', 'tripCard.liquidConsumptionStart', lang),
+  createItem('electricConsumptionStart', 'tripCard.electricConsumptionStart', lang),
 ];
 
-export const vehicleOverview = [
-  createItem('lockSensor', 'vehicleCard.lockSensor'),
-  createItem('windowsClosed', 'vehicleCard.windowsClosed'),
-  createItem('doorStatusOverall', 'vehicleCard.doorStatusOverall', 'mdi:car-door-lock'),
-  createItem('parkBrake', 'vehicleCard.parkBrake'),
-  createItem('ignitionState', 'vehicleCard.ignitionState'),
+export const vehicleOverview = (lang: string): CardItem[] => [
+  createItem('lockSensor', 'vehicleCard.lockSensor', lang),
+  createItem('windowsClosed', 'vehicleCard.windowsClosed', lang),
+  createItem('doorStatusOverall', 'vehicleCard.doorStatusOverall', lang, 'mdi:car-door-lock'),
+  createItem('parkBrake', 'vehicleCard.parkBrake', lang),
+  createItem('ignitionState', 'vehicleCard.ignitionState', lang),
 ];
 
-export const vehicleWarnings = [
-  createItem('starterBatteryState', 'vehicleCard.starterBatteryState'),
-  createItem('lowCoolantLevel', 'vehicleCard.lowCoolantLevel', 'mdi:car-coolant-level'),
-  createItem('lowBrakeFluid', 'vehicleCard.lowBrakeFluid', 'mdi:car-brake-fluid-level'),
-  createItem('lowWashWater', 'vehicleCard.lowWashWater'),
-  createItem('tirePressureWarning', 'vehicleCard.tirePressureWarning'),
-  createItem('engineLight', 'vehicleCard.engineLight'),
+export const vehicleWarnings = (lang: string): CardItem[] => [
+  createItem('starterBatteryState', 'vehicleCard.starterBatteryState', lang),
+  createItem('lowCoolantLevel', 'vehicleCard.lowCoolantLevel', lang, 'mdi:car-coolant-level'),
+  createItem('lowBrakeFluid', 'vehicleCard.lowBrakeFluid', lang, 'mdi:car-brake-fluid-level'),
+  createItem('lowWashWater', 'vehicleCard.lowWashWater', lang),
+  createItem('tirePressureWarning', 'vehicleCard.tirePressureWarning', lang),
+  createItem('engineLight', 'vehicleCard.engineLight', lang),
 ];
 
-export const ecoScores = [
-  createItem('ecoScoreBonusRange', 'ecoCard.ecoScoreBonusRange', undefined, 'bonusRange'),
-  createItem('ecoScoreAcceleraion', 'ecoCard.ecoScoreAcceleraion', undefined, 'acceleration'),
-  createItem('ecoScoreConstant', 'ecoCard.ecoScoreConstant', undefined, 'constant'),
-  createItem('ecoScoreFreeWheel', 'ecoCard.ecoScoreFreeWheel', undefined, 'freeWheel'),
+export const ecoScores = (lang: string): CardItem[] => [
+  createItem('ecoScoreBonusRange', 'ecoCard.ecoScoreBonusRange', lang, undefined, 'bonusRange'),
+  createItem('ecoScoreAcceleraion', 'ecoCard.ecoScoreAcceleraion', lang, undefined, 'acceleration'),
+  createItem('ecoScoreConstant', 'ecoCard.ecoScoreConstant', lang, undefined, 'constant'),
+  createItem('ecoScoreFreeWheel', 'ecoCard.ecoScoreFreeWheel', lang, undefined, 'freeWheel'),
 ];
 
-export const tyrePressures = [
-  createItem('tirePressureFrontLeft', 'tyreCard.tirePressureFrontLeft', 'mdi:tire'),
-  createItem('tirePressureFrontRight', 'tyreCard.tirePressureFrontRight', 'mdi:tire'),
-  createItem('tirePressureRearLeft', 'tyreCard.tirePressureRearLeft', 'mdi:tire'),
-  createItem('tirePressureRearRight', 'tyreCard.tirePressureRearRight', 'mdi:tire'),
+export const tyrePressures = (lang: string): CardItem[] => [
+  createItem('tirePressureFrontLeft', 'tyreCard.tirePressureFrontLeft', lang, 'mdi:tire'),
+  createItem('tirePressureFrontRight', 'tyreCard.tirePressureFrontRight', lang, 'mdi:tire'),
+  createItem('tirePressureRearLeft', 'tyreCard.tirePressureRearLeft', lang, 'mdi:tire'),
+  createItem('tirePressureRearRight', 'tyreCard.tirePressureRearRight', lang, 'mdi:tire'),
 ];
 
 export const tyreAttributes = [
@@ -86,9 +92,9 @@ export const tyreAttributes = [
   'tirePressureRearRight',
 ];
 
-export const chargingOverview = [
-  createItem('chargingPower', 'chargingOverview.chargingPower', 'mdi:flash'),
-  createItem('soc', 'chargingOverview.soc'),
-  createItem('maxSoc', 'chargingOverview.maxSoc'),
-  createItem('selectedProgram', 'chargingOverview.selectedProgram', 'mdi:ev-station'),
+export const chargingOverview = (lang: string): CardItem[] => [
+  createItem('chargingPower', 'chargingOverview.chargingPower', lang, 'mdi:flash'),
+  createItem('soc', 'chargingOverview.soc', lang),
+  createItem('maxSoc', 'chargingOverview.maxSoc', lang),
+  createItem('selectedProgram', 'chargingOverview.selectedProgram', lang, 'mdi:ev-station'),
 ];

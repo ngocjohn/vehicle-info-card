@@ -2,83 +2,90 @@ import { LitElement, html, TemplateResult, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
 import type { EcoData } from '../types';
-import { localize } from '../localize/localize';
+import { localize as baseLocalize } from '../localize/localize';
 // Third-party Libraries
 import ApexCharts from 'apexcharts';
 
 @customElement('eco-chart')
 export class EcoChart extends LitElement {
   @property({ type: Object }) ecoData!: EcoData;
+  @property({ type: String }) selectedLanguage!: string;
 
   @state() private chart: ApexCharts | undefined;
 
-  private options = {
-    series: [0, 0, 0], // Dummy data to initialize the chart
-    chart: {
-      height: 350,
-      width: 350,
-      type: 'radialBar',
-    },
-    plotOptions: {
-      radialBar: {
-        offsetY: 0,
-        startAngle: 0,
-        endAngle: 270,
-        hollow: {
-          margin: 5,
-          size: '40%',
-          background: '#ffffff',
-          image: undefined,
-        },
-        dataLabels: {
-          textAnchor: 'middle',
-          distributed: false,
-          name: {
-            show: true,
-          },
-          value: {
-            show: true,
-            fontSize: '24px',
-            fontWeight: 'bold',
-          },
-          total: {
-            show: true,
-            label: localize('ecoCard.ecoScoreBonusRange'),
-            formatter: () => {
-              return `${this.ecoData.bonusRange || 0} km`;
-            },
-            offsetX: 50,
-            offsetY: 10,
-          },
-        },
-        barLabels: {
-          enabled: true,
-          useSeriesColors: true,
-          margin: 8,
-          fontSize: '16px',
-          formatter: (seriesName: string, opts: any) => {
-            return `${seriesName}:  ${opts.w.globals.series[opts.seriesIndex]}`;
-          },
-        },
-      },
-    },
-    colors: ['#1ab7ea', '#0084ff', '#39539E'],
-    labels: [
-      localize('ecoCard.ecoScoreAcceleraion'),
-      localize('ecoCard.ecoScoreConstant'),
-      localize('ecoCard.ecoScoreFreeWheel'),
-    ],
-    responsive: [
-      {
-        breakpoint: 480,
-        options: {
-          legend: {
-            show: false,
-          },
-        },
-      },
-    ],
+  private localize = (string: string, search = '', replace = ''): string => {
+    return baseLocalize(string, this.selectedLanguage, search, replace);
   };
+
+  private get options() {
+    return {
+      series: [0, 0, 0], // Dummy data to initialize the chart
+      chart: {
+        height: 350,
+        width: 350,
+        type: 'radialBar',
+      },
+      plotOptions: {
+        radialBar: {
+          offsetY: 0,
+          startAngle: 0,
+          endAngle: 270,
+          hollow: {
+            margin: 5,
+            size: '40%',
+            background: '#ffffff',
+            image: undefined,
+          },
+          dataLabels: {
+            textAnchor: 'middle',
+            distributed: false,
+            name: {
+              show: true,
+            },
+            value: {
+              show: true,
+              fontSize: '24px',
+              fontWeight: 'bold',
+            },
+            total: {
+              show: true,
+              label: this.localize('ecoCard.ecoScoreBonusRange'),
+              formatter: () => {
+                return `${this.ecoData.bonusRange || 0} km`;
+              },
+              offsetX: 50,
+              offsetY: 10,
+            },
+          },
+          barLabels: {
+            enabled: true,
+            useSeriesColors: true,
+            margin: 8,
+            fontSize: '16px',
+            formatter: (seriesName: string, opts: any) => {
+              return `${seriesName}:  ${opts.w.globals.series[opts.seriesIndex]}`;
+            },
+          },
+        },
+      },
+      colors: ['#1ab7ea', '#0084ff', '#39539E'],
+      labels: [
+        this.localize('ecoCard.ecoScoreAcceleraion'),
+        this.localize('ecoCard.ecoScoreConstant'),
+        this.localize('ecoCard.ecoScoreFreeWheel'),
+      ],
+      responsive: [
+        {
+          breakpoint: 480,
+          options: {
+            legend: {
+              show: false,
+            },
+          },
+        },
+      ],
+    };
+  }
 
   protected firstUpdated() {
     this.chart = new ApexCharts(this.shadowRoot?.getElementById('chart'), this.options);
@@ -106,6 +113,11 @@ export class EcoChart extends LitElement {
             },
           },
         },
+        labels: [
+          this.localize('ecoCard.ecoScoreAcceleraion'),
+          this.localize('ecoCard.ecoScoreConstant'),
+          this.localize('ecoCard.ecoScoreFreeWheel'),
+        ],
       });
     }
   }

@@ -18,9 +18,28 @@ export class RemoteControl extends LitElement {
   @property({ type: Object }) servicesConfig?: ServicesConfig;
   @property({ type: String }) carVin!: string;
   @property({ type: String }) carLockEntity!: string;
+  @property({ type: String }) selectedLanguage!: string;
 
   @state() private subcardType: string | null = null;
-  @state() private serviceData = cloneDeep(Srvc.serviceData);
+  @state() private serviceData: any = {};
+
+  protected firstUpdated(_changedProperties: PropertyValues) {
+    super.firstUpdated(_changedProperties);
+    this.initializeServiceData();
+  }
+
+  private initializeServiceData() {
+    this.serviceData = cloneDeep(Srvc.serviceData(this.selectedLanguage));
+  }
+
+  private resetConfig(): void {
+    this.serviceData = cloneDeep(Srvc.serviceData(this.selectedLanguage));
+    this.requestUpdate(); // Trigger re-render to update UI after reset
+  }
+
+  private localize = (string: string, search = '', replace = ''): string => {
+    return localize(string, this.selectedLanguage, search, replace);
+  };
 
   private isAnyServiceEnabled(): boolean {
     if (!this.servicesConfig) return false;
@@ -105,7 +124,8 @@ export class RemoteControl extends LitElement {
     };
 
     const controlBtns = activeServices.map((type) => {
-      const { name, icon } = Srvc.servicesCtrl[type]; // Get name and icon from servicesCtrl
+      const lang = this.selectedLanguage;
+      const { name, icon } = Srvc.servicesCtrl(lang)[type]; // Get name and icon from servicesCtrl
       const activeClass = this.subcardType === type ? 'active' : '';
       return html`
         <div @click=${() => handleClick(type)} class="control-btn-rounded ${activeClass} click-shrink">
@@ -119,7 +139,7 @@ export class RemoteControl extends LitElement {
   }
 
   private _renderToast(): TemplateResult {
-    const toastMsg = localize('common.toastCommandSent');
+    const toastMsg = this.localize('common.toastCommandSent', this.selectedLanguage);
     return html`
       <div id="toast">
         <ha-alert alert-type="success">${toastMsg} </ha-alert>
@@ -166,13 +186,14 @@ export class RemoteControl extends LitElement {
     const { sendRouteConfig } = this;
     const data = sendRouteConfig.data;
 
-    const formElements = Object.entries(data).map(([key, { label, value, placeholder }]) => {
+    const formElements = Object.entries(data).map(([key, value]) => {
+      const { label, value: inputValue, placeholder } = value as { label: string; value: string; placeholder: string };
       return html`
         <div class="items-row">
           <div>${label}</div>
           <div class="items-control">
             <ha-textfield
-              .value=${String(value)}
+              .value=${String(inputValue)}
               .placeholder=${placeholder}
               @input=${(e) => this.handleSendRouteChange(key, e)}
             ></ha-textfield>
@@ -197,7 +218,7 @@ export class RemoteControl extends LitElement {
     const { preheatConfig } = this;
     const time = preheatConfig.data.time;
     const service = preheatConfig.service;
-    const labelDepartureTime = localize('serviceData.labelDepartureTime');
+    const labelDepartureTime = this.localize('serviceData.labelDepartureTime', this.selectedLanguage);
     const preheatDepartureTimeEL = html`
       <div class="items-row">
         <div>${labelDepartureTime}</div>
@@ -259,8 +280,8 @@ export class RemoteControl extends LitElement {
     const maxSoc = data.max_soc;
 
     const services = chargeConfig.service;
-    const labelChargeProgram = localize('serviceData.labelChargeProgram');
-    const labelMaxSoc = localize('serviceData.labelMaxStateOfCharge');
+    const labelChargeProgram = this.localize('serviceData.labelChargeProgram', this.selectedLanguage);
+    const labelMaxSoc = this.localize('serviceData.labelMaxStateOfCharge', this.selectedLanguage);
     const selectChargeProgram = html`
       <div class="items-row">
         <div>${labelChargeProgram}</div>
@@ -308,7 +329,7 @@ export class RemoteControl extends LitElement {
     const timeSelectOptions = auxheatConfig.data.time_selection_options;
 
     const service = auxheatConfig.service;
-    const titleTimeSelection = localize('serviceData.labelTimeSelection');
+    const titleTimeSelection = this.localize('serviceData.labelTimeSelection', this.selectedLanguage);
     const timeSelectEl = html`
       <div class="items-row">
         <div>${titleTimeSelection}</div>
@@ -327,7 +348,8 @@ export class RemoteControl extends LitElement {
       return this._renderServiceBtn(key, data);
     });
 
-    const timeInput = Object.entries(timeItems).map(([item, { label, hour, minute }]) => {
+    const timeInput = Object.entries(timeItems).map(([item, value]) => {
+      const { label, hour, minute } = value as { label: string; hour: number; minute: number };
       return html`
         <div class="items-row">
           <div>${label}</div>
@@ -373,13 +395,13 @@ export class RemoteControl extends LitElement {
     const config = {
       locked: {
         icon: 'mdi:lock',
-        stateDisplay: 'UNLOCK CAR',
+        stateDisplay: this.localize('serviceData.labelUnlockCar', this.selectedLanguage),
         command: 'doors_unlock',
         bgColor: 'var(--state-lock-locked-color)',
       },
       unlocked: {
         icon: 'mdi:lock-open',
-        stateDisplay: 'LOCK CAR',
+        stateDisplay: this.localize('serviceData.labelLockCar', this.selectedLanguage),
         command: 'doors_lock',
         bgColor: 'var(--state-lock-unlocked-color)',
       },
@@ -403,7 +425,8 @@ export class RemoteControl extends LitElement {
           <ha-icon icon=${icon}></ha-icon><span>${stateDisplay}</span>
         </div>
         <div class="control-btn-sm click-shrink" @click=${this.lockMoreInfo}>
-          <ha-icon icon="mdi:information"></ha-icon><span>MORE INFO</span>
+          <ha-icon icon="mdi:information"></ha-icon
+          ><span>${this.localize('serviceData.labelMoreInfo', this.selectedLanguage)}</span>
         </div>
       </div>
     `;
@@ -414,7 +437,8 @@ export class RemoteControl extends LitElement {
     const positionItems = windowsConfig.data.positions;
     const service = windowsConfig.service;
 
-    const moveEl = Object.entries(positionItems).map(([key, { label, value }]) => {
+    const moveEl = Object.entries(positionItems).map(([key, value]) => {
+      const { label, value: inputValue } = value as { label: string; value: number };
       return html`
         <div class="items-row">
           <div>${label}</div>
@@ -422,7 +446,7 @@ export class RemoteControl extends LitElement {
             .min=${0}
             .max=${100}
             .step=${10}
-            .value=${value}
+            .value=${inputValue}
             @value-changed=${(e) => this.handleWindowsChange(key, e)}
           ></ha-control-number-buttons>
         </div>
@@ -454,10 +478,14 @@ export class RemoteControl extends LitElement {
 
       case 'auxheat_configure':
         const { items, time_selection } = this.auxheatConfig.data;
-        const times: Record<string, number> = Object.entries(items).reduce((acc, [key, { hour, minute }]) => {
-          acc[key] = convertToMinutes(hour, minute);
-          return acc;
-        }, {});
+        const times: Record<string, number> = Object.entries(items).reduce(
+          (acc, [key, value]) => {
+            const { hour, minute } = value as { hour: string; minute: string };
+            acc[key] = convertToMinutes(hour, minute);
+            return acc;
+          },
+          {} as Record<string, number>,
+        );
 
         const dataAux = {
           time_selection,
@@ -481,19 +509,27 @@ export class RemoteControl extends LitElement {
         break;
 
       case 'windows_move':
-        const dataWindows = Object.entries(this.windowsConfig.data.positions).reduce((acc, [key, { value }]) => {
-          acc[key] = value;
-          return acc;
-        }, {});
+        const dataWindows = Object.entries(this.windowsConfig.data.positions).reduce(
+          (acc, [key, value]) => {
+            const { value: inputValue } = value as { value: number };
+            acc[key] = inputValue;
+            return acc;
+          },
+          {} as Record<string, number>,
+        );
 
         this.callService(service, dataWindows);
         break;
 
       case 'send_route':
-        const dataRoute = Object.entries(this.sendRouteConfig.data).reduce((acc, [key, { value }]) => {
-          acc[key] = value;
-          return acc;
-        }, {});
+        const dataRoute = Object.entries(this.sendRouteConfig.data).reduce(
+          (acc, [key, value]) => {
+            const { value: inputValue } = value as { value: string };
+            acc[key] = inputValue;
+            return acc;
+          },
+          {} as Record<string, string>,
+        );
         this.callService(service, dataRoute);
         break;
 
@@ -590,11 +626,6 @@ export class RemoteControl extends LitElement {
         }
       });
     }, 0);
-  }
-
-  private resetConfig(): void {
-    this.serviceData = cloneDeep(Srvc.serviceData);
-    this.requestUpdate(); // Trigger re-render to update UI after reset
   }
 
   private lockMoreInfo(): void {

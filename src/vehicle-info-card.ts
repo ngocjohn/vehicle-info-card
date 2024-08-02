@@ -40,7 +40,7 @@ import './components/eco-chart';
 import './components/remote-control';
 
 // Functions
-import { localize } from './localize/localize';
+import { localize as baseLocalize } from './localize/localize';
 import { formatTimestamp, convertMinutes } from './utils/helpers';
 import { getVehicleEntities, setupCardListeners } from './utils/get-device-entities';
 
@@ -56,6 +56,7 @@ export class VehicleCard extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
   @property({ type: Object }) private config!: VehicleCardConfig;
 
+  @state() private selectedLanguage: string = 'en';
   @state() private vehicleEntities: VehicleEntities = {};
   @state() private additionalCards: { [key: string]: any[] } = {};
   @state() private activeCardType: string | null = null;
@@ -63,6 +64,10 @@ export class VehicleCard extends LitElement {
   @state() private windowAttributesVisible!: boolean;
   @state() private doorsAttributesVisible!: boolean;
   @state() private chargingInfoVisible!: boolean;
+
+  private localize = (string: string, search = '', replace = ''): string => {
+    return baseLocalize(string, this.selectedLanguage, search, replace);
+  };
 
   private get isCharging(): boolean {
     return this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'chargingactive');
@@ -101,8 +106,10 @@ export class VehicleCard extends LitElement {
     this.config = {
       ...config,
     };
+    this.selectedLanguage = this.config.selected_language || localStorage.getItem('selectedLanguage') || 'en';
+    const lang = this.selectedLanguage;
 
-    for (const cardType of cardTypes) {
+    for (const cardType of cardTypes(lang)) {
       if (this.config[cardType.config]) {
         this.createCards(this.config[cardType.config], cardType.type);
       }
@@ -254,7 +261,7 @@ export class VehicleCard extends LitElement {
       ? html` <div class="item active-btn" @click=${() => (this.chargingInfoVisible = !this.chargingInfoVisible)}>
           <ha-icon icon=${'mdi:ev-station'}></ha-icon>
           <div class="added-item-arrow">
-            <span class="${isChargingVisible}">${localize('common.stateCharging')}</span>
+            <span class="${isChargingVisible}">${this.localize('common.stateCharging')}</span>
             <div class="subcard-icon ${this.chargingInfoVisible ? 'active' : ''}" style="margin-bottom: 2px">
               <ha-icon icon="mdi:chevron-right"></ha-icon>
             </div>
@@ -267,7 +274,7 @@ export class VehicleCard extends LitElement {
           <div class="item active-btn" @click=${() => this.toggleCardFromButtons('servicesCard')}>
             <ha-icon icon="mdi:car-cog"></ha-icon>
             <div class="added-item-arrow">
-              <span class="${isChargingVisible}">${localize('common.titleServices')}</span>
+              <span class="${isChargingVisible}">${this.localize('common.titleServices')}</span>
               <div class="subcard-icon" style="margin-bottom: 2px">
                 <ha-icon icon="mdi:chevron-right"></ha-icon>
               </div>
@@ -280,7 +287,8 @@ export class VehicleCard extends LitElement {
   }
 
   private _renderChargingInfo(): TemplateResult | void {
-    const chargingData = this.createDataArray(DataKeys.chargingOverview);
+    const chargingOverviewData = DataKeys.chargingOverview(this.selectedLanguage);
+    const chargingData = this.createDataArray(chargingOverviewData);
     const chargingClass = this.chargingInfoVisible ? 'info-box charge active' : 'info-box charge';
 
     return html`
@@ -375,10 +383,10 @@ export class VehicleCard extends LitElement {
 
   private _renderEcoChart(): TemplateResult {
     if (this.activeCardType !== 'ecoCards') return html``;
-
+    const lang = this.selectedLanguage;
     const getEcoScore = (entity: any): number => parseFloat(this.getEntityState(entity?.entity_id)) || 0;
 
-    const ecoDataObj = DataKeys.ecoScores.reduce((acc, score) => {
+    const ecoDataObj = DataKeys.ecoScores(lang).reduce((acc, score) => {
       if (score.apexProp) {
         acc[score.apexProp] = getEcoScore(this.vehicleEntities[score.key]);
       }
@@ -386,16 +394,16 @@ export class VehicleCard extends LitElement {
       return acc;
     }, {} as EcoData);
 
-    return html`<eco-chart .ecoData=${ecoDataObj}></eco-chart>`;
+    return html`<eco-chart .ecoData=${ecoDataObj} .selectedLanguage=${lang}></eco-chart>`;
   }
 
   private _renderButtons(): TemplateResult {
     const showError = this.config.show_error_notify;
     if (!this.config.show_buttons) return html``;
-
+    const baseCardTypes = cardTypes(this.selectedLanguage);
     return html`
       <div class="grid-container">
-        ${cardTypes.map(
+        ${baseCardTypes.map(
           (cardType) => html`
             <div class="grid-item click-shrink" @click=${() => this.toggleCardFromButtons(cardType.type)}>
               <div class="item-icon">
@@ -485,33 +493,35 @@ export class VehicleCard extends LitElement {
           ${isDefaultCard ? cards : cards.map((card: any) => html`<div class="added-card">${card}</div>`)}
         </section>
         ${isDefaultCard
-          ? html`<div class="last-update"><span>${localize('common.lastUpdate')}: ${formattedDate}</span></div>`
+          ? html`<div class="last-update"><span>${this.localize('common.lastUpdate')}: ${formattedDate}</span></div>`
           : ''}
       </main>
     `;
   }
 
   private _renderDefaultTripCard(): TemplateResult | void {
+    const lang = this.selectedLanguage;
     const sections = [
-      { title: localize('tripCard.overview'), data: this.createDataArray(DataKeys.tripOverview) },
-      { title: localize('tripCard.fromStart'), data: this.createDataArray(DataKeys.tripFromStart) },
-      { title: localize('tripCard.fromReset'), data: this.createDataArray(DataKeys.tripFromReset) },
+      { title: this.localize('tripCard.overview'), data: this.createDataArray(DataKeys.tripOverview(lang)) },
+      { title: this.localize('tripCard.fromStart'), data: this.createDataArray(DataKeys.tripFromStart(lang)) },
+      { title: this.localize('tripCard.fromReset'), data: this.createDataArray(DataKeys.tripFromReset(lang)) },
     ];
 
     return html` ${sections.map((section) => this.createItemDataRow(section.title, section.data))} `;
   }
 
   private _renderDefaultVehicleCard(): TemplateResult | void {
-    const warningsData = this.createDataArray(DataKeys.vehicleWarnings);
+    const lang = this.selectedLanguage;
+    const warningsData = this.createDataArray(DataKeys.vehicleWarnings(lang));
     const subCardVisible = this.isSubCardVisible();
 
     return html`
       <div class="default-card">
-        <div class="data-header">${localize('vehicleCard.vehicleStatus')}</div>
+        <div class="data-header">${this.localize('vehicleCard.vehicleStatus')}</div>
         ${this._renderOverviewDataWithSubCard()}
       </div>
       <div class="default-card" .hidden=${subCardVisible}>
-        <div class="data-header">${localize('vehicleCard.vehicleWarnings')}</div>
+        <div class="data-header">${this.localize('vehicleCard.vehicleWarnings')}</div>
         ${warningsData.map(
           ({ key, icon, state, name, active }) => html`
             <div class="data-row">
@@ -537,21 +547,23 @@ export class VehicleCard extends LitElement {
   }
 
   private _renderDefaultEcoCard(): TemplateResult | void {
-    const ecoData = this.createDataArray(DataKeys.ecoScores);
+    const lang = this.selectedLanguage;
+    const ecoData = this.createDataArray(DataKeys.ecoScores(lang));
 
     return html`<div class="default-card">
-        <div class="data-header">${localize('ecoCard.ecoDisplay')}</div>
+        <div class="data-header">${this.localize('ecoCard.ecoDisplay')}</div>
         ${this._renderEcoChart()}
       </div>
-      ${this.createItemDataRow(localize('ecoCard.ecoScore'), ecoData)}`;
+      ${this.createItemDataRow(this.localize('ecoCard.ecoScore'), ecoData)}`;
   }
 
   private _renderDefaultTyreCard(): TemplateResult {
+    const lang = this.selectedLanguage;
     const isPressureWarning = this.getBooleanState(this.vehicleEntities.tirePressureWarning?.entity_id);
 
-    const tireCardTitle = localize('tyreCard.tyrePressure');
-    const tireWarningProblem = localize('tyreCard.tireWarningProblem');
-    const tireWarningOk = localize('tyreCard.tireWarningOk');
+    const tireCardTitle = this.localize('tyreCard.tyrePressure');
+    const tireWarningProblem = this.localize('tyreCard.tireWarningProblem');
+    const tireWarningOk = this.localize('tyreCard.tireWarningOk');
 
     const tyreInfo = isPressureWarning ? tireWarningProblem : tireWarningOk;
     const infoClass = isPressureWarning ? 'warning' : '';
@@ -561,7 +573,7 @@ export class VehicleCard extends LitElement {
         <div class="data-header">${tireCardTitle}</div>
         <div class="tyre-wrapper">
           <div class="background" style="background-image: url(${tyreBg})"></div>
-          ${DataKeys.tyrePressures.map(
+          ${DataKeys.tyrePressures(lang).map(
             (tyre) =>
               html` <div class="tyre-box ${tyre.key.replace('tirePressure', '').toLowerCase()}">
                 <span class="tyre-value">${this.getStateDisplay(this.vehicleEntities[tyre.key]?.entity_id)}</span>
@@ -581,14 +593,16 @@ export class VehicleCard extends LitElement {
     const serviceControl = this.config.services;
     const carVin = this.carVinNumber;
     const carLockEntity = this.vehicleEntities.lock?.entity_id;
+    const selectedLanguage = this.selectedLanguage;
     return html`
       <div class="default-card remote-tab">
-        <div class="data-header">${localize('common.titleRemoteControl')}</div>
+        <div class="data-header">${this.localize('common.titleRemoteControl')}</div>
         <remote-control
           .hass=${hass}
           .servicesConfig=${serviceControl}
           .carVin=${carVin}
           .carLockEntity=${carLockEntity}
+          .selectedLanguage=${selectedLanguage}
         ></remote-control>
       </div>
     `;
@@ -653,17 +667,17 @@ export class VehicleCard extends LitElement {
     forwardHaptic('light');
     const cardElement = this.shadowRoot?.querySelector('.card-element') as HTMLElement;
     if (!this.activeCardType || !cardElement) return;
-
+    const baseCardTypes = cardTypes(this.selectedLanguage);
     if (action === 'next' || action === 'prev') {
-      const currentIndex = cardTypes.findIndex((card) => card.type === this.activeCardType);
+      const currentIndex = baseCardTypes.findIndex((card) => card.type === this.activeCardType);
       const newIndex =
         action === 'next'
-          ? (currentIndex + 1) % cardTypes.length
-          : (currentIndex - 1 + cardTypes.length) % cardTypes.length;
+          ? (currentIndex + 1) % baseCardTypes.length
+          : (currentIndex - 1 + baseCardTypes.length) % baseCardTypes.length;
 
       cardElement.style.animation = 'none';
       setTimeout(() => {
-        this.activeCardType = cardTypes[newIndex].type;
+        this.activeCardType = baseCardTypes[newIndex].type;
         cardElement.style.animation = 'fadeIn 0.3s ease';
       }, 300);
       // this.activeCardType = cardTypes[newIndex].type;
@@ -682,7 +696,8 @@ export class VehicleCard extends LitElement {
   /* --------------------- SUBCARDS METHODS AND RENDERING --------------------- */
 
   private _renderOverviewDataWithSubCard(): TemplateResult {
-    const overViewData = this.createDataArray(DataKeys.vehicleOverview);
+    const lang = this.selectedLanguage;
+    const overViewData = this.createDataArray(DataKeys.vehicleOverview(lang));
     const toggleAttributes = (key: string) => {
       if (key === 'lockSensor') {
         this.lockAttributesVisible = !this.lockAttributesVisible;
@@ -751,9 +766,10 @@ export class VehicleCard extends LitElement {
   }
 
   private _renderSubCard(attributeType: 'lock' | 'window' | 'door'): TemplateResult {
+    const lang = this.selectedLanguage;
     const state: Record<string, any> = {};
     const entityID = this.getEntityTypeId(attributeType);
-    const stateMapping = this.getAttrStateMap(attributeType);
+    const stateMapping = this.getAttrStateMap(attributeType, lang);
     const attributesVisible = this.getSubCardVisible(attributeType);
     const attributesClass = attributesVisible ? 'sub-attributes active' : 'sub-attributes';
 
@@ -802,14 +818,14 @@ export class VehicleCard extends LitElement {
     }
   }
 
-  private getAttrStateMap(attributeType: 'lock' | 'window' | 'door'): Record<string, any> {
+  private getAttrStateMap(attributeType: 'lock' | 'window' | 'door', lang: string): Record<string, any> {
     switch (attributeType) {
       case 'lock':
-        return StateMapping.lockAttributes;
+        return StateMapping.lockAttributes(lang);
       case 'window':
-        return StateMapping.windowAttributes;
+        return StateMapping.windowAttributes(lang);
       case 'door':
-        return StateMapping.doorAttributes;
+        return StateMapping.doorAttributes(lang);
     }
   }
 
@@ -911,13 +927,14 @@ export class VehicleCard extends LitElement {
   /* --------------------------- ENTITY INFO BY KEYS -------------------------- */
 
   private getFallbackEntityInfo = ({ key, name, icon, state, unit }: EntityConfig): EntityConfig => {
+    const lang = this.selectedLanguage;
     if (key === 'selectedProgram') {
       return {
         key,
         name,
         icon,
         state:
-          StateMapping.chargeSelectedProgram[
+          StateMapping.chargeSelectedProgram(lang)[
             this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'selectedChargeProgram')
           ],
         unit,
@@ -925,7 +942,7 @@ export class VehicleCard extends LitElement {
     }
     if (key === 'doorStatusOverall') {
       const doorValue = this.getEntityAttribute(this.vehicleEntities.lockSensor?.entity_id, 'doorStatusOverall');
-      const doorFormatted = StateMapping.doorStatus[doorValue] || 'Unknown';
+      const doorFormatted = StateMapping.doorStatus(lang)[doorValue] || 'Unknown';
       const activeState = doorValue === '1' ? true : false;
       return {
         key,
@@ -992,8 +1009,8 @@ export class VehicleCard extends LitElement {
 
   private getParkBrakeInfo = (defaultInfo: EntityConfig, vehicleEntity: any): EntityConfig => {
     const parkBrakeState = this.getBooleanState(vehicleEntity.entity_id);
-    const parkBrakeOff = localize('common.stateParkBrakeOff');
-    const parkBrakeOn = localize('common.stateParkBrakeOn');
+    const parkBrakeOff = this.localize('common.stateParkBrakeOff');
+    const parkBrakeOn = this.localize('common.stateParkBrakeOn');
     return {
       ...defaultInfo,
       state: parkBrakeState ? parkBrakeOn : parkBrakeOff,
@@ -1003,13 +1020,14 @@ export class VehicleCard extends LitElement {
 
   private getWindowsClosedInfo = (defaultInfo: EntityConfig, vehicleEntity: any): EntityConfig => {
     let windowState: string;
+    const lang = this.selectedLanguage;
     const windowsState = this.getBooleanState(vehicleEntity.entity_id);
     if (windowsState) {
-      windowState = localize('common.stateClosed');
+      windowState = this.localize('common.stateClosed');
     } else {
       const windowAttributeStates: Record<number, any> = {};
 
-      Object.keys(StateMapping.windowAttributes).forEach((attribute) => {
+      Object.keys(StateMapping.windowAttributes(lang)).forEach((attribute) => {
         const attributeState = this.getEntityAttribute(vehicleEntity.entity_id, attribute);
         if (attributeState !== undefined && attributeState !== null) {
           windowAttributeStates[attribute] = attributeState;
@@ -1021,7 +1039,7 @@ export class VehicleCard extends LitElement {
       );
 
       const totalOpenWindows = openWindows.length;
-      windowState = `${totalOpenWindows} ${localize('common.stateOpen')}`;
+      windowState = `${totalOpenWindows} ${this.localize('common.stateOpen')}`;
     }
     return {
       ...defaultInfo,
@@ -1042,8 +1060,9 @@ export class VehicleCard extends LitElement {
   };
 
   private getLockSensorInfo = (defaultInfo: EntityConfig, vehicleEntity: any): EntityConfig => {
+    const lang = this.selectedLanguage;
     const lockState = this.getEntityState(vehicleEntity.entity_id);
-    const lockStateFormatted = StateMapping.lockStates[lockState] || StateMapping.lockStates['4'];
+    const lockStateFormatted = StateMapping.lockStates(lang)[lockState] || StateMapping.lockStates['4'];
     const lockIcon = lockState === '2' || lockState === '1' ? 'mdi:lock' : 'mdi:lock-open';
 
     return {
@@ -1065,7 +1084,12 @@ export class VehicleCard extends LitElement {
   };
 
   private getWarningOrDefaultInfo = (defaultInfo: EntityConfig, key: string, vehicleEntity: any): EntityConfig => {
-    if (DataKeys.vehicleWarnings.map((key) => key.key).includes(key)) {
+    const lang = this.selectedLanguage;
+    if (
+      DataKeys.vehicleWarnings(lang)
+        .map((key) => key.key)
+        .includes(key)
+    ) {
       const warningState = this.getBooleanState(vehicleEntity.entity_id);
 
       return {
@@ -1144,10 +1168,11 @@ export class VehicleCard extends LitElement {
   }
 
   private getErrorNotify(cardType: string): boolean {
+    const lang = this.selectedLanguage;
     const { vehicleEntities } = this;
     switch (cardType) {
       case 'vehicleCards':
-        const warnKeys = [...DataKeys.vehicleWarnings.map((key) => key.key), 'windowsClosed'];
+        const warnKeys = [...DataKeys.vehicleWarnings(lang).map((key) => key.key), 'windowsClosed'];
         const hasWarning = warnKeys.some((key) => this.getBooleanState(vehicleEntities[key]?.entity_id));
         return hasWarning;
       case 'tyreCards':

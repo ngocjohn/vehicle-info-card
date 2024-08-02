@@ -11,6 +11,7 @@ import { HomeAssistantExtended as HomeAssistant, VehicleCardConfig } from './typ
 import { servicesCtrl } from './const/remote-control-keys';
 import { cardTypes } from './const/data-keys';
 import { CARD_VERSION } from './const';
+import { languageOptions } from './localize/localize';
 
 @customElement('vehicle-info-card-editor')
 export class VehicleCardEditor extends LitElement implements LovelaceCardEditor {
@@ -24,6 +25,8 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   @property({ type: Boolean }) private isTripCardEditor = false;
   @property({ type: Boolean }) private isEcoCardEditor = false;
   @property({ type: Boolean }) private isTyreCardEditor = false;
+
+  private _system_language = localStorage.getItem('selectedLanguage');
 
   get isSubEditorOpen(): boolean {
     return this.isVehicleCardEditor || this.isTripCardEditor || this.isEcoCardEditor || this.isTyreCardEditor;
@@ -119,6 +122,10 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     return this._config?.enable_services_control || false;
   }
 
+  get _selected_language(): string | null {
+    return this._config?.selected_language || null;
+  }
+
   protected render(): TemplateResult | void {
     if (!this.hass || !this._helpers) {
       return html``;
@@ -150,10 +157,11 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _renderCardEditorButtons(): TemplateResult {
+    const baseCardTypes = cardTypes(this._selected_language || 'en');
     const subcardBtns = html`
       <ha-alert alert-type="info">Select the card you want to configure.</ha-alert>
       <div class="cards-buttons">
-        ${cardTypes.map(
+        ${baseCardTypes.map(
           (card) => html`
             <ha-button
               @click=${() => {
@@ -290,8 +298,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       (entity) => entity.startsWith('sensor') && entity.endsWith('_car'),
     );
 
-    const device_trackers = Object.keys(this.hass.states).filter((entity) => entity.startsWith('device_tracker'));
-
     return html`
       <ha-textfield
         label="Name (Optional)"
@@ -312,28 +318,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           return html`<mwc-list-item .value=${entity}>${entity}</mwc-list-item>`;
         })}
       </ha-select>
-
-      <ha-select
-        naturalMenuWidth
-        fixedMenuPosition
-        label="Device Tracker (Optional)"
-        .configValue=${'device_tracker'}
-        .value=${this._device_tracker}
-        @selected=${this._valueChanged}
-        @closed=${(ev) => ev.stopPropagation()}
-      >
-        <mwc-list-item value=""></mwc-list-item>
-        ${device_trackers.map((entity) => {
-          return html`<mwc-list-item .value=${entity}>${entity}</mwc-list-item>`;
-        })}
-      </ha-select>
-      <ha-textfield
-        label="Google API Key (Optional)"
-        type="password"
-        .value=${this._google_api_key}
-        .configValue=${'google_api_key'}
-        @input=${this._valueChanged}
-      ></ha-textfield>
     `;
   }
 
@@ -341,8 +325,18 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     if (!this.hass) return html``;
     const customThemes = Object.keys(this.hass.themes.themes);
     const themesOpts = ['Default', ...customThemes];
-
+    const sysLang = this._system_language || 'en';
+    const langOpts = [{ key: sysLang, name: 'System' }, ...languageOptions];
     const themesConfig = html`
+      <ha-select
+        label="Language"
+        .value=${this._selected_language || ''}
+        .configValue=${'selected_language'}
+        @selected=${this._valueChanged}
+        @closed=${(ev: Event) => ev.stopPropagation()}
+      >
+        ${langOpts.map((lang) => html`<mwc-list-item value=${lang.key}>${lang.name}</mwc-list-item> `)}
+      </ha-select>
       <ha-select
         label="Theme"
         .value=${this._config?.selected_theme?.theme || 'Default'}
@@ -365,7 +359,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         <mwc-list-item value="light">Light</mwc-list-item>
       </ha-select>
     `;
-    return this.panelTemplate('Themes configuration', 'Choose the theme for the card.', 'mdi:palette', themesConfig);
+    return this.panelTemplate('Themes & Language', 'Choose the theme for the card.', 'mdi:palette', themesConfig);
   }
 
   private _renderImageConfig(): TemplateResult {
@@ -396,7 +390,31 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _renderMapPopupConfig(): TemplateResult {
+    const device_trackers = Object.keys(this.hass.states).filter((entity) => entity.startsWith('device_tracker'));
+
     const mapConfig = html`
+      <ha-select
+        naturalMenuWidth
+        fixedMenuPosition
+        label="Device Tracker (Optional)"
+        .configValue=${'device_tracker'}
+        .value=${this._device_tracker}
+        @selected=${this._valueChanged}
+        @closed=${(ev) => ev.stopPropagation()}
+      >
+        <mwc-list-item value="">None</mwc-list-item>
+        ${device_trackers.map((entity) => {
+          return html`<mwc-list-item .value=${entity}>${entity}</mwc-list-item>`;
+        })}
+      </ha-select>
+      <ha-textfield
+        label="Google API Key (Optional)"
+        type="password"
+        .value=${this._google_api_key}
+        .configValue=${'google_api_key'}
+        @input=${this._valueChanged}
+      ></ha-textfield>
+      <ha-alert alert-type="info">This is configuration for map popup.</ha-alert>
       <ha-textfield
         label="Hours to show"
         type="number"
@@ -423,12 +441,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         <mwc-list-item value="light">Light</mwc-list-item>
       </ha-select>
     `;
-    return this.panelTemplate(
-      'Map popup configuration',
-      'Choose the configuration for the map popup.',
-      'mdi:map-search',
-      mapConfig,
-    );
+    return this.panelTemplate('Map configuration', 'Choose the configuration for the map', 'mdi:map-search', mapConfig);
   }
 
   private _renderServicesConfig(): TemplateResult {

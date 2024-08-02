@@ -18,13 +18,13 @@ export const languageOptions = [
   { key: 'pl', name: 'Polish' },
 ];
 
-export function localize(string: string, search = '', replace = ''): string {
-  const lang = (localStorage.getItem('selectedLanguage') || 'en').replace(/['"]+/g, '').replace('-', '_');
+export function localize(string: string, lang: string, search = '', replace = ''): string {
+  const language = lang.replace(/['"]+/g, '').replace('-', '_');
 
   let translated: string;
 
   try {
-    translated = string.split('.').reduce((o, i) => o[i], languages[lang]);
+    translated = string.split('.').reduce((o, i) => o[i], languages[language]);
   } catch (e) {
     translated = string.split('.').reduce((o, i) => o[i], languages['en']);
   }
