@@ -52,6 +52,29 @@ export async function getVehicleEntities(hass: HomeAssistant, config: { entity?:
   return entityIds;
 }
 
+export async function getModelName(hass: HomeAssistant, config: { entity?: string }): Promise<string> {
+  // Fetch all entities
+  const allEntities = await hass.callWS<{ entity_id: string; device_id: string }[]>({
+    type: 'config/entity_registry/list',
+  });
+  // Find the car entity
+  const carEntity = allEntities.find((entity) => entity.entity_id === config.entity);
+  if (!carEntity) return '';
+  console.log('Car Entity:', carEntity);
+  const deviceId = carEntity.device_id;
+  if (!deviceId) return '';
+
+  // Fetch all devices
+  const allDevices = await hass.callWS<{ id: string; name: string; model: string }[]>({
+    type: 'config/device_registry/list',
+  });
+  // Find the device by ID
+  const device = allDevices.find((device) => device.id === deviceId);
+  if (!device) return '';
+  console.log('Device:', device);
+  return device.model || '';
+}
+
 /**
  * Additional card listeners
  * @param cardElement

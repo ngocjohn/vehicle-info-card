@@ -101,16 +101,16 @@ export const tyrePressures = (lang: string): CardItem[] => [
   createItem('tirePressureRearRight', 'tyreCard.tirePressureRearRight', lang, 'mdi:tire'),
 ];
 
-export const tyreAttributes = [
-  'tirePressureFrontRight',
-  'tirePressureFrontRight',
-  'tirePressureRearLeft',
-  'tirePressureRearRight',
-];
-
 export const chargingOverview = (lang: string): CardItem[] => [
   createItem('chargingPower', 'chargingOverview.chargingPower', lang, 'mdi:flash'),
   createItem('soc', 'chargingOverview.soc', lang),
   createItem('maxSoc', 'chargingOverview.maxSoc', lang),
   createItem('selectedProgram', 'chargingOverview.selectedProgram', lang, 'mdi:ev-station'),
+];
+
+export const tyreAttributes = [
+  'tirePressureFrontRight',
+  'tirePressureFrontRight',
+  'tirePressureRearLeft',
+  'tirePressureRearRight',
 ];

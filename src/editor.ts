@@ -13,6 +13,7 @@ import { cardTypes } from './const/data-keys';
 import { editorShowOpts } from './const/data-keys';
 import { CARD_VERSION } from './const';
 import { languageOptions, localize } from './localize/localize';
+import { getModelName } from './utils/get-device-entities';
 
 @customElement('vehicle-info-card-editor')
 export class VehicleCardEditor extends LitElement implements LovelaceCardEditor {
@@ -37,12 +38,16 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     this._config = config;
     if (!this._config.entity) {
       this._config.entity = this.getCarEntity();
-      this._config.name = await this.getDeviceModelName();
+      this._config.name = await getModelName(this.hass, this._config);
       fireEvent(this, 'config-changed', { config: this._config });
     }
 
     this.loadCardHelpers();
   }
+
+  private localize = (string: string, search = '', replace = ''): string => {
+    return localize(string, this._selected_language || this._system_language || 'en', search, replace);
+  };
 
   private getCarEntity(): string {
     if (!this.hass) return '';
@@ -50,33 +55,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       (entity) => entity.startsWith('sensor') && entity.endsWith('_car'),
     );
     return entities[0] || '';
-  }
-
-  private async getDeviceModelName(): Promise<string> {
-    if (!this._config?.entity) return '';
-
-    const carEntityId = this._config.entity;
-
-    // Fetch all entities
-    const allEntities = await this.hass.callWS<{ entity_id: string; device_id: string }[]>({
-      type: 'config/entity_registry/list',
-    });
-    // Find the car entity
-    const carEntity = allEntities.find((entity) => entity.entity_id === carEntityId);
-    if (!carEntity) return '';
-    console.log('Car Entity:', carEntity);
-    const deviceId = carEntity.device_id;
-    if (!deviceId) return '';
-
-    // Fetch all devices
-    const allDevices = await this.hass.callWS<{ id: string; name: string; model: string }[]>({
-      type: 'config/device_registry/list',
-    });
-    // Find the device by ID
-    const device = allDevices.find((device) => device.id === deviceId);
-    if (!device) return '';
-    console.log('Device:', device);
-    return device.model || '';
   }
 
   get _name(): string {
@@ -158,9 +136,9 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _renderCardEditorButtons(): TemplateResult {
-    const lang = this._selected_language || 'en';
+    const lang = this._selected_language || this._system_language || 'en';
     const baseCardTypes = cardTypes(lang);
-    const localInfo = localize('editor.common.infoButton', lang);
+    const localInfo = this.localize('editor.common.infoButton');
     const subcardBtns = html`
       <ha-alert alert-type="info">${localInfo}</ha-alert>
       <div class="cards-buttons">
@@ -212,7 +190,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _renderSwitches(): TemplateResult {
-    const lang = this._selected_language || 'en';
+    const lang = this._selected_language || this._system_language || 'en';
     const showOptions = editorShowOpts(lang);
 
     const switches = html`
@@ -329,7 +307,8 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     } else if (this._config && typeof this._config.images === 'string') {
       images = this._config.images;
     }
-    const infoAlert = localize('editor.common.infoMap', this._selected_language || 'en');
+
+    const infoAlert = this.localize('editor.common.infoImages');
     const imageCodeEditor = html`
       <ha-alert alert-type="info">${infoAlert}</ha-alert>
       <ha-code-editor
@@ -348,7 +327,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private _renderMapPopupConfig(): TemplateResult {
     const device_trackers = Object.keys(this.hass.states).filter((entity) => entity.startsWith('device_tracker'));
-    const infoAlert = localize('editor.common.infoMap', this._selected_language || 'en');
+    const infoAlert = this.localize('editor.common.infoMap');
     const mapConfig = html`
       <ha-select
         naturalMenuWidth
@@ -405,8 +384,8 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private _renderServicesConfig(): TemplateResult {
     const services = this._config?.services || {}; // Ensure services object exists and default to empty object if undefined
-    const lang = this._config?.selected_language || 'en';
-    const infoAlert = localize('editor.common.infoServices', lang);
+    const infoAlert = this.localize('editor.common.infoServices');
+    const lang = this._selected_language || this._system_language || 'en';
     const servicesConfig = html`
       <ha-alert alert-type="info"> ${infoAlert} </ha-alert>
       <div class="switches">
@@ -427,9 +406,8 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private panelTemplate(titleKey: string, descKey: string, icon: string, content: TemplateResult): TemplateResult {
-    const lang = this._config?.selected_language || 'en';
-    const localTitle = localize(`editor.${titleKey}.title`, lang);
-    const localDesc = localize(`editor.${descKey}.desc`, lang);
+    const localTitle = this.localize(`editor.${titleKey}.title`);
+    const localDesc = this.localize(`editor.${descKey}.desc`);
 
     return html`
       <div class="panel-container">
