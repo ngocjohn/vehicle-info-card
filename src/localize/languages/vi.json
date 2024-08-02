@@ -184,6 +184,15 @@
 			"infoImages": "Không cần thêm '-' cho mỗi dòng. Mỗi dòng sẽ được coi là một URL riêng biệt tự động.",
 			"infoServices": "Chọn dịch vụ bạn muốn kích hoạt. Nếu dịch vụ bị tắt, nó sẽ không được hiển thị trong thẻ."
 		},
+		"showOpts": {
+			"show_slides": "Hiển thị slide",
+			"show_buttons": "Hiển thị nút",
+			"show_map": "Hiển thị bản đồ",
+			"show_background": "Hiển thị nền",
+			"enable_map_popup": "Bật cửa sổ bản đồ",
+			"enable_services_control": "Bật điều khiển dịch vụ",
+			"show_error_notify": "Hiển thị thông báo lỗi"
+		},
 		"buttonConfig": {
 			"title": "Cấu hình nút",
 			"desc": "Cấu hình các thẻ con cho các nút riêng lẻ."

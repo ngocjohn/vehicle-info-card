@@ -184,6 +184,15 @@
 			"infoImages": "Není potřeba přidávat '-' pro každý řádek. Každý řádek bude automaticky považován za samostatnou URL adresu.",
 			"infoServices": "Vyberte, které služby chcete povolit. Pokud je služba deaktivována, nebude v kartě zobrazena."
 		},
+		"showOpts": {
+			"show_slides": "Zobrazit snímky",
+			"show_buttons": "Zobrazit tlačítka",
+			"show_map": "Zobrazit mapu",
+			"show_background": "Zobrazit pozadí",
+			"enable_map_popup": "Povolit vyskakovací okno mapy",
+			"enable_services_control": "Povolit ovládání služeb",
+			"show_error_notify": "Zobrazit oznámení o chybě"
+		},
 		"buttonConfig": {
 			"title": "Konfigurace tlačítek",
 			"desc": "Nakonfigurujte podkarty pro jednotlivá tlačítka."

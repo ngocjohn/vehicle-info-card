@@ -184,6 +184,15 @@
 			"infoImages": "There is no need to add a '-' for each line. Each line will be treated as a separate URL automatically.",
 			"infoServices": "Choose which services you want to enable. If a service is disabled, it will not be shown in the card."
 		},
+		"showOpts": {
+			"show_slides": "Show slides",
+			"show_buttons": "Show buttons",
+			"show_map": "Show map",
+			"show_background": "Show background",
+			"enable_map_popup": "Enable map popup",
+			"enable_services_control": "Enable services control",
+			"show_error_notify": "Show error notification"
+		},
 		"buttonConfig": {
 			"title:": "Buttons configuration",
 			"desc": "Configure the subcards for individual buttons."
