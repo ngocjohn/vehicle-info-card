@@ -2,7 +2,7 @@ import { LitElement, html, TemplateResult, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
 import type { EcoData } from '../types';
-import { localize as baseLocalize } from '../localize/localize';
+import { localize } from '../utils/localize';
 // Third-party Libraries
 import ApexCharts from 'apexcharts';
 
@@ -14,7 +14,7 @@ export class EcoChart extends LitElement {
   @state() private chart: ApexCharts | undefined;
 
   private localize = (string: string, search = '', replace = ''): string => {
-    return baseLocalize(string, this.selectedLanguage, search, replace);
+    return localize(string, this.selectedLanguage, search, replace);
   };
 
   private get options() {

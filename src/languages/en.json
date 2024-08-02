@@ -1,4 +1,5 @@
 {
+	"name": "English",
 	"cardType": {
 		"tripCards": "Trip data",
 		"vehicleCards": "Vehicle status",
@@ -194,7 +195,7 @@
 			"show_error_notify": "Show error notification"
 		},
 		"buttonConfig": {
-			"title:": "Buttons configuration",
+			"title": "Buttons configuration",
 			"desc": "Configure the subcards for individual buttons."
 		},
 		"mapConfig": {

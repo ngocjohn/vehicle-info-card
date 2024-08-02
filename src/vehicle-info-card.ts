@@ -40,7 +40,7 @@ import './components/eco-chart';
 import './components/remote-control';
 
 // Functions
-import { localize as baseLocalize } from './localize/localize';
+import { localize } from './utils/localize';
 import { formatTimestamp, convertMinutes } from './utils/helpers';
 import { getVehicleEntities, setupCardListeners } from './utils/get-device-entities';
 
@@ -66,7 +66,7 @@ export class VehicleCard extends LitElement {
   @state() private chargingInfoVisible!: boolean;
 
   private localize = (string: string, search = '', replace = ''): string => {
-    return baseLocalize(string, this.selectedLanguage, search, replace);
+    return localize(string, this.selectedLanguage, search, replace);
   };
 
   private get isCharging(): boolean {

@@ -1,4 +1,4 @@
-import { localize } from '../localize/localize';
+import { localize } from '../utils/localize';
 
 const createItem = (nameKey: string, icon: string, lang: string) => ({
   name: localize(nameKey, lang),

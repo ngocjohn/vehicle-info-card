@@ -6,7 +6,6 @@ package-lock.json
 src/utils/testdata.ts
 all-keys.asc
 all-secret-keys.asc
-scripts/
 vehicle-info-card.code-workspace
 src/test/
 .env

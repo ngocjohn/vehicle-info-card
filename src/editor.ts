@@ -12,7 +12,7 @@ import { servicesCtrl } from './const/remote-control-keys';
 import { cardTypes } from './const/data-keys';
 import { editorShowOpts } from './const/data-keys';
 import { CARD_VERSION } from './const';
-import { languageOptions, localize } from './localize/localize';
+import { languageOptions, localize } from './utils/localize';
 import { getModelName } from './utils/get-device-entities';
 
 @customElement('vehicle-info-card-editor')

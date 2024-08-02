@@ -1,4 +1,5 @@
 {
+	"name": "Czech",
 	"cardType": {
 		"tripCards": "Údaje o jízdě",
 		"vehicleCards": "Stav vozidla",
@@ -85,7 +86,7 @@
 		"stateClosed": "Zamknuté",
 		"stateOpen": "Otevřené",
 		"liftingOpen": "Zvedání otevřeno",
-		"running": "Běh",
+		"running": "V provozu",
 		"antiBoomingPosition": "Pozice proti hučení",
 		"slidingIntermediate": "Mezilehlé posunutí",
 		"liftingIntermediate": "Mezilehlé zvedání",

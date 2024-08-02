@@ -1,4 +1,4 @@
-import { localize } from '../localize/localize';
+import { localize } from '../utils/localize';
 
 export interface CardItem {
   key: string;
