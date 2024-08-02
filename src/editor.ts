@@ -446,13 +446,13 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private _renderServicesConfig(): TemplateResult {
     const services = this._config?.services || {}; // Ensure services object exists and default to empty object if undefined
-
+    const lang = this._config?.selected_language || 'en';
     const servicesConfig = html`
       <ha-alert alert-type="info">
         Choose which services you want to enable. If a service is disabled, it will not be shown in the card.
       </ha-alert>
       <div class="switches">
-        ${Object.entries(servicesCtrl).map(
+        ${Object.entries(servicesCtrl(lang)).map(
           ([key, { name }]) => html`
             <ha-formfield .label=${name}>
               <ha-switch

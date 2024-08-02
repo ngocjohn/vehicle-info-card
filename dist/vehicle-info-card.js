@@ -3123,22 +3123,22 @@ function(){function t(t){t.remember("_draggable",this),this.el=t}t.prototype.ini
         <mwc-list-item value="dark">Dark</mwc-list-item>
         <mwc-list-item value="light">Light</mwc-list-item>
       </ha-select>
-    `;return this.panelTemplate("Map configuration","Choose the configuration for the map","mdi:map-search",o)}_renderServicesConfig(){var t;const e=(null===(t=this._config)||void 0===t?void 0:t.services)||{},i=Z`
+    `;return this.panelTemplate("Map configuration","Choose the configuration for the map","mdi:map-search",o)}_renderServicesConfig(){var t,e;const i=(null===(t=this._config)||void 0===t?void 0:t.services)||{},a=(null===(e=this._config)||void 0===e?void 0:e.selected_language)||"en",s=Z`
       <ha-alert alert-type="info">
         Choose which services you want to enable. If a service is disabled, it will not be shown in the card.
       </ha-alert>
       <div class="switches">
-        ${Object.entries(Us).map((([t,{name:i}])=>Z`
-            <ha-formfield .label=${i}>
+        ${Object.entries(Us(a)).map((([t,{name:e}])=>Z`
+            <ha-formfield .label=${e}>
               <ha-switch
-                .checked=${void 0!==e[t]&&e[t]}
+                .checked=${void 0!==i[t]&&i[t]}
                 .configValue="${t}"
                 @change=${this._servicesValueChanged}
               ></ha-switch>
             </ha-formfield>
           `))}
       </div>
-    `;return this.panelTemplate("Services configuration","Choose the services you want to enable.","mdi:car-cog",i)}panelTemplate(t,e,i,a){return Z`
+    `;return this.panelTemplate("Services configuration","Choose the services you want to enable.","mdi:car-cog",s)}panelTemplate(t,e,i,a){return Z`
       <div class="panel-container">
         <ha-expansion-panel .expanded=${!1} .outlined=${!0} .header=${t} .secondary=${e} leftChevron>
           <div class="right-icon" slot="icons">
