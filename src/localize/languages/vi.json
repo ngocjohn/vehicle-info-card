@@ -176,5 +176,37 @@
 		"titleServices": "Dịch vụ",
 		"titleRemoteControl": "Điều khiển từ xa",
 		"toastCommandSent": "Lệnh đã được gửi thành công!"
+	},
+	"editor": {
+		"common": {
+			"infoButton": "Chọn thẻ bạn muốn cấu hình.",
+			"infoMap": "Đây là cấu hình cho cửa sổ bật lên bản đồ.",
+			"infoImages": "Không cần thêm '-' cho mỗi dòng. Mỗi dòng sẽ được coi là một URL riêng biệt tự động.",
+			"infoServices": "Chọn dịch vụ bạn muốn kích hoạt. Nếu dịch vụ bị tắt, nó sẽ không được hiển thị trong thẻ."
+		},
+		"buttonConfig": {
+			"title": "Cấu hình nút",
+			"desc": "Cấu hình các thẻ con cho các nút riêng lẻ."
+		},
+		"mapConfig": {
+			"title": "Cấu hình bản đồ",
+			"desc": "Chọn cấu hình cho bản đồ"
+		},
+		"imagesConfig": {
+			"title": "Cấu hình hình ảnh",
+			"desc": "Thêm URL của hình ảnh."
+		},
+		"servicesConfig": {
+			"title": "Cấu hình dịch vụ",
+			"desc": "Chọn các dịch vụ bạn muốn kích hoạt."
+		},
+		"themeLangConfig": {
+			"title": "Chủ đề và ngôn ngữ",
+			"desc": "Chọn chủ đề và ngôn ngữ."
+		},
+		"showConfig": {
+			"title": "Cấu hình hiển thị",
+			"desc": "Chọn các mục bạn muốn hiển thị."
+		}
 	}
 }

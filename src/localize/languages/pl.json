@@ -176,5 +176,37 @@
 		"titleServices": "Usługi",
 		"titleRemoteControl": "Zdalne sterowanie",
 		"toastCommandSent": "Polecenie wysłane pomyślnie!"
+	},
+	"editor": {
+		"common": {
+			"infoButton": "Wybierz kartę, którą chcesz skonfigurować.",
+			"infoMap": "To jest konfiguracja dla okienka mapy.",
+			"infoImages": "Nie ma potrzeby dodawania '-' dla każdej linii. Każda linia będzie automatycznie traktowana jako oddzielny URL.",
+			"infoServices": "Wybierz, które usługi chcesz włączyć. Jeśli usługa jest wyłączona, nie będzie wyświetlana na karcie."
+		},
+		"buttonConfig": {
+			"title": "Konfiguracja przycisków",
+			"desc": "Skonfiguruj podkarty dla poszczególnych przycisków."
+		},
+		"mapConfig": {
+			"title": "Konfiguracja mapy",
+			"desc": "Wybierz konfigurację dla mapy"
+		},
+		"imagesConfig": {
+			"title": "Konfiguracja obrazów",
+			"desc": "Dodaj URL-e obrazów."
+		},
+		"servicesConfig": {
+			"title": "Konfiguracja usług",
+			"desc": "Wybierz usługi, które chcesz włączyć."
+		},
+		"themeLangConfig": {
+			"title": "Tematy i język",
+			"desc": "Wybierz temat i język."
+		},
+		"showConfig": {
+			"title": "Konfiguracja wyświetlania",
+			"desc": "Wybierz elementy, które chcesz wyświetlić."
+		}
 	}
 }

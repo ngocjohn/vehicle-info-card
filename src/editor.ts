@@ -11,7 +11,7 @@ import { HomeAssistantExtended as HomeAssistant, VehicleCardConfig } from './typ
 import { servicesCtrl } from './const/remote-control-keys';
 import { cardTypes } from './const/data-keys';
 import { CARD_VERSION } from './const';
-import { languageOptions } from './localize/localize';
+import { languageOptions, localize } from './localize/localize';
 
 @customElement('vehicle-info-card-editor')
 export class VehicleCardEditor extends LitElement implements LovelaceCardEditor {
@@ -157,9 +157,11 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _renderCardEditorButtons(): TemplateResult {
-    const baseCardTypes = cardTypes(this._selected_language || 'en');
+    const lang = this._selected_language || 'en';
+    const baseCardTypes = cardTypes(lang);
+    const localInfo = localize('editor.common.infoButton', lang);
     const subcardBtns = html`
-      <ha-alert alert-type="info">Select the card you want to configure.</ha-alert>
+      <ha-alert alert-type="info">${localInfo}</ha-alert>
       <div class="cards-buttons">
         ${baseCardTypes.map(
           (card) => html`
@@ -174,12 +176,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         )}
       </div>
     `;
-    return this.panelTemplate(
-      'Buttons configuration',
-      'Configure the subcards for individual buttons.',
-      'mdi:view-dashboard',
-      subcardBtns,
-    );
+    return this.panelTemplate('buttonConfig', 'buttonConfig', 'mdi:view-dashboard', subcardBtns);
   }
 
   private _renderSubCardConfig(cardType: string, isEditorOpen: boolean): TemplateResult {
@@ -215,79 +212,66 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private _renderSwitches(): TemplateResult {
     const switches = html`
-      <ha-formfield .label=${`Show slides`}>
-        <ha-switch
-          .disabled=${!this._config?.images || this._config?.images.length === 0}
-          .checked=${this._show_slides !== false}
-          .configValue=${'show_slides'}
-          @change=${this._valueChanged}
-        ></ha-switch>
-      </ha-formfield>
+      <div class="switches">
+        <ha-formfield .label=${`Show slides`}>
+          <ha-switch
+            .disabled=${!this._config?.images || this._config?.images.length === 0}
+            .checked=${this._show_slides !== false}
+            .configValue=${'show_slides'}
+            @change=${this._valueChanged}
+          ></ha-switch>
+        </ha-formfield>
 
-      <ha-formfield .label=${`Show buttons`}>
-        <ha-switch
-          .checked=${this._show_buttons !== false}
-          .configValue=${'show_buttons'}
-          @change=${this._valueChanged}
-        ></ha-switch>
-      </ha-formfield>
+        <ha-formfield .label=${`Show buttons`}>
+          <ha-switch
+            .checked=${this._show_buttons !== false}
+            .configValue=${'show_buttons'}
+            @change=${this._valueChanged}
+          ></ha-switch>
+        </ha-formfield>
 
-      <ha-formfield .label=${`Show map`}>
-        <ha-switch
-          .checked=${this._show_map !== false}
-          .configValue=${'show_map'}
-          @change=${this._valueChanged}
-        ></ha-switch>
-      </ha-formfield>
+        <ha-formfield .label=${`Show map`}>
+          <ha-switch
+            .checked=${this._show_map !== false}
+            .configValue=${'show_map'}
+            @change=${this._valueChanged}
+          ></ha-switch>
+        </ha-formfield>
 
-      <ha-formfield .label=${`Show background`}>
-        <ha-switch
-          .checked=${this._show_background !== false}
-          .configValue=${'show_background'}
-          @change=${this._valueChanged}
-        ></ha-switch>
-      </ha-formfield>
+        <ha-formfield .label=${`Show background`}>
+          <ha-switch
+            .checked=${this._show_background !== false}
+            .configValue=${'show_background'}
+            @change=${this._valueChanged}
+          ></ha-switch>
+        </ha-formfield>
 
-      <ha-formfield .label=${`Enable map popup`}>
-        <ha-switch
-          .disabled=${this._show_map === false || this._show_map === undefined || !this._config?.device_tracker}
-          .checked=${this._enable_map_popup !== false}
-          .configValue=${'enable_map_popup'}
-          @change=${this._valueChanged}
-        ></ha-switch>
-      </ha-formfield>
-      <ha-formfield .label=${`Enable services control`}>
-        <ha-switch
-          .checked=${this._enable_services_control !== false}
-          .configValue=${'enable_services_control'}
-          @change=${this._valueChanged}
-        ></ha-switch>
-      </ha-formfield>
-      <ha-formfield .label=${`Show error notification`}>
-        <ha-switch
-          .checked=${this._show_error_notify !== false}
-          .configValue=${'show_error_notify'}
-          @change=${this._valueChanged}
-        ></ha-switch>
-      </ha-formfield>
+        <ha-formfield .label=${`Enable map popup`}>
+          <ha-switch
+            .disabled=${this._show_map === false || this._show_map === undefined || !this._config?.device_tracker}
+            .checked=${this._enable_map_popup !== false}
+            .configValue=${'enable_map_popup'}
+            @change=${this._valueChanged}
+          ></ha-switch>
+        </ha-formfield>
+        <ha-formfield .label=${`Enable services control`}>
+          <ha-switch
+            .checked=${this._enable_services_control !== false}
+            .configValue=${'enable_services_control'}
+            @change=${this._valueChanged}
+          ></ha-switch>
+        </ha-formfield>
+        <ha-formfield .label=${`Show error notification`}>
+          <ha-switch
+            .checked=${this._show_error_notify !== false}
+            .configValue=${'show_error_notify'}
+            @change=${this._valueChanged}
+          ></ha-switch>
+        </ha-formfield>
+      </div>
     `;
 
-    return html` <div class="panel-container">
-      <ha-expansion-panel
-        .expanded=${false}
-        .outlined=${true}
-        .header=${'Show options'}
-        .secondary=${`Show or hide the options in the card.`}
-        leftChevron
-      >
-        <div class="right-icon" slot="icons">
-          <ha-icon icon="mdi:toggle-switch"></ha-icon>
-        </div>
-        <div class="card-config">
-          <div class="switches">${switches}</div>
-        </div>
-      </ha-expansion-panel>
-    </div>`;
+    return this.panelTemplate('showConfig', 'showConfig', 'mdi:toggle-switch', switches);
   }
 
   private _renderFormSelectors(): TemplateResult {
@@ -306,7 +290,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         @input=${this._valueChanged}
       ></ha-textfield>
       <ha-select
-        naturalMenuWidth
         fixedMenuPosition
         label="Entity (Required)"
         .configValue=${'entity'}
@@ -315,7 +298,9 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         @closed=${(ev) => ev.stopPropagation()}
       >
         ${entities.map((entity) => {
-          return html`<mwc-list-item .value=${entity}>${entity}</mwc-list-item>`;
+          const friendlyName = this.hass.states[entity].attributes.friendly_name;
+          const displayName = `${friendlyName ? `${friendlyName} (${entity})` : entity} `;
+          return html`<mwc-list-item .value=${entity}> ${displayName}</mwc-list-item>`;
         })}
       </ha-select>
     `;
@@ -326,7 +311,10 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const customThemes = Object.keys(this.hass.themes.themes);
     const themesOpts = ['Default', ...customThemes];
     const sysLang = this._system_language || 'en';
-    const langOpts = [{ key: sysLang, name: 'System' }, ...languageOptions];
+    const langOpts = [
+      { key: sysLang, name: 'System' },
+      ...languageOptions.sort((a, b) => a.name.localeCompare(b.name)),
+    ];
     const themesConfig = html`
       <ha-select
         label="Language"
@@ -359,7 +347,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         <mwc-list-item value="light">Light</mwc-list-item>
       </ha-select>
     `;
-    return this.panelTemplate('Themes & Language', 'Choose the theme for the card.', 'mdi:palette', themesConfig);
+    return this.panelTemplate('themeLangConfig', 'themeLangConfig', 'mdi:palette', themesConfig);
   }
 
   private _renderImageConfig(): TemplateResult {
@@ -370,11 +358,9 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     } else if (this._config && typeof this._config.images === 'string') {
       images = this._config.images;
     }
+    const infoAlert = localize('editor.common.infoMap', this._selected_language || 'en');
     const imageCodeEditor = html`
-      <ha-alert alert-type="info"
-        >There is no need to add a '-' for each line. Each line will be treated as a separate URL
-        automatically.</ha-alert
-      >
+      <ha-alert alert-type="info">${infoAlert}</ha-alert>
       <ha-code-editor
         autofocus
         autocomplete-entities
@@ -386,12 +372,12 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       ></ha-code-editor>
     `;
 
-    return this.panelTemplate('Images configuration', 'Add the URLs of the images.', 'mdi:image', imageCodeEditor);
+    return this.panelTemplate('imagesConfig', 'imagesConfig', 'mdi:image', imageCodeEditor);
   }
 
   private _renderMapPopupConfig(): TemplateResult {
     const device_trackers = Object.keys(this.hass.states).filter((entity) => entity.startsWith('device_tracker'));
-
+    const infoAlert = localize('editor.common.infoMap', this._selected_language || 'en');
     const mapConfig = html`
       <ha-select
         naturalMenuWidth
@@ -404,7 +390,9 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       >
         <mwc-list-item value="">None</mwc-list-item>
         ${device_trackers.map((entity) => {
-          return html`<mwc-list-item .value=${entity}>${entity}</mwc-list-item>`;
+          const friendlyName = this.hass.states[entity].attributes.friendly_name;
+          const displayName = `${friendlyName ? `${friendlyName} (${entity})` : entity} `;
+          return html`<mwc-list-item .value=${entity}> ${displayName}</mwc-list-item>`;
         })}
       </ha-select>
       <ha-textfield
@@ -414,7 +402,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         .configValue=${'google_api_key'}
         @input=${this._valueChanged}
       ></ha-textfield>
-      <ha-alert alert-type="info">This is configuration for map popup.</ha-alert>
+      <ha-alert alert-type="info">${infoAlert}</ha-alert>
       <ha-textfield
         label="Hours to show"
         type="number"
@@ -441,16 +429,15 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         <mwc-list-item value="light">Light</mwc-list-item>
       </ha-select>
     `;
-    return this.panelTemplate('Map configuration', 'Choose the configuration for the map', 'mdi:map-search', mapConfig);
+    return this.panelTemplate('mapConfig', 'mapConfig', 'mdi:map-search', mapConfig);
   }
 
   private _renderServicesConfig(): TemplateResult {
     const services = this._config?.services || {}; // Ensure services object exists and default to empty object if undefined
     const lang = this._config?.selected_language || 'en';
+    const infoAlert = localize('editor.common.infoServices', lang);
     const servicesConfig = html`
-      <ha-alert alert-type="info">
-        Choose which services you want to enable. If a service is disabled, it will not be shown in the card.
-      </ha-alert>
+      <ha-alert alert-type="info"> ${infoAlert} </ha-alert>
       <div class="switches">
         ${Object.entries(servicesCtrl(lang)).map(
           ([key, { name }]) => html`
@@ -465,18 +452,23 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         )}
       </div>
     `;
-    return this.panelTemplate(
-      'Services configuration',
-      'Choose the services you want to enable.',
-      'mdi:car-cog',
-      servicesConfig,
-    );
+    return this.panelTemplate('servicesConfig', 'servicesConfig', 'mdi:car-cog', servicesConfig);
   }
 
-  private panelTemplate(title: string, secondary: string, icon: string, content: TemplateResult): TemplateResult {
+  private panelTemplate(titleKey: string, descKey: string, icon: string, content: TemplateResult): TemplateResult {
+    const lang = this._config?.selected_language || 'en';
+    const localTitle = localize(`editor.${titleKey}.title`, lang);
+    const localDesc = localize(`editor.${descKey}.desc`, lang);
+
     return html`
       <div class="panel-container">
-        <ha-expansion-panel .expanded=${false} .outlined=${true} .header=${title} .secondary=${secondary} leftChevron>
+        <ha-expansion-panel
+          .expanded=${false}
+          .outlined=${true}
+          .header=${localTitle}
+          .secondary=${localDesc}
+          leftChevron
+        >
           <div class="right-icon" slot="icons">
             <ha-icon icon=${icon}></ha-icon>
           </div>
@@ -635,9 +627,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       grid-template-columns: 1fr 1fr;
       grid-gap: 1rem;
     }
-    ha-select {
-      --mdc-menu-max-height: 200px;
-    }
+
     ha-select,
     ha-textfield {
       margin-bottom: 16px;
@@ -672,6 +662,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     .cards-buttons {
       display: flex;
       justify-content: space-around;
+      flex-direction: column;
     }
 
     .sub-card-header {

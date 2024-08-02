@@ -176,5 +176,37 @@
 		"titleServices": "Services",
 		"titleRemoteControl": "Remote control",
 		"toastCommandSent": "Command sent sucess!"
+	},
+	"editor": {
+		"common": {
+			"infoButton": "Select the card you want to configure.",
+			"infoMap": "This is configuration for map popup.",
+			"infoImages": "There is no need to add a '-' for each line. Each line will be treated as a separate URL automatically.",
+			"infoServices": "Choose which services you want to enable. If a service is disabled, it will not be shown in the card."
+		},
+		"buttonConfig": {
+			"title:": "Buttons configuration",
+			"desc": "Configure the subcards for individual buttons."
+		},
+		"mapConfig": {
+			"title": "Map configuration",
+			"desc": "'Choose the configuration for the map"
+		},
+		"imagesConfig": {
+			"title": "Image configuration",
+			"desc": "Add the URLs of the images."
+		},
+		"servicesConfig": {
+			"title": "Services configuration",
+			"desc": "Choose the services you want to enable."
+		},
+		"themeLangConfig": {
+			"title": "Themes & Language",
+			"desc": "Choose the theme and language."
+		},
+		"showConfig": {
+			"title": "Show configuration",
+			"desc": "Choose the items you want to display."
+		}
 	}
 }

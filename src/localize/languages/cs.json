@@ -176,5 +176,37 @@
 		"titleServices": "Služby",
 		"titleRemoteControl": "Vzdálené ovládání",
 		"toastCommandSent": "Příkaz odeslán úspěšně!"
+	},
+	"editor": {
+		"common": {
+			"infoButton": "Vyberte kartu, kterou chcete nakonfigurovat.",
+			"infoMap": "Toto je konfigurace pro mapové vyskakovací okno.",
+			"infoImages": "Není potřeba přidávat '-' pro každý řádek. Každý řádek bude automaticky považován za samostatnou URL adresu.",
+			"infoServices": "Vyberte, které služby chcete povolit. Pokud je služba deaktivována, nebude v kartě zobrazena."
+		},
+		"buttonConfig": {
+			"title": "Konfigurace tlačítek",
+			"desc": "Nakonfigurujte podkarty pro jednotlivá tlačítka."
+		},
+		"mapConfig": {
+			"title": "Konfigurace mapy",
+			"desc": "Vyberte konfiguraci pro mapu"
+		},
+		"imagesConfig": {
+			"title": "Konfigurace obrázků",
+			"desc": "Přidejte URL adresy obrázků."
+		},
+		"servicesConfig": {
+			"title": "Konfigurace služeb",
+			"desc": "Vyberte služby, které chcete povolit."
+		},
+		"themeLangConfig": {
+			"title": "Témata a jazyk",
+			"desc": "Vyberte téma a jazyk."
+		},
+		"showConfig": {
+			"title": "Konfigurace zobrazení",
+			"desc": "Vyberte položky, které chcete zobrazit."
+		}
 	}
 }
