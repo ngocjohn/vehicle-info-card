@@ -10,6 +10,7 @@ import { fireEvent, LovelaceCardEditor, LovelaceCardConfig } from 'custom-card-h
 import { HomeAssistantExtended as HomeAssistant, VehicleCardConfig } from './types';
 import { servicesCtrl } from './const/remote-control-keys';
 import { cardTypes } from './const/data-keys';
+import { editorShowOpts } from './const/data-keys';
 import { CARD_VERSION } from './const';
 import { languageOptions, localize } from './localize/localize';
 
@@ -211,67 +212,37 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _renderSwitches(): TemplateResult {
+    const lang = this._selected_language || 'en';
+    const showOptions = editorShowOpts(lang);
+
     const switches = html`
       <div class="switches">
-        <ha-formfield .label=${`Show slides`}>
-          <ha-switch
-            .disabled=${!this._config?.images || this._config?.images.length === 0}
-            .checked=${this._show_slides !== false}
-            .configValue=${'show_slides'}
-            @change=${this._valueChanged}
-          ></ha-switch>
-        </ha-formfield>
-
-        <ha-formfield .label=${`Show buttons`}>
-          <ha-switch
-            .checked=${this._show_buttons !== false}
-            .configValue=${'show_buttons'}
-            @change=${this._valueChanged}
-          ></ha-switch>
-        </ha-formfield>
-
-        <ha-formfield .label=${`Show map`}>
-          <ha-switch
-            .checked=${this._show_map !== false}
-            .configValue=${'show_map'}
-            @change=${this._valueChanged}
-          ></ha-switch>
-        </ha-formfield>
-
-        <ha-formfield .label=${`Show background`}>
-          <ha-switch
-            .checked=${this._show_background !== false}
-            .configValue=${'show_background'}
-            @change=${this._valueChanged}
-          ></ha-switch>
-        </ha-formfield>
-
-        <ha-formfield .label=${`Enable map popup`}>
-          <ha-switch
-            .disabled=${this._show_map === false || this._show_map === undefined || !this._config?.device_tracker}
-            .checked=${this._enable_map_popup !== false}
-            .configValue=${'enable_map_popup'}
-            @change=${this._valueChanged}
-          ></ha-switch>
-        </ha-formfield>
-        <ha-formfield .label=${`Enable services control`}>
-          <ha-switch
-            .checked=${this._enable_services_control !== false}
-            .configValue=${'enable_services_control'}
-            @change=${this._valueChanged}
-          ></ha-switch>
-        </ha-formfield>
-        <ha-formfield .label=${`Show error notification`}>
-          <ha-switch
-            .checked=${this._show_error_notify !== false}
-            .configValue=${'show_error_notify'}
-            @change=${this._valueChanged}
-          ></ha-switch>
-        </ha-formfield>
+        ${showOptions.map(
+          (option) => html`
+            <ha-formfield .label=${option.label}>
+              <ha-switch
+                .disabled=${this._getSwitchDisabledState(option.configKey)}
+                .checked=${this[`_${option.configKey}`] !== false}
+                .configValue=${option.configKey}
+                @change=${this._valueChanged}
+              ></ha-switch>
+            </ha-formfield>
+          `,
+        )}
       </div>
     `;
 
     return this.panelTemplate('showConfig', 'showConfig', 'mdi:toggle-switch', switches);
+  }
+
+  private _getSwitchDisabledState(configKey: string): boolean {
+    if (configKey === 'show_slides') {
+      return !this._config?.images || this._config?.images.length === 0;
+    }
+    if (configKey === 'enable_map_popup') {
+      return this._show_map === false || this._show_map === undefined || !this._config?.device_tracker;
+    }
+    return false;
   }
 
   private _renderFormSelectors(): TemplateResult {

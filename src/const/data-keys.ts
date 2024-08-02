@@ -6,6 +6,22 @@ export interface CardItem {
   icon?: string;
   apexProp?: string;
 }
+
+const createShowOpts = (nameKey: string, lang: string, configKey: string) => ({
+  label: localize(nameKey, lang),
+  configKey,
+});
+
+export const editorShowOpts = (lang: string) => [
+  createShowOpts('editor.showOpts.show_slides', lang, 'show_slides'),
+  createShowOpts('editor.showOpts.show_buttons', lang, 'show_buttons'),
+  createShowOpts('editor.showOpts.show_map', lang, 'show_map'),
+  createShowOpts('editor.showOpts.show_background', lang, 'show_background'),
+  createShowOpts('editor.showOpts.enable_map_popup', lang, 'enable_map_popup'),
+  createShowOpts('editor.showOpts.enable_services_control', lang, 'enable_services_control'),
+  createShowOpts('editor.showOpts.show_error_notify', lang, 'show_error_notify'),
+];
+
 const createCard = (type: string, nameKey: string, icon: string, config: string, editor: string, lang: string) => ({
   type,
   name: localize(nameKey, lang),
