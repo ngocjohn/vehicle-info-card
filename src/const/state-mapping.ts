@@ -144,7 +144,7 @@ export const doorAttributes = (lang: string) => ({
 });
 
 export const lockStates = createLockStates;
-
+export const starterBattery = createStarterBattery;
 export const chargeSelectedProgram = createChargeSelectedProgram;
 
 export const windowAttributes = (lang: string) => ({
@@ -157,5 +157,3 @@ export const windowAttributes = (lang: string) => ({
   windowstatusfrontleftblind: createWindowStatus('windowAttributes.windowstatusfrontleftblind', lang),
   windowstatusfrontrightblind: createWindowStatus('windowAttributes.windowstatusfrontrightblind', lang),
 });
-
-export const starterBattery = createStarterBattery;

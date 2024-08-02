@@ -1074,8 +1074,9 @@ export class VehicleCard extends LitElement {
   };
 
   private getStarterBatteryInfo = (defaultInfo: EntityConfig, vehicleEntity: any): EntityConfig => {
+    const lang = this.selectedLanguage;
     const stateValue = this.getEntityState(vehicleEntity.entity_id);
-    const stateFormated = StateMapping.starterBattery[stateValue] || 'Unknown';
+    const stateFormated = StateMapping.starterBattery(lang)[stateValue] || 'Unknown';
 
     return {
       ...defaultInfo,
