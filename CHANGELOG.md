@@ -1,5 +1,11 @@
 # CHANGELOG.md
 
+## 1.1.0
+
+### Features
+
+- **Language Localization Support:** Added comprehensive support for localization across the card, enabling users to see translated strings based on their selected language.
+
 ## [1.0.7](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.0.7) (2024-07-25)
 
 ### Features
