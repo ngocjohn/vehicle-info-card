@@ -1117,7 +1117,9 @@ export class VehicleCard extends LitElement {
         return this.getStateDisplay(odometer?.entity_id);
 
       case 'vehicleCards':
-        return this.getStateDisplay(lockSensor?.entity_id);
+        const state = this.getStateDisplay(lockSensor?.entity_id);
+        const realState = this.localize(`common.state` + { state }.state);
+        return realState;
 
       case 'ecoCards':
         return this.getStateDisplay(ecoScoreBonusRange?.entity_id);
