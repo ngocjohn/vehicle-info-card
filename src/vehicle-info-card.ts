@@ -64,6 +64,8 @@ export class VehicleCard extends LitElement {
   @state() private windowAttributesVisible!: boolean;
   @state() private doorsAttributesVisible!: boolean;
   @state() private chargingInfoVisible!: boolean;
+  @state() private tripFromStartVisible!: boolean;
+  @state() private tripFromResetVisible!: boolean;
 
   private localize = (string: string, search = '', replace = ''): string => {
     return localize(string, this.selectedLanguage, search, replace);
@@ -135,8 +137,26 @@ export class VehicleCard extends LitElement {
     }
   }
 
-  public getCardSize(): number {
-    return 5;
+  private getGridRowSize(): number {
+    const { show_slides, show_map, show_buttons } = this.config;
+    let gridRowSize = 2;
+    if (show_slides) gridRowSize += 2;
+    if (show_map) gridRowSize += 2;
+    if (show_buttons) gridRowSize += 2;
+    return gridRowSize;
+  }
+
+  public getCardSize() {
+    return this.getGridRowSize();
+  }
+
+  public getLayoutOptions() {
+    const gridRowSize = this.getGridRowSize();
+    return {
+      grid_min_rows: gridRowSize,
+      grid_columns: 4,
+      grid_min_columns: 4,
+    };
   }
 
   protected firstUpdated(changedProperties: PropertyValues) {
@@ -407,19 +427,19 @@ export class VehicleCard extends LitElement {
           (cardType) => html`
             <div class="grid-item click-shrink" @click=${() => this.toggleCardFromButtons(cardType.type)}>
               <div class="item-icon">
-                <ha-icon .icon="${cardType.icon}"></ha-icon>
+                <div class="icon-background"><ha-icon .icon="${cardType.icon}"></ha-icon></div>
+                ${showError
+                  ? html`
+                      <div class="item-notify ${this.getErrorNotify(cardType.type) ? '' : 'hidden'}">
+                        <ha-icon icon="mdi:alert-circle"></ha-icon>
+                      </div>
+                    `
+                  : ''}
               </div>
               <div class="item-content">
                 <span class="primary">${cardType.name}</span>
                 <span class="secondary">${this.getSecondaryInfo(cardType.type)}</span>
               </div>
-              ${showError
-                ? html`
-                    <div class="item-notify ${this.getErrorNotify(cardType.type) ? '' : 'hidden'}">
-                      <ha-icon icon="mdi:alert-circle"></ha-icon>
-                    </div>
-                  `
-                : ''}
             </div>
           `,
         )}
@@ -502,12 +522,29 @@ export class VehicleCard extends LitElement {
   private _renderDefaultTripCard(): TemplateResult | void {
     const lang = this.selectedLanguage;
     const sections = [
-      { title: this.localize('tripCard.overview'), data: this.createDataArray(DataKeys.tripOverview(lang)) },
-      { title: this.localize('tripCard.fromStart'), data: this.createDataArray(DataKeys.tripFromStart(lang)) },
-      { title: this.localize('tripCard.fromReset'), data: this.createDataArray(DataKeys.tripFromReset(lang)) },
+      {
+        title: this.localize('tripCard.overview'),
+        data: this.createDataArray(DataKeys.tripOverview(lang)),
+        active: true,
+        key: 'tripOverview',
+      },
+      {
+        title: this.localize('tripCard.fromStart'),
+        data: this.createDataArray(DataKeys.tripFromStart(lang)),
+        active: this.getSubTripCardVisible('fromStart'),
+        key: 'fromStart',
+      },
+      {
+        title: this.localize('tripCard.fromReset'),
+        data: this.createDataArray(DataKeys.tripFromReset(lang)),
+        active: this.getSubTripCardVisible('fromReset'),
+        key: 'fromReset',
+      },
     ];
 
-    return html` ${sections.map((section) => this.createItemDataRow(section.title, section.data))} `;
+    return html`
+      ${sections.map((section) => this.createItemDataRow(section.title, section.data, section.active, section.key))}
+    `;
   }
 
   private _renderDefaultVehicleCard(): TemplateResult | void {
@@ -554,7 +591,7 @@ export class VehicleCard extends LitElement {
         <div class="data-header">${this.localize('ecoCard.ecoDisplay')}</div>
         ${this._renderEcoChart()}
       </div>
-      ${this.createItemDataRow(this.localize('ecoCard.ecoScore'), ecoData)}`;
+      ${this.createItemDataRow(this.localize('ecoCard.ecoScore'), ecoData, true, 'ecoScores')}`;
   }
 
   private _renderDefaultTyreCard(): TemplateResult {
@@ -840,11 +877,17 @@ export class VehicleCard extends LitElement {
     }
   }
 
+  private getSubTripCardVisible(tripType: 'fromStart' | 'fromReset'): boolean {
+    return tripType === 'fromStart' ? this.tripFromStartVisible : this.tripFromResetVisible;
+  }
+
   private isSubCardVisible(): boolean {
     const attributeVisibilityStates = [
       this.lockAttributesVisible,
       this.windowAttributesVisible,
       this.doorsAttributesVisible,
+      this.tripFromResetVisible,
+      this.tripFromStartVisible,
     ];
     return attributeVisibilityStates.some((state) => state);
   }
@@ -853,27 +896,51 @@ export class VehicleCard extends LitElement {
   /* GET ENTITIES STATE AND ATTRIBUTES                                          */
   /* -------------------------------------------------------------------------- */
 
-  private createItemDataRow(title: string, data: EntityConfig[]): TemplateResult {
+  private createItemDataRow(title: string, data: EntityConfig[], active: boolean, key: string): TemplateResult {
+    const toggleSubTripCard = (key: string) => {
+      if (key === 'fromStart') {
+        this.tripFromStartVisible = !this.tripFromStartVisible;
+      } else if (key === 'fromReset') {
+        this.tripFromResetVisible = !this.tripFromResetVisible;
+      }
+    };
+
+    const subCardToggleBtn = (key: string) => {
+      if (key === 'fromStart' || key === 'fromReset') {
+        return html`
+          <div class="subcard-icon ${active ? 'active' : ''}" @click=${() => toggleSubTripCard(key)}>
+            <ha-icon icon="mdi:chevron-right"></ha-icon>
+          </div>
+        `;
+      }
+      return html``;
+    };
+
     return html`
       <div class="default-card">
-        <div class="data-header">${title}</div>
-        ${data.map(({ key, name, icon, state }) => {
-          if (key && name && state) {
-            return html`
-              <div class="data-row">
-                <div>
-                  <ha-icon class="data-icon" .icon="${icon}"></ha-icon>
-                  <span>${name}</span>
+        <div class="data-header">${title} ${subCardToggleBtn(key)}</div>
+        <div class="data-box ${!active ? 'hidden' : ''}">
+          ${data.map(({ key, name, icon, state }) => {
+            if (key && name && state) {
+              return html`
+                <div class="data-row">
+                  <div>
+                    <ha-icon class="data-icon" .icon="${icon}"></ha-icon>
+                    <span>${name}</span>
+                  </div>
+                  <div
+                    class="data-value-unit"
+                    @click=${() => this.toggleMoreInfo(this.vehicleEntities[key]?.entity_id)}
+                  >
+                    <span>${state}</span>
+                  </div>
                 </div>
-                <div class="data-value-unit" @click=${() => this.toggleMoreInfo(this.vehicleEntities[key]?.entity_id)}>
-                  <span>${state}</span>
-                </div>
-              </div>
-            `;
-          } else {
-            return html``;
-          }
-        })}
+              `;
+            } else {
+              return html``;
+            }
+          })}
+        </div>
       </div>
     `;
   }
