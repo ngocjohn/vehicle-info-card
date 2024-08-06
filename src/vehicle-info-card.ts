@@ -66,6 +66,7 @@ export class VehicleCard extends LitElement {
   @state() private chargingInfoVisible!: boolean;
   @state() private tripFromStartVisible!: boolean;
   @state() private tripFromResetVisible!: boolean;
+  @state() private ecoScoresVisible!: boolean;
 
   private localize = (string: string, search = '', replace = ''): string => {
     return localize(string, this.selectedLanguage, search, replace);
@@ -591,7 +592,7 @@ export class VehicleCard extends LitElement {
         <div class="data-header">${this.localize('ecoCard.ecoDisplay')}</div>
         ${this._renderEcoChart()}
       </div>
-      ${this.createItemDataRow(this.localize('ecoCard.ecoScore'), ecoData, true, 'ecoScores')}`;
+      ${this.createItemDataRow(this.localize('ecoCard.ecoScore'), ecoData, this.ecoScoresVisible, 'ecoScores')}`;
   }
 
   private _renderDefaultTyreCard(): TemplateResult {
@@ -902,11 +903,13 @@ export class VehicleCard extends LitElement {
         this.tripFromStartVisible = !this.tripFromStartVisible;
       } else if (key === 'fromReset') {
         this.tripFromResetVisible = !this.tripFromResetVisible;
+      } else {
+        this.ecoScoresVisible = !this.ecoScoresVisible;
       }
     };
 
     const subCardToggleBtn = (key: string) => {
-      if (key === 'fromStart' || key === 'fromReset') {
+      if (key === 'fromStart' || key === 'fromReset' || key === 'ecoScores') {
         return html`
           <div class="subcard-icon ${active ? 'active' : ''}" @click=${() => toggleSubTripCard(key)}>
             <ha-icon icon="mdi:chevron-right"></ha-icon>
