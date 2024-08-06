@@ -176,14 +176,17 @@
 		"stateCharging": "Charging",
 		"titleServices": "Services",
 		"titleRemoteControl": "Remote control",
-		"toastCommandSent": "Command sent sucess!"
+		"toastCommandSent": "Command sent sucess!",
+		"toastImageError": "Error uploading image. Only PNG and JPEG files are allowed."
 	},
 	"editor": {
 		"common": {
 			"infoButton": "Select the card you want to configure.",
 			"infoMap": "This is configuration for map popup.",
 			"infoImages": "There is no need to add a '-' for each line. Each line will be treated as a separate URL automatically.",
-			"infoServices": "Choose which services you want to enable. If a service is disabled, it will not be shown in the card."
+			"infoServices": "Choose which services you want to enable. If a service is disabled, it will not be shown in the card.",
+			"uncheckAll": "Uncheck all",
+			"checkAll": "Check all"
 		},
 		"showOpts": {
 			"show_slides": "Show slides",

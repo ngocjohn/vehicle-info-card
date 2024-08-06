@@ -176,14 +176,17 @@
 		"stateCharging": "Đang sạc",
 		"titleServices": "Dịch vụ",
 		"titleRemoteControl": "Điều khiển từ xa",
-		"toastCommandSent": "Lệnh đã được gửi thành công!"
+		"toastCommandSent": "Lệnh đã được gửi thành công!",
+		"toastImageError": "Lỗi khi tải ảnh lên. Chỉ cho phép tệp PNG và JPEG."
 	},
 	"editor": {
 		"common": {
 			"infoButton": "Chọn thẻ bạn muốn cấu hình.",
 			"infoMap": "Đây là cấu hình cho cửa sổ bật lên bản đồ.",
 			"infoImages": "Không cần thêm '-' cho mỗi dòng. Mỗi dòng sẽ được coi là một URL riêng biệt tự động.",
-			"infoServices": "Chọn dịch vụ bạn muốn kích hoạt. Nếu dịch vụ bị tắt, nó sẽ không được hiển thị trong thẻ."
+			"infoServices": "Chọn dịch vụ bạn muốn kích hoạt. Nếu dịch vụ bị tắt, nó sẽ không được hiển thị trong thẻ.",
+			"uncheckAll": "Bỏ chọn tất cả",
+			"checkAll": "Chọn tất cả"
 		},
 		"showOpts": {
 			"show_slides": "Hiển thị slide",

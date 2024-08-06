@@ -176,14 +176,17 @@
 		"stateCharging": "Ładowanie",
 		"titleServices": "Usługi",
 		"titleRemoteControl": "Zdalne sterowanie",
-		"toastCommandSent": "Polecenie wysłane pomyślnie!"
+		"toastCommandSent": "Polecenie wysłane pomyślnie!",
+		"toastImageError": "Błąd przesyłania obrazu. Dozwolone są tylko pliki PNG i JPEG."
 	},
 	"editor": {
 		"common": {
 			"infoButton": "Wybierz kartę, którą chcesz skonfigurować.",
 			"infoMap": "To jest konfiguracja dla okienka mapy.",
 			"infoImages": "Nie ma potrzeby dodawania '-' dla każdej linii. Każda linia będzie automatycznie traktowana jako oddzielny URL.",
-			"infoServices": "Wybierz, które usługi chcesz włączyć. Jeśli usługa jest wyłączona, nie będzie wyświetlana na karcie."
+			"infoServices": "Wybierz, które usługi chcesz włączyć. Jeśli usługa jest wyłączona, nie będzie wyświetlana na karcie.",
+			"uncheckAll": "Odznacz wszystko",
+			"checkAll": "Zaznacz wszystko"
 		},
 		"showOpts": {
 			"show_slides": "Pokaż slajdy",

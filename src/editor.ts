@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { LitElement, html, TemplateResult, css, CSSResultGroup } from 'lit';
+import { LitElement, html, TemplateResult, css, CSSResultGroup, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators';
 import YAML from 'yaml';
 
@@ -7,13 +7,14 @@ import YAML from 'yaml';
 import { fireEvent, LovelaceCardEditor, LovelaceCardConfig } from 'custom-card-helpers';
 
 // Local types
-import { HomeAssistantExtended as HomeAssistant, VehicleCardConfig } from './types';
+import { HomeAssistantExtended as HomeAssistant, ServicesConfig, VehicleCardConfig } from './types';
 import { servicesCtrl } from './const/remote-control-keys';
 import { cardTypes } from './const/data-keys';
 import { editorShowOpts } from './const/data-keys';
 import { CARD_VERSION } from './const';
 import { languageOptions, localize } from './utils/localize';
 import { getModelName } from './utils/get-device-entities';
+import editorcss from './css/editor.css';
 
 @customElement('vehicle-info-card-editor')
 export class VehicleCardEditor extends LitElement implements LovelaceCardEditor {
@@ -27,6 +28,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   @property({ type: Boolean }) private isTripCardEditor = false;
   @property({ type: Boolean }) private isEcoCardEditor = false;
   @property({ type: Boolean }) private isTyreCardEditor = false;
+  @property({ type: Array }) imageNames: string[] = [];
 
   private _system_language = localStorage.getItem('selectedLanguage');
 
@@ -45,6 +47,19 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     this.loadCardHelpers();
   }
 
+  protected shouldUpdate(changedProps: PropertyValues): boolean {
+    if (!this._config) {
+      return false;
+    }
+
+    if (changedProps.has('imageNames')) {
+      this.imageNames = this._config.images || [];
+      console.log('Image names:', this.imageNames, this._config.images);
+      return true;
+    }
+
+    return true;
+  }
   private localize = (string: string, search = '', replace = ''): string => {
     return localize(string, this._selected_language || this._system_language || 'en', search, replace);
   };
@@ -103,6 +118,10 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   get _selected_language(): string | null {
     return this._config?.selected_language || null;
+  }
+
+  get _images(): string[] {
+    return this._config?.images || [];
   }
 
   protected render(): TemplateResult | void {
@@ -191,7 +210,9 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private _renderSwitches(): TemplateResult {
     const lang = this._selected_language || this._system_language || 'en';
-    const showOptions = editorShowOpts(lang);
+    let showOptions = editorShowOpts(lang);
+    // Filter out the enable_map_popup option
+    showOptions = showOptions.filter((option) => option.configKey !== 'enable_map_popup');
 
     const switches = html`
       <div class="switches">
@@ -300,34 +321,152 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _renderImageConfig(): TemplateResult {
-    let images = '';
+    const textFormInput = html`<div class="image-config">
+        ${this._images.map(
+          (image, index) => html`
+            <div class="custom-background-wrapper">
+              <ha-textfield
+                class="image-input"
+                .label=${'IMAGE #' + (index + 1)}
+                .configValue=${'images'}
+                .value=${this.imageNames[index] ?? image}
+                @input=${(event: Event) => this._handleImageChange(event, index)}
+              ></ha-textfield>
+              <div class="file-upload">
+                <ha-icon icon="mdi:delete" @click=${() => this._removeImage(index)}></ha-icon>
+              </div>
+            </div>
+          `,
+        )}
 
-    if (this._config && Array.isArray(this._config.images)) {
-      images = this._config.images.join('\n');
-    } else if (this._config && typeof this._config.images === 'string') {
-      images = this._config.images;
+        <div class="custom-background-wrapper">
+          <ha-textfield
+            .label=${'Add URL or Upload'}
+            .configValue=${'new_image_url'}
+            @change=${this._handleNewImageUrl.bind(this)}
+            @keydown=${this._handleNewImageUrl.bind(this)}
+          ></ha-textfield>
+          <div class="file-upload"><ha-icon icon="mdi:plus" @click=${() => this._handleNewImageUrl}></ha-icon></div>
+          <label for="file-upload-new" class="file-upload">
+            <ha-icon icon="mdi:upload"></ha-icon>
+            <input
+              type="file"
+              id="file-upload-new"
+              class="file-input"
+              @change=${this._handleFilePicked.bind(this)}
+              accept="image/*"
+            />
+          </label>
+        </div>
+      </div>
+      ${this._renderToast()}`;
+
+    return this.panelTemplate('imagesConfig', 'imagesConfig', 'mdi:image', textFormInput);
+  }
+
+  private _handleNewImageUrl(ev: Event): void {
+    const input = ev.target as HTMLInputElement;
+    if (ev instanceof KeyboardEvent && ev.key !== 'Enter') {
+      return;
+    }
+    if (input.value) {
+      if (this._config) {
+        const backgroundImages = [...this._images]; // Create a copy of the array
+        backgroundImages.push(input.value);
+        const imageNames = [...this.imageNames]; // Create a copy of the array
+        imageNames.push(input.value); // Add the URL as the image name
+        input.value = ''; // Clear the input after adding the URL
+        this._config = { ...this._config, images: backgroundImages };
+        this.imageNames = imageNames;
+
+        fireEvent(this, 'config-changed', { config: this._config });
+        this.requestUpdate();
+      }
+    }
+  }
+
+  private _handleImageChange(ev: Event, index: number): void {
+    if (!this._config || !this._config.images) return;
+    const input = ev.target as HTMLInputElement;
+    const backgroundImages = [...this._images]; // Create a copy of the array
+    const imageNames = [...this.imageNames]; // Create a copy of the array
+    backgroundImages[index] = input.value;
+    imageNames[index] = input.value;
+    this._config = { ...this._config, images: backgroundImages };
+    this.imageNames = imageNames;
+    console.log('Changed image:', this._images, this.imageNames);
+    fireEvent(this, 'config-changed', { config: this._config });
+    this.requestUpdate();
+  }
+
+  private async _handleFilePicked(ev: Event): Promise<void> {
+    const input = ev.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) {
+      return;
     }
 
-    const infoAlert = this.localize('editor.common.infoImages');
-    const imageCodeEditor = html`
-      <ha-alert alert-type="info">${infoAlert}</ha-alert>
-      <ha-code-editor
-        autofocus
-        autocomplete-entities
-        autocomplete-icons
-        .hass=${this.hass}
-        .value=${images}
-        .configValue="${'images'}"
-        @blur=${this._valueChanged}
-      ></ha-code-editor>
-    `;
+    const file = input.files[0];
+    const formData = new FormData();
+    formData.append('file', file);
 
-    return this.panelTemplate('imagesConfig', 'imagesConfig', 'mdi:image', imageCodeEditor);
+    try {
+      const response = await fetch('/api/image/upload', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          Authorization: `Bearer ${this.hass.auth.data.access_token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload image');
+      }
+
+      const data = await response.json();
+      const imageId = data.id;
+      const imageName = data.name.toUpperCase();
+
+      if (!imageId) {
+        throw new Error('Image ID is missing in the response');
+      }
+
+      const imageUrl = `/api/image/serve/${imageId}/original`;
+
+      if (this._config) {
+        const backgroundImages = [...this._images]; // Create a copy of the array
+        const imageNames = [...this.imageNames]; // Create a copy of the array
+        backgroundImages.push(imageUrl);
+        imageNames.push(imageName);
+        this._config = { ...this._config, images: backgroundImages };
+        this.imageNames = imageNames;
+        fireEvent(this, 'config-changed', { config: this._config });
+        this.requestUpdate();
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      this.launchToast();
+    }
+  }
+
+  private _removeImage(index: number): void {
+    if (this._config) {
+      const backgroundImages = [...this._images]; // Create a copy of the array
+      const imageNames = [...this.imageNames]; // Create a copy of the array
+      backgroundImages.splice(index, 1);
+      imageNames.splice(index, 1); // Remove the corresponding image name
+      this._config = { ...this._config, images: backgroundImages };
+      this.imageNames = imageNames;
+      fireEvent(this, 'config-changed', { config: this._config });
+      this.requestUpdate();
+    }
   }
 
   private _renderMapPopupConfig(): TemplateResult {
     const device_trackers = Object.keys(this.hass.states).filter((entity) => entity.startsWith('device_tracker'));
     const infoAlert = this.localize('editor.common.infoMap');
+    const lang = this._selected_language || this._system_language || 'en';
+    const enableMapPopupSwtich = editorShowOpts(lang).find((option) => option.configKey === 'enable_map_popup');
+
     const mapConfig = html`
       <ha-select
         naturalMenuWidth
@@ -345,13 +484,23 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           return html`<mwc-list-item .value=${entity}> ${displayName}</mwc-list-item>`;
         })}
       </ha-select>
-      <ha-textfield
-        label="Google API Key (Optional)"
-        type="password"
-        .value=${this._google_api_key}
-        .configValue=${'google_api_key'}
-        @input=${this._valueChanged}
-      ></ha-textfield>
+      <div class="flex-col">
+        <ha-textfield
+          style="flex: 2;"
+          label="Google API Key (Optional)"
+          type="password"
+          .value=${this._google_api_key}
+          .configValue=${'google_api_key'}
+          @input=${this._valueChanged}
+        ></ha-textfield>
+        <ha-formfield style="flex: 1;" .label=${enableMapPopupSwtich?.label}>
+          <ha-switch
+            .checked=${this._enable_map_popup}
+            .configValue=${'enable_map_popup'}
+            @change=${this._valueChanged}
+          ></ha-switch>
+        </ha-formfield>
+      </div>
       <ha-alert alert-type="info">${infoAlert}</ha-alert>
       <ha-textfield
         label="Hours to show"
@@ -383,17 +532,36 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _renderServicesConfig(): TemplateResult {
-    const services = this._config?.services || {}; // Ensure services object exists and default to empty object if undefined
+    const servicesItems = this._config?.services || {}; // Ensure services object exists and default to empty object if undefined
     const infoAlert = this.localize('editor.common.infoServices');
     const lang = this._selected_language || this._system_language || 'en';
+    const handleCheckAll = (check: boolean) => {
+      if (!this._config) return;
+      const lang = this._selected_language || this._system_language || 'en';
+      const updatedServices: ServicesConfig = Object.keys(servicesCtrl(lang)).reduce((acc, key) => {
+        acc[key] = check;
+        return acc;
+      }, {} as ServicesConfig);
+      this._config = { ...this._config, services: updatedServices };
+    };
+    const radioBtns = html` <div class="flex-col">
+      <ha-formfield .label=${this.localize('editor.common.checkAll')}>
+        <ha-radio name="check-toggle" @change=${() => handleCheckAll(true)}></ha-radio>
+      </ha-formfield>
+      <ha-formfield .label=${this.localize('editor.common.uncheckAll')}>
+        <ha-radio name="check-toggle" @change=${() => handleCheckAll(false)}></ha-radio>
+      </ha-formfield>
+    </div>`;
+
     const servicesConfig = html`
       <ha-alert alert-type="info"> ${infoAlert} </ha-alert>
+
       <div class="switches">
         ${Object.entries(servicesCtrl(lang)).map(
           ([key, { name }]) => html`
             <ha-formfield .label=${name}>
               <ha-switch
-                .checked=${services[key] !== undefined ? services[key] : false}
+                .checked=${servicesItems[key] !== undefined ? servicesItems[key] : false}
                 .configValue="${key}"
                 @change=${this._servicesValueChanged}
               ></ha-switch>
@@ -428,6 +596,31 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   /* --------------------- ADDITIONAL HANDLERS AND METHODS -------------------- */
+
+  private _renderToast(): TemplateResult {
+    const toastMsg = this.localize('common.toastImageError');
+    return html`
+      <div id="toast">
+        <ha-alert alert-type="warning" dismissable @alert-dismissed-clicked=${this._handleAlertDismissed}
+          >${toastMsg}
+        </ha-alert>
+      </div>
+    `;
+  }
+
+  private launchToast(): void {
+    const toast = this.shadowRoot?.getElementById('toast') as HTMLElement;
+    if (!toast) return;
+
+    toast.classList.add('show');
+  }
+
+  private _handleAlertDismissed(): void {
+    const toast = this.shadowRoot?.getElementById('toast') as HTMLElement;
+    if (toast) {
+      toast.classList.remove('show');
+    }
+  }
 
   private async loadCardHelpers(): Promise<void> {
     this._helpers = await (window as any).loadCardHelpers();
@@ -560,73 +753,9 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     this.dispatchEvent(ev);
     console.log('Test event dispatched:', detail);
   }
-
-  static styles: CSSResultGroup = css`
-    .card-config {
-      width: 100%;
-      margin-block: 0.5rem;
-    }
-    .panel-container {
-      margin-top: 1rem;
-    }
-
-    .switches {
-      margin: 0.5rem;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-gap: 1rem;
-    }
-
-    ha-select,
-    ha-textfield {
-      margin-bottom: 16px;
-      display: block;
-      width: 100%;
-    }
-    ha-formfield {
-      padding-bottom: 8px;
-      width: 100%;
-    }
-    ha-switch {
-      --mdc-theme-secondary: var(--switch-checked-color);
-    }
-
-    ha-expansion-panel .container {
-      padding: 0px 1rem !important;
-    }
-
-    h3 {
-      color: var(--secondary-text-color);
-      margin-block: 0;
-    }
-
-    .right-icon {
-      padding-inline: 0.5rem;
-    }
-
-    .note {
-      color: var(--secondary-text-color);
-      text-align: start;
-    }
-    .cards-buttons {
-      display: flex;
-      justify-content: space-around;
-      flex-direction: column;
-    }
-
-    .sub-card-header {
-      display: flex;
-      width: 100%;
-      justify-content: space-between;
-      padding: 0.5rem 0 1rem;
-      align-items: center;
-      border-bottom: 1px solid var(--divider-color);
-    }
-
-    .sub-card-config {
-      margin-top: 16px;
-    }
-  `;
+  static get styles(): CSSResultGroup {
+    return editorcss;
+  }
 }
 
 declare global {
