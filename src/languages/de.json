@@ -176,14 +176,17 @@
 		"stateCharging": "Laden",
 		"titleServices": "Dienste",
 		"titleRemoteControl": "Fernbedienung",
-		"toastCommandSent": "Befehl gesendet!"
+		"toastCommandSent": "Befehl gesendet!",
+		"toastImageError": "Fehler beim Hochladen des Bildes. Es sind nur PNG- und JPEG-Dateien erlaubt."
 	},
 	"editor": {
 		"common": {
 			"infoButton": "Wählen Sie die Karte aus, die Sie konfigurieren möchten.",
 			"infoMap": "Dies ist die Konfiguration für das Karten-Popup.",
 			"infoImages": "Es ist nicht erforderlich, für jede Zeile ein '-' hinzuzufügen. Jede Zeile wird automatisch als separate URL behandelt.",
-			"infoServices": "Wählen Sie die Dienste aus, die Sie aktivieren möchten. Wenn ein Dienst deaktiviert ist, wird er nicht auf der Karte angezeigt."
+			"infoServices": "Wählen Sie die Dienste aus, die Sie aktivieren möchten. Wenn ein Dienst deaktiviert ist, wird er nicht auf der Karte angezeigt.",
+			"uncheckAll": "Alles abwählen",
+			"checkAll": "Alles auswählen"
 		},
 		"showOpts": {
 			"show_slides": "Dias anzeigen",

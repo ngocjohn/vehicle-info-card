@@ -176,14 +176,17 @@
 		"stateCharging": "Nabíjanie",
 		"titleServices": "Služby",
 		"titleRemoteControl": "Vzdialené ovládanie",
-		"toastCommandSent": "Príkaz úspešne odoslaný!"
+		"toastCommandSent": "Príkaz úspešne odoslaný!",
+		"toastImageError": "Chyba pri nahrávaní obrázka. Povolené sú iba súbory PNG a JPEG."
 	},
 	"editor": {
 		"common": {
 			"infoButton": "Vyberte kartu, ktorú chcete nakonfigurovať.",
 			"infoMap": "Toto je konfigurácia pre mapové vyskakovacie okno.",
 			"infoImages": "Nie je potrebné pridávať '-' pre každý riadok. Každý riadok bude automaticky považovaný za samostatnú URL adresu.",
-			"infoServices": "Vyberte služby, ktoré chcete povoliť. Ak je služba deaktivovaná, nebude na karte zobrazená."
+			"infoServices": "Vyberte služby, ktoré chcete povoliť. Ak je služba deaktivovaná, nebude na karte zobrazená.",
+			"uncheckAll": "Zrušiť všetko",
+			"checkAll": "Zaškrtnúť všetko"
 		},
 		"showOpts": {
 			"show_slides": "Zobraziť snímky",

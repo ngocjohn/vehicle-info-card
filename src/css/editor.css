@@ -1,0 +1,106 @@
+.card-config {
+  width: 100%;
+  margin-block: 0.5rem;
+}
+.panel-container {
+  margin-top: 1rem;
+}
+
+.switches {
+  margin: 0.5rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-gap: 1rem;
+}
+
+ha-select,
+ha-textfield {
+  margin-bottom: 8px;
+  display: block;
+  width: 100%;
+}
+ha-formfield {
+  padding-bottom: 8px;
+  width: 100%;
+}
+ha-switch {
+  --mdc-theme-secondary: var(--switch-checked-color);
+}
+
+ha-expansion-panel .container {
+  padding: 0px 1rem !important;
+}
+
+h3 {
+  color: var(--secondary-text-color);
+  margin-block: 0;
+}
+
+.right-icon {
+  padding-inline: 0.5rem;
+}
+
+.note {
+  color: var(--secondary-text-color);
+  text-align: start;
+}
+.cards-buttons {
+  display: flex;
+  justify-content: space-around;
+  flex-direction: column;
+}
+.image-config {
+  display: flex;
+  flex-direction: column;
+}
+
+.custom-background-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  text-wrap: nowrap;
+}
+.file-input {
+  display: none;
+}
+.file-upload {
+  cursor: pointer;
+  display: inline-block;
+}
+.file-upload:hover {
+  color: var(--primary-color);
+}
+.image-input {
+  text-transform: uppercase !important;
+  letter-spacing: inherit;
+}
+
+.sub-card-header {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  padding: 0.5rem 0 1rem;
+  align-items: center;
+  border-bottom: 1px solid var(--divider-color);
+}
+#toast {
+  visibility: hidden;
+  opacity: 0;
+  max-height: 0;
+}
+
+#toast.show {
+  visibility: visible;
+  opacity: 1;
+  max-height: 100px;
+  animation: fade-in 0.3s ease-in-out forwards;
+}
+.sub-card-config {
+  margin-top: 16px;
+}
+
+.flex-col {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
