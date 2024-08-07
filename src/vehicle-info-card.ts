@@ -560,26 +560,30 @@ export class VehicleCard extends LitElement {
       </div>
       <div class="default-card" .hidden=${subCardVisible}>
         <div class="data-header">${this.localize('vehicleCard.vehicleWarnings')}</div>
-        ${warningsData.map(
-          ({ key, icon, state, name, active }) => html`
-            <div class="data-row">
-              <div>
-                <ha-icon
-                  class="data-icon"
-                  .icon="${icon}"
+        ${warningsData.map(({ key, icon, state, name, active }) => {
+          if (key && name && state) {
+            return html`
+              <div class="data-row">
+                <div>
+                  <ha-icon
+                    class="data-icon"
+                    .icon="${icon}"
+                    @click=${() => this.toggleMoreInfo(this.vehicleEntities[key]?.entity_id)}
+                  ></ha-icon>
+                  <span>${name}</span>
+                </div>
+                <div
+                  class="data-value-unit ${active ? 'error' : ''} "
                   @click=${() => this.toggleMoreInfo(this.vehicleEntities[key]?.entity_id)}
-                ></ha-icon>
-                <span>${name}</span>
+                >
+                  <span>${state}</span>
+                </div>
               </div>
-              <div
-                class="data-value-unit ${active ? 'error' : ''} "
-                @click=${() => this.toggleMoreInfo(this.vehicleEntities[key]?.entity_id)}
-              >
-                <span>${state}</span>
-              </div>
-            </div>
-          `,
-        )}
+            `;
+          } else {
+            return html``;
+          }
+        })}
       </div>
     `;
   }
@@ -781,25 +785,29 @@ export class VehicleCard extends LitElement {
     };
 
     return html`
-      ${overViewData.map(
-        ({ key, name, icon, state, active }) => html`
-          <div class="data-row">
-            <div>
-              <ha-icon
-                class="data-icon ${!active ? 'warning' : ''}"
-                .icon="${icon}"
-                @click=${() => toggleMoreInfo(key)}
-              ></ha-icon>
-              <span style="text-transform: none;">${name}</span>
+      ${overViewData.map(({ key, name, icon, state, active }) => {
+        if (state) {
+          return html`
+            <div class="data-row">
+              <div>
+                <ha-icon
+                  class="data-icon ${!active ? 'warning' : ''}"
+                  .icon="${icon}"
+                  @click=${() => toggleMoreInfo(key)}
+                ></ha-icon>
+                <span style="text-transform: none;">${name}</span>
+              </div>
+              <div class="data-value-unit" @click=${() => toggleAttributes(key)}>
+                <span class=${!active ? 'warning' : ''} style="text-transform: capitalize;">${state}</span>
+                <ha-icon class="subcard-icon ${subCardIconActive(key)}" icon="mdi:chevron-right"></ha-icon>
+              </div>
             </div>
-            <div class="data-value-unit" @click=${() => toggleAttributes(key)}>
-              <span class=${!active ? 'warning' : ''} style="text-transform: capitalize;">${state}</span>
-              <ha-icon class="subcard-icon ${subCardIconActive(key)}" icon="mdi:chevron-right"></ha-icon>
-            </div>
-          </div>
-          ${subCardElements(key)}
-        `,
-      )}
+            ${subCardElements(key)}
+          `;
+        } else {
+          return html``;
+        }
+      })}
     `;
   }
 
@@ -924,7 +932,7 @@ export class VehicleCard extends LitElement {
         <div class="data-header">${title} ${subCardToggleBtn(key)}</div>
         <div class="data-box ${!active ? 'hidden' : ''}">
           ${data.map(({ key, name, icon, state }) => {
-            if (key && name && state) {
+            if (state) {
               return html`
                 <div class="data-row">
                   <div>
@@ -1245,7 +1253,11 @@ export class VehicleCard extends LitElement {
     const { vehicleEntities } = this;
     switch (cardType) {
       case 'vehicleCards':
-        const warnKeys = [...DataKeys.vehicleWarnings(lang).map((key) => key.key), 'windowsClosed'];
+        const warnKeys = [
+          ...DataKeys.vehicleWarnings(lang)
+            .map((key) => key.key)
+            .filter((key) => key !== 'tirePressureWarning'),
+        ];
         const hasWarning = warnKeys.some((key) => this.getBooleanState(vehicleEntities[key]?.entity_id));
         return hasWarning;
       case 'tyreCards':
