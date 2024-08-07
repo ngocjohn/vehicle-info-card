@@ -54,7 +54,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
     if (changedProps.has('imageNames')) {
       this.imageNames = this._config.images || [];
-      console.log('Image names:', this.imageNames, this._config.images);
       return true;
     }
 
@@ -72,58 +71,61 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     return entities[0] || '';
   }
 
-  get _name(): string {
+  private get _name(): string {
     return this._config?.name || '';
   }
 
-  get _entity(): string {
+  private get _entity(): string {
     return this._config?.entity || '';
   }
 
-  get _device_tracker(): string {
+  private get _device_tracker(): string {
     return this._config?.device_tracker || '';
   }
 
-  get _show_slides(): boolean {
+  private get _show_slides(): boolean {
     return this._config?.show_slides || false;
   }
 
-  get _show_map(): boolean {
+  private get _show_map(): boolean {
     return this._config?.show_map || false;
   }
 
-  get _show_buttons(): boolean {
+  private get _show_buttons(): boolean {
     return this._config?.show_buttons || false;
   }
 
-  get _show_background(): boolean {
+  private get _show_background(): boolean {
     return this._config?.show_background || false;
   }
 
-  get _enable_map_popup(): boolean {
+  private get _enable_map_popup(): boolean {
     return this._config?.enable_map_popup || false;
   }
 
-  get _show_error_notify(): boolean {
+  private get _show_error_notify(): boolean {
     return this._config?.show_error_notify || false;
   }
 
-  get _google_api_key(): string {
+  private get _google_api_key(): string {
     return this._config?.google_api_key || '';
   }
 
-  get _enable_services_control(): boolean {
+  private get _enable_services_control(): boolean {
     return this._config?.enable_services_control || false;
   }
 
-  get _selected_language(): string | null {
+  private get _selected_language(): string | null {
     return this._config?.selected_language || null;
   }
 
-  get _images(): string[] {
+  private get _images(): string[] {
     return this._config?.images || [];
   }
 
+  private get _lang(): string {
+    return this._config?.lang || this._system_language || 'en';
+  }
   protected render(): TemplateResult | void {
     if (!this.hass || !this._helpers) {
       return html``;
@@ -155,8 +157,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _renderCardEditorButtons(): TemplateResult {
-    const lang = this._selected_language || this._system_language || 'en';
-    const baseCardTypes = cardTypes(lang);
+    const baseCardTypes = cardTypes(this._lang);
     const localInfo = this.localize('editor.common.infoButton');
     const subcardBtns = html`
       <ha-alert alert-type="info">${localInfo}</ha-alert>
@@ -198,10 +199,9 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _handleBackClick(): void {
-    this.isVehicleCardEditor = false;
-    this.isTripCardEditor = false;
-    this.isEcoCardEditor = false;
-    this.isTyreCardEditor = false;
+    for (const card of ['Vehicle', 'Trip', 'Eco', 'Tyre']) {
+      this[`is${card}CardEditor`] = false;
+    }
   }
 
   private _getCardTitle(cardType: string): string {
