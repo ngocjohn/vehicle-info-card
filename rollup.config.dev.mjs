@@ -1,12 +1,12 @@
 import { description, repository } from './package.json';
 
 export function logCardInfo(version) {
-  const line1 = `   🏎️ 💨 VEHICLE-INFO-CARD 🚜 ${version} 🛺 💨`;
-  const line2 = `   `;
-  const length = Math.max(line1.length, line2.length) + 3;
-  const pad = (text, length) => text + ' '.repeat(length - text.length);
   const repo = repository.url;
   const sponsor = 'https://github.com/sponsors/ngocjohn';
+  const line1 = `   🏎️ 💨 VEHICLE-INFO-CARD 🚜 ${version} 🛺 💨`;
+  const line2 = `  ${repo}`;
+  const length = Math.max(line1.length, line2.length) + 3;
+  const pad = (text, length) => text + ' '.repeat(length - text.length);
 
   return `
     console.groupCollapsed(

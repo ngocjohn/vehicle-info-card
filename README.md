@@ -4,7 +4,7 @@
 
 # 🚙 Vehicle info card
 
-<img src="https://raw.githubusercontent.com/ngocjohn/vehicle-info-card/main/assets/vehicle-header.gif" style="border-radius: 8px" />
+<a href="#"><img src="https://raw.githubusercontent.com/ngocjohn/vehicle-info-card/main/assets/vehicle-header.gif" style="border-radius: 8px"></a>
 
 <br>
 

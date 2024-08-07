@@ -1,10 +1,11 @@
 # CHANGELOG.md
 
-## 1.1.0
+## [1.1.0](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.1.0) (2024-08-07)
 
 ### Features
 
 - **Language Localization Support:** Added comprehensive support for localization across the card, enabling users to see translated strings based on their selected language.
+- **Image Upload Integration:** Users can now upload images directly within the editor interface. [#25](https://github.com/ngocjohn/vehicle-info-card/pull/25)
 
 ## [1.0.7](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.0.7) (2024-07-25)
 
