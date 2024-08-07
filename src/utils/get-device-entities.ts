@@ -16,7 +16,10 @@ export async function getVehicleEntities(hass: HomeAssistant, config: { entity?:
   if (!carEntity) {
     return {};
   }
-  const deviceEntities = allEntities.filter((e) => e.device_id === carEntity.device_id);
+
+  const deviceEntities = allEntities
+    .filter((e) => e.device_id === carEntity.device_id && e.hidden_by === null && e.disabled_by === null)
+    .filter((e) => hass.states[e.entity_id] && !['unavailable', 'unknown'].includes(hass.states[e.entity_id].state));
 
   const entityIds: VehicleEntities = {};
 

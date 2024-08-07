@@ -84,7 +84,6 @@ export const vehicleWarnings = (lang: string): CardItem[] => [
   createItem('lowBrakeFluid', 'vehicleCard.lowBrakeFluid', lang, 'mdi:car-brake-fluid-level'),
   createItem('lowWashWater', 'vehicleCard.lowWashWater', lang),
   createItem('tirePressureWarning', 'vehicleCard.tirePressureWarning', lang),
-  createItem('engineLight', 'vehicleCard.engineLight', lang),
 ];
 
 export const ecoScores = (lang: string): CardItem[] => [

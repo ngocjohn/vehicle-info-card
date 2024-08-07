@@ -14,7 +14,6 @@ const binarySensorsFilters: {
   lowBrakeFluid: { suffix: '_warningbrakefluid' },
   lowWashWater: { suffix: '_warningwashwater' },
   lowCoolantLevel: { suffix: '_warningcoolantlevellow' },
-  engineLight: { suffix: '_warningenginelight' },
   windowsClosed: { suffix: '_windowstatusoverall' },
   tirePressureWarning: { suffix: '_tirewarninglamp' },
   remoteStartActive: { suffix: '_remotestartactive' },

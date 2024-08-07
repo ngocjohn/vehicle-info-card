@@ -120,6 +120,8 @@ export type VehicleEntity = {
   device_id?: string;
   unique_id?: string;
   translation_key?: string;
+  disabled_by?: string | null;
+  hidden_by?: string | null;
 };
 
 export type EntityConfig = {
