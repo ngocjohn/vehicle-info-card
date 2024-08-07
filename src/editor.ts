@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { LitElement, html, TemplateResult, css, CSSResultGroup, PropertyValues } from 'lit';
+import { LitElement, html, TemplateResult, CSSResultGroup, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators';
 import YAML from 'yaml';
 
@@ -555,7 +555,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
     const servicesConfig = html`
       <ha-alert alert-type="info"> ${infoAlert} </ha-alert>
-
+      ${radioBtns}
       <div class="switches">
         ${Object.entries(servicesCtrl(lang)).map(
           ([key, { name }]) => html`
