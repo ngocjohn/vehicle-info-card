@@ -1,14 +1,14 @@
 import { localize } from '../localize/localize';
 
 const createItem = (nameKey: string, icon: string, lang: string) => ({
-  name: localize(nameKey, lang),
+  name: localize(`card.${nameKey}`, lang),
   icon,
 });
 
 const createService = (command: string, icon: string, label: string, lang: string) => ({
   command,
   icon,
-  label: localize(label, lang),
+  label: localize(`card.${label}`, lang),
 });
 
 export const servicesCtrl = (lang: string) => ({
@@ -33,15 +33,15 @@ export const serviceData = (lang: string) => ({
     data: {
       time_selection: 0, // Store the selected value here
       time_selection_options: {
-        0: localize('serviceData.labelNoSelection', lang),
-        1: localize('serviceData.labelTime1', lang),
-        2: localize('serviceData.labelTime2', lang),
-        3: localize('serviceData.labelTime3', lang),
+        0: localize('card.serviceData.labelNoSelection', lang),
+        1: localize('card.serviceData.labelTime1', lang),
+        2: localize('card.serviceData.labelTime2', lang),
+        3: localize('card.serviceData.labelTime3', lang),
       },
       items: {
-        time_1: { label: localize('serviceData.labelTime1', lang), value: 0, hour: '00', minute: '00' },
-        time_2: { label: localize('serviceData.labelTime2', lang), value: 0, hour: '00', minute: '00' },
-        time_3: { label: localize('serviceData.labelTime3', lang), value: 0, hour: '00', minute: '00' },
+        time_1: { label: localize('card.serviceData.labelTime1', lang), value: 0, hour: '00', minute: '00' },
+        time_2: { label: localize('card.serviceData.labelTime2', lang), value: 0, hour: '00', minute: '00' },
+        time_3: { label: localize('card.serviceData.labelTime3', lang), value: 0, hour: '00', minute: '00' },
       },
     },
   },
@@ -54,10 +54,10 @@ export const serviceData = (lang: string) => ({
     },
     data: {
       positions: {
-        front_left: { label: localize('serviceData.labelWindowFrontLeft', lang), value: 0 },
-        front_right: { label: localize('serviceData.labelWindowFrontRight', lang), value: 0 },
-        rear_left: { label: localize('serviceData.labelWindowRearLeft', lang), value: 0 },
-        rear_right: { label: localize('serviceData.labelWindowRearRight', lang), value: 0 },
+        front_left: { label: localize('card.serviceData.labelWindowFrontLeft', lang), value: 0 },
+        front_right: { label: localize('card.serviceData.labelWindowFrontRight', lang), value: 0 },
+        rear_left: { label: localize('card.serviceData.labelWindowRearLeft', lang), value: 0 },
+        rear_right: { label: localize('card.serviceData.labelWindowRearRight', lang), value: 0 },
       },
     },
   },
@@ -70,7 +70,7 @@ export const serviceData = (lang: string) => ({
       STOP: createService('preheat_stop', 'mdi:car-seat', 'serviceData.labelStop', lang),
     },
     data: {
-      time: { label: localize('serviceData.labelDepartureTime', lang), value: 0, hour: '00', minute: '00' },
+      time: { label: localize('card.serviceData.labelDepartureTime', lang), value: 0, hour: '00', minute: '00' },
     },
   },
 
@@ -103,7 +103,7 @@ export const serviceData = (lang: string) => ({
         2: 'HOME',
         3: 'WORK',
       },
-      max_soc: { label: localize('serviceData.labelMaxStateOfCharge', lang), value: 50 },
+      max_soc: { label: localize('card.serviceData.labelMaxStateOfCharge', lang), value: 50 },
     },
   },
 
@@ -112,12 +112,12 @@ export const serviceData = (lang: string) => ({
       DATA_SEND_ROUTE: createService('send_route', 'mdi:map-marker', 'serviceData.labelSend', lang),
     },
     data: {
-      title: { label: localize('serviceData.labelTitle', lang), value: '', placeholder: 'Brandenburger Tor' },
-      latitude: { label: localize('serviceData.labelLatitude', lang), value: '', placeholder: '52.5163' },
-      longitude: { label: localize('serviceData.labelLongitude', lang), value: '', placeholder: '13.3777' },
-      city: { label: localize('serviceData.labelCity', lang), value: '', placeholder: 'Berlin' },
-      postcode: { label: localize('serviceData.labelPostCode', lang), value: '', placeholder: '10117' },
-      street: { label: localize('serviceData.labelStreet', lang), value: '', placeholder: 'Pariser Platz' },
+      title: { label: localize('card.serviceData.labelTitle', lang), value: '', placeholder: 'Brandenburger Tor' },
+      latitude: { label: localize('card.serviceData.labelLatitude', lang), value: '', placeholder: '52.5163' },
+      longitude: { label: localize('card.serviceData.labelLongitude', lang), value: '', placeholder: '13.3777' },
+      city: { label: localize('card.serviceData.labelCity', lang), value: '', placeholder: 'Berlin' },
+      postcode: { label: localize('card.serviceData.labelPostCode', lang), value: '', placeholder: '10117' },
+      street: { label: localize('card.serviceData.labelStreet', lang), value: '', placeholder: 'Pariser Platz' },
     },
   },
 

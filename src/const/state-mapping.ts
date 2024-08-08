@@ -21,23 +21,23 @@ const createNameStateWithMap = (nameKey: string, stateMap: { [key: string]: stri
 });
 
 const createDoorStatus = (lang: string) => ({
-  '0': localize('common.stateOpen', lang),
-  '1': localize('common.stateClosed', lang),
-  '2': localize('common.stateNotExisting', lang),
-  '3': localize('common.stateUnknown', lang),
+  '0': localize('card.common.stateOpen', lang),
+  '1': localize('card.common.stateClosed', lang),
+  '2': localize('card.common.stateNotExisting', lang),
+  '3': localize('card.common.stateUnknown', lang),
 });
 
 const createLockStates = (lang: string) => ({
-  '0': localize('common.stateUnlocked', lang),
-  '1': localize('common.stateLockedInt', lang),
-  '2': localize('common.stateLocked', lang),
-  '3': localize('common.statePartlyUnlocked', lang),
-  '4': localize('common.stateUnknown', lang),
+  '0': localize('card.common.stateUnlocked', lang),
+  '1': localize('card.common.stateLockedInt', lang),
+  '2': localize('card.common.stateLocked', lang),
+  '3': localize('card.common.statePartlyUnlocked', lang),
+  '4': localize('card.common.stateUnknown', lang),
 });
 
 const createChargeSelectedProgram = (lang: string) => ({
   '0': 'Standard',
-  '1': localize('common.stateUnknown', lang),
+  '1': localize('card.common.stateUnknown', lang),
   '2': 'Home',
   '3': 'Work',
 });
@@ -46,49 +46,49 @@ const createWindowStatus = (nameKey: string, lang: string) =>
   createNameStateWithMap(
     nameKey,
     {
-      '2': 'common.stateClosed',
-      '0': 'common.stateOpen',
+      '2': 'card.common.stateClosed',
+      '0': 'card.common.stateOpen',
     },
     lang,
   );
 
 const createStarterBattery = (lang: string) => ({
-  '0': localize('starterBattery.stateOk', lang),
-  '1': localize('starterBattery.partlyCharged', lang),
-  '2': localize('starterBattery.notAvailable', lang),
-  '3': localize('starterBattery.remoteServiceDisabled', lang),
-  '4': localize('starterBattery.vehicleNoLongerAvailable', lang),
+  '0': localize('card.starterBattery.stateOk', lang),
+  '1': localize('card.starterBattery.partlyCharged', lang),
+  '2': localize('card.starterBattery.notAvailable', lang),
+  '3': localize('card.starterBattery.remoteServiceDisabled', lang),
+  '4': localize('card.starterBattery.vehicleNoLongerAvailable', lang),
 });
 
 export const lockAttributes = (lang: string) => ({
   doorlockstatusfrontleft: createNameState(
-    'lockAttributes.doorlockstatusfrontleft',
-    'common.stateLocked',
-    'common.stateUnlocked',
+    'card.lockAttributes.doorlockstatusfrontleft',
+    'card.common.stateLocked',
+    'card.common.stateUnlocked',
     lang,
   ),
   doorlockstatusfrontright: createNameState(
-    'lockAttributes.doorlockstatusfrontright',
-    'common.stateLocked',
-    'common.stateUnlocked',
+    'card.lockAttributes.doorlockstatusfrontright',
+    'card.common.stateLocked',
+    'card.common.stateUnlocked',
     lang,
   ),
   doorlockstatusrearleft: createNameState(
-    'lockAttributes.doorlockstatusrearleft',
-    'common.stateLocked',
-    'common.stateUnlocked',
+    'card.lockAttributes.doorlockstatusrearleft',
+    'card.common.stateLocked',
+    'card.common.stateUnlocked',
     lang,
   ),
   doorlockstatusrearright: createNameState(
-    'lockAttributes.doorlockstatusrearright',
-    'common.stateLocked',
-    'common.stateUnlocked',
+    'card.lockAttributes.doorlockstatusrearright',
+    'card.common.stateLocked',
+    'card.common.stateUnlocked',
     lang,
   ),
   doorlockstatusgas: createNameState(
-    'lockAttributes.doorlockstatusgas',
-    'common.stateLocked',
-    'common.stateUnlocked',
+    'card.lockAttributes.doorlockstatusgas',
+    'card.common.stateLocked',
+    'card.common.stateUnlocked',
     lang,
   ),
 });
@@ -96,34 +96,44 @@ export const lockAttributes = (lang: string) => ({
 export const doorStatus = createDoorStatus;
 
 export const doorAttributes = (lang: string) => ({
-  decklidstatus: createNameState('doorAttributes.decklidstatus', 'common.stateClosed', 'common.stateOpen', lang),
+  decklidstatus: createNameState(
+    'card.doorAttributes.decklidstatus',
+    'card.common.stateClosed',
+    'card.common.stateOpen',
+    lang,
+  ),
   doorstatusfrontleft: createNameState(
-    'doorAttributes.doorstatusfrontleft',
-    'common.stateClosed',
-    'common.stateOpen',
+    'card.doorAttributes.doorstatusfrontleft',
+    'card.common.stateClosed',
+    'card.common.stateOpen',
     lang,
   ),
   doorstatusfrontright: createNameState(
-    'doorAttributes.doorstatusfrontright',
-    'common.stateClosed',
-    'common.stateOpen',
+    'card.doorAttributes.doorstatusfrontright',
+    'card.common.stateClosed',
+    'card.common.stateOpen',
     lang,
   ),
   doorstatusrearleft: createNameState(
-    'doorAttributes.doorstatusrearleft',
-    'common.stateClosed',
-    'common.stateOpen',
+    'card.doorAttributes.doorstatusrearleft',
+    'card.common.stateClosed',
+    'card.common.stateOpen',
     lang,
   ),
   doorstatusrearright: createNameState(
-    'doorAttributes.doorstatusrearright',
-    'common.stateClosed',
-    'common.stateOpen',
+    'card.doorAttributes.doorstatusrearright',
+    'card.common.stateClosed',
+    'card.common.stateOpen',
     lang,
   ),
-  enginehoodstatus: createNameState('doorAttributes.enginehoodstatus', 'common.stateClosed', 'common.stateOpen', lang),
+  enginehoodstatus: createNameState(
+    'card.doorAttributes.enginehoodstatus',
+    'card.common.stateClosed',
+    'card.common.stateOpen',
+    lang,
+  ),
   sunroofstatus: createNameStateWithMap(
-    'doorAttributes.sunroofstatus',
+    'card.doorAttributes.sunroofstatus',
     {
       '0': 'sunroofState.stateClosed',
       '1': 'sunroofState.stateOpen',
@@ -148,12 +158,12 @@ export const starterBattery = createStarterBattery;
 export const chargeSelectedProgram = createChargeSelectedProgram;
 
 export const windowAttributes = (lang: string) => ({
-  windowstatusrearleft: createWindowStatus('windowAttributes.windowstatusrearleft', lang),
-  windowstatusrearright: createWindowStatus('windowAttributes.windowstatusrearright', lang),
-  windowstatusfrontleft: createWindowStatus('windowAttributes.windowstatusfrontleft', lang),
-  windowstatusfrontright: createWindowStatus('windowAttributes.windowstatusfrontright', lang),
-  windowstatusrearleftblind: createWindowStatus('windowAttributes.windowstatusrearleftblind', lang),
-  windowstatusrearrightblind: createWindowStatus('windowAttributes.windowstatusrearrightblind', lang),
-  windowstatusfrontleftblind: createWindowStatus('windowAttributes.windowstatusfrontleftblind', lang),
-  windowstatusfrontrightblind: createWindowStatus('windowAttributes.windowstatusfrontrightblind', lang),
+  windowstatusrearleft: createWindowStatus('card.windowAttributes.windowstatusrearleft', lang),
+  windowstatusrearright: createWindowStatus('card.windowAttributes.windowstatusrearright', lang),
+  windowstatusfrontleft: createWindowStatus('card.windowAttributes.windowstatusfrontleft', lang),
+  windowstatusfrontright: createWindowStatus('card.windowAttributes.windowstatusfrontright', lang),
+  windowstatusrearleftblind: createWindowStatus('card.windowAttributes.windowstatusrearleftblind', lang),
+  windowstatusrearrightblind: createWindowStatus('card.windowAttributes.windowstatusrearrightblind', lang),
+  windowstatusfrontleftblind: createWindowStatus('card.windowAttributes.windowstatusfrontleftblind', lang),
+  windowstatusfrontrightblind: createWindowStatus('card.windowAttributes.windowstatusfrontrightblind', lang),
 });
