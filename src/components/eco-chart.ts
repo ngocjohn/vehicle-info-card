@@ -49,7 +49,7 @@ export class EcoChart extends LitElement {
             },
             total: {
               show: true,
-              label: this.localize('ecoCard.ecoScoreBonusRange'),
+              label: this.localize('card.ecoCard.ecoScoreBonusRange'),
               formatter: () => {
                 return `${this.ecoData.bonusRange || 0} km`;
               },
@@ -70,9 +70,9 @@ export class EcoChart extends LitElement {
       },
       colors: ['#1ab7ea', '#0084ff', '#39539E'],
       labels: [
-        this.localize('ecoCard.ecoScoreAcceleraion'),
-        this.localize('ecoCard.ecoScoreConstant'),
-        this.localize('ecoCard.ecoScoreFreeWheel'),
+        this.localize('card.ecoCard.ecoScoreAcceleraion'),
+        this.localize('card.ecoCard.ecoScoreConstant'),
+        this.localize('card.ecoCard.ecoScoreFreeWheel'),
       ],
       responsive: [
         {
@@ -114,9 +114,9 @@ export class EcoChart extends LitElement {
           },
         },
         labels: [
-          this.localize('ecoCard.ecoScoreAcceleraion'),
-          this.localize('ecoCard.ecoScoreConstant'),
-          this.localize('ecoCard.ecoScoreFreeWheel'),
+          this.localize('card.ecoCard.ecoScoreAcceleraion'),
+          this.localize('card.ecoCard.ecoScoreConstant'),
+          this.localize('card.ecoCard.ecoScoreFreeWheel'),
         ],
       });
     }

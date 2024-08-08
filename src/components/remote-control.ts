@@ -139,7 +139,7 @@ export class RemoteControl extends LitElement {
   }
 
   private _renderToast(): TemplateResult {
-    const toastMsg = this.localize('common.toastCommandSent', this.selectedLanguage);
+    const toastMsg = this.localize('card.common.toastCommandSent', this.selectedLanguage);
     return html`
       <div id="toast">
         <ha-alert alert-type="success">${toastMsg} </ha-alert>
@@ -218,7 +218,7 @@ export class RemoteControl extends LitElement {
     const { preheatConfig } = this;
     const time = preheatConfig.data.time;
     const service = preheatConfig.service;
-    const labelDepartureTime = this.localize('serviceData.labelDepartureTime', this.selectedLanguage);
+    const labelDepartureTime = this.localize('card.serviceData.labelDepartureTime', this.selectedLanguage);
     const preheatDepartureTimeEL = html`
       <div class="items-row">
         <div>${labelDepartureTime}</div>
@@ -280,11 +280,11 @@ export class RemoteControl extends LitElement {
     const maxSoc = data.max_soc;
 
     const services = chargeConfig.service;
-    const labelChargeProgram = this.localize('serviceData.labelChargeProgram', this.selectedLanguage);
-    const labelMaxSoc = this.localize('serviceData.labelMaxStateOfCharge', this.selectedLanguage);
+    const labelChargeProgram = this.localize('card.serviceData.labelChargeProgram', this.selectedLanguage);
+    const labelMaxSoc = this.localize('card.serviceData.labelMaxStateOfCharge', this.selectedLanguage);
     const selectChargeProgram = html`
       <div class="items-row">
-        <div>${labelChargeProgram}</div>
+        <div class="item-label">${labelChargeProgram}</div>
         <ha-select
           .value=${String(selectedProgram)}
           @change=${(e: Event) => this.handleChargeProgramChange('selected_program', e)}
@@ -298,7 +298,7 @@ export class RemoteControl extends LitElement {
 
     const maxSocConfig = html`
       <div class="items-row">
-        <div>${maxSoc.label}</div>
+        <div class="item-label">${maxSoc.label}</div>
         <ha-control-number-buttons
           .min=${50}
           .max=${100}
@@ -329,7 +329,7 @@ export class RemoteControl extends LitElement {
     const timeSelectOptions = auxheatConfig.data.time_selection_options;
 
     const service = auxheatConfig.service;
-    const titleTimeSelection = this.localize('serviceData.labelTimeSelection', this.selectedLanguage);
+    const titleTimeSelection = this.localize('card.serviceData.labelTimeSelection', this.selectedLanguage);
     const timeSelectEl = html`
       <div class="items-row">
         <div>${titleTimeSelection}</div>
@@ -395,13 +395,13 @@ export class RemoteControl extends LitElement {
     const config = {
       locked: {
         icon: 'mdi:lock',
-        stateDisplay: this.localize('serviceData.labelUnlockCar', this.selectedLanguage),
+        stateDisplay: this.localize('card.serviceData.labelUnlockCar', this.selectedLanguage),
         command: 'doors_unlock',
         bgColor: 'var(--state-lock-locked-color)',
       },
       unlocked: {
         icon: 'mdi:lock-open',
-        stateDisplay: this.localize('serviceData.labelLockCar', this.selectedLanguage),
+        stateDisplay: this.localize('card.serviceData.labelLockCar', this.selectedLanguage),
         command: 'doors_lock',
         bgColor: 'var(--state-lock-unlocked-color)',
       },
@@ -426,7 +426,7 @@ export class RemoteControl extends LitElement {
         </div>
         <div class="control-btn-sm click-shrink" @click=${this.lockMoreInfo}>
           <ha-icon icon="mdi:information"></ha-icon
-          ><span>${this.localize('serviceData.labelMoreInfo', this.selectedLanguage)}</span>
+          ><span>${this.localize('card.serviceData.labelMoreInfo', this.selectedLanguage)}</span>
         </div>
       </div>
     `;
@@ -439,9 +439,10 @@ export class RemoteControl extends LitElement {
 
     const moveEl = Object.entries(positionItems).map(([key, value]) => {
       const { label, value: inputValue } = value as { label: string; value: number };
+      console.log('label:', label, 'value:', inputValue);
       return html`
         <div class="items-row">
-          <div>${label}</div>
+          <div class="item-label">${label}</div>
           <ha-control-number-buttons
             .min=${0}
             .max=${100}

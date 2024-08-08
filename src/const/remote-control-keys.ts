@@ -5,10 +5,10 @@ const createItem = (nameKey: string, icon: string, lang: string) => ({
   icon,
 });
 
-const createService = (command: string, icon: string, label: string, lang: string) => ({
+const createService = (command: string, icon: string, nameKey: string, lang: string) => ({
   command,
   icon,
-  label: localize(`card.${label}`, lang),
+  label: localize(`card.${nameKey}`, lang),
 });
 
 export const servicesCtrl = (lang: string) => ({
