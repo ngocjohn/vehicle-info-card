@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { LitElement, html, TemplateResult, CSSResultGroup } from 'lit';
+import { LitElement, html, TemplateResult, CSSResultGroup, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators';
 import YAML from 'yaml';
 
@@ -41,6 +41,13 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   connectedCallback() {
     super.connectedCallback();
     void loadHaComponents();
+  }
+
+  protected updated(_changedProperties: PropertyValues): void {
+    super.updated(_changedProperties);
+    if (_changedProperties.has('hass')) {
+      return;
+    }
   }
 
   private convertToNewConfig(oldConfig: VehicleCardConfig): VehicleImagesList {
@@ -135,7 +142,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     return this._config?.selected_language || this._system_language || 'en';
   }
   protected render(): TemplateResult | void {
-    if (!this.hass || !this._helpers) {
+    if (!this.hass || !this._config) {
       return html``;
     }
 
@@ -594,7 +601,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   /* --------------------- ADDITIONAL HANDLERS AND METHODS -------------------- */
 
   private _renderToast(): TemplateResult {
-    const toastMsg = this.localize('common.toastImageError');
+    const toastMsg = this.localize('card.common.toastImageError');
     return html`
       <div id="toast">
         <ha-alert alert-type="warning" dismissable @alert-dismissed-clicked=${this._handleAlertDismissed}
