@@ -526,7 +526,7 @@ header h1 {
 .sub-attributes {
   overflow: hidden;
   padding-top: 0 !important;
-  padding: inherit;
+  padding: var(--vic-card-padding);
   max-height: 0;
   opacity: 0;
   transition:
