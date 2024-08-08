@@ -37,7 +37,7 @@ jobs:
         run: echo "hasIssues=$(cat scripts/diff-report.md)" >> $GITHUB_ENV || echo "hasIssues=false" >> $GITHUB_ENV
 
       - name: Add PR comment if there are issues
-        if: env != false
+        if: steps.check_diff_report.outputs.hasIssues == 'true'
         uses: actions/github-script@v5
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
