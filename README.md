@@ -13,6 +13,7 @@
 ## Features of the Card
 
 - **Comprehensive Vehicle Information**: Provides essential information about the car all in one place.
+
 - **Vehicle Position Display**: Shows the current location of the vehicle on a map, with the option to track routes.
 - **Visual Slideshow**: Features a visual slideshow of the vehicle.
 - **Centralized Remote Control**: Offers available remote control functions and settings, all accessible from a single card.
@@ -26,38 +27,24 @@
 
 <img src="https://raw.githubusercontent.com/ngocjohn/vehicle-info-card/main/assets/card-summary.png">
 
-## Table of contents
-
-<details>
-  <summary>Table of Contents</summary>
-
-1. [Installation](#installation)
-   - [HACS](#hacs-home-assistant-community-store)
-   - [Manual](#manual)
-2. [Usage](#usage)
-   - [Configuration](#configuration)
-   - [Options](#options)
-   - [Examples](#examples)
-3. [Screenshots](#screenshots)
-
-</details>
-
 ## Installation
 
 ### [HACS](https://hacs.xyz) (Home Assistant Community Store)
 
 1. Go to HACS page on your Home Assistant instance
+
 2. Add this repository via HACS Custom repositories [How to add Custom Repositories](https://hacs.xyz/docs/faq/custom_repositories/)
 
-```
-https://github.com/ngocjohn/vehicle-info-card
-```
+   ```
+   https://github.com/ngocjohn/vehicle-info-card
+   ```
 
 3. Select `Lovelace`
-1. Press add icon and search for `Vehicle Info Card`
-1. Select Vehicle Info Card repo and install
-1. Force refresh the Home Assistant page `Ctrl` + `F5` / `Shift` + `⌘` + `R`
-1. Add vehicle-info-card to your page
+
+4. Press add icon and search for `Vehicle Info Card`
+5. Select Vehicle Info Card repo and install
+6. Force refresh the Home Assistant page `Ctrl` + `F5` / `Shift` + `⌘` + `R`
+7. Add vehicle-info-card to your page
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=ngocjohn&repository=vehicle-info-card&category=plugin)
 
@@ -67,11 +54,14 @@ https://github.com/ngocjohn/vehicle-info-card
   <summary>Click to expand installation instructions</summary>
 
 1. Download the [vehicle-info-card.js](https://github.com/ngocjohn/vehicle-info-card/releases/latest).
+
 2. Place the downloaded file on your Home Assistant machine in the `config/www` folder (when there is no `www` folder in the folder where your `configuration.yaml` file is, create it and place the file there).
 3. In Home Assistant go to `Configuration->Lovelace Dashboards->Resources` (When there is no `resources` tag on the `Lovelace Dashboard` page, enable advanced mode in your account settings, and retry this step).
 4. Add a new resource:
+
    - Url = `/local/vehicle-info-card.js`
    - Resource type = `module`
+
 5. Force refresh the Home Assistant page `Ctrl` + `F5` / `Shift` + `⌘` + `R`.
 6. Add vehicle-info-card to your page.
 
@@ -79,14 +69,21 @@ https://github.com/ngocjohn/vehicle-info-card
 
 ## Configuration
 
-<p style="text-align: justify;">Basic options can be configured in the GUI editor. This card also offers optional advanced features for enhanced customization. You can enable a slideshow to display images of your car, with the ability to swipe sideways to navigate between images. Additionally, you can display the car's position on a map along with the generated address.</p>
+<p style="text-align: justify;">Basic options can be configured in the GUI editor. This card also offers optional advanced features for enhanced customization. You can enable a slideshow to display images of your car, with the ability to swipe sideways to navigate between images. The images can be uploaded directly to HA instance within editor. Additionally, you can display the car's position on a map along with the generated address.</p>
 
 > [!TIP]
 > For the best quality images of your vehicle, use the [Mercedes-Benz API service](https://developer.mercedes-benz.com/products/vehicle_images/docs#) to download them. You can find the Python script for downloading images [here](https://gist.github.com/ngocjohn/b1c1f3730cc6f7079ae0d2b3bddd57ad).
 
+<p align="center">
+  <a href="./assets/card-ui-editor.gif">
+    <img src="https://raw.githubusercontent.com/ngocjohn/vehicle-info-card/main/assets/card-ui-editor.gif" alt="Card UI Editor">
+  </a>
+</p>
+
 ### Options
 
-Below is the basic configuration for the custom card:
+<details>
+  <summary>Below is the basic configuration for the custom card </summary>
 
 | Name                      | Type        | Requirement | Description                                                                                                                                                                                                                   |
 | ------------------------- | ----------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -110,10 +107,15 @@ Below is the basic configuration for the custom card:
 | `tyre_card`               | object list | Optional    | Configuration objects for the tire pressure card.                                                                                                                                                                             |
 | `services`                | object list | Optional    | Configure the available services for the integration. [Here](#services-configuration) are the available services that can be enabled or disabled.                                                                             |
 
+</details>
+
 ### Services configuration
 
 > [!NOTE]
 > Some services require that the security PIN is created in your mobile Android/IOS app. Please store the pin in the options dialog of the integration. <a href="https://github.com/ReneNulschDE/mbapi2020?tab=readme-ov-file#services">More info</a>
+
+<details>
+  <summary>Services configuration</summary>
 
 | Service     | Description                                    |
 | ----------- | ---------------------------------------------- |
@@ -126,6 +128,8 @@ Below is the basic configuration for the custom card:
 | `sendRoute` | Send a route to the car.                       |
 | `engine`    | Control the engine (start, stop).              |
 | `windows`   | Control the windows (open, close, move).       |
+
+</details>
 
 <details>
 <summary> Yaml configuration </summary>
@@ -204,7 +208,11 @@ Below is the configuration replaced entities card for `Vehicle status` button.
     <img src="https://raw.githubusercontent.com/ngocjohn/vehicle-info-card/main/assets/car-custom-card.png">
 </details>
 
-## Contact
+## Contribution Guidelines
+
+We welcome contributions and are grateful for your support in improving this project. If you'd like to contribute, please follow our [Contribution Guidelines](docs/CONTRIBUTING.md) to get started.
+
+---
 
 2024 Viet Ngoc
 
