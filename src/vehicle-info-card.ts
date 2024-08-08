@@ -384,7 +384,7 @@ export class VehicleCard extends LitElement {
   private _renderHeaderSlides(): TemplateResult {
     if (!this.config.images || !this.config.show_slides) return html``;
 
-    const images: string[] = this.config.images;
+    const images: string[] = this.config.images.map((image) => image.url);
 
     return html`<header-slide .images=${images}></header-slide>`;
   }
