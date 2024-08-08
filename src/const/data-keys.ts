@@ -7,6 +7,14 @@ export interface CardItem {
   apexProp?: string;
 }
 
+export interface CardType {
+  type: string;
+  name: string;
+  icon: string;
+  config: string;
+  editor: string;
+}
+
 const createShowOpts = (nameKey: string, lang: string, configKey: string) => ({
   label: localize(nameKey, lang),
   configKey,
@@ -22,19 +30,19 @@ export const editorShowOpts = (lang: string) => [
   createShowOpts('editor.showOpts.show_error_notify', lang, 'show_error_notify'),
 ];
 
-const createCard = (type: string, nameKey: string, icon: string, config: string, editor: string, lang: string) => ({
+const createCard = (
+  type: string,
+  nameKey: string,
+  icon: string,
+  config: string,
+  editor: string,
+  lang: string,
+): CardType => ({
   type,
   name: localize(nameKey, lang),
   icon,
   config,
   editor,
-});
-
-const createItem = (key: string, nameKey: string, lang: string, icon?: string, apexProp?: string): CardItem => ({
-  key,
-  name: localize(nameKey, lang),
-  ...(icon ? { icon } : {}),
-  ...(apexProp ? { apexProp } : {}),
 });
 
 export const cardTypes = (lang: string) => [
@@ -43,6 +51,13 @@ export const cardTypes = (lang: string) => [
   createCard('ecoCards', 'cardType.ecoCards', 'mdi:leaf', 'eco_card', 'isEcoCardEditor', lang),
   createCard('tyreCards', 'cardType.tyreCards', 'mdi:tire', 'tyre_card', 'isTyreCardEditor', lang),
 ];
+
+const createItem = (key: string, nameKey: string, lang: string, icon?: string, apexProp?: string): CardItem => ({
+  key,
+  name: localize(nameKey, lang),
+  ...(icon ? { icon } : {}),
+  ...(apexProp ? { apexProp } : {}),
+});
 
 export const tripOverview = (lang: string): CardItem[] => [
   createItem('odometer', 'tripCard.odometer', lang, 'mdi:counter'),
