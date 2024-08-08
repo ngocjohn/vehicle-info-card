@@ -38,7 +38,6 @@ export interface VehicleCardConfig extends LovelaceCardConfig {
   entity?: string;
   device_tracker?: string;
   google_api_key?: string;
-  images?: string[];
   services: ServicesConfig;
   map_popup_config: MapPopupConfig;
   selected_theme: ThemesConfig;
@@ -50,6 +49,15 @@ export interface VehicleCardConfig extends LovelaceCardConfig {
   tap_action?: ActionConfig;
   hold_action?: ActionConfig;
   double_tap_action?: ActionConfig;
+}
+
+export interface VehicleImage {
+  url: string;
+  title: string;
+}
+
+export interface VehicleImagesList extends VehicleCardConfig {
+  images: VehicleImage[];
 }
 
 export interface ThemesConfig {
