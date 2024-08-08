@@ -32,15 +32,19 @@ jobs:
         id: check-localization
         run: node scripts/check-localization.js
 
+      - name: Check for diff-report.md
+        id: check_diff_report
+        run: echo "hasIssues=$(cat scripts/diff-report.md)" >> $GITHUB_ENV || echo "hasIssues=false" >> $GITHUB_ENV
+
       - name: Add PR comment if there are issues
-        if: steps.check-localization.outputs.hasIssues == 'true'
+        if: env != false
         uses: actions/github-script@v5
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
             const diffReport = fs.readFileSync('scripts/diff-report.md', 'utf8');
-            github.issues.createComment({
+            github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
