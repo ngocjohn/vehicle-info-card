@@ -1,0 +1,225 @@
+{
+	"name": "Lithuanian,
+	"cardType": {
+		"tripCards": "Kelionės duomenys",
+		"vehicleCards": "Transporto priemonės būklė",
+		"ecoCards": "Eco ekranas",
+		"tyreCards": "Padangų slėgis"
+	},
+	"tripCard": {
+		"overview": "Apžvalga",
+		"fromStart": "Nuo pradžios",
+		"fromReset": "Iš naujo",
+		"odometer": "Odometras",
+		"fuelLevel": "Kuro lygis",
+		"adBlueLevel": "AdBlue lygis",
+		"rangeLiquid": "Nuotolis",
+		"rangeElectric": "Nuotolis",
+		"soc": "Įkrovimo būklė",
+		"maxSoc": "Maksimali įkrovos būsena",
+		"distanceReset": "Nuvažiuotas atstumas",
+		"drivenTimeReset": "Važiavimo laikas",
+		"averageSpeedReset": "Vidutinis greitis",
+		"liquidConsumptionReset": "Vidutinis suvartojimas",
+		"electricConsumptionReset": "Vidutinis suvartojimas",
+		"distanceStart": "Nuvažiuotas atstumas",
+		"drivenTimeStart": "Važiavimo laikas",
+		"averageSpeedStart": "Vidutinis greitis",
+		"liquidConsumptionStart": "Vidutinis suvartojimas",
+		"electricConsumptionStart": "Vidutinis suvartojimas"
+	},
+	"vehicleCard": {
+		"vehicleStatus": "Transporto priemonės būklė",
+		"vehicleWarnings": "Įspėjimai",
+		"lockSensor": "Užrakinimo būklė",
+		"windowsClosed": "Langai",
+		"doorStatusOverall": "Durys",
+		"parkBrake": "Stovėjimo stabdys",
+		"ignitionState": "Užvedimo būsena",
+		"starterBatteryState": "Užvedimo akumuliatorius",
+		"lowCoolantLevel": "Aušinimo skystis",
+		"lowBrakeFluid": "Stabdžių skystis",
+		"lowWashWater": "Plovimo skystis",
+		"tirePressureWarning": "Padangų slėgis",
+		"engineLight": "Variklio indikatorius"
+	},
+	"ecoCard": {
+		"ecoDisplay": "Eco ekranas",
+		"ecoScore": "Rezultatai",
+		"ecoScoreBonusRange": "Papildomas diapazonas",
+		"ecoScoreAcceleraion": "Akceleratorius",
+		"ecoScoreConstant": "Nuolatinis",
+		"ecoScoreFreeWheel": "Laisvas ratas"
+	},
+	"tyreCard": {
+		"tyrePressure": "Padangų slėgis",
+		"tireWarningProblem": "Aptiktas slėgio sumažėjimas. Patikrinkite padangas.",
+		"tireWarningOk": "Slėgio sumažėjimo neaptikta",
+		"tirePressureFrontLeft": "Priekinė kairė",
+		"tirePressureFrontRight": "Priekinė dešinė",
+		"tirePressureRearLeft": "Galinė kairė",
+		"tirePressureRearRight": "Galinė dešinė"
+	},
+	"chargingOverview": {
+		"chargingPower": "Galia",
+		"soc": "Dabartinė būklė",
+		"maxSoc": "Maksimalus",
+		"selectedProgram": "Programa"
+	},
+	"lockAttributes": {
+		"doorlockstatusfrontleft": "Durų užraktas priekyje kairėje",
+		"doorlockstatusfrontright": "Durų užraktas priekyje dešinėje",
+		"doorlockstatusrearleft": "Durų užraktas gale kairėje",
+		"doorlockstatusrearright": "Durų užraktas gale dešinėje",
+		"doorlockstatusgas": "Dujų užraktas"
+	},
+	"doorAttributes": {
+		"decklidstatus": "Palubės dangtis",
+		"doorstatusfrontleft": "Priekinės kairės pusės durys",
+		"doorstatusfrontright": "Priekinės dešinės pusės durys",
+		"doorstatusrearleft": "Galinės kairės pusės durys",
+		"doorstatusrearright": "Galinės dešinės pusės durys",
+		"enginehoodstatus": "Variklio gaubtas",
+		"sunroofstatus": "Stoglangis"
+	},
+	"sunroofState": {
+		"stateClosed": "Uždaryta",
+		"stateOpen": "Atidaryta",
+		"liftingOpen": "Atidarytas pakėlimas",
+		"running": "Bėgimas",
+		"antiBoomingPosition": "Apsaugos nuo šuolių padėtis",
+		"slidingIntermediate": "Stumdomas tarpinis",
+		"liftingIntermediate": "Tarpinis kėlimas",
+		"opening": "Atidarymas",
+		"closing": "Uždarymas",
+		"antiBoomingLifting": "Anti-booming lifting",
+		"intermediatePosition": "Tarpinė padėtis",
+		"openingLifting": "Atidarymo kėlimas",
+		"closingLifting": "Uždarymo kėlimas"
+	},
+	"windowAttributes": {
+		"windowstatusfrontleft": "Priekinis kairės pusės langas",
+		"windowstatusfrontright": "Priekinis dešinės pusės langas",
+		"windowstatusrearleft": "Užpakalinis kairės pusės langas",
+		"windowstatusrearright": "Užpakalinis dešinės pusės langas",
+		"windowstatusrearleftblind": "Galinio lango kairės pusės žaliuzė",
+		"windowstatusrearrightblind": "Galinio lango dešinės pusės žaliuzė",
+		"windowstatusfrontleftblind": "Priekinio lango kairės pusės žaliuzė",
+		"windowstatusfrontrightblind": "Priekinio lango dešinės pusės žaliuzė"
+	},
+	"starterBattery": {
+		"stateOk": "Ok",
+		"partlyCharged": "Iš dalies įkrautas",
+		"notAvailable": "Nerastas",
+		"remoteServiceDisabled": "Nuotolinė paslauga išjungta",
+		"vehicleNoLongerAvailable": "Transporto priemonė nebėra prieinama"
+	},
+	"servicesCtrl": {
+		"auxheat": "Papildomas šildymas",
+		"charge": "Įkrovimas",
+		"doorsLock": "Sauga",
+		"engine": "Variklio valdymas",
+		"preheat": "Pirminis kondicionavimas",
+		"sendRoute": "Siųsti maršrutą",
+		"sigPos": "Signalo padėtis",
+		"sunroof": "Stoglangis",
+		"windows": "Langai"
+	},
+	"serviceData": {
+		"labelStart": "Pradėti",
+		"labelStop": "Sustabdyti",
+		"labelSave": "Išsaugoti",
+		"labelOpen": "Atviras",
+		"labelClose": "Uždaryti",
+		"labelMove": "Perkelti",
+		"labelSend": "Siųsti",
+		"labelTilt": "Pakreipti",
+		"labelUnlockCar": "Automobilio atrakinimas",
+		"labelLockCar": "Automobilio užrakinimas",
+		"labelMoreInfo": "Daugiau informacijos",
+		"labelSetMaxSoc": "Nustatykite didžiausią",
+		"labelSetProgram": "Nustatyti programą",
+		"labelWindowFrontLeft": "Priekinė kairė",
+		"labelWindowFrontRight": "Priekinė dešinė",
+		"labelWindowRearLeft": "Galinė kairė",
+		"labelWindowRearRight": "Galinė dešinė",
+		"labelTimeSelection": "Laiko pasirinkimas",
+		"labelNoSelection": "Nėra pasirinkimo",
+		"labelTime1": "Laikas 1",
+		"labelTime2": "Laikas 2",
+		"labelTime3": "Laikas 3",
+		"labelStartTime": "Pradžios laikas",
+		"labelStopTime": "Sustojimo laikas",
+		"labelDurationTime": "Trukmės laikas",
+		"labelDepartureTime": "Išvykimo laikas",
+		"labelTitle": "Pavadinimas",
+		"labelLatitude": "Platuma",
+		"labelLongitude": "Ilguma",
+		"labelCity": "Miestas",
+		"labelPostCode": "Pašto kodas",
+		"labelStreet": "Gatvė",
+		"labelChargeProgram": "Įkrovimo programa",
+		"labelMaxStateOfCharge": "Maksimali įkrovos būsena"
+	},
+	"common": {
+		"lastUpdate": "Paskutinis atnaujinimas",
+		"stateLocked": "Užrakinta",
+		"stateUnlocked": "Atrakinta",
+		"stateClosed": "Uždaryta",
+		"stateOpen": "Atidaryta",
+		"stateNotExisting": "Neegzistuoja",
+		"stateUnknown": "Nežinomas",
+		"statePartlyUnlocked": "Iš dalies atrakinta",
+		"stateLockedInt": "Užrakinta int",
+		"stateParkBrakeOn": "Įtraukta",
+		"stateParkBrakeOff": "Išleista",
+		"stateCharging": "Įkrovimas",
+		"titleServices": "Paslaugos",
+		"titleRemoteControl": "Nuotolinis valdymas",
+		"toastCommandSent": "Komanda išsiųsta sėkmingai!",
+		"toastImageError": "Klaida įkeliant vaizdą. Leidžiami tik PNG ir JPEG failai."
+	},
+	"editor": {
+		"common": {
+			"infoButton": "Pasirinkite kortelę, kurią norite konfigūruoti.",
+			"infoMap": "TTai iššokančio žemėlapio konfigūracija.",
+			"infoImages": "Kiekvienoje eilutėje nereikia pridėti "-". Kiekviena eilutė automatiškai bus laikoma atskiru URL.",
+			"infoServices": "Pasirinkite, kurias paslaugas norite įjungti. Jei paslauga išjungta, ji nebus rodoma kortelėje.",
+			"uncheckAll": "Atsisakykite visų",
+			"checkAll": "Pažymėkite visus"
+		},
+		"showOpts": {
+			"show_slides": "Parodyti skaidres",
+			"show_buttons": "Rodyti mygtukus",
+			"show_map": "Rodyti žemėlapį",
+			"show_background": "Rodyti foną",
+			"enable_map_popup": "Įjungti iššokantį žemėlapio langą",
+			"enable_services_control": "Paslaugų valdymo įjungimas",
+			"show_error_notify": "Rodyti pranešimą apie klaidą"
+		},
+		"buttonConfig": {
+			"title": "Mygtukų konfigūracija",
+			"desc": "Sukonfigūruokite atskirų mygtukų antrines korteles."
+		},
+		"mapConfig": {
+			"title": "Žemėlapio konfigūracija",
+			"desc": "Pasirinkite žemėlapio konfigūraciją"
+		},
+		"imagesConfig": {
+			"title": "Paveikslėlio konfigūracija",
+			"desc": "Pridėkite paveikslėlių URL adresus."
+		},
+		"servicesConfig": {
+			"title": "Paslaugų konfigūracija",
+			"desc": "Pasirinkite paslaugas, kurias norite įjungti."
+		},
+		"themeLangConfig": {
+			"title": "Temos ir kalba",
+			"desc": "Pasirinkite temą ir kalbą."
+		},
+		"showConfig": {
+			"title": "Rodyti konfigūraciją",
+			"desc": "Pasirinkite elementus, kuriuos norite rodyti."
+		}
+	}
+}
