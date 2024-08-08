@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { LitElement, html, TemplateResult, PropertyValues, CSSResultGroup } from 'lit';
+import { LitElement, html, TemplateResult, PropertyValues, CSSResultGroup, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators';
 import { classMap } from 'lit/directives/class-map.js';
 
@@ -148,7 +148,8 @@ export class VehicleCard extends LitElement {
   }
 
   public getCardSize() {
-    return this.getGridRowSize();
+    // console.log('mansory', this.getGridRowSize());
+    return 2;
   }
 
   public getLayoutOptions() {
@@ -180,6 +181,7 @@ export class VehicleCard extends LitElement {
     if (process.env.ROLLUP_WATCH === 'true') {
       window.BenzCard = this;
     }
+    this.applyMarquee();
   }
 
   disconnectedCallback(): void {
@@ -206,10 +208,12 @@ export class VehicleCard extends LitElement {
 
   protected updated(changedProps: PropertyValues) {
     super.updated(changedProps);
-    if (changedProps.has('activeCardType') && this.activeCardType !== 'mapDialog') {
+    // Log all changed properties for debugging
+    if (this.activeCardType !== 'mapDialog' && this.activeCardType !== null) {
       const cardElement = this.shadowRoot?.querySelector('.card-element');
-      if (!cardElement) return;
-      setupCardListeners(cardElement, this.toggleCard.bind(this));
+      if (cardElement) {
+        setupCardListeners(cardElement, this.toggleCard.bind(this));
+      }
     }
   }
 
@@ -219,6 +223,11 @@ export class VehicleCard extends LitElement {
       return false;
     }
     if (changedProps.has('hass') || changedProps.has('config')) {
+      return true;
+    }
+
+    if (!this.activeCardType) {
+      this.applyMarquee();
       return true;
     }
 
@@ -435,10 +444,10 @@ export class VehicleCard extends LitElement {
                         <ha-icon icon="mdi:alert-circle"></ha-icon>
                       </div>
                     `
-                  : ''}
+                  : nothing}
               </div>
               <div class="item-content">
-                <span class="primary">${cardType.name}</span>
+                <div class="primary"><span class="title">${cardType.name}</span></div>
                 <span class="secondary">${this.getSecondaryInfo(cardType.type)}</span>
               </div>
             </div>
@@ -551,39 +560,42 @@ export class VehicleCard extends LitElement {
   private _renderDefaultVehicleCard(): TemplateResult | void {
     const lang = this.selectedLanguage;
     const warningsData = this.createDataArray(DataKeys.vehicleWarnings(lang));
+
     const subCardVisible = this.isSubCardVisible();
 
     return html`
       <div class="default-card">
         <div class="data-header">${this.localize('vehicleCard.vehicleStatus')}</div>
-        ${this._renderOverviewDataWithSubCard()}
+        <div class="data-box">${this._renderOverviewDataWithSubCard()}</div>
       </div>
       <div class="default-card" .hidden=${subCardVisible}>
         <div class="data-header">${this.localize('vehicleCard.vehicleWarnings')}</div>
-        ${warningsData.map(({ key, icon, state, name, active }) => {
-          if (key && name && state) {
-            return html`
-              <div class="data-row">
-                <div>
-                  <ha-icon
-                    class="data-icon"
-                    .icon="${icon}"
+        <div class="data-box">
+          ${warningsData.map(({ key, icon, state, name, active }) => {
+            if (key && name && state) {
+              return html`
+                <div class="data-row">
+                  <div>
+                    <ha-icon
+                      class="data-icon"
+                      .icon="${icon}"
+                      @click=${() => this.toggleMoreInfo(this.vehicleEntities[key]?.entity_id)}
+                    ></ha-icon>
+                    <span>${name}</span>
+                  </div>
+                  <div
+                    class="data-value-unit ${active ? 'error' : ''} "
                     @click=${() => this.toggleMoreInfo(this.vehicleEntities[key]?.entity_id)}
-                  ></ha-icon>
-                  <span>${name}</span>
+                  >
+                    <span>${state}</span>
+                  </div>
                 </div>
-                <div
-                  class="data-value-unit ${active ? 'error' : ''} "
-                  @click=${() => this.toggleMoreInfo(this.vehicleEntities[key]?.entity_id)}
-                >
-                  <span>${state}</span>
-                </div>
-              </div>
-            `;
-          } else {
-            return html``;
-          }
-        })}
+              `;
+            } else {
+              return html``;
+            }
+          })}
+        </div>
       </div>
     `;
   }
@@ -594,7 +606,7 @@ export class VehicleCard extends LitElement {
 
     return html`<div class="default-card">
         <div class="data-header">${this.localize('ecoCard.ecoDisplay')}</div>
-        ${this._renderEcoChart()}
+        <div class="data-box">${this._renderEcoChart()}</div>
       </div>
       ${this.createItemDataRow(this.localize('ecoCard.ecoScore'), ecoData, this.ecoScoresVisible, 'ecoScores')}`;
   }
@@ -613,7 +625,7 @@ export class VehicleCard extends LitElement {
     return html`
       <div class="default-card">
         <div class="data-header">${tireCardTitle}</div>
-        <div class="tyre-wrapper">
+        <div class="data-box tyre-wrapper">
           <div class="background" style="background-image: url(${tyreBg})"></div>
           ${DataKeys.tyrePressures(lang).map(
             (tyre) =>
@@ -956,7 +968,7 @@ export class VehicleCard extends LitElement {
     `;
   }
 
-  private createDataArray(keys: EntityConfig[]): ReturnType<VehicleCard['getEntityInfoByKey']>[] {
+  private createDataArray(keys: EntityConfig[]): EntityConfig[] {
     return keys.map((config) => this.getEntityInfoByKey(config));
   }
 
@@ -1265,6 +1277,26 @@ export class VehicleCard extends LitElement {
       default:
         return false;
     }
+  }
+  private applyMarquee() {
+    this.updateComplete.then(() => {
+      const items = this.shadowRoot?.querySelectorAll('.primary') as NodeListOf<HTMLElement>;
+      if (!items) return;
+      items.forEach((item) => {
+        const itemText = item.querySelector('span');
+        if (item.scrollWidth > item.clientWidth) {
+          item.classList.add('title-wrap');
+          itemText?.classList.add('marquee');
+          setTimeout(() => {
+            itemText?.classList.remove('marquee');
+            item.classList.remove('title-wrap');
+          }, 18000);
+        } else {
+          item.classList.remove('title-wrap');
+          itemText?.classList.remove('marquee');
+        }
+      });
+    });
   }
 
   /* ----------------------------- EVENTS HANDLERS ---------------------------- */

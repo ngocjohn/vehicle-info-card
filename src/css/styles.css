@@ -75,6 +75,7 @@ header h1 {
   gap: var(--vic-gutter-gap);
   flex-wrap: wrap;
   transition: all 0.5s ease;
+  margin-bottom: var(--vic-gutter-gap);
 }
 
 .info-box {
@@ -165,35 +166,15 @@ header h1 {
   display: grid;
   grid-template-columns: repeat(2, minmax(140px, 1fr));
   gap: var(--vic-gutter-gap);
-  margin-top: 1rem;
+  /* margin-top: 1rem; */
   position: relative;
 }
-/* .grid-item {
-  display: flex;
-  position: relative;
-  gap: var(--vic-gutter-gap);
-  align-items: center;
-  padding: var(--vic-card-padding);
-  background: var(--secondary-background-color, var(--card-background-color, #fff));
-  box-shadow: var(--ha-card-box-shadow, none);
-  box-sizing: border-box;
-  border-radius: var(--ha-card-border-radius, 12px);
-  border-width: var(--ha-card-border-width, 1px);
-  border-style: solid;
-  border-color: var(--ha-card-border-color, var(--divider-color, #e0e0e0));
-  transition: all 0.3s ease-out;
-  opacity: 1;
-  cursor: pointer;
-  &:hover {
-    box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.3);
-  }
-} */
 
 .grid-item {
   display: flex;
   position: relative;
-  gap: 12px;
-  padding: 10px;
+  gap: var(--vic-card-padding);
+  padding: var(--vic-gutter-gap) var(--vic-card-padding);
   height: 100%;
   flex-direction: row;
   align-items: center;
@@ -220,8 +201,8 @@ header h1 {
 .grid-item .item-notify {
   display: flex;
   position: absolute;
-  top: -7px;
-  right: -7px;
+  top: -4px;
+  right: -8px;
   /* opacity: 0.8; */
   color: #db4437;
   color: var(--error-color, #db4437);
@@ -241,6 +222,7 @@ header h1 {
 .grid-item .item-icon {
   position: relative;
   display: block;
+  --mdc-icon-size: 22px;
 }
 
 .item-icon .icon-background {
@@ -261,18 +243,64 @@ header h1 {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  overflow: hidden;
   .primary {
     font-weight: 500;
     font-size: 1rem;
+    white-space: nowrap;
+    position: relative;
     text-overflow: ellipsis;
     overflow: hidden;
-    white-space: nowrap;
   }
   .secondary {
     color: var(--secondary-text-color);
     /* text-transform: capitalize; */
     letter-spacing: 0.5px;
     font-size: smaller;
+    text-wrap: nowrap;
+  }
+}
+
+.primary.title-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: block;
+  left: 0;
+  top: 0;
+}
+
+.primary.title-wrap::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: -15px;
+  width: 40%;
+  height: 100%;
+  background-image: linear-gradient(
+    to left,
+    transparent 0,
+    var(--secondary-background-color, var(--card-background-color, #fff)) 100%
+  );
+}
+
+.marquee {
+  display: inline-block;
+  animation: marquee 6s linear 1s infinite;
+  overflow: visible !important;
+  animation-iteration-count: 3;
+  /* left: 100%; */
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  50% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0%);
   }
 }
 
@@ -383,7 +411,7 @@ header h1 {
 
 .default-card {
   align-items: center;
-  padding: 0 12px;
+  padding: var(--vic-card-padding);
   background: var(--ha-card-background-color, var(--secondary-background-color));
   box-shadow: var(--ha-card-box-shadow, none);
   box-sizing: border-box;
@@ -417,37 +445,27 @@ header h1 {
   color: var(--ha-card-header-color, --primary-text-color);
   font-family: var(--ha-card-header-font-family, inherit);
   font-size: 1.5rem;
-  /* letter-spacing: -0.012em; */
   line-height: inherit;
-  /* margin-top: 0px; */
-  /* margin-bottom: 0px; */
-  /* font-weight: 400; */
+
   display: flex;
   justify-content: space-between;
   align-items: center;
   cursor: auto;
-  padding: 8px 0;
+  /* padding: 8px 0; */
 }
-
-/* .default-card .data-header:has(+ .data-box.hidden) {
-  cursor: pointer;
-  &:hover {
-    color: var(--primary-color);
-  }
-} */
 
 .default-card .data-box {
   opacity: 1;
+  padding-top: var(--vic-gutter-gap);
   max-height: 1000px;
-  transition:
-    opacity 0.3s ease-in-out,
-    max-height 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out;
 }
 
 .default-card .data-box.hidden {
   opacity: 0;
   max-height: 0;
   overflow: hidden;
+  padding: 0;
 }
 
 .default-card.remote-tab {
@@ -458,7 +476,7 @@ header h1 {
 .data-row {
   display: flex;
   justify-content: space-between;
-  padding: 8px 0;
+  padding-block: var(--vic-gutter-gap);
   border-bottom: 1px solid #444;
 }
 
@@ -474,11 +492,12 @@ header h1 {
 
 .data-row:last-child {
   border-bottom: none;
+  padding-bottom: 0;
 }
 .data-row div {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--vic-gutter-gap);
 }
 .data-icon {
   color: var(--secondary-text-color);
@@ -588,29 +607,31 @@ dialog::backdrop {
 
 .tyre-wrapper .tyre-box {
   position: absolute;
-  width: 50%;
-  height: 50%;
+  width: 30%;
+  height: 60%;
   z-index: 1;
   display: flex;
   align-items: center;
   flex-direction: column;
   justify-content: center;
   gap: 0.5rem;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
 }
-.tyre-name {
-  color: var(--secondary-text-color);
-  text-align: left;
-  margin: 0;
-  text-transform: uppercase;
-}
+
 .tyre-value {
   font-size: 1.5rem;
   color: var(--primary-text-color);
   text-align: center;
   margin: 0;
 }
-
+.tyre-name {
+  color: var(--secondary-text-color);
+  text-align: left;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  text-wrap: nowrap;
+}
 .tyre-info {
   display: flex;
   justify-content: center;
@@ -624,23 +645,23 @@ dialog::backdrop {
 .frontleft {
   top: 0%;
   left: 0%;
-  transform: translate(-15%, -10%);
+  /* transform: translate(-15%, -10%); */
 }
 
 .frontright {
   top: 0%;
   right: 0%;
-  transform: translate(15%, -10%);
+  /* transform: translate(15%, -10%); */
 }
 
 .rearleft {
   bottom: 0%;
   left: 0%;
-  transform: translate(-15%, 10%);
+  /* transform: translate(-15%, 10%); */
 }
 
 .rearright {
   bottom: 0%;
   right: 0%;
-  transform: translate(15%, 10%);
+  /* transform: translate(15%, 10%); */
 }
