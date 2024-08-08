@@ -1,225 +1,227 @@
 {
-	"name": "Vietnamese",
-	"cardType": {
-		"tripCards": "Dữ liệu chuyến đi",
-		"vehicleCards": "Trạng thái xe",
-		"ecoCards": "Điểm số ECO",
-		"tyreCards": "Áp suất lốp"
-	},
-	"tripCard": {
-		"overview": "Tổng quan",
-		"fromStart": "Từ đầu",
-		"fromReset": "Từ khi đặt lại",
-		"odometer": "Đồng hồ đo quãng đường",
-		"fuelLevel": "Mức nhiên liệu",
-		"adBlueLevel": "Mức AdBlue",
-		"rangeLiquid": "Phạm vi",
-		"rangeElectric": "Phạm vi",
-		"soc": "Trạng thái sạc",
-		"maxSoc": "Trạng thái sạc tối đa",
-		"distanceReset": "Khoảng cách đã đi",
-		"drivenTimeReset": "Thời gian lái xe",
-		"averageSpeedReset": "Tốc độ trung bình",
-		"liquidConsumptionReset": "Tiêu thụ nhiên liệu",
-		"electricConsumptionReset": "Tiêu thụ nhiên liệu",
-		"distanceStart": "Khoảng cách đã đi",
-		"drivenTimeStart": "Thời gian lái xe",
-		"averageSpeedStart": "Tốc độ trung bình",
-		"liquidConsumptionStart": "Tiêu thụ nhiên liệu",
-		"electricConsumptionStart": "Tiêu thụ nhiên liệu"
-	},
-	"vehicleCard": {
-		"vehicleStatus": "Trạng thái xe",
-		"vehicleWarnings": "Cảnh báo",
-		"lockSensor": "Trạng thái khóa",
-		"windowsClosed": "Cửa sổ",
-		"doorStatusOverall": "Cửa",
-		"parkBrake": "Phanh đỗ",
-		"ignitionState": "Trạng thái khởi động",
-		"starterBatteryState": "Pin khởi động",
-		"lowCoolantLevel": "Nước làm mát",
-		"lowBrakeFluid": "Dầu phanh",
-		"lowWashWater": "Nước rửa kính",
-		"tirePressureWarning": "Áp suất lốp",
-		"engineLight": "Đèn động cơ"
-	},
-	"ecoCard": {
-		"ecoDisplay": "Hiển thị Eco",
-		"ecoScore": "Điểm số",
-		"ecoScoreBonusRange": "Phạm vi thưởng",
-		"ecoScoreAcceleraion": "Gia tốc",
-		"ecoScoreConstant": "Ổn định",
-		"ecoScoreFreeWheel": "Bánh tự do"
-	},
-	"tyreCard": {
-		"tyrePressure": "Áp suất lốp",
-		"tireWarningProblem": "Phát hiện mất áp suất. Kiểm tra lốp xe.",
-		"tireWarningOk": "Không phát hiện mất áp suất",
-		"tirePressureFrontLeft": "Trước trái",
-		"tirePressureFrontRight": "Trước phải",
-		"tirePressureRearLeft": "Sau trái",
-		"tirePressureRearRight": "Sau phải"
-	},
-	"chargingOverview": {
-		"chargingPower": "Công suất",
-		"soc": "Hiện tại",
-		"maxSoc": "Tối đa",
-		"selectedProgram": "Chương trình"
-	},
-	"lockAttributes": {
-		"doorlockstatusfrontleft": "Khóa cửa trước trái",
-		"doorlockstatusfrontright": "Khóa cửa trước phải",
-		"doorlockstatusrearleft": "Khóa cửa sau trái",
-		"doorlockstatusrearright": "Khóa cửa sau phải",
-		"doorlockstatusgas": "Khóa nhiên liệu"
-	},
-	"doorAttributes": {
-		"decklidstatus": "Nắp khoang hành lý",
-		"doorstatusfrontleft": "Cửa trước trái",
-		"doorstatusfrontright": "Cửa trước phải",
-		"doorstatusrearleft": "Cửa sau trái",
-		"doorstatusrearright": "Cửa sau phải",
-		"enginehoodstatus": "Nắp động cơ",
-		"sunroofstatus": "Cửa sổ trời"
-	},
-	"sunroofState": {
-		"stateClosed": "Đóng",
-		"stateOpen": "Mở",
-		"liftingOpen": "Nâng mở",
-		"running": "Chạy",
-		"antiBoomingPosition": "Vị trí chống rung",
-		"slidingIntermediate": "Trượt trung gian",
-		"liftingIntermediate": "Nâng trung gian",
-		"opening": "Đang mở",
-		"closing": "Đang đóng",
-		"antiBoomingLifting": "Nâng chống rung",
-		"intermediatePosition": "Vị trí trung gian",
-		"openingLifting": "Đang mở nâng",
-		"closingLifting": "Đang đóng nâng"
-	},
-	"windowAttributes": {
-		"windowstatusfrontleft": "Cửa sổ trước trái",
-		"windowstatusfrontright": "Cửa sổ trước phải",
-		"windowstatusrearleft": "Cửa sổ sau trái",
-		"windowstatusrearright": "Cửa sổ sau phải",
-		"windowstatusrearleftblind": "Cửa sổ che sau trái",
-		"windowstatusrearrightblind": "Cửa sổ che sau phải",
-		"windowstatusfrontleftblind": "Cửa sổ che trước trái",
-		"windowstatusfrontrightblind": "Cửa sổ che trước phải"
-	},
-	"starterBattery": {
-		"stateOk": "Tốt",
-		"partlyCharged": "Sạc một phần",
-		"notAvailable": "Không có sẵn",
-		"remoteServiceDisabled": "Dịch vụ từ xa bị tắt",
-		"vehicleNoLongerAvailable": "Xe không còn có sẵn"
-	},
-	"servicesCtrl": {
-		"auxheat": "Sưởi phụ",
-		"charge": "Sạc",
-		"doorsLock": "An ninh",
-		"engine": "Kiểm soát động cơ",
-		"preheat": "Điều hòa trước",
-		"sendRoute": "Gửi lộ trình",
-		"sigPos": "Vị trí tín hiệu",
-		"sunroof": "Cửa sổ trời",
-		"windows": "Cửa sổ"
-	},
-	"serviceData": {
-		"labelStart": "Bắt đầu",
-		"labelStop": "Dừng lại",
-		"labelSave": "Lưu",
-		"labelOpen": "Mở",
-		"labelClose": "Đóng",
-		"labelMove": "Di chuyển",
-		"labelSend": "Gửi",
-		"labelTilt": "Nghiêng",
-		"labelUnlockCar": "Mở khóa xe",
-		"labelLockCar": "Khóa xe",
-		"labelMoreInfo": "Thêm thông tin",
-		"labelSetMaxSoc": "Đặt tối đa",
-		"labelSetProgram": "Đặt chương trình",
-		"labelWindowFrontLeft": "Trước trái",
-		"labelWindowFrontRight": "Trước phải",
-		"labelWindowRearLeft": "Sau trái",
-		"labelWindowRearRight": "Sau phải",
-		"labelTimeSelection": "Chọn thời gian",
-		"labelNoSelection": "Không có lựa chọn",
-		"labelTime1": "Thời gian 1",
-		"labelTime2": "Thời gian 2",
-		"labelTime3": "Thời gian 3",
-		"labelStartTime": "Thời gian bắt đầu",
-		"labelStopTime": "Thời gian dừng",
-		"labelDurationTime": "Thời gian kéo dài",
-		"labelDepartureTime": "Thời gian khởi hành",
-		"labelTitle": "Tiêu đề",
-		"labelLatitude": "Vĩ độ",
-		"labelLongitude": "Kinh độ",
-		"labelCity": "Thành phố",
-		"labelPostCode": "Mã bưu điện",
-		"labelStreet": "Đường phố",
-		"labelChargeProgram": "Chương trình sạc",
-		"labelMaxStateOfCharge": "Trạng thái sạc tối đa"
-	},
-	"common": {
-		"lastUpdate": "Cập nhật cuối",
-		"stateLocked": "Đã khóa",
-		"stateUnlocked": "Đã mở khóa",
-		"stateClosed": "Đã đóng",
-		"stateOpen": "Đã mở",
-		"stateNotExisting": "Không tồn tại",
-		"stateUnknown": "Không rõ",
-		"statePartlyUnlocked": "Mở khóa một phần",
-		"stateLockedInt": "Khóa bên trong",
-		"stateParkBrakeOn": "Đang kích hoạt",
-		"stateParkBrakeOff": "Đã tắt",
-		"stateCharging": "Đang sạc",
-		"titleServices": "Dịch vụ",
-		"titleRemoteControl": "Điều khiển từ xa",
-		"toastCommandSent": "Lệnh đã được gửi thành công!",
-		"toastImageError": "Lỗi khi tải ảnh lên. Chỉ cho phép tệp PNG và JPEG."
-	},
-	"editor": {
-		"common": {
-			"infoButton": "Chọn thẻ bạn muốn cấu hình.",
-			"infoMap": "Đây là cấu hình cho cửa sổ bật lên bản đồ.",
-			"infoImages": "Không cần thêm '-' cho mỗi dòng. Mỗi dòng sẽ được coi là một URL riêng biệt tự động.",
-			"infoServices": "Chọn dịch vụ bạn muốn kích hoạt. Nếu dịch vụ bị tắt, nó sẽ không được hiển thị trong thẻ.",
-			"uncheckAll": "Bỏ chọn tất cả",
-			"checkAll": "Chọn tất cả"
-		},
-		"showOpts": {
-			"show_slides": "Hiển thị slide",
-			"show_buttons": "Hiển thị nút",
-			"show_map": "Hiển thị bản đồ",
-			"show_background": "Hiển thị nền",
-			"enable_map_popup": "Bật cửa sổ bản đồ",
-			"enable_services_control": "Bật điều khiển dịch vụ",
-			"show_error_notify": "Hiển thị thông báo lỗi"
-		},
-		"buttonConfig": {
-			"title": "Cấu hình nút",
-			"desc": "Cấu hình các thẻ con cho các nút riêng lẻ."
-		},
-		"mapConfig": {
-			"title": "Cấu hình bản đồ",
-			"desc": "Chọn cấu hình cho bản đồ"
-		},
-		"imagesConfig": {
-			"title": "Cấu hình hình ảnh",
-			"desc": "Thêm URL của hình ảnh."
-		},
-		"servicesConfig": {
-			"title": "Cấu hình dịch vụ",
-			"desc": "Chọn các dịch vụ bạn muốn kích hoạt."
-		},
-		"themeLangConfig": {
-			"title": "Chủ đề và ngôn ngữ",
-			"desc": "Chọn chủ đề và ngôn ngữ."
-		},
-		"showConfig": {
-			"title": "Cấu hình hiển thị",
-			"desc": "Chọn các mục bạn muốn hiển thị."
-		}
-	}
+    "name": "Vietnamese",
+    "card": {
+        "common": {
+            "lastUpdate": "Cập nhật cuối",
+            "stateCharging": "Đang sạc",
+            "stateClosed": "Đã đóng",
+            "stateLocked": "Đã khóa",
+            "stateLockedInt": "Khóa bên trong",
+            "stateNotExisting": "Không tồn tại",
+            "stateOpen": "Đã mở",
+            "stateParkBrakeOff": "Đã tắt",
+            "stateParkBrakeOn": "Đang kích hoạt",
+            "statePartlyUnlocked": "Mở khóa một phần",
+            "stateUnknown": "Không rõ",
+            "stateUnlocked": "Đã mở khóa",
+            "titleRemoteControl": "Điều khiển từ xa",
+            "titleServices": "Dịch vụ",
+            "toastCommandSent": "Lệnh đã được gửi thành công!",
+            "toastImageError": "Lỗi khi tải ảnh lên. Chỉ cho phép tệp PNG và JPEG."
+        },
+        "cardType": {
+            "ecoCards": "Điểm số ECO",
+            "tripCards": "Dữ liệu chuyến đi",
+            "tyreCards": "Áp suất lốp",
+            "vehicleCards": "Trạng thái xe"
+        },
+        "chargingOverview": {
+            "chargingPower": "Công suất",
+            "maxSoc": "Tối đa",
+            "selectedProgram": "Chương trình",
+            "soc": "Hiện tại"
+        },
+        "doorAttributes": {
+            "decklidstatus": "Nắp khoang hành lý",
+            "doorstatusfrontleft": "Cửa trước trái",
+            "doorstatusfrontright": "Cửa trước phải",
+            "doorstatusrearleft": "Cửa sau trái",
+            "doorstatusrearright": "Cửa sau phải",
+            "enginehoodstatus": "Nắp động cơ",
+            "sunroofstatus": "Cửa sổ trời"
+        },
+        "ecoCard": {
+            "ecoDisplay": "Hiển thị Eco",
+            "ecoScore": "Điểm số",
+            "ecoScoreAcceleraion": "Gia tốc",
+            "ecoScoreBonusRange": "Phạm vi thưởng",
+            "ecoScoreConstant": "Ổn định",
+            "ecoScoreFreeWheel": "Bánh tự do"
+        },
+        "lockAttributes": {
+            "doorlockstatusfrontleft": "Khóa cửa trước trái",
+            "doorlockstatusfrontright": "Khóa cửa trước phải",
+            "doorlockstatusgas": "Khóa nhiên liệu",
+            "doorlockstatusrearleft": "Khóa cửa sau trái",
+            "doorlockstatusrearright": "Khóa cửa sau phải"
+        },
+        "serviceData": {
+            "labelChargeProgram": "Chương trình sạc",
+            "labelCity": "Thành phố",
+            "labelClose": "Đóng",
+            "labelDepartureTime": "Thời gian khởi hành",
+            "labelDurationTime": "Thời gian kéo dài",
+            "labelLatitude": "Vĩ độ",
+            "labelLockCar": "Khóa xe",
+            "labelLongitude": "Kinh độ",
+            "labelMaxStateOfCharge": "Trạng thái sạc tối đa",
+            "labelMoreInfo": "Thêm thông tin",
+            "labelMove": "Di chuyển",
+            "labelNoSelection": "Không có lựa chọn",
+            "labelOpen": "Mở",
+            "labelPostCode": "Mã bưu điện",
+            "labelSave": "Lưu",
+            "labelSend": "Gửi",
+            "labelSetMaxSoc": "Đặt tối đa",
+            "labelSetProgram": "Đặt chương trình",
+            "labelStart": "Bắt đầu",
+            "labelStartTime": "Thời gian bắt đầu",
+            "labelStop": "Dừng lại",
+            "labelStopTime": "Thời gian dừng",
+            "labelStreet": "Đường phố",
+            "labelTilt": "Nghiêng",
+            "labelTime1": "Thời gian 1",
+            "labelTime2": "Thời gian 2",
+            "labelTime3": "Thời gian 3",
+            "labelTimeSelection": "Chọn thời gian",
+            "labelTitle": "Tiêu đề",
+            "labelUnlockCar": "Mở khóa xe",
+            "labelWindowFrontLeft": "Trước trái",
+            "labelWindowFrontRight": "Trước phải",
+            "labelWindowRearLeft": "Sau trái",
+            "labelWindowRearRight": "Sau phải"
+        },
+        "servicesCtrl": {
+            "auxheat": "Sưởi phụ",
+            "charge": "Sạc",
+            "doorsLock": "An ninh",
+            "engine": "Kiểm soát động cơ",
+            "preheat": "Điều hòa trước",
+            "sendRoute": "Gửi lộ trình",
+            "sigPos": "Vị trí tín hiệu",
+            "sunroof": "Cửa sổ trời",
+            "windows": "Cửa sổ"
+        },
+        "starterBattery": {
+            "notAvailable": "Không có sẵn",
+            "partlyCharged": "Sạc một phần",
+            "remoteServiceDisabled": "Dịch vụ từ xa bị tắt",
+            "stateOk": "Tốt",
+            "vehicleNoLongerAvailable": "Xe không còn có sẵn"
+        },
+        "sunroofState": {
+            "antiBoomingLifting": "Nâng chống rung",
+            "antiBoomingPosition": "Vị trí chống rung",
+            "closing": "Đang đóng",
+            "closingLifting": "Đang đóng nâng",
+            "intermediatePosition": "Vị trí trung gian",
+            "liftingIntermediate": "Nâng trung gian",
+            "liftingOpen": "Nâng mở",
+            "opening": "Đang mở",
+            "openingLifting": "Đang mở nâng",
+            "running": "Chạy",
+            "slidingIntermediate": "Trượt trung gian",
+            "stateClosed": "Đóng",
+            "stateOpen": "Mở"
+        },
+        "tripCard": {
+            "adBlueLevel": "Mức AdBlue",
+            "averageSpeedReset": "Tốc độ trung bình",
+            "averageSpeedStart": "Tốc độ trung bình",
+            "distanceReset": "Khoảng cách đã đi",
+            "distanceStart": "Khoảng cách đã đi",
+            "drivenTimeReset": "Thời gian lái xe",
+            "drivenTimeStart": "Thời gian lái xe",
+            "electricConsumptionReset": "Tiêu thụ nhiên liệu",
+            "electricConsumptionStart": "Tiêu thụ nhiên liệu",
+            "fromReset": "Từ khi đặt lại",
+            "fromStart": "Từ đầu",
+            "fuelLevel": "Mức nhiên liệu",
+            "liquidConsumptionReset": "Tiêu thụ nhiên liệu",
+            "liquidConsumptionStart": "Tiêu thụ nhiên liệu",
+            "maxSoc": "Trạng thái sạc tối đa",
+            "odometer": "Đồng hồ đo quãng đường",
+            "overview": "Tổng quan",
+            "rangeElectric": "Phạm vi",
+            "rangeLiquid": "Phạm vi",
+            "soc": "Trạng thái sạc"
+        },
+        "tyreCard": {
+            "tirePressureFrontLeft": "Trước trái",
+            "tirePressureFrontRight": "Trước phải",
+            "tirePressureRearLeft": "Sau trái",
+            "tirePressureRearRight": "Sau phải",
+            "tireWarningOk": "Không phát hiện mất áp suất",
+            "tireWarningProblem": "Phát hiện mất áp suất. Kiểm tra lốp xe.",
+            "tyrePressure": "Áp suất lốp"
+        },
+        "vehicleCard": {
+            "doorStatusOverall": "Cửa",
+            "engineLight": "Đèn động cơ",
+            "ignitionState": "Trạng thái khởi động",
+            "lockSensor": "Trạng thái khóa",
+            "lowBrakeFluid": "Dầu phanh",
+            "lowCoolantLevel": "Nước làm mát",
+            "lowWashWater": "Nước rửa kính",
+            "parkBrake": "Phanh đỗ",
+            "starterBatteryState": "Pin khởi động",
+            "tirePressureWarning": "Áp suất lốp",
+            "vehicleStatus": "Trạng thái xe",
+            "vehicleWarnings": "Cảnh báo",
+            "windowsClosed": "Cửa sổ"
+        },
+        "windowAttributes": {
+            "windowstatusfrontleft": "Cửa sổ trước trái",
+            "windowstatusfrontleftblind": "Cửa sổ che trước trái",
+            "windowstatusfrontright": "Cửa sổ trước phải",
+            "windowstatusfrontrightblind": "Cửa sổ che trước phải",
+            "windowstatusrearleft": "Cửa sổ sau trái",
+            "windowstatusrearleftblind": "Cửa sổ che sau trái",
+            "windowstatusrearright": "Cửa sổ sau phải",
+            "windowstatusrearrightblind": "Cửa sổ che sau phải"
+        }
+    },
+    "editor": {
+        "buttonConfig": {
+            "desc": "Cấu hình các thẻ con cho các nút riêng lẻ.",
+            "title": "Cấu hình nút"
+        },
+        "common": {
+            "checkAll": "Chọn tất cả",
+            "infoButton": "Chọn thẻ bạn muốn cấu hình.",
+            "infoImages": "Không cần thêm '-' cho mỗi dòng. Mỗi dòng sẽ được coi là một URL riêng biệt tự động.",
+            "infoMap": "Đây là cấu hình cho cửa sổ bật lên bản đồ.",
+            "infoServices": "Chọn dịch vụ bạn muốn kích hoạt. Nếu dịch vụ bị tắt, nó sẽ không được hiển thị trong thẻ.",
+            "uncheckAll": "Bỏ chọn tất cả"
+        },
+        "imagesConfig": {
+            "desc": "Thêm URL của hình ảnh.",
+            "title": "Cấu hình hình ảnh"
+        },
+        "mapConfig": {
+            "desc": "Chọn cấu hình cho bản đồ",
+            "title": "Cấu hình bản đồ"
+        },
+        "servicesConfig": {
+            "desc": "Chọn các dịch vụ bạn muốn kích hoạt.",
+            "title": "Cấu hình dịch vụ"
+        },
+        "showConfig": {
+            "desc": "Chọn các mục bạn muốn hiển thị.",
+            "title": "Cấu hình hiển thị"
+        },
+        "showOpts": {
+            "enable_map_popup": "Bật cửa sổ bản đồ",
+            "enable_services_control": "Bật điều khiển dịch vụ",
+            "show_background": "Hiển thị nền",
+            "show_buttons": "Hiển thị nút",
+            "show_error_notify": "Hiển thị thông báo lỗi",
+            "show_map": "Hiển thị bản đồ",
+            "show_slides": "Hiển thị slide"
+        },
+        "themeLangConfig": {
+            "desc": "Chọn chủ đề và ngôn ngữ.",
+            "title": "Chủ đề và ngôn ngữ"
+        }
+    }
 }

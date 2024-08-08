@@ -1,225 +1,227 @@
 {
-	"name": "Slovak",
-	"cardType": {
-		"tripCards": "Údaje o jazde",
-		"vehicleCards": "Stav vozidla",
-		"ecoCards": "Ukazovateľ ECO",
-		"tyreCards": "Tlak v pneumatikách"
-	},
-	"tripCard": {
-		"overview": "Prehľad",
-		"fromStart": "Od začiatku",
-		"fromReset": "Od resetu",
-		"odometer": "Odometer",
-		"fuelLevel": "Hladina paliva",
-		"adBlueLevel": "Hladina AdBlue",
-		"rangeLiquid": "Dojazd",
-		"rangeElectric": "Dojazd",
-		"soc": "Stav nabitia",
-		"maxSoc": "Maximálny stav nabitia",
-		"distanceReset": "Najazdená vzdialenosť",
-		"drivenTimeReset": "Čas jazdy",
-		"averageSpeedReset": "Priemerná rýchlosť",
-		"liquidConsumptionReset": "Priemerná spotreba",
-		"electricConsumptionReset": "Priemerná spotreba",
-		"distanceStart": "Najazdená vzdialenosť",
-		"drivenTimeStart": "Čas jazdy",
-		"averageSpeedStart": "Priemerná rýchlosť",
-		"liquidConsumptionStart": "Priemerná spotreba",
-		"electricConsumptionStart": "Priemerná spotreba"
-	},
-	"vehicleCard": {
-		"vehicleStatus": "Stav vozidla",
-		"vehicleWarnings": "Upozornenia",
-		"lockSensor": "Stav zamknutia",
-		"windowsClosed": "Okienka",
-		"doorStatusOverall": "Dvere",
-		"parkBrake": "Ručná brzda",
-		"ignitionState": "Stav zapaľovania",
-		"starterBatteryState": "Štartovacia batéria",
-		"lowCoolantLevel": "Chladiaca kvapalina",
-		"lowBrakeFluid": "Brzdová kvapalina",
-		"lowWashWater": "Kvapalina do ostrekovača",
-		"tirePressureWarning": "Stav tlaku v pneumatike",
-		"engineLight": "Kontrolka motora"
-	},
-	"ecoCard": {
-		"ecoDisplay": "Ukazovateľ ECO",
-		"ecoScore": "Skóre",
-		"ecoScoreBonusRange": "Bonusový dojazd",
-		"ecoScoreAcceleraion": "Zrýchlenie",
-		"ecoScoreConstant": "Konštanta",
-		"ecoScoreFreeWheel": "Voľnobeh"
-	},
-	"tyreCard": {
-		"tyrePressure": "Tlak v pneumatikách",
-		"tireWarningProblem": "Zistená strata tlaku. Skontrolujte pneumatiky.",
-		"tireWarningOk": "Žiadna strata tlaku nebola zistená",
-		"tirePressureFrontLeft": "Predná ľavá",
-		"tirePressureFrontRight": "Predná pravá",
-		"tirePressureRearLeft": "Zadná ľavá",
-		"tirePressureRearRight": "Zadná pravá"
-	},
-	"chargingOverview": {
-		"chargingPower": "Výkon",
-		"soc": "Stav nabitia",
-		"maxSoc": "Maximum",
-		"selectedProgram": "Program"
-	},
-	"lockAttributes": {
-		"doorlockstatusfrontleft": "Zámok predných ľavých dverí",
-		"doorlockstatusfrontright": "Zámok predných pravých dverí",
-		"doorlockstatusrearleft": "Zámok zadných ľavých dverí",
-		"doorlockstatusrearright": "Zámok zadných pravých dverí",
-		"doorlockstatusgas": "Zámok nádrže"
-	},
-	"doorAttributes": {
-		"decklidstatus": "Stav batožinového priestoru",
-		"doorstatusfrontleft": "Predné ľavé dvere",
-		"doorstatusfrontright": "Predné pravé dvere",
-		"doorstatusrearleft": "Zadné ľavé dvere",
-		"doorstatusrearright": "Zadné pravé dvere",
-		"enginehoodstatus": "Kapota motora",
-		"sunroofstatus": "Strešné okno"
-	},
-	"sunroofState": {
-		"stateClosed": "Zatvorené",
-		"stateOpen": "Otvorené",
-		"liftingOpen": "Zdvihnuté otvorené",
-		"running": "V prevádzke",
-		"antiBoomingPosition": "Pozícia proti hučaniu",
-		"slidingIntermediate": "Posúvanie do medzipolohy",
-		"liftingIntermediate": "Zdvihnutie do medzipolohy",
-		"opening": "Otváranie",
-		"closing": "Zatváranie",
-		"antiBoomingLifting": "Zdvihnutie proti hučaniu",
-		"intermediatePosition": "Medzipoloha",
-		"openingLifting": "Otváranie a zdvihnutie",
-		"closingLifting": "Zatváranie a zdvihnutie"
-	},
-	"windowAttributes": {
-		"windowstatusfrontleft": "Predné ľavé okno",
-		"windowstatusfrontright": "Predné pravé okno",
-		"windowstatusrearleft": "Zadné ľavé okno",
-		"windowstatusrearright": "Zadné pravé okno",
-		"windowstatusrearleftblind": "Zadné ľavé okno so žalúziou",
-		"windowstatusrearrightblind": "Zadné pravé okno so žalúziou",
-		"windowstatusfrontleftblind": "Predné ľavé okno so žalúziou",
-		"windowstatusfrontrightblind": "Predné pravé okno so žalúziou"
-	},
-	"starterBattery": {
-		"stateOk": "Ok",
-		"partlyCharged": "Čiastočne nabité",
-		"notAvailable": "Nie je dostupné",
-		"remoteServiceDisabled": "Vzdialená služba deaktivovaná",
-		"vehicleNoLongerAvailable": "Vozidlo už nie je dostupné"
-	},
-	"servicesCtrl": {
-		"auxheat": "Prídavné kúrenie",
-		"charge": "Nabíjanie",
-		"doorsLock": "Bezpečnosť",
-		"engine": "Ovládanie motora",
-		"preheat": "Predhrievanie",
-		"sendRoute": "Odoslať trasu",
-		"sigPos": "Signalizovať polohu",
-		"sunroof": "Strešné okno",
-		"windows": "Okienka"
-	},
-	"serviceData": {
-		"labelStart": "Štart",
-		"labelStop": "Stop",
-		"labelSave": "Uložiť",
-		"labelOpen": "Otvoriť",
-		"labelClose": "Zatvoriť",
-		"labelMove": "Presunúť",
-		"labelSend": "Odoslať",
-		"labelTilt": "Náklon",
-		"labelUnlockCar": "Odomknúť auto",
-		"labelLockCar": "Zamknúť auto",
-		"labelMoreInfo": "Viac informácií",
-		"labelSetMaxSoc": "Nastaviť maximum",
-		"labelSetProgram": "Nastaviť program",
-		"labelWindowFrontLeft": "Predné vľavo",
-		"labelWindowFrontRight": "Predné vpravo",
-		"labelWindowRearLeft": "Zadné vľavo",
-		"labelWindowRearRight": "Zadné vpravo",
-		"labelTimeSelection": "Výber času",
-		"labelNoSelection": "Žiadny výber",
-		"labelTime1": "Čas 1",
-		"labelTime2": "Čas 2",
-		"labelTime3": "Čas 3",
-		"labelStartTime": "Čas začiatku",
-		"labelStopTime": "Čas konca",
-		"labelDurationTime": "Doba trvania",
-		"labelDepartureTime": "Čas odchodu",
-		"labelTitle": "Názov",
-		"labelLatitude": "Zemepisná šírka",
-		"labelLongitude": "Zemepisná dĺžka",
-		"labelCity": "Mesto",
-		"labelPostCode": "PSČ",
-		"labelStreet": "Ulica",
-		"labelChargeProgram": "Program nabíjania",
-		"labelMaxStateOfCharge": "Maximálny stav nabitia"
-	},
-	"common": {
-		"lastUpdate": "Posledná aktualizácia",
-		"stateLocked": "Zamknuté",
-		"stateUnlocked": "Odomknuté",
-		"stateClosed": "Zatvorené",
-		"stateOpen": "Otvorené",
-		"stateNotExisting": "Neexistujúce",
-		"stateUnknown": "Neznáme",
-		"statePartlyUnlocked": "Čiastočne odomknuté",
-		"stateLockedInt": "Vnútorné zamknutie",
-		"stateParkBrakeOn": "Zaparkovaná",
-		"stateParkBrakeOff": "Uvoľnená",
-		"stateCharging": "Nabíjanie",
-		"titleServices": "Služby",
-		"titleRemoteControl": "Vzdialené ovládanie",
-		"toastCommandSent": "Príkaz úspešne odoslaný!",
-		"toastImageError": "Chyba pri nahrávaní obrázka. Povolené sú iba súbory PNG a JPEG."
-	},
-	"editor": {
-		"common": {
-			"infoButton": "Vyberte kartu, ktorú chcete nakonfigurovať.",
-			"infoMap": "Toto je konfigurácia pre mapové vyskakovacie okno.",
-			"infoImages": "Nie je potrebné pridávať '-' pre každý riadok. Každý riadok bude automaticky považovaný za samostatnú URL adresu.",
-			"infoServices": "Vyberte služby, ktoré chcete povoliť. Ak je služba deaktivovaná, nebude na karte zobrazená.",
-			"uncheckAll": "Zrušiť všetko",
-			"checkAll": "Zaškrtnúť všetko"
-		},
-		"showOpts": {
-			"show_slides": "Zobraziť snímky",
-			"show_buttons": "Zobraziť tlačidlá",
-			"show_map": "Zobraziť mapu",
-			"show_background": "Zobraziť pozadie",
-			"enable_map_popup": "Povoliť vyskakovacie okno mapy",
-			"enable_services_control": "Povoliť ovládanie služieb",
-			"show_error_notify": "Zobraziť upozornenie na chybu"
-		},
-		"buttonConfig": {
-			"title": "Konfigurácia tlačidiel",
-			"desc": "Nakonfigurujte podkarty pre jednotlivé tlačidlá."
-		},
-		"mapConfig": {
-			"title": "Konfigurácia mapy",
-			"desc": "Vyberte konfiguráciu pre mapu"
-		},
-		"imagesConfig": {
-			"title": "Konfigurácia obrázkov",
-			"desc": "Pridajte URL adresy obrázkov."
-		},
-		"servicesConfig": {
-			"title": "Konfigurácia služieb",
-			"desc": "Vyberte služby, ktoré chcete povoliť."
-		},
-		"themeLangConfig": {
-			"title": "Témy a jazyk",
-			"desc": "Vyberte tému a jazyk."
-		},
-		"showConfig": {
-			"title": "Konfigurácia zobrazenia",
-			"desc": "Vyberte položky, ktoré chcete zobraziť."
-		}
-	}
+    "name": "Slovak",
+    "card": {
+        "common": {
+            "lastUpdate": "Posledná aktualizácia",
+            "stateCharging": "Nabíjanie",
+            "stateClosed": "Zatvorené",
+            "stateLocked": "Zamknuté",
+            "stateLockedInt": "Vnútorné zamknutie",
+            "stateNotExisting": "Neexistujúce",
+            "stateOpen": "Otvorené",
+            "stateParkBrakeOff": "Uvoľnená",
+            "stateParkBrakeOn": "Zaparkovaná",
+            "statePartlyUnlocked": "Čiastočne odomknuté",
+            "stateUnknown": "Neznáme",
+            "stateUnlocked": "Odomknuté",
+            "titleRemoteControl": "Vzdialené ovládanie",
+            "titleServices": "Služby",
+            "toastCommandSent": "Príkaz úspešne odoslaný!",
+            "toastImageError": "Chyba pri nahrávaní obrázka. Povolené sú iba súbory PNG a JPEG."
+        },
+        "cardType": {
+            "ecoCards": "Ukazovateľ ECO",
+            "tripCards": "Údaje o jazde",
+            "tyreCards": "Tlak v pneumatikách",
+            "vehicleCards": "Stav vozidla"
+        },
+        "chargingOverview": {
+            "chargingPower": "Výkon",
+            "maxSoc": "Maximum",
+            "selectedProgram": "Program",
+            "soc": "Stav nabitia"
+        },
+        "doorAttributes": {
+            "decklidstatus": "Stav batožinového priestoru",
+            "doorstatusfrontleft": "Predné ľavé dvere",
+            "doorstatusfrontright": "Predné pravé dvere",
+            "doorstatusrearleft": "Zadné ľavé dvere",
+            "doorstatusrearright": "Zadné pravé dvere",
+            "enginehoodstatus": "Kapota motora",
+            "sunroofstatus": "Strešné okno"
+        },
+        "ecoCard": {
+            "ecoDisplay": "Ukazovateľ ECO",
+            "ecoScore": "Skóre",
+            "ecoScoreAcceleraion": "Zrýchlenie",
+            "ecoScoreBonusRange": "Bonusový dojazd",
+            "ecoScoreConstant": "Konštanta",
+            "ecoScoreFreeWheel": "Voľnobeh"
+        },
+        "lockAttributes": {
+            "doorlockstatusfrontleft": "Zámok predných ľavých dverí",
+            "doorlockstatusfrontright": "Zámok predných pravých dverí",
+            "doorlockstatusgas": "Zámok nádrže",
+            "doorlockstatusrearleft": "Zámok zadných ľavých dverí",
+            "doorlockstatusrearright": "Zámok zadných pravých dverí"
+        },
+        "serviceData": {
+            "labelChargeProgram": "Program nabíjania",
+            "labelCity": "Mesto",
+            "labelClose": "Zatvoriť",
+            "labelDepartureTime": "Čas odchodu",
+            "labelDurationTime": "Doba trvania",
+            "labelLatitude": "Zemepisná šírka",
+            "labelLockCar": "Zamknúť auto",
+            "labelLongitude": "Zemepisná dĺžka",
+            "labelMaxStateOfCharge": "Maximálny stav nabitia",
+            "labelMoreInfo": "Viac informácií",
+            "labelMove": "Presunúť",
+            "labelNoSelection": "Žiadny výber",
+            "labelOpen": "Otvoriť",
+            "labelPostCode": "PSČ",
+            "labelSave": "Uložiť",
+            "labelSend": "Odoslať",
+            "labelSetMaxSoc": "Nastaviť maximum",
+            "labelSetProgram": "Nastaviť program",
+            "labelStart": "Štart",
+            "labelStartTime": "Čas začiatku",
+            "labelStop": "Stop",
+            "labelStopTime": "Čas konca",
+            "labelStreet": "Ulica",
+            "labelTilt": "Náklon",
+            "labelTime1": "Čas 1",
+            "labelTime2": "Čas 2",
+            "labelTime3": "Čas 3",
+            "labelTimeSelection": "Výber času",
+            "labelTitle": "Názov",
+            "labelUnlockCar": "Odomknúť auto",
+            "labelWindowFrontLeft": "Predné vľavo",
+            "labelWindowFrontRight": "Predné vpravo",
+            "labelWindowRearLeft": "Zadné vľavo",
+            "labelWindowRearRight": "Zadné vpravo"
+        },
+        "servicesCtrl": {
+            "auxheat": "Prídavné kúrenie",
+            "charge": "Nabíjanie",
+            "doorsLock": "Bezpečnosť",
+            "engine": "Ovládanie motora",
+            "preheat": "Predhrievanie",
+            "sendRoute": "Odoslať trasu",
+            "sigPos": "Signalizovať polohu",
+            "sunroof": "Strešné okno",
+            "windows": "Okienka"
+        },
+        "starterBattery": {
+            "notAvailable": "Nie je dostupné",
+            "partlyCharged": "Čiastočne nabité",
+            "remoteServiceDisabled": "Vzdialená služba deaktivovaná",
+            "stateOk": "Ok",
+            "vehicleNoLongerAvailable": "Vozidlo už nie je dostupné"
+        },
+        "sunroofState": {
+            "antiBoomingLifting": "Zdvihnutie proti hučaniu",
+            "antiBoomingPosition": "Pozícia proti hučaniu",
+            "closing": "Zatváranie",
+            "closingLifting": "Zatváranie a zdvihnutie",
+            "intermediatePosition": "Medzipoloha",
+            "liftingIntermediate": "Zdvihnutie do medzipolohy",
+            "liftingOpen": "Zdvihnuté otvorené",
+            "opening": "Otváranie",
+            "openingLifting": "Otváranie a zdvihnutie",
+            "running": "V prevádzke",
+            "slidingIntermediate": "Posúvanie do medzipolohy",
+            "stateClosed": "Zatvorené",
+            "stateOpen": "Otvorené"
+        },
+        "tripCard": {
+            "adBlueLevel": "Hladina AdBlue",
+            "averageSpeedReset": "Priemerná rýchlosť",
+            "averageSpeedStart": "Priemerná rýchlosť",
+            "distanceReset": "Najazdená vzdialenosť",
+            "distanceStart": "Najazdená vzdialenosť",
+            "drivenTimeReset": "Čas jazdy",
+            "drivenTimeStart": "Čas jazdy",
+            "electricConsumptionReset": "Priemerná spotreba",
+            "electricConsumptionStart": "Priemerná spotreba",
+            "fromReset": "Od resetu",
+            "fromStart": "Od začiatku",
+            "fuelLevel": "Hladina paliva",
+            "liquidConsumptionReset": "Priemerná spotreba",
+            "liquidConsumptionStart": "Priemerná spotreba",
+            "maxSoc": "Maximálny stav nabitia",
+            "odometer": "Odometer",
+            "overview": "Prehľad",
+            "rangeElectric": "Dojazd",
+            "rangeLiquid": "Dojazd",
+            "soc": "Stav nabitia"
+        },
+        "tyreCard": {
+            "tirePressureFrontLeft": "Predná ľavá",
+            "tirePressureFrontRight": "Predná pravá",
+            "tirePressureRearLeft": "Zadná ľavá",
+            "tirePressureRearRight": "Zadná pravá",
+            "tireWarningOk": "Žiadna strata tlaku nebola zistená",
+            "tireWarningProblem": "Zistená strata tlaku. Skontrolujte pneumatiky.",
+            "tyrePressure": "Tlak v pneumatikách"
+        },
+        "vehicleCard": {
+            "doorStatusOverall": "Dvere",
+            "engineLight": "Kontrolka motora",
+            "ignitionState": "Stav zapaľovania",
+            "lockSensor": "Stav zamknutia",
+            "lowBrakeFluid": "Brzdová kvapalina",
+            "lowCoolantLevel": "Chladiaca kvapalina",
+            "lowWashWater": "Kvapalina do ostrekovača",
+            "parkBrake": "Ručná brzda",
+            "starterBatteryState": "Štartovacia batéria",
+            "tirePressureWarning": "Stav tlaku v pneumatike",
+            "vehicleStatus": "Stav vozidla",
+            "vehicleWarnings": "Upozornenia",
+            "windowsClosed": "Okienka"
+        },
+        "windowAttributes": {
+            "windowstatusfrontleft": "Predné ľavé okno",
+            "windowstatusfrontleftblind": "Predné ľavé okno so žalúziou",
+            "windowstatusfrontright": "Predné pravé okno",
+            "windowstatusfrontrightblind": "Predné pravé okno so žalúziou",
+            "windowstatusrearleft": "Zadné ľavé okno",
+            "windowstatusrearleftblind": "Zadné ľavé okno so žalúziou",
+            "windowstatusrearright": "Zadné pravé okno",
+            "windowstatusrearrightblind": "Zadné pravé okno so žalúziou"
+        }
+    },
+    "editor": {
+        "buttonConfig": {
+            "desc": "Nakonfigurujte podkarty pre jednotlivé tlačidlá.",
+            "title": "Konfigurácia tlačidiel"
+        },
+        "common": {
+            "checkAll": "Zaškrtnúť všetko",
+            "infoButton": "Vyberte kartu, ktorú chcete nakonfigurovať.",
+            "infoImages": "Nie je potrebné pridávať '-' pre každý riadok. Každý riadok bude automaticky považovaný za samostatnú URL adresu.",
+            "infoMap": "Toto je konfigurácia pre mapové vyskakovacie okno.",
+            "infoServices": "Vyberte služby, ktoré chcete povoliť. Ak je služba deaktivovaná, nebude na karte zobrazená.",
+            "uncheckAll": "Zrušiť všetko"
+        },
+        "imagesConfig": {
+            "desc": "Pridajte URL adresy obrázkov.",
+            "title": "Konfigurácia obrázkov"
+        },
+        "mapConfig": {
+            "desc": "Vyberte konfiguráciu pre mapu",
+            "title": "Konfigurácia mapy"
+        },
+        "servicesConfig": {
+            "desc": "Vyberte služby, ktoré chcete povoliť.",
+            "title": "Konfigurácia služieb"
+        },
+        "showConfig": {
+            "desc": "Vyberte položky, ktoré chcete zobraziť.",
+            "title": "Konfigurácia zobrazenia"
+        },
+        "showOpts": {
+            "enable_map_popup": "Povoliť vyskakovacie okno mapy",
+            "enable_services_control": "Povoliť ovládanie služieb",
+            "show_background": "Zobraziť pozadie",
+            "show_buttons": "Zobraziť tlačidlá",
+            "show_error_notify": "Zobraziť upozornenie na chybu",
+            "show_map": "Zobraziť mapu",
+            "show_slides": "Zobraziť snímky"
+        },
+        "themeLangConfig": {
+            "desc": "Vyberte tému a jazyk.",
+            "title": "Témy a jazyk"
+        }
+    }
 }
