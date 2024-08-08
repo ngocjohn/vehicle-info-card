@@ -2,6 +2,7 @@
     "name": "Vietnamese",
     "card": {
         "common": {
+            "lastUpdate": "Cập nhật cuối",
             "stateCharging": "Đang sạc",
             "stateClosed": "Đã đóng",
             "stateLocked": "Đã khóa",
