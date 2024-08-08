@@ -1,22 +1,24 @@
 // This script updates the language files in the languages folder based on the base string.json file.
-// It adds missing keys with empty values, removes extra keys, and updates the English language file with new keys and values.
-// The missing translations are output to the console and saved to a file named missing_translations.json.
-// Usage: npm run update-languages
+// It adds new / missing keys with empty values, removes extra keys, sorts the keys, and outputs the missing translations.
+// The missing translations are output to the console and saved to a file named missing_translations.json. The file will the list of lang.json with the missing keys and their values.
+
+// Usage: npm run update-languages (from the root of the project)
+// Terminal: node scripts/update-languages.js
 
 const fs = require('fs');
 const path = require('path');
 const JSON5 = require('json5'); // Require json5
 
 // Load the base string.json file
-const baseFilePath = '../src/localize/string.json';
+const baseFilePath = path.resolve(__dirname, '../src/localize/string.json');
 const baseData = JSON5.parse(fs.readFileSync(baseFilePath, 'utf8')); // Use JSON5.parse
 
 // Path to the languages folder
-const languagesFolder = '../src/languages';
+const languagesFolder = path.resolve(__dirname, '../src/languages');
 
 // Path to the English language file
 const enFilePath = path.join(languagesFolder, 'en.json');
-
+const missingTranslationsFilePath = path.join(__dirname, 'missing_translations.json');
 // Function to recursively update target data with base data and maintain order
 const updateWithBaseData = (base, target) => {
   let result = {};
@@ -141,7 +143,6 @@ fs.readdir(languagesFolder, (err, files) => {
   });
 
   // Output the results
-  console.log('Missing translations:');
   if (Object.keys(missingTranslations).length === 0) {
     console.log('No missing translations found.');
   } else {
@@ -154,6 +155,6 @@ fs.readdir(languagesFolder, (err, files) => {
   }
 
   // Save the missing translations to a file
-  fs.writeFileSync('missing_translations.json', JSON.stringify(missingTranslations, null, 4), 'utf8');
+  fs.writeFileSync(missingTranslationsFilePath, JSON.stringify(missingTranslations, null, 4), 'utf8');
   console.log('Missing translations have been saved to missing_translations.json.');
 });

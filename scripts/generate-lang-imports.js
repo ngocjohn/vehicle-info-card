@@ -1,9 +1,17 @@
+// This script generates imports for all language files in the languages directory.
+// It also generates a list of language options for the language selector component.
+// The list of language files is stored in a file named languageList.json.
+
+// Usage: node scripts/generate-lang-imports.js 'langName.json' 'Language Name'
+// For example: node scripts/generate-lang-imports.js 'fr.json' 'French'
+// This will generate the mew fr.json file in languages directory with the key: string to be translated.
+
 const fs = require('fs');
 const path = require('path');
 
 const languagesDir = path.resolve(__dirname, '../src/languages');
-const outputFilePath = path.resolve(__dirname, '../src/utils/languageImports.ts');
-const languageListPath = path.resolve(__dirname, 'languageList.json');
+const outputFilePath = path.resolve(__dirname, '../src/localize/languageImports.ts');
+const languageListPath = path.resolve(__dirname, '../src/localize/languageList.json');
 
 const currentFiles = fs.readdirSync(languagesDir).filter((file) => file.endsWith('.json'));
 let previousFiles = [];

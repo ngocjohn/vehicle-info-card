@@ -12,3 +12,4 @@ src/test/
 .DS_Store
 dist/
 dist/vehicle-info-card.js
+missing_translations.json
