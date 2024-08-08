@@ -14,6 +14,7 @@
             "statePartlyUnlocked": "Partly unlocked",
             "stateUnknown": "Unknown",
             "stateUnlocked": "Unlocked",
+            "titleRemoteControl": "Remote control",
             "titleServices": "Services",
             "toastCommandSent": "Command sent sucess!",
             "toastImageError": "Error uploading image. Only PNG and JPEG files are allowed."
