@@ -523,7 +523,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _renderServicesConfig(): TemplateResult {
-    const servicesItems = this._config?.services || {}; // Ensure services object exists and default to empty object if undefined
+    const services = this._config?.services || {}; // Ensure services object exists and default to empty object if undefined
     const lang = this._lang;
     const infoAlert = this.localize('editor.common.infoServices');
 
@@ -535,7 +535,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           ([key, { name }]) => html`
             <ha-formfield .label=${name}>
               <ha-switch
-                .checked=${servicesItems[key] !== undefined ? servicesItems[key] : false}
+                .checked=${services[key] !== undefined ? services[key] : false}
                 .configValue="${key}"
                 @change=${this._servicesValueChanged}
               ></ha-switch>
@@ -657,6 +657,28 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     fireEvent(this, 'config-changed', { config: this._config });
   }
 
+  // private _servicesValueChanged(ev): void {
+  //   if (!this._config || !this.hass) {
+  //     return;
+  //   }
+
+  //   const target = ev.target;
+  //   const configValue = target.configValue;
+
+  //   if (this[`${configValue}`] === target.checked) {
+  //     return;
+  //   }
+
+  //   this._config = {
+  //     ...this._config,
+  //     services: {
+  //       ...this._config.services,
+  //       [configValue]: target.checked,
+  //     },
+  //   };
+  //   fireEvent(this, 'config-changed', { config: this._config });
+  // }
+
   private _servicesValueChanged(ev): void {
     if (!this._config || !this.hass) {
       return;
@@ -676,7 +698,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         [configValue]: target.checked,
       },
     };
-
+    console.log('Services config:', configValue, target.checked);
     fireEvent(this, 'config-changed', { config: this._config });
   }
 

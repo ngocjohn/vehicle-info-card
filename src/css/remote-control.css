@@ -1,11 +1,13 @@
 :host {
   --control-icon-size: 32px;
-  --control-btn-radius: 0.5;
+  --control-btn-radius: var(--feature-border-radius, 12px);
+  --feature-height: 42px;
 }
 .service-control {
   display: flex;
   flex-direction: column;
   margin-block: 0.5rem;
+  padding-top: var(--vic-gutter-gap);
 }
 
 #toast {
@@ -75,6 +77,7 @@
   gap: 1rem;
   margin-top: 1rem;
   height: auto;
+  padding: var(--vic-card-padding);
 }
 
 .control-btn-sm,
@@ -140,7 +143,10 @@
   border-bottom: 1px solid var(--divider-color);
   padding-bottom: 0.5rem;
 }
-
+.item-label {
+  display: flex;
+  flex: 1 0 50%;
+}
 .items-row:last-child {
   border-bottom: none;
   padding-bottom: 0;
