@@ -40,7 +40,7 @@ import './components/eco-chart';
 import './components/remote-control';
 
 // Functions
-import { localize } from './utils/localize';
+import { localize } from './localize/localize';
 import { formatTimestamp, convertMinutes } from './utils/helpers';
 import { getVehicleEntities, setupCardListeners } from './utils/get-device-entities';
 

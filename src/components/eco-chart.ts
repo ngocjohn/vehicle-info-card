@@ -2,7 +2,7 @@ import { LitElement, html, TemplateResult, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
 import type { EcoData } from '../types';
-import { localize } from '../utils/localize';
+import { localize } from '../localize/localize';
 // Third-party Libraries
 import ApexCharts from 'apexcharts';
 

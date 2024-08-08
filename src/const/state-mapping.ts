@@ -1,4 +1,4 @@
-import { localize } from '../utils/localize';
+import { localize } from '../localize/localize';
 
 const createState = (locked: string, unlocked: string, lang: string) => ({
   state: { false: localize(locked, lang), true: localize(unlocked, lang) },

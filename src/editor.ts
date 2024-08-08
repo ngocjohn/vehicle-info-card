@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { LitElement, html, TemplateResult, CSSResultGroup, PropertyValues } from 'lit';
+import { LitElement, html, TemplateResult, CSSResultGroup } from 'lit';
 import { customElement, property, state } from 'lit/decorators';
 import YAML from 'yaml';
 
 // Custom card helpers
-import { fireEvent, LovelaceCardEditor, LovelaceCardConfig, hasConfigOrEntityChanged } from 'custom-card-helpers';
+import { fireEvent, LovelaceCardEditor, LovelaceCardConfig } from 'custom-card-helpers';
 
 // Local types
 import {
@@ -18,7 +18,7 @@ import { servicesCtrl } from './const/remote-control-keys';
 import { cardTypes } from './const/data-keys';
 import { editorShowOpts } from './const/data-keys';
 import { CARD_VERSION } from './const';
-import { languageOptions, localize } from './utils/localize';
+import { languageOptions, localize } from './localize/localize';
 import { getModelName } from './utils/get-device-entities';
 import { loadHaComponents } from './utils/loader';
 import editorcss from './css/editor.css';

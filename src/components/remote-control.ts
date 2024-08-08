@@ -8,7 +8,7 @@ import * as Srvc from '../const/remote-control-keys';
 
 import styles from '../css/remote-control.css';
 import mainstyle from '../css/styles.css';
-import { localize } from '../utils/localize';
+import { localize } from '../localize/localize';
 
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
 
