@@ -439,7 +439,6 @@ export class RemoteControl extends LitElement {
 
     const moveEl = Object.entries(positionItems).map(([key, value]) => {
       const { label, value: inputValue } = value as { label: string; value: number };
-      console.log('label:', label, 'value:', inputValue);
       return html`
         <div class="items-row">
           <div class="item-label">${label}</div>

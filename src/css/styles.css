@@ -475,7 +475,7 @@ header h1 {
 .data-row {
   display: flex;
   justify-content: space-between;
-  padding-block: var(--vic-gutter-gap);
+  padding: var(--vic-gutter-gap);
   border-bottom: 1px solid #444;
 }
 
@@ -525,7 +525,6 @@ header h1 {
 .sub-attributes {
   overflow: hidden;
   padding-top: 0 !important;
-  padding: var(--vic-card-padding);
   max-height: 0;
   opacity: 0;
   transition:
@@ -536,7 +535,7 @@ header h1 {
 .sub-attributes.active {
   max-height: 1000px;
   opacity: 1;
-  padding: inherit;
+  padding: var(--vic-card-padding);
 }
 
 .error {
