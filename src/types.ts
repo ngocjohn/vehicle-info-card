@@ -93,31 +93,6 @@ export type ServicesConfig = {
   windows: boolean;
 };
 
-// Default configuration for the Vehicle Card.
-export const defaultConfig: Partial<VehicleCardConfig> = {
-  type: 'custom:vehicle-info-card',
-  name: 'Mercedes Benz',
-  entity: '',
-  show_slides: false,
-  show_map: false,
-  show_buttons: true,
-  show_background: true,
-  enable_map_popup: false,
-  enable_services_control: false,
-  show_error_notify: false,
-  services: {
-    auxheat: false,
-    charge: false,
-    doorsLock: false,
-    engine: false,
-    preheat: false,
-    sendRoute: false,
-    sigPos: false,
-    sunroof: false,
-    windows: false,
-  },
-};
-
 export interface VehicleEntities {
   [key: string]: VehicleEntity;
 }
@@ -147,3 +122,28 @@ export interface EcoData {
   constant: number;
   freeWheel: number;
 }
+
+// Default configuration for the Vehicle Card.
+export const defaultConfig: Partial<VehicleCardConfig> = {
+  type: 'custom:vehicle-info-card',
+  name: 'Mercedes Benz',
+  entity: '',
+  show_slides: false,
+  show_map: false,
+  show_buttons: true,
+  show_background: true,
+  enable_map_popup: false,
+  enable_services_control: false,
+  show_error_notify: false,
+  services: {
+    auxheat: false,
+    charge: false,
+    doorsLock: false,
+    engine: false,
+    preheat: false,
+    sendRoute: false,
+    sigPos: false,
+    sunroof: false,
+    windows: false,
+  },
+};

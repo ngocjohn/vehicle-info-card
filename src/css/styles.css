@@ -483,10 +483,11 @@ header h1 {
   cursor: pointer;
 }
 
-.data-row span {
+.data-row > div > span {
   height: 100%;
   display: flex;
   align-items: flex-end;
+  margin-inline-start: 8px;
 }
 
 .data-row:last-child {

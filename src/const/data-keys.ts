@@ -1,20 +1,5 @@
 import { localize } from '../localize/localize';
 
-export interface CardItem {
-  key: string;
-  name: string;
-  icon?: string;
-  apexProp?: string;
-}
-
-export interface CardType {
-  type: string;
-  name: string;
-  icon: string;
-  config: string;
-  editor: string;
-}
-
 const createShowOpts = (nameKey: string, lang: string, configKey: string) => ({
   label: localize(nameKey, lang),
   configKey,
@@ -30,16 +15,24 @@ export const editorShowOpts = (lang: string) => [
   createShowOpts('editor.showOpts.show_error_notify', lang, 'show_error_notify'),
 ];
 
+export interface CardType {
+  type: string;
+  name: string;
+  icon: string;
+  config: string;
+  editor: string;
+}
+
 const createCard = (
-  type: string,
+  key: string,
   nameKey: string,
   icon: string,
   config: string,
   editor: string,
   lang: string,
 ): CardType => ({
-  type,
-  name: localize(`card.${nameKey}`, lang),
+  type: key,
+  name: localize(nameKey, lang),
   icon,
   config,
   editor,
@@ -52,14 +45,21 @@ export const cardTypes = (lang: string) => [
   createCard('tyreCards', 'cardType.tyreCards', 'mdi:tire', 'tyre_card', 'isTyreCardEditor', lang),
 ];
 
+export interface CardItem {
+  key: string;
+  name: string;
+  icon?: string;
+  apexProp?: string;
+}
+
 const createItem = (key: string, nameKey: string, lang: string, icon?: string, apexProp?: string): CardItem => ({
   key,
   name: localize(`card.${nameKey}`, lang),
-  ...(icon ? { icon } : {}),
-  ...(apexProp ? { apexProp } : {}),
+  icon: icon ? icon : undefined,
+  apexProp: apexProp ? apexProp : key,
 });
 
-export const tripOverview = (lang: string): CardItem[] => [
+export const tripOverview = (lang: string) => [
   createItem('odometer', 'tripCard.odometer', lang, 'mdi:counter'),
   createItem('fuelLevel', 'tripCard.fuelLevel', lang),
   createItem('adBlueLevel', 'tripCard.adBlueLevel', lang, 'mdi:fuel'),
@@ -128,3 +128,14 @@ export const tyreAttributes = [
   'tirePressureRearLeft',
   'tirePressureRearRight',
 ];
+
+export const SubcardVisibilityProperties = [
+  'lockAttributesVisible',
+  'windowAttributesVisible',
+  'doorsAttributesVisible',
+  'tripFromResetVisible',
+  'tripFromStartVisible',
+  'ecoScoresVisible',
+];
+
+export type AttributeType = 'lock' | 'window' | 'door' | 'fromStart' | 'fromReset';

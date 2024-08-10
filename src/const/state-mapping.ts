@@ -26,6 +26,7 @@ const createDoorStatus = (lang: string) => ({
   '2': localize('card.common.stateNotExisting', lang),
   '3': localize('card.common.stateUnknown', lang),
 });
+export const doorStatus = createDoorStatus;
 
 const createLockStates = (lang: string) => ({
   '0': localize('card.common.stateUnlocked', lang),
@@ -41,16 +42,6 @@ const createChargeSelectedProgram = (lang: string) => ({
   '2': 'Home',
   '3': 'Work',
 });
-
-const createWindowStatus = (nameKey: string, lang: string) =>
-  createNameStateWithMap(
-    nameKey,
-    {
-      '2': 'card.common.stateClosed',
-      '0': 'card.common.stateOpen',
-    },
-    lang,
-  );
 
 const createStarterBattery = (lang: string) => ({
   '0': localize('card.starterBattery.stateOk', lang),
@@ -92,8 +83,6 @@ export const lockAttributes = (lang: string) => ({
     lang,
   ),
 });
-
-export const doorStatus = createDoorStatus;
 
 export const doorAttributes = (lang: string) => ({
   decklidstatus: createNameState(
@@ -156,6 +145,16 @@ export const doorAttributes = (lang: string) => ({
 export const lockStates = createLockStates;
 export const starterBattery = createStarterBattery;
 export const chargeSelectedProgram = createChargeSelectedProgram;
+
+const createWindowStatus = (nameKey: string, lang: string) =>
+  createNameStateWithMap(
+    nameKey,
+    {
+      '2': 'card.common.stateClosed',
+      '0': 'card.common.stateOpen',
+    },
+    lang,
+  );
 
 export const windowAttributes = (lang: string) => ({
   windowstatusrearleft: createWindowStatus('card.windowAttributes.windowstatusrearleft', lang),

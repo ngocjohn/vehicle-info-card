@@ -1,4 +1,5 @@
 import { version } from '../package.json';
+import { VehicleEntities } from './types';
 
 export const CARD_VERSION = version;
 

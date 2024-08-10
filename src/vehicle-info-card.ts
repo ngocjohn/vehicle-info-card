@@ -23,12 +23,13 @@ import {
   EntityConfig,
   VehicleEntities,
   EcoData,
+  VehicleEntity,
 } from './types';
 
 import * as DataKeys from './const/data-keys';
 import * as StateMapping from './const/state-mapping';
-import { cardTypes } from './const/data-keys';
 
+import { AttributeType, SubcardVisibilityProperties, cardTypes } from './const/data-keys';
 // Styles and Assets
 import { amgBlack, amgWhite, tyreBg } from './const/imgconst';
 import styles from './css/styles.css';
@@ -56,17 +57,27 @@ export class VehicleCard extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
   @property({ type: Object }) private config!: VehicleCardConfig;
 
-  @state() private selectedLanguage: string = 'en';
+  @state() private selectedLanguage!: string;
+  @state() private selectedTheme!: string;
   @state() private vehicleEntities: VehicleEntities = {};
   @state() private additionalCards: { [key: string]: any[] } = {};
   @state() private activeCardType: string | null = null;
+
+  @state() private ecoScoresVisible!: boolean;
   @state() private lockAttributesVisible!: boolean;
   @state() private windowAttributesVisible!: boolean;
   @state() private doorsAttributesVisible!: boolean;
   @state() private chargingInfoVisible!: boolean;
   @state() private tripFromStartVisible!: boolean;
   @state() private tripFromResetVisible!: boolean;
-  @state() private ecoScoresVisible!: boolean;
+
+  constructor() {
+    super();
+    this._editorEventsHandler = this._editorEventsHandler.bind(this);
+    SubcardVisibilityProperties.forEach((prop) => {
+      (this as any)[prop] = false;
+    });
+  }
 
   private localize = (string: string, search = '', replace = ''): string => {
     return localize(string, this.selectedLanguage, search, replace);
@@ -109,6 +120,7 @@ export class VehicleCard extends LitElement {
     this.config = {
       ...config,
     };
+    this.selectedTheme = this.config.selected_theme?.theme || 'Default';
     this.selectedLanguage = this.config.selected_language || localStorage.getItem('selectedLanguage') || 'en';
     const lang = this.selectedLanguage;
 
@@ -133,13 +145,16 @@ export class VehicleCard extends LitElement {
       };
       this.createCards([haMapConfig], 'mapDialog');
     }
-    if (this.config.selected_theme) {
-      this.applyTheme(this.config.selected_theme.theme);
-    }
   }
 
+  protected firstUpdated(changedProps: PropertyValues): void {
+    super.firstUpdated(changedProps);
+    this.configureAsync();
+    this.applyTheme(this.selectedTheme);
+  }
   private getGridRowSize(): number {
     const { show_slides, show_map, show_buttons } = this.config;
+
     let gridRowSize = 2;
     if (show_slides) gridRowSize += 2;
     if (show_map) gridRowSize += 2;
@@ -161,14 +176,6 @@ export class VehicleCard extends LitElement {
     };
   }
 
-  protected firstUpdated(changedProperties: PropertyValues) {
-    super.firstUpdated(changedProperties);
-    this.configureAsync();
-    if (this.config.selected_theme) {
-      this.applyTheme(this.config.selected_theme.theme);
-    }
-  }
-
   private async configureAsync(): Promise<void> {
     this.vehicleEntities = await getVehicleEntities(this.hass, this.config);
     this.requestUpdate();
@@ -176,7 +183,6 @@ export class VehicleCard extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
-    this._editorEventsHandler = this._editorEventsHandler.bind(this);
     window.addEventListener('editor-event', this._editorEventsHandler);
     if (process.env.ROLLUP_WATCH === 'true') {
       window.BenzCard = this;
@@ -228,6 +234,7 @@ export class VehicleCard extends LitElement {
 
     if (!this.activeCardType) {
       this.applyMarquee();
+      this.hideAllSubCards();
       return true;
     }
 
@@ -543,17 +550,16 @@ export class VehicleCard extends LitElement {
       {
         title: this.localize('card.tripCard.fromStart'),
         data: this.createDataArray(DataKeys.tripFromStart(lang)),
-        active: this.getSubTripCardVisible('fromStart'),
+        active: this.getSubCardVisible('fromStart'),
         key: 'fromStart',
       },
       {
         title: this.localize('card.tripCard.fromReset'),
         data: this.createDataArray(DataKeys.tripFromReset(lang)),
-        active: this.getSubTripCardVisible('fromReset'),
+        active: this.getSubCardVisible('fromReset'),
         key: 'fromReset',
       },
     ];
-
     return html`
       ${sections.map((section) => this.createItemDataRow(section.title, section.data, section.active, section.key))}
     `;
@@ -752,55 +758,42 @@ export class VehicleCard extends LitElement {
   /* --------------------- SUBCARDS METHODS AND RENDERING --------------------- */
 
   private _renderOverviewDataWithSubCard(): TemplateResult {
-    const lang = this.selectedLanguage;
-    const overViewData = this.createDataArray(DataKeys.vehicleOverview(lang));
-    const toggleAttributes = (key: string) => {
-      if (key === 'lockSensor') {
-        this.lockAttributesVisible = !this.lockAttributesVisible;
-      } else if (key === 'windowsClosed') {
-        this.windowAttributesVisible = !this.windowAttributesVisible;
-      } else if (key === 'doorStatusOverall') {
-        this.doorsAttributesVisible = !this.doorsAttributesVisible;
-      } else {
-        return;
-      }
-    };
+    const overViewData = this.createDataArray(DataKeys.vehicleOverview(this.selectedLanguage));
 
-    const subCardIconActive = (key: string): string => {
-      if (['lockSensor', 'windowsClosed', 'doorStatusOverall'].includes(key)) {
-        const isVisible =
-          key === 'lockSensor'
-            ? this.lockAttributesVisible
-            : key === 'windowsClosed'
-              ? this.windowAttributesVisible
-              : this.doorsAttributesVisible;
-        return isVisible ? 'active' : '';
-      }
-      return 'hidden';
-    };
-
-    const subCardElements = (key: string): TemplateResult | null => {
-      if (['lockSensor', 'windowsClosed', 'doorStatusOverall'].includes(key)) {
-        return key === 'lockSensor'
-          ? this._renderSubCard('lock')
-          : key === 'windowsClosed'
-            ? this._renderSubCard('window')
-            : this._renderSubCard('door');
-      }
-      return null;
+    // Map to handle the visibility and rendering of subcards
+    const subCardMapping = {
+      lockSensor: {
+        visible: this.lockAttributesVisible,
+        toggleVisibility: () => (this.lockAttributesVisible = !this.lockAttributesVisible),
+        renderSubCard: () => this._renderSubCard('lock'),
+      },
+      windowsClosed: {
+        visible: this.windowAttributesVisible,
+        toggleVisibility: () => (this.windowAttributesVisible = !this.windowAttributesVisible),
+        renderSubCard: () => this._renderSubCard('window'),
+      },
+      doorStatusOverall: {
+        visible: this.doorsAttributesVisible,
+        toggleVisibility: () => (this.doorsAttributesVisible = !this.doorsAttributesVisible),
+        renderSubCard: () => this._renderSubCard('door'),
+      },
     };
 
     const toggleMoreInfo = (key: string) => {
-      if (['lockSensor', 'doorStatusOverall'].includes(key)) {
-        this.toggleMoreInfo(this.vehicleEntities.lockSensor?.entity_id);
-      } else {
-        this.toggleMoreInfo(this.vehicleEntities[key]?.entity_id);
+      const entityId =
+        key === 'lockSensor' || key === 'doorStatusOverall'
+          ? this.vehicleEntities.lockSensor?.entity_id
+          : this.vehicleEntities[key]?.entity_id;
+
+      if (entityId) {
+        this.toggleMoreInfo(entityId);
       }
     };
 
     return html`
       ${overViewData.map(({ key, name, icon, state, active }) => {
         if (state) {
+          const subCard = subCardMapping[key];
           return html`
             <div class="data-row">
               <div>
@@ -811,12 +804,19 @@ export class VehicleCard extends LitElement {
                 ></ha-icon>
                 <span style="text-transform: none;">${name}</span>
               </div>
-              <div class="data-value-unit" @click=${() => toggleAttributes(key)}>
+              <div class="data-value-unit" @click=${subCard?.toggleVisibility || (() => {})}>
                 <span class=${!active ? 'warning' : ''} style="text-transform: capitalize;">${state}</span>
-                <ha-icon class="subcard-icon ${subCardIconActive(key)}" icon="mdi:chevron-right"></ha-icon>
+                ${subCard
+                  ? html`
+                      <ha-icon
+                        class="subcard-icon ${subCard.visible ? 'active' : ''}"
+                        icon="mdi:chevron-right"
+                      ></ha-icon>
+                    `
+                  : ''}
               </div>
             </div>
-            ${subCardElements(key)}
+            ${subCard ? subCard.renderSubCard() : ''}
           `;
         } else {
           return html``;
@@ -840,7 +840,6 @@ export class VehicleCard extends LitElement {
         state[attribute] = attributeState;
       }
     });
-
     // Render the attributes
     return html`
       <div class=${attributesClass}>
@@ -866,53 +865,46 @@ export class VehicleCard extends LitElement {
     `;
   }
 
-  private getEntityTypeId(attributeType: 'lock' | 'window' | 'door'): string | undefined {
-    const { lockSensor, windowsClosed } = this.vehicleEntities;
-    switch (attributeType) {
-      case 'lock':
-        return lockSensor?.entity_id;
-      case 'window':
-        return windowsClosed?.entity_id;
-      case 'door':
-        return lockSensor?.entity_id;
-    }
+  private getEntityTypeId(attributeType: AttributeType): string | undefined {
+    const entityMapping: Record<string, string | undefined> = {
+      lock: this.vehicleEntities.lockSensor?.entity_id,
+      window: this.vehicleEntities.windowsClosed?.entity_id,
+      door: this.vehicleEntities.lockSensor?.entity_id,
+    };
+    return entityMapping[attributeType];
   }
 
-  private getAttrStateMap(attributeType: 'lock' | 'window' | 'door', lang: string): Record<string, any> {
-    switch (attributeType) {
-      case 'lock':
-        return StateMapping.lockAttributes(lang);
-      case 'window':
-        return StateMapping.windowAttributes(lang);
-      case 'door':
-        return StateMapping.doorAttributes(lang);
-    }
+  private getAttrStateMap(attributeType: AttributeType, lang: string): Record<AttributeType, any> {
+    const stateMapping: Record<string, any> = {
+      lock: StateMapping.lockAttributes(lang),
+      window: StateMapping.windowAttributes(lang),
+      door: StateMapping.doorAttributes(lang),
+    };
+    return stateMapping[attributeType] ?? {};
   }
 
-  private getSubCardVisible(attributeType: 'lock' | 'window' | 'door'): boolean {
-    switch (attributeType) {
-      case 'lock':
-        return this.lockAttributesVisible;
-      case 'window':
-        return this.windowAttributesVisible;
-      case 'door':
-        return this.doorsAttributesVisible;
-    }
-  }
+  private getSubCardVisible(attributeType: AttributeType): boolean {
+    const visibilityMap: Record<AttributeType, boolean> = {
+      lock: this.lockAttributesVisible,
+      window: this.windowAttributesVisible,
+      door: this.doorsAttributesVisible,
+      fromStart: this.tripFromStartVisible,
+      fromReset: this.tripFromResetVisible,
+    };
 
-  private getSubTripCardVisible(tripType: 'fromStart' | 'fromReset'): boolean {
-    return tripType === 'fromStart' ? this.tripFromStartVisible : this.tripFromResetVisible;
+    return visibilityMap[attributeType] ?? false;
   }
 
   private isSubCardVisible(): boolean {
-    const attributeVisibilityStates = [
-      this.lockAttributesVisible,
-      this.windowAttributesVisible,
-      this.doorsAttributesVisible,
-      this.tripFromResetVisible,
-      this.tripFromStartVisible,
-    ];
-    return attributeVisibilityStates.some((state) => state);
+    return SubcardVisibilityProperties.some((state) => (this as any)[state]);
+  }
+
+  private hideAllSubCards(): void {
+    if (!this.isSubCardVisible()) return;
+    SubcardVisibilityProperties.forEach((prop) => {
+      (this as any)[prop] = false;
+    });
+    console.log('hideAllSubCards');
   }
 
   /* -------------------------------------------------------------------------- */
@@ -982,77 +974,52 @@ export class VehicleCard extends LitElement {
     }
 
     const defaultInfo = this.getDefaultEntityInfo({ key, name, icon, state, unit }, vehicleEntity);
+    const infoFunctions: Record<string, (defaultInfo: EntityConfig, vehicleEntity: string | any) => EntityConfig> = {
+      soc: this.getSocInfo.bind(this),
+      maxSoc: this.getMaxSocInfo.bind(this),
+      chargingPower: this.getChargingPowerInfo.bind(this),
+      parkBrake: this.getParkBrakeInfo.bind(this),
+      windowsClosed: this.getWindowsClosedInfo.bind(this),
+      ignitionState: this.getIgnitionStateInfo.bind(this),
+      lockSensor: this.getLockSensorInfo.bind(this),
+      starterBatteryState: this.getStarterBatteryInfo.bind(this),
+    };
 
-    switch (key) {
-      case 'soc': {
-        return this.getSocInfo(defaultInfo, vehicleEntity);
-      }
-      case 'maxSoc': {
-        return this.getMaxSocInfo(defaultInfo, vehicleEntity);
-      }
-      case 'chargingPower': {
-        return this.getChargingPowerInfo(defaultInfo, vehicleEntity);
-      }
-      case 'parkBrake': {
-        return this.getParkBrakeInfo(defaultInfo, vehicleEntity);
-      }
-
-      case 'windowsClosed': {
-        return this.getWindowsClosedInfo(defaultInfo, vehicleEntity);
-      }
-      case 'ignitionState': {
-        return this.getIgnitionStateInfo(defaultInfo, vehicleEntity);
-      }
-
-      case 'lockSensor': {
-        return this.getLockSensorInfo(defaultInfo, vehicleEntity);
-      }
-
-      case 'starterBatteryState': {
-        return this.getStarterBatteryInfo(defaultInfo, vehicleEntity);
-      }
-      default:
-        return this.getWarningOrDefaultInfo(defaultInfo, key, vehicleEntity);
-    }
+    const getInfoFunction = infoFunctions[key] || this.getWarningOrDefaultInfo.bind(this);
+    return getInfoFunction(defaultInfo, vehicleEntity);
   };
 
   /* --------------------------- ENTITY INFO BY KEYS -------------------------- */
 
   private getFallbackEntityInfo = ({ key, name, icon, state, unit }: EntityConfig): EntityConfig => {
     const lang = this.selectedLanguage;
-    if (key === 'selectedProgram') {
-      return {
-        key,
-        name,
-        icon,
-        state:
+
+    let newState = state;
+    let activeState;
+
+    switch (key) {
+      case 'selectedProgram':
+        newState =
           StateMapping.chargeSelectedProgram(lang)[
             this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'selectedChargeProgram')
-          ],
-        unit,
-      };
-    }
-    if (key === 'doorStatusOverall') {
-      const doorValue = this.getEntityAttribute(this.vehicleEntities.lockSensor?.entity_id, 'doorStatusOverall');
-      const doorFormatted = StateMapping.doorStatus(lang)[doorValue] || 'Unknown';
-      const activeState = doorValue === '1' ? true : false;
-      return {
-        key,
-        name,
-        icon,
-        state: doorFormatted,
-        active: activeState,
-        unit,
-      };
+          ];
+        break;
+
+      case 'doorStatusOverall':
+        const doorValue = this.getEntityAttribute(this.vehicleEntities.lockSensor?.entity_id, 'doorStatusOverall');
+        newState = StateMapping.doorStatus(lang)[doorValue] || 'Unknown';
+        activeState = doorValue === '1' ? true : false;
+        break;
+
+      case 'drivenTimeReset':
+      case 'drivenTimeStart':
+        const entityKey = key === 'drivenTimeReset' ? 'distanceReset' : 'distanceStart';
+        const timeState = this.getEntityAttribute(this.vehicleEntities[entityKey]?.entity_id, key);
+        newState = timeState ? convertMinutes(parseInt(timeState)) : '';
+        break;
     }
 
-    if (key === 'drivenTimeReset' || key === 'drivenTimeStart') {
-      const entityKey = key === 'drivenTimeReset' ? 'distanceReset' : 'distanceStart';
-      const timeState = this.getEntityAttribute(this.vehicleEntities[entityKey]?.entity_id, key);
-      const timeValue = timeState ? convertMinutes(parseInt(timeState)) : '';
-      return { key, name, icon, state: timeValue, unit };
-    }
-    return { key, name, icon, state, unit };
+    return { key, name, icon, state: newState, active: activeState, unit };
   };
 
   private getDefaultEntityInfo = ({ key, name, icon, state, unit }: EntityConfig, vehicleEntity: any): EntityConfig => {
@@ -1101,11 +1068,12 @@ export class VehicleCard extends LitElement {
 
   private getParkBrakeInfo = (defaultInfo: EntityConfig, vehicleEntity: any): EntityConfig => {
     const parkBrakeState = this.getBooleanState(vehicleEntity.entity_id);
-    const parkBrakeOff = this.localize('card.common.stateParkBrakeOff');
-    const parkBrakeOn = this.localize('card.common.stateParkBrakeOn');
+    const entityState = parkBrakeState
+      ? this.localize('card.common.stateParkBrakeOn')
+      : this.localize('card.common.stateParkBrakeOff');
     return {
       ...defaultInfo,
-      state: parkBrakeState ? parkBrakeOn : parkBrakeOff,
+      state: entityState,
       active: parkBrakeState,
     };
   };
@@ -1113,11 +1081,12 @@ export class VehicleCard extends LitElement {
   private getWindowsClosedInfo = (defaultInfo: EntityConfig, vehicleEntity: any): EntityConfig => {
     let windowState: string;
     const lang = this.selectedLanguage;
+
     const windowsState = this.getBooleanState(vehicleEntity.entity_id);
     if (windowsState) {
       windowState = this.localize('card.common.stateClosed');
     } else {
-      const windowAttributeStates: Record<number, any> = {};
+      const windowAttributeStates: Record<string, any> = {};
 
       Object.keys(StateMapping.windowAttributes(lang)).forEach((attribute) => {
         const attributeState = this.getEntityAttribute(vehicleEntity.entity_id, attribute);
@@ -1177,9 +1146,8 @@ export class VehicleCard extends LitElement {
   };
 
   private getWarningOrDefaultInfo = (defaultInfo: EntityConfig, key: string, vehicleEntity: any): EntityConfig => {
-    const lang = this.selectedLanguage;
     if (
-      DataKeys.vehicleWarnings(lang)
+      DataKeys.vehicleWarnings(this.selectedLanguage)
         .map((key) => key.key)
         .includes(key)
     ) {
@@ -1305,7 +1273,7 @@ export class VehicleCard extends LitElement {
   private _editorEventsHandler(e: Event): void {
     const cardType = (e as CustomEvent).detail;
     this.activeCardType = cardType;
-    this.requestUpdate(); // Trigger a re-render
+    // this.requestUpdate(); // Trigger a re-render
   }
 }
 
