@@ -14,6 +14,7 @@ export async function getVehicleEntities(hass: HomeAssistant, config: { entity?:
   });
   const carEntity = allEntities.find((e) => e.entity_id === config.entity);
   if (!carEntity) {
+    console.log('Car entity not found');
     return {};
   }
 
@@ -171,6 +172,6 @@ export function setupCardListeners(
 
   // Attach the initial pressDown listeners
   ['touchstart', 'mousedown'].forEach((event) => {
-    cardElement.addEventListener(event, presDown as EventListener);
+    cardElement.addEventListener(event, presDown as EventListener, { passive: true });
   });
 }
