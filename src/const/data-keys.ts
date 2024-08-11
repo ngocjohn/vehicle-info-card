@@ -32,7 +32,7 @@ const createCard = (
   lang: string,
 ): CardType => ({
   type: key,
-  name: localize(nameKey, lang),
+  name: localize(`card.${nameKey}`, lang),
   icon,
   config,
   editor,
@@ -55,8 +55,8 @@ export interface CardItem {
 const createItem = (key: string, nameKey: string, lang: string, icon?: string, apexProp?: string): CardItem => ({
   key,
   name: localize(`card.${nameKey}`, lang),
-  icon: icon ? icon : undefined,
-  apexProp: apexProp ? apexProp : key,
+  ...(icon ? { icon } : {}),
+  ...(apexProp ? { apexProp } : {}),
 });
 
 export const tripOverview = (lang: string) => [
