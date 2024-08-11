@@ -43,7 +43,7 @@ import './components/remote-control';
 import { localize } from './localize/localize';
 import { formatTimestamp, convertMinutes } from './utils/helpers';
 import { setupCardListeners } from './utils/get-device-entities';
-import { getVehicleEntities } from './test/get-device-entities_test';
+import { getVehicleEntities } from './utils/get-device-entities';
 
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
 
