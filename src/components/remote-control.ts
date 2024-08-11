@@ -1,7 +1,7 @@
 import { LitElement, html, TemplateResult, css, CSSResultGroup, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { HomeAssistant, fireEvent, forwardHaptic } from 'custom-card-helpers';
-import { ServicesConfig } from '../types';
+import { Services } from '../types';
 
 import { cloneDeep, convertToMinutes } from '../utils/helpers';
 import * as Srvc from '../const/remote-control-keys';
@@ -15,7 +15,7 @@ const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelper
 @customElement('remote-control')
 export class RemoteControl extends LitElement {
   @property({ attribute: false }) hass!: HomeAssistant;
-  @property({ type: Object }) servicesConfig?: ServicesConfig;
+  @property({ type: Object }) servicesConfig?: Services;
   @property({ type: String }) carVin!: string;
   @property({ type: String }) carLockEntity!: string;
   @property({ type: String }) selectedLanguage!: string;
@@ -113,7 +113,7 @@ export class RemoteControl extends LitElement {
   private _renderControlBtn(): TemplateResult {
     const activeServices = Object.entries(this.servicesConfig ?? {})
       .filter(([_, isActive]) => isActive === true)
-      .map(([type, _]) => type as keyof ServicesConfig);
+      .map(([type, _]) => type as keyof Services);
 
     const handleClick = (type: string) => {
       if (type === 'sigPos') {
