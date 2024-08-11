@@ -11,7 +11,7 @@ const languages: any = {
   cs: cs,
   de: de,
   en: en,
-  fr: fr;
+  fr: fr,
   lt: lt,
   pl: pl,
   sk: sk,
