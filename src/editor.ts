@@ -9,10 +9,12 @@ import { fireEvent, LovelaceCardEditor, LovelaceCardConfig } from 'custom-card-h
 // Local types
 import {
   HomeAssistantExtended as HomeAssistant,
-  ServicesConfig,
   VehicleCardConfig,
   VehicleImagesList,
   VehicleImage,
+  ShowOptions,
+  Services,
+  CardTypeConfig,
 } from './types';
 import { servicesCtrl } from './const/remote-control-keys';
 import { cardTypes } from './const/data-keys';
@@ -27,14 +29,12 @@ import editorcss from './css/editor.css';
 export class VehicleCardEditor extends LitElement implements LovelaceCardEditor {
   @property({ attribute: false }) public hass!: HomeAssistant;
 
-  @state() private _config?: VehicleCardConfig;
+  @state() private _config!: VehicleCardConfig;
   @state() private selectedLanguage!: string;
-  @state() private isVehicleCardEditor: boolean = false;
-  @state() private isTripCardEditor: boolean = false;
-  @state() private isEcoCardEditor: boolean = false;
-  @state() private isTyreCardEditor: boolean = false;
+  @state() private _activeSubcardType: string | null = null;
 
   @state() private _images: VehicleImage[] = [];
+
   private _system_language = localStorage.getItem('selectedLanguage');
 
   connectedCallback() {
@@ -47,7 +47,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       return oldConfig as VehicleImagesList;
     }
 
-    const newImages: VehicleImage[] = (oldConfig.images || []).map((url) => ({
+    const newImages: VehicleImage[] = (oldConfig.images || []).map((url: string) => ({
       url,
       title: url,
     }));
@@ -67,7 +67,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     if (!this._config.entity) {
       this._config.entity = this.getCarEntity();
       this._config.name = await getModelName(this.hass, this._config);
-      fireEvent(this, 'config-changed', { config: this._config });
+      this.configChanged();
     }
   }
 
@@ -82,76 +82,34 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     );
     return entities[0] || '';
   }
-  private get isSubEditorOpen(): boolean {
-    return this.isVehicleCardEditor || this.isTripCardEditor || this.isEcoCardEditor || this.isTyreCardEditor;
+
+  private _getServicesConfigValue<K extends keyof Services>(key: K): boolean {
+    return this._config?.services[key] || false;
   }
 
-  private get _name(): string {
-    return this._config?.name || '';
+  private _getConfigShowValue<K extends keyof ShowOptions>(key: K): boolean {
+    return this._config?.[key] || false;
   }
 
-  private get _entity(): string {
-    return this._config?.entity || '';
+  private get baseCardTypes() {
+    return cardTypes(this.selectedLanguage);
   }
 
-  private get _device_tracker(): string {
-    return this._config?.device_tracker || '';
-  }
-
-  private get _show_map(): boolean {
-    return this._config?.show_map || false;
-  }
-  private get _show_slides(): boolean {
-    return this._config?.show_slides || false;
-  }
-
-  private get _show_buttons(): boolean {
-    return this._config?.show_buttons || false;
-  }
-
-  private get _show_background(): boolean {
-    return this._config?.show_background || false;
-  }
-
-  private get _enable_map_popup(): boolean {
-    return this._config?.enable_map_popup || false;
-  }
-
-  private get _show_error_notify(): boolean {
-    return this._config?.show_error_notify || false;
-  }
-
-  private get _google_api_key(): string {
-    return this._config?.google_api_key || '';
-  }
-  private get _enable_services_control(): boolean {
-    return this._config?.enable_services_control || false;
-  }
-
-  private get _lang(): string {
-    return this._config?.selected_language || this._system_language || 'en';
-  }
   protected render(): TemplateResult | void {
     if (!this.hass || !this._config) {
       return html``;
     }
-
     return html`
       <div class="card-config">
-        ${this._renderBaseConfig()} ${this._renderSubCardConfig('vehicle', this.isVehicleCardEditor)}
-        ${this._renderSubCardConfig('trip', this.isTripCardEditor)}
-        ${this._renderSubCardConfig('eco', this.isEcoCardEditor)}
-        ${this._renderSubCardConfig('tyre', this.isTyreCardEditor)}
+        ${!this._activeSubcardType ? this._renderBaseConfig() : this._renderCustomSubCardUI()}
       </div>
     `;
   }
 
   private _renderBaseConfig(): TemplateResult {
-    if (this.isSubEditorOpen) return html``;
-
     return html`
       <div class="base-config">
-        ${this._renderFormSelectors()} ${this._renderCardEditorButtons()} ${this._renderMapPopupConfig()}
+        ${this._renderNameEntityForm()} ${this._renderCardEditorButtons()} ${this._renderMapPopupConfig()}
         ${this._renderImageConfig()} ${this._renderServicesConfig()} ${this._renderThemesConfig()}
         ${this._renderSwitches()}
         <div class="note">
@@ -161,18 +119,49 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     `;
   }
 
+  private _renderCustomSubCardUI(): TemplateResult {
+    const selectedCard = this.baseCardTypes.filter((card) => card.type === this._activeSubcardType);
+
+    return html`${selectedCard.map((card) => this._renderSubCardConfig(card))}`;
+  }
+
+  private _renderSubCardConfig(card: CardTypeConfig): TemplateResult {
+    const { config, name, icon } = card;
+    return html`
+      <div class="sub-card-config">
+        <div class="sub-card-header">
+          <ha-icon
+            icon="mdi:arrow-left"
+            @click=${() => (this._activeSubcardType = null)}
+            style="cursor: pointer"
+          ></ha-icon>
+          <div>
+            <h3>${name}</h3>
+            <ha-icon icon=${icon}></ha-icon>
+          </div>
+        </div>
+        <ha-code-editor
+          autofocus
+          autocomplete-entities
+          autocomplete-icons
+          .value=${YAML.stringify(this._config?.[config] || [])}
+          @blur=${(ev: CustomEvent) => this._handleCardConfigChange(ev, config)}
+        ></ha-code-editor>
+      </div>
+    `;
+  }
+
   private _renderCardEditorButtons(): TemplateResult {
-    const baseCardTypes = cardTypes(this._lang);
     const localInfo = this.localize('editor.common.infoButton');
     const subcardBtns = html`
       <ha-alert alert-type="info">${localInfo}</ha-alert>
       <div class="cards-buttons">
-        ${baseCardTypes.map(
+        ${this.baseCardTypes.map(
           (card) => html`
             <ha-button
               @click=${() => {
-                this[card.editor] = true;
                 this._dispatchCardEvent(card.type);
+                this._activeSubcardType = card.type;
               }}
               >${card.name}</ha-button
             >
@@ -183,39 +172,8 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     return this.panelTemplate('buttonConfig', 'buttonConfig', 'mdi:view-dashboard', subcardBtns);
   }
 
-  private _renderSubCardConfig(cardType: string, isEditorOpen: boolean): TemplateResult {
-    if (!isEditorOpen) return html``;
-
-    return html`
-      <div class="sub-card-config">
-        <div class="sub-card-header">
-          <ha-icon icon="mdi:arrow-left" @click=${() => this._handleBackClick()} style="cursor: pointer"></ha-icon>
-          <h3>${this._getCardTitle(cardType)}</h3>
-        </div>
-        <ha-code-editor
-          autofocus
-          autocomplete-entities
-          autocomplete-icons
-          .value=${YAML.stringify(this._config?.[`${cardType}_card`] || [])}
-          @blur=${(ev: CustomEvent) => this._handleCardConfigChange(ev, `${cardType}_card`)}
-        ></ha-code-editor>
-      </div>
-    `;
-  }
-
-  private _handleBackClick(): void {
-    for (const card of ['Vehicle', 'Trip', 'Eco', 'Tyre']) {
-      this[`is${card}CardEditor`] = false;
-    }
-  }
-
-  private _getCardTitle(cardType: string): string {
-    return `${cardType.charAt(0).toUpperCase() + cardType.slice(1)} Card Configuration`;
-  }
-
   private _renderSwitches(): TemplateResult {
-    const lang = this._lang;
-    let showOptions = editorShowOpts(lang);
+    let showOptions = editorShowOpts(this.selectedLanguage);
     // Filter out the enable_map_popup option
 
     showOptions = showOptions.filter((option) => option.configKey !== 'enable_map_popup');
@@ -226,10 +184,9 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           (option) => html`
             <ha-formfield .label=${option.label}>
               <ha-switch
-                .disabled=${this._getSwitchDisabledState(option.configKey)}
-                .checked=${this[`_${option.configKey}`] !== false}
+                .checked=${this._getConfigShowValue(option.configKey) !== false}
                 .configValue=${option.configKey}
-                @change=${this._valueChanged}
+                @change=${this._showValueChanged}
               ></ha-switch>
             </ha-formfield>
           `,
@@ -240,17 +197,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     return this.panelTemplate('showConfig', 'showConfig', 'mdi:toggle-switch', switches);
   }
 
-  private _getSwitchDisabledState(configKey: string): boolean {
-    if (configKey === 'show_slides') {
-      return !this._config?.images || this._config?.images.length === 0;
-    }
-    if (configKey === 'enable_map_popup') {
-      return this._show_map === false || this._show_map === undefined || !this._config?.device_tracker;
-    }
-    return false;
-  }
-
-  private _renderFormSelectors(): TemplateResult {
+  private _renderNameEntityForm(): TemplateResult {
     // You can restrict on domain type
     // const entities = Object.keys(this.hass.states).filter((entity) => entity.startsWith('sensor'));
 
@@ -261,13 +208,13 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     return html`
       <ha-textfield
         label="Name (Optional)"
-        .value=${this._name}
+        .value=${this._config.name}
         .configValue=${'name'}
         @input=${this._valueChanged}
       ></ha-textfield>
       <ha-entity-picker
         .hass=${this.hass}
-        .value=${this._entity}
+        .value=${this._config?.entity}
         .required=${true}
         .configValue=${'entity'}
         @value-changed=${this._valueChanged}
@@ -330,7 +277,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
               .label=${'IMAGE #' + (index + 1)}
               .configValue=${'images'}
               .value=${image.title}
-              @input=${(event: Event) => this._handleImageChange(event, index, 'url')}
+              @input=${(event: Event) => this._handleImageChange(event, index)}
             ></ha-textfield>
             <div class="file-upload">
               <ha-icon icon="mdi:delete" @click=${() => this._removeImage(index)}></ha-icon>
@@ -373,17 +320,18 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       input.value = '';
       this._images = images;
       this._config = { ...this._config, images };
-      fireEvent(this, 'config-changed', { config: this._config });
+      this.configChanged();
     }
   }
 
-  private _handleImageChange(ev: Event, index: number, property: 'url' | 'title'): void {
+  private _handleImageChange(ev: Event, index: number): void {
     const input = ev.target as HTMLInputElement;
     if (this._config) {
       const images = [...this._images]; // Create a copy of the array
-      images[index] = { ...images[index], [property]: input.value };
+      images[index] = { ...images[index], url: input.value, title: input.value };
+      this._images = images;
       this._config = { ...this._config, images };
-      fireEvent(this, 'config-changed', { config: this._config });
+      this.configChanged();
     }
   }
 
@@ -430,8 +378,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         images.push({ url: imageUrl, title: imageName });
         this._images = images;
         this._config = { ...this._config, images };
-        fireEvent(this, 'config-changed', { config: this._config });
-        this.requestUpdate();
+        this.configChanged();
       }
     } catch (error) {
       console.error('Error uploading image:', error);
@@ -444,7 +391,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       const backgroundImages = [...this._images]; // Create a copy of the array
       backgroundImages.splice(index, 1);
       this._config = { ...this._config, images: backgroundImages };
-      fireEvent(this, 'config-changed', { config: this._config });
+      this.configChanged();
       this.requestUpdate();
     }
   }
@@ -458,7 +405,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const mapConfig = html`
       <ha-entity-picker
         .hass=${this.hass}
-        .value=${this._device_tracker}
+        .value=${this._config?.device_tracker}
         .required=${false}
         .configValue=${'device_tracker'}
         @value-changed=${this._valueChanged}
@@ -471,15 +418,15 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           style="flex: 1 1 30%;"
           label="Google API Key (Optional)"
           type="password"
-          .value=${this._google_api_key}
+          .value=${this._config?.google_api_key}
           .configValue=${'google_api_key'}
           @input=${this._valueChanged}
         ></ha-textfield>
         <ha-formfield style="flex: 1;" .label=${enableMapPopupSwtich?.label}>
           <ha-switch
-            .checked=${this._enable_map_popup}
-            .configValue=${'enable_map_popup'}
-            @change=${this._valueChanged}
+            .checked=${this._getConfigShowValue(enableMapPopupSwtich?.configKey as keyof ShowOptions) !== false}
+            .configValue=${enableMapPopupSwtich?.configKey}
+            @change=${this._showValueChanged}
           ></ha-switch>
         </ha-formfield>
       </div>
@@ -503,7 +450,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         .value=${this._config?.map_popup_config?.theme_mode || 'auto'}
         .configValue=${'theme_mode'}
         @selected=${this._valueChanged}
-        @closed=${(ev) => ev.stopPropagation()}
+        @closed=${(ev: Event) => ev.stopPropagation()}
       >
         <mwc-list-item value="auto">Auto</mwc-list-item>
         <mwc-list-item value="dark">Dark</mwc-list-item>
@@ -514,19 +461,17 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _renderServicesConfig(): TemplateResult {
-    const services = this._config?.services || {}; // Ensure services object exists and default to empty object if undefined
-    const lang = this._lang;
     const infoAlert = this.localize('editor.common.infoServices');
 
     const servicesConfig = html`
       <ha-alert alert-type="info"> ${infoAlert} </ha-alert>
 
       <div class="switches">
-        ${Object.entries(servicesCtrl(lang)).map(
+        ${Object.entries(servicesCtrl(this.selectedLanguage)).map(
           ([key, { name }]) => html`
             <ha-formfield .label=${name}>
               <ha-switch
-                .checked=${services[key] !== undefined ? services[key] : false}
+                .checked=${this._getServicesConfigValue(key as keyof Services) !== false}
                 .configValue="${key}"
                 @change=${this._servicesValueChanged}
               ></ha-switch>
@@ -536,35 +481,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       </div>
     `;
     return this.panelTemplate('servicesConfig', 'servicesConfig', 'mdi:car-cog', servicesConfig);
-  }
-
-  private _renderServiceRadioBtns(): TemplateResult {
-    const lang = this._lang;
-    const handleCheckAll = (checked: boolean): void => {
-      if (!this._config) return;
-      const servicesItems = this._config?.services || {};
-      const newServices = Object.keys(servicesCtrl(lang)).reduce((acc, key) => {
-        acc[key] = checked;
-        return acc;
-      }, servicesItems as ServicesConfig);
-      this._config = {
-        ...this._config,
-        services: {
-          ...newServices,
-        },
-      };
-      fireEvent(this, 'config-changed', { config: this._config });
-    };
-
-    const radioBtns = html` <div class="flex-col">
-      <ha-formfield .label=${this.localize('editor.common.checkAll')}>
-        <ha-radio name="check-toggle" @change=${() => handleCheckAll(true)}></ha-radio>
-      </ha-formfield>
-      <ha-formfield .label=${this.localize('editor.common.uncheckAll')}>
-        <ha-radio name="check-toggle" @change=${() => handleCheckAll(false)}></ha-radio>
-      </ha-formfield>
-    </div>`;
-    return radioBtns;
   }
 
   private panelTemplate(titleKey: string, descKey: string, icon: string, content: TemplateResult): TemplateResult {
@@ -635,7 +551,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       [configKey]: newValue,
     };
 
-    fireEvent(this, 'config-changed', { config: this._config });
+    this.configChanged();
   }
 
   private _servicesValueChanged(ev): void {
@@ -657,10 +573,28 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         [configValue]: target.checked,
       },
     };
-    console.log('Services config:', configValue, target.checked);
-    fireEvent(this, 'config-changed', { config: this._config });
+
+    this.configChanged();
   }
 
+  private _showValueChanged(ev): void {
+    if (!this._config || !this.hass) {
+      return;
+    }
+
+    const target = ev.target;
+    const configValue = target.configValue;
+
+    if (this[`${configValue}`] === target.checked) {
+      return;
+    }
+
+    (this._config = {
+      ...this._config,
+      [configValue]: target.checked,
+    }),
+      this.configChanged();
+  }
   private _valueChanged(ev): void {
     if (!this._config || !this.hass) {
       return;
@@ -669,21 +603,12 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const target = ev.target;
     const configValue = target.configValue;
 
-    if (this[`_${configValue}`] === target.value) {
+    if (this[`${configValue}`] === target.value) {
       return;
     }
 
     let newValue: any;
-    if (configValue === 'images') {
-      newValue = target.value
-        .split('\n')
-        .map((line: string) => line.trim())
-        .filter((line: string) => line); // Remove empty lines
-      this._config = {
-        ...this._config,
-        images: newValue,
-      };
-    } else if (['hours_to_show', 'default_zoom'].includes(configValue)) {
+    if (['hours_to_show', 'default_zoom'].includes(configValue)) {
       newValue = target.value === '' ? undefined : Number(target.value);
       if (!isNaN(newValue)) {
         this._config = {
@@ -726,10 +651,13 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       delete tmpConfig[configValue];
       this._config = tmpConfig;
     }
-
-    fireEvent(this, 'config-changed', { config: this._config });
+    console.log(configValue, newValue);
+    this.configChanged();
   }
 
+  private configChanged() {
+    fireEvent(this, 'config-changed', { config: this._config });
+  }
   private _dispatchCardEvent(cardType: string): void {
     // Dispatch the custom event with the cardType name
     const detail = cardType;

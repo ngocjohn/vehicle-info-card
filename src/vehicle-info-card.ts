@@ -23,7 +23,6 @@ import {
   EntityConfig,
   VehicleEntities,
   EcoData,
-  VehicleEntity,
 } from './types';
 
 import * as DataKeys from './const/data-keys';
@@ -43,7 +42,8 @@ import './components/remote-control';
 // Functions
 import { localize } from './localize/localize';
 import { formatTimestamp, convertMinutes } from './utils/helpers';
-import { getVehicleEntities, setupCardListeners } from './utils/get-device-entities';
+import { setupCardListeners } from './utils/get-device-entities';
+import { getVehicleEntities } from './test/get-device-entities_test';
 
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
 
@@ -580,28 +580,24 @@ export class VehicleCard extends LitElement {
         <div class="data-header">${this.localize('card.vehicleCard.vehicleWarnings')}</div>
         <div class="data-box">
           ${warningsData.map(({ key, icon, state, name, active }) => {
-            if (key && name && state) {
-              return html`
-                <div class="data-row">
-                  <div>
-                    <ha-icon
-                      class="data-icon"
-                      .icon="${icon}"
-                      @click=${() => this.toggleMoreInfo(this.vehicleEntities[key]?.entity_id)}
-                    ></ha-icon>
-                    <span>${name}</span>
-                  </div>
-                  <div
-                    class="data-value-unit ${active ? 'error' : ''} "
+            return html`
+              <div class="data-row">
+                <div>
+                  <ha-icon
+                    class="data-icon"
+                    .icon="${icon}"
                     @click=${() => this.toggleMoreInfo(this.vehicleEntities[key]?.entity_id)}
-                  >
-                    <span>${state}</span>
-                  </div>
+                  ></ha-icon>
+                  <span>${name}</span>
                 </div>
-              `;
-            } else {
-              return html``;
-            }
+                <div
+                  class="data-value-unit ${active ? 'error' : ''} "
+                  @click=${() => this.toggleMoreInfo(this.vehicleEntities[key]?.entity_id)}
+                >
+                  <span>${state}</span>
+                </div>
+              </div>
+            `;
           })}
         </div>
       </div>
@@ -974,19 +970,25 @@ export class VehicleCard extends LitElement {
     }
 
     const defaultInfo = this.getDefaultEntityInfo({ key, name, icon, state, unit }, vehicleEntity);
-    const infoFunctions: Record<string, (defaultInfo: EntityConfig, vehicleEntity: string | any) => EntityConfig> = {
-      soc: this.getSocInfo.bind(this),
-      maxSoc: this.getMaxSocInfo.bind(this),
-      chargingPower: this.getChargingPowerInfo.bind(this),
-      parkBrake: this.getParkBrakeInfo.bind(this),
-      windowsClosed: this.getWindowsClosedInfo.bind(this),
-      ignitionState: this.getIgnitionStateInfo.bind(this),
-      lockSensor: this.getLockSensorInfo.bind(this),
-      starterBatteryState: this.getStarterBatteryInfo.bind(this),
+
+    const entityInfoMap = {
+      soc: this.getSocInfo,
+      maxSoc: this.getMaxSocInfo,
+      chargingPower: this.getChargingPowerInfo,
+      parkBrake: this.getParkBrakeInfo,
+      windowsClosed: this.getWindowsClosedInfo,
+      ignitionState: this.getIgnitionStateInfo,
+      lockSensor: this.getLockSensorInfo,
+      starterBatteryState: this.getStarterBatteryInfo,
     };
 
-    const getInfoFunction = infoFunctions[key] || this.getWarningOrDefaultInfo.bind(this);
-    return getInfoFunction(defaultInfo, vehicleEntity);
+    const getInfoFunction = entityInfoMap[key];
+
+    if (getInfoFunction) {
+      return getInfoFunction(defaultInfo, vehicleEntity);
+    } else {
+      return this.getWarningOrDefaultInfo(defaultInfo, key, vehicleEntity);
+    }
   };
 
   /* --------------------------- ENTITY INFO BY KEYS -------------------------- */
@@ -1155,8 +1157,8 @@ export class VehicleCard extends LitElement {
 
       return {
         ...defaultInfo,
-        state: warningState ? 'Problem' : 'Ok',
-        active: warningState,
+        state: warningState ? 'Problem' : 'OK',
+        active: warningState ? true : false,
       };
     }
     return defaultInfo;

@@ -32,23 +32,17 @@ export type HomeAssistantExtended = HomeAssistant & {
 /**
  * Configuration interface for the Vehicle Card.
  */
-export interface VehicleCardConfig extends LovelaceCardConfig {
-  type: string;
-  name?: string;
-  entity?: string;
-  device_tracker?: string;
-  google_api_key?: string;
-  services: ServicesConfig;
-  map_popup_config: MapPopupConfig;
-  selected_theme: ThemesConfig;
-  selected_language?: string | null;
-  vehicle_card?: LovelaceCardConfig[];
-  trip_card?: LovelaceCardConfig[];
-  eco_card?: LovelaceCardConfig[];
-  tyre_card?: LovelaceCardConfig[];
-  tap_action?: ActionConfig;
-  hold_action?: ActionConfig;
-  double_tap_action?: ActionConfig;
+
+export interface Services {
+  auxheat: boolean;
+  charge: boolean;
+  doorsLock: boolean;
+  engine: boolean;
+  preheat: boolean;
+  sendRoute: boolean;
+  sigPos: boolean;
+  sunroof: boolean;
+  windows: boolean;
 }
 
 export interface VehicleImage {
@@ -65,6 +59,31 @@ export interface ThemesConfig {
   mode: 'system' | 'dark' | 'light';
 }
 
+export interface MapPopupConfig {
+  hours_to_show: number;
+  default_zoom: number;
+  theme_mode?: 'dark' | 'light' | 'auto';
+}
+
+export interface VehicleCardConfig extends LovelaceCardConfig {
+  type: string;
+  entity: string;
+  name?: string;
+  device_tracker?: string;
+  google_api_key?: string;
+  map_popup_config: MapPopupConfig;
+  selected_theme: ThemesConfig;
+  selected_language?: string | null;
+  services: Services;
+  vehicle_card?: LovelaceCardConfig[];
+  trip_card?: LovelaceCardConfig[];
+  eco_card?: LovelaceCardConfig[];
+  tyre_card?: LovelaceCardConfig[];
+  tap_action?: ActionConfig;
+  hold_action?: ActionConfig;
+  double_tap_action?: ActionConfig;
+}
+
 export interface ShowOptions extends VehicleCardConfig {
   show_slides: boolean;
   show_map: boolean;
@@ -74,24 +93,6 @@ export interface ShowOptions extends VehicleCardConfig {
   enable_services_control: boolean;
   show_error_notify: boolean;
 }
-
-export interface MapPopupConfig {
-  hours_to_show?: number;
-  default_zoom?: number;
-  theme_mode?: 'dark' | 'light' | 'auto';
-}
-
-export type ServicesConfig = {
-  auxheat: boolean;
-  charge: boolean;
-  doorsLock: boolean;
-  engine: boolean;
-  preheat: boolean;
-  sendRoute: boolean;
-  sigPos: boolean;
-  sunroof: boolean;
-  windows: boolean;
-};
 
 export interface VehicleEntities {
   [key: string]: VehicleEntity;
@@ -121,6 +122,14 @@ export interface EcoData {
   acceleration: number;
   constant: number;
   freeWheel: number;
+}
+
+export interface CardTypeConfig {
+  type: string;
+  name: string;
+  icon: string;
+  config: string;
+  editor: string;
 }
 
 // Default configuration for the Vehicle Card.
