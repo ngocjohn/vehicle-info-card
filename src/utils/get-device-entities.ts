@@ -1,6 +1,6 @@
 import { HomeAssistant } from 'custom-card-helpers';
 import { VehicleEntities, VehicleEntity } from '../types';
-import { combinedFilters } from '../const';
+import { combinedFilters } from '../const/const';
 
 /**
  *

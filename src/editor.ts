@@ -19,7 +19,7 @@ import {
 import { servicesCtrl } from './const/remote-control-keys';
 import { cardTypes } from './const/data-keys';
 import { editorShowOpts } from './const/data-keys';
-import { CARD_VERSION } from './const';
+import { CARD_VERSION } from './const/const';
 import { languageOptions, localize } from './localize/localize';
 import { getModelName } from './utils/get-device-entities';
 import { loadHaComponents } from './utils/loader';
@@ -51,7 +51,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       url,
       title: url,
     }));
-    console.log('New images:', newImages);
+    // console.log('New images:', newImages);
 
     return {
       ...oldConfig,
@@ -309,93 +309,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     return this.panelTemplate('imagesConfig', 'imagesConfig', 'mdi:image', textFormInput);
   }
 
-  private _handleNewImageUrl(ev: Event): void {
-    const input = ev.target as HTMLInputElement;
-    if (!input.value) {
-      return;
-    }
-    if (this._config) {
-      const images = [...this._images]; // Create a copy of the array
-      images.push({ url: input.value, title: input.value });
-      input.value = '';
-      this._images = images;
-      this._config = { ...this._config, images };
-      this.configChanged();
-    }
-  }
-
-  private _handleImageChange(ev: Event, index: number): void {
-    const input = ev.target as HTMLInputElement;
-    if (this._config) {
-      const images = [...this._images]; // Create a copy of the array
-      images[index] = { ...images[index], url: input.value, title: input.value };
-      this._images = images;
-      this._config = { ...this._config, images };
-      this.configChanged();
-    }
-  }
-
-  private async _handleFilePicked(ev: Event): Promise<void> {
-    const input = ev.target as HTMLInputElement;
-    if (!input.files || input.files.length === 0) {
-      console.log('No files selected.');
-      return;
-    }
-
-    const file = input.files[0];
-
-    const formData = new FormData();
-    formData.append('file', file);
-
-    try {
-      const response = await fetch('/api/image/upload', {
-        method: 'POST',
-        body: formData,
-        headers: {
-          Authorization: `Bearer ${this.hass.auth.data.access_token}`,
-        },
-      });
-
-      if (!response.ok) {
-        console.error('Failed to upload image, response status:', response.status);
-        throw new Error('Failed to upload image');
-      }
-
-      const data = await response.json();
-      const imageId = data.id;
-      const imageName = data.name ? data.name.toUpperCase() : 'UNKNOWN';
-
-      if (!imageId) {
-        console.error('Image ID is missing in the response');
-        throw new Error('Image ID is missing in the response');
-      }
-
-      const imageUrl = `/api/image/serve/${imageId}/original`;
-      // console.log('Uploaded image URL:', imageUrl, 'Image name:', imageName);
-
-      if (this._config) {
-        const images = [...this._images]; // Create a copy of the array
-        images.push({ url: imageUrl, title: imageName });
-        this._images = images;
-        this._config = { ...this._config, images };
-        this.configChanged();
-      }
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      this.launchToast();
-    }
-  }
-
-  private _removeImage(index: number): void {
-    if (this._config) {
-      const backgroundImages = [...this._images]; // Create a copy of the array
-      backgroundImages.splice(index, 1);
-      this._config = { ...this._config, images: backgroundImages };
-      this.configChanged();
-      this.requestUpdate();
-    }
-  }
-
   private _renderMapPopupConfig(): TemplateResult {
     const infoAlert = this.localize('editor.common.infoMap');
     const enableMapPopupSwtich = editorShowOpts(this.selectedLanguage).find(
@@ -483,6 +396,17 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     return this.panelTemplate('servicesConfig', 'servicesConfig', 'mdi:car-cog', servicesConfig);
   }
 
+  private _renderToast(): TemplateResult {
+    const toastMsg = this.localize('card.common.toastImageError');
+    return html`
+      <div id="toast">
+        <ha-alert alert-type="warning" dismissable @alert-dismissed-clicked=${this._handleAlertDismissed}
+          >${toastMsg}
+        </ha-alert>
+      </div>
+    `;
+  }
+
   private panelTemplate(titleKey: string, descKey: string, icon: string, content: TemplateResult): TemplateResult {
     const localTitle = this.localize(`editor.${titleKey}.title`);
     const localDesc = this.localize(`editor.${descKey}.desc`);
@@ -501,15 +425,91 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   /* --------------------- ADDITIONAL HANDLERS AND METHODS -------------------- */
 
-  private _renderToast(): TemplateResult {
-    const toastMsg = this.localize('card.common.toastImageError');
-    return html`
-      <div id="toast">
-        <ha-alert alert-type="warning" dismissable @alert-dismissed-clicked=${this._handleAlertDismissed}
-          >${toastMsg}
-        </ha-alert>
-      </div>
-    `;
+  private _handleNewImageUrl(ev: Event): void {
+    const input = ev.target as HTMLInputElement;
+    if (!input.value) {
+      return;
+    }
+    if (this._config) {
+      const images = [...this._images]; // Create a copy of the array
+      images.push({ url: input.value, title: input.value });
+      input.value = '';
+      this._images = images;
+      this._config = { ...this._config, images };
+      this.configChanged();
+    }
+  }
+
+  private _handleImageChange(ev: Event, index: number): void {
+    const input = ev.target as HTMLInputElement;
+    if (this._config) {
+      const images = [...this._images]; // Create a copy of the array
+      images[index] = { ...images[index], url: input.value, title: input.value };
+      this._images = images;
+      this._config = { ...this._config, images };
+      this.configChanged();
+    }
+  }
+
+  private async _handleFilePicked(ev: Event): Promise<void> {
+    const input = ev.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) {
+      console.log('No files selected.');
+      return;
+    }
+
+    const file = input.files[0];
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await fetch('/api/image/upload', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          Authorization: `Bearer ${this.hass.auth.data.access_token}`,
+        },
+      });
+
+      if (!response.ok) {
+        console.error('Failed to upload image, response status:', response.status);
+        throw new Error('Failed to upload image');
+      }
+
+      const data = await response.json();
+      const imageId = data.id;
+      const imageName = data.name ? data.name.toUpperCase() : 'UNKNOWN';
+
+      if (!imageId) {
+        console.error('Image ID is missing in the response');
+        throw new Error('Image ID is missing in the response');
+      }
+
+      const imageUrl = `/api/image/serve/${imageId}/original`;
+      // console.log('Uploaded image URL:', imageUrl, 'Image name:', imageName);
+
+      if (this._config) {
+        const images = [...this._images]; // Create a copy of the array
+        images.push({ url: imageUrl, title: imageName });
+        this._images = images;
+        this._config = { ...this._config, images };
+        this.configChanged();
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      this.launchToast();
+    }
+  }
+
+  private _removeImage(index: number): void {
+    if (this._config) {
+      const backgroundImages = [...this._images]; // Create a copy of the array
+      backgroundImages.splice(index, 1);
+      this._config = { ...this._config, images: backgroundImages };
+      this.configChanged();
+      this.requestUpdate();
+    }
   }
 
   private launchToast(): void {
@@ -554,7 +554,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     this.configChanged();
   }
 
-  private _servicesValueChanged(ev): void {
+  private _servicesValueChanged(ev: any): void {
     if (!this._config || !this.hass) {
       return;
     }
@@ -577,7 +577,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     this.configChanged();
   }
 
-  private _showValueChanged(ev): void {
+  private _showValueChanged(ev: any): void {
     if (!this._config || !this.hass) {
       return;
     }
@@ -595,7 +595,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     }),
       this.configChanged();
   }
-  private _valueChanged(ev): void {
+  private _valueChanged(ev: any): void {
     if (!this._config || !this.hass) {
       return;
     }
@@ -658,6 +658,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   private configChanged() {
     fireEvent(this, 'config-changed', { config: this._config });
   }
+
   private _dispatchCardEvent(cardType: string): void {
     // Dispatch the custom event with the cardType name
     const detail = cardType;
