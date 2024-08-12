@@ -9,6 +9,9 @@ import { combinedFilters } from '../const/const';
  */
 
 export async function getVehicleEntities(hass: HomeAssistant, config: { entity?: string }): Promise<VehicleEntities> {
+  if (!config.entity) {
+    return {};
+  }
   const allEntities = await hass.callWS<Required<VehicleEntity>[]>({
     type: 'config/entity_registry/list',
   });
