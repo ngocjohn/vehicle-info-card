@@ -63,10 +63,17 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     this._config = this.convertToNewConfig(config);
     this._images = this._config.images;
     this.selectedLanguage = this._config.selected_language || localStorage.getItem('selectedLanguage') || 'en';
+  }
 
+  protected async firstUpdated(_changedProperties: PropertyValues): Promise<void> {
+    super.firstUpdated(_changedProperties);
     if (!this._config.entity) {
+      console.log('Entity not found, fetching...');
       this._config.entity = this.getCarEntity();
-      this._config.name = await getModelName(this.hass, this._config);
+    }
+    if (!this._config.model_name) {
+      const modelName = await getModelName(this.hass, this._config);
+      this._config = { ...this._config, model_name: modelName };
       this.configChanged();
     }
   }
@@ -75,13 +82,25 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     return localize(string, this.selectedLanguage, search, replace);
   };
 
-  private getCarEntity(): string {
+  protected updated(changedProps: PropertyValues): void {
+    if (changedProps.has('config.name')) {
+      console.log('Name option changed:', this._config.name);
+    }
+  }
+
+  protected shouldUpdate(_changedProperties: PropertyValues): boolean {
+    if (!this.hass || !this._config) {
+      return false;
+    }
+    return true;
+  }
+  private getCarEntity = (): string => {
     if (!this.hass) return '';
     const entities = Object.keys(this.hass.states).filter(
       (entity) => entity.startsWith('sensor') && entity.endsWith('_car'),
     );
     return entities[0] || '';
-  }
+  };
 
   private _getServicesConfigValue<K extends keyof Services>(key: K): boolean {
     return this._config?.services[key] || false;
@@ -197,21 +216,89 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     return this.panelTemplate('showConfig', 'showConfig', 'mdi:toggle-switch', switches);
   }
 
-  private _renderNameEntityForm(): TemplateResult {
-    // You can restrict on domain type
-    // const entities = Object.keys(this.hass.states).filter((entity) => entity.startsWith('sensor'));
+  // private _renderNameEntityForm(): TemplateResult {
+  //   // You can restrict on domain type
+  //   // const entities = Object.keys(this.hass.states).filter((entity) => entity.startsWith('sensor'));
 
+  //   const entities = Object.keys(this.hass.states).filter(
+  //     (entity) => entity.startsWith('sensor') && entity.endsWith('_car'),
+  //   );
+  //   const modelName = this._modelName;
+  //   const nameInput = html` <div><p>${modelName}</p></div> `;
+  //   const nameTextField = html` <div>
+  //     <ha-textfield
+  //       label="Name (Optional)"
+  //       .value=${this._config.name}
+  //       .configValue=${'name'}
+  //       @input=${this._onCustomNameInput}
+  //     ></ha-textfield>
+  //   </div>`;
+
+  //   // The select dropdown to choose between model name and custom name
+  //   const nameSelect = html`
+  //     <ha-select
+  //       label="Name"
+  //       .value=${this._name}
+  //       @selected=${this._onNameOptionChanged}
+  //       @closed=${(ev: Event) => ev.stopPropagation()}
+  //     >
+  //       <mwc-list-item value="model">${modelName}</mwc-list-item>
+  //       <mwc-list-item value="custom">Custom</mwc-list-item>
+  //     </ha-select>
+  //   `;
+
+  //   // The combo-box for entering a custom name, only visible if "Custom" is selected
+  //   const customNameInput = html`
+  //     <ha-combo-box
+  //       .hass=${this.hass}
+  //       .label=${'Enter Custom Name'}
+  //       .value=${this._name}
+  //       .items=${[]}
+  //       .allowCustomValue=${true}
+  //       @value-changed=${this._onCustomNameInput}
+  //     ></ha-combo-box>
+  //   `;
+
+  //   return html`
+  //     ${nameSelect} ${this._nameOption === 'custom' ? customNameInput : nameInput}
+  //     <ha-entity-picker
+  //       .hass=${this.hass}
+  //       .value=${this._config?.entity}
+  //       .required=${true}
+  //       .configValue=${'entity'}
+  //       @value-changed=${this._valueChanged}
+  //       allow-custom-entity
+  //       .includeEntities=${entities}
+  //     ></ha-entity-picker>
+  //   `;
+  // }
+
+  private _renderNameEntityForm(): TemplateResult {
+    // Filter entities as per your requirement
     const entities = Object.keys(this.hass.states).filter(
       (entity) => entity.startsWith('sensor') && entity.endsWith('_car'),
     );
+    const modelName = this._config.model_name || '';
+
+    // Define options for the combo-box
+    const options = [{ value: modelName, label: modelName }];
+
+    // The combo-box for entering a custom name or selecting the model name
+    const nameComboBox = html`
+      <ha-combo-box
+        item-value-path="value"
+        item-label-path="label"
+        .hass=${this.hass}
+        .label=${'Select or Enter Name'}
+        .items=${options}
+        .allowCustomValue=${true}
+        .value=${this._config.name}
+        @value-changed=${this._onCustomNameInput}
+      ></ha-combo-box>
+    `;
 
     return html`
-      <ha-textfield
-        label="Name (Optional)"
-        .value=${this._config.name}
-        .configValue=${'name'}
-        @input=${this._valueChanged}
-      ></ha-textfield>
+      ${nameComboBox}
       <ha-entity-picker
         .hass=${this.hass}
         .value=${this._config?.entity}
@@ -222,6 +309,18 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         .includeEntities=${entities}
       ></ha-entity-picker>
     `;
+  }
+
+  private _onCustomNameInput(event: CustomEvent) {
+    const newValue = event.detail.value;
+    // Update the config.name with the custom name entered by the user
+    this._config = {
+      ...this._config,
+      name: newValue,
+    };
+
+    // Trigger a re-render if needed
+    this.configChanged();
   }
 
   private _renderThemesConfig(): TemplateResult {
@@ -651,7 +750,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       delete tmpConfig[configValue];
       this._config = tmpConfig;
     }
-    console.log(configValue, newValue);
     this.configChanged();
   }
 

@@ -71,9 +71,10 @@ export interface VehicleCardConfig extends LovelaceCardConfig {
   name?: string;
   device_tracker?: string;
   google_api_key?: string;
+  selected_language?: string | null;
+  model_name?: string;
   map_popup_config: MapPopupConfig;
   selected_theme: ThemesConfig;
-  selected_language?: string | null;
   services: Services;
   vehicle_card?: LovelaceCardConfig[];
   trip_card?: LovelaceCardConfig[];
@@ -135,7 +136,7 @@ export interface CardTypeConfig {
 // Default configuration for the Vehicle Card.
 export const defaultConfig: Partial<VehicleCardConfig> = {
   type: 'custom:vehicle-info-card',
-  name: 'Mercedes Benz',
+  name: 'Mercedes Vehicle Card',
   entity: '',
   show_slides: false,
   show_map: false,
