@@ -21,7 +21,7 @@ import { cardTypes } from './const/data-keys';
 import { editorShowOpts } from './const/data-keys';
 import { CARD_VERSION } from './const/const';
 import { languageOptions, localize } from './localize/localize';
-import { getModelName } from './utils/get-device-entities';
+import { getModelName, uploadImage } from './utils/ha-helpers';
 import { loadHaComponents } from './utils/loader';
 import editorcss from './css/editor.css';
 
@@ -32,9 +32,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   @state() private _config!: VehicleCardConfig;
   @state() private selectedLanguage!: string;
   @state() private _activeSubcardType: string | null = null;
-
-  @state() private _images: VehicleImage[] = [];
-
   private _system_language = localStorage.getItem('selectedLanguage');
 
   connectedCallback() {
@@ -67,7 +64,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   public async setConfig(config: VehicleCardConfig): Promise<void> {
     this._config = this._validateConfig(config) ? config : this.convertToNewConfig(config);
-    this._images = this._config.images;
     this.selectedLanguage = this._config.selected_language || localStorage.getItem('selectedLanguage') || 'en';
   }
 
@@ -313,7 +309,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
               .label=${'IMAGE #' + (index + 1)}
               .configValue=${'images'}
               .value=${image.title}
-              @input=${(event: Event) => this._handleImageChange(event, index)}
+              @input=${(event: Event) => this._handleImageInputChange(event, index)}
             ></ha-textfield>
             <div class="file-upload">
               <ha-icon icon="mdi:delete" @click=${() => this._removeImage(index)}></ha-icon>
@@ -325,9 +321,11 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           <ha-textfield
             .label=${'Add URL or Upload'}
             .configValue=${'new_image_url'}
-            @change=${(event: Event) => this._handleNewImageUrl(event)}
+            @change=${(event: Event) => this._handleImageInputChange(event)}
           ></ha-textfield>
-          <div class="file-upload"><ha-icon icon="mdi:plus" @click=${() => this._handleNewImageUrl}></ha-icon></div>
+          <div class="file-upload">
+            <ha-icon icon="mdi:plus" @click=${() => this._handleImageInputChange}></ha-icon>
+          </div>
           <label for="file-upload-new" class="file-upload">
             <ha-icon icon="mdi:upload"></ha-icon>
             <input
@@ -336,6 +334,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
               class="file-input"
               @change=${this._handleFilePicked.bind(this)}
               accept="image/*"
+              multiple
             />
           </label>
         </div>
@@ -461,30 +460,26 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   /* --------------------- ADDITIONAL HANDLERS AND METHODS -------------------- */
 
-  private _handleNewImageUrl(ev: Event): void {
+  private _handleImageInputChange(ev: Event, index?: number): void {
     const input = ev.target as HTMLInputElement;
-    if (!input.value) {
-      return;
-    }
-    if (this._config) {
-      const images = [...this._config.images]; // Create a copy of the array
-      images.push({ url: input.value, title: input.value });
-      input.value = '';
-      this._config = { ...this._config, images };
-      console.log('New image added:', images[images.length - 1].url);
-      this.configChanged();
-    }
-  }
+    const url = input.value;
 
-  private _handleImageChange(ev: Event, index: number): void {
-    const input = ev.target as HTMLInputElement;
-    if (this._config) {
-      const images = [...this._config.images]; // Create a copy of the array
-      images[index] = { ...images[index], url: input.value, title: input.value };
-      this._config = { ...this._config, images };
-      console.log('Image changed:', images[index].url);
-      this.configChanged();
+    if (!url || !this._config) return;
+
+    const images = [...this._config.images];
+
+    if (index !== undefined) {
+      // Update existing image
+      images[index] = { ...images[index], url, title: url };
+    } else {
+      // Add new image
+      images.push({ url, title: url });
+      input.value = '';
     }
+
+    this._config = { ...this._config, images };
+    console.log(index !== undefined ? 'Image changed:' : 'New image added:', url);
+    this.configChanged();
   }
 
   private async _handleFilePicked(ev: Event): Promise<void> {
@@ -494,58 +489,40 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       return;
     }
 
-    const file = input.files[0];
+    const files = Array.from(input.files); // Convert FileList to Array for easier iteration
 
-    const formData = new FormData();
-    formData.append('file', file);
+    for (const file of files) {
+      try {
+        const imageUrl = await uploadImage(this.hass, file);
+        if (!imageUrl) continue;
 
-    try {
-      const response = await fetch('/api/image/upload', {
-        method: 'POST',
-        body: formData,
-        headers: {
-          Authorization: `Bearer ${this.hass.auth.data.access_token}`,
-        },
-      });
-
-      if (!response.ok) {
-        console.error('Failed to upload image, response status:', response.status);
-        throw new Error('Failed to upload image');
+        const imageName = file.name.toUpperCase();
+        this._addImage(imageUrl, imageName);
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        this.launchToast();
       }
+    }
+  }
 
-      const data = await response.json();
-      const imageId = data.id;
-      const imageName = data.name ? data.name.toUpperCase() : 'UNKNOWN';
-
-      if (!imageId) {
-        console.error('Image ID is missing in the response');
-        throw new Error('Image ID is missing in the response');
-      }
-
-      const imageUrl = `/api/image/serve/${imageId}/original`;
-      // console.log('Uploaded image URL:', imageUrl, 'Image name:', imageName);
-
-      if (this._config) {
-        const images = [...this._images]; // Create a copy of the array
-        images.push({ url: imageUrl, title: imageName });
-        this._images = images;
-        this._config = { ...this._config, images };
-        this.configChanged();
-      }
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      this.launchToast();
+  private _addImage(url: string, title: string): void {
+    console.log('Image added:', url);
+    if (this._config) {
+      const images = [...this._config.images];
+      images.push({ url, title });
+      this._config = { ...this._config, images };
+      this.configChanged();
     }
   }
 
   private _removeImage(index: number): void {
-    if (this._config) {
-      const backgroundImages = [...this._images]; // Create a copy of the array
-      backgroundImages.splice(index, 1);
-      this._config = { ...this._config, images: backgroundImages };
-      this.configChanged();
-      this.requestUpdate();
-    }
+    if (!this._config) return;
+
+    const images = [...this._config.images];
+    images.splice(index, 1);
+    this._config = { ...this._config, images };
+    console.log('Image removed:', index);
+    this.configChanged();
   }
 
   private launchToast(): void {
