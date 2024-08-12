@@ -13,6 +13,7 @@ import {
   LovelaceCardConfig,
   LovelaceCardEditor,
   applyThemesOnElement,
+  LovelaceCard,
 } from 'custom-card-helpers';
 
 // Custom Types and Constants
@@ -48,7 +49,7 @@ import { getVehicleEntities } from './utils/ha-helpers';
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
 
 @customElement('vehicle-info-card')
-export class VehicleCard extends LitElement {
+export class VehicleCard extends LitElement implements LovelaceCard {
   public static async getConfigElement(): Promise<LovelaceCardEditor> {
     await import('./editor');
     return document.createElement('vehicle-info-card-editor');
@@ -56,6 +57,7 @@ export class VehicleCard extends LitElement {
 
   @property({ attribute: false }) public hass!: HomeAssistant;
   @property({ type: Object }) private config!: VehicleCardConfig;
+  @property({ type: Boolean }) public editMode = false;
 
   @state() private selectedLanguage!: string;
   @state() private selectedTheme!: string;
@@ -389,7 +391,7 @@ export class VehicleCard extends LitElement {
 
     const images: string[] = this.config.images.map((image) => image.url);
 
-    return html`<header-slide .images=${images}></header-slide>`;
+    return html`<header-slide .images=${images} .editMode=${this.editMode}></header-slide>`;
   }
 
   private _renderMap(): TemplateResult | void {
