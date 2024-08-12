@@ -42,8 +42,8 @@ import './components/remote-control';
 // Functions
 import { localize } from './localize/localize';
 import { formatTimestamp, convertMinutes } from './utils/helpers';
-import { setupCardListeners } from './utils/get-device-entities';
-import { getVehicleEntities } from './utils/get-device-entities';
+import { setupCardListeners } from './utils/ha-helpers';
+import { getVehicleEntities } from './utils/ha-helpers';
 
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
 

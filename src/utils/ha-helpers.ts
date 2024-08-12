@@ -178,3 +178,38 @@ export function setupCardListeners(
     cardElement.addEventListener(event, presDown as EventListener, { passive: true });
   });
 }
+
+/**
+ * Upload a file to the server
+ * @param hass
+ * @param file
+ */
+
+export async function uploadImage(hass: HomeAssistant, file: File): Promise<string | null> {
+  console.log('Uploading image:', file.name);
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await fetch('/api/image/upload', {
+    method: 'POST',
+    body: formData,
+    headers: {
+      Authorization: `Bearer ${hass.auth.data.access_token}`,
+    },
+  });
+
+  if (!response.ok) {
+    console.error('Failed to upload image, response status:', response.status);
+    return null;
+  }
+
+  const data = await response.json();
+  const imageId = data.id;
+
+  if (!imageId) {
+    console.error('Image ID is missing in the response');
+    return null;
+  }
+
+  return `/api/image/serve/${imageId}/original`;
+}
