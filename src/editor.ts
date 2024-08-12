@@ -43,15 +43,11 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private convertToNewConfig(oldConfig: VehicleCardConfig): VehicleImagesList {
-    if (Array.isArray(oldConfig.images) && oldConfig.images.length > 0 && typeof oldConfig.images[0] === 'object') {
-      return oldConfig as VehicleImagesList;
-    }
-
+    console.log('converting old config to new config');
     const newImages: VehicleImage[] = (oldConfig.images || []).map((url: string) => ({
       url,
       title: url,
     }));
-    // console.log('New images:', newImages);
 
     return {
       ...oldConfig,
@@ -59,8 +55,18 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     };
   }
 
+  private _validateConfig(config: VehicleCardConfig): boolean {
+    if (Array.isArray(config.images) && config.images.length > 0 && typeof config.images[0] === 'object') {
+      console.log('Config is valid');
+      return true;
+    } else {
+      console.log('Config is invalid');
+      return false;
+    }
+  }
+
   public async setConfig(config: VehicleCardConfig): Promise<void> {
-    this._config = this.convertToNewConfig(config);
+    this._config = this._validateConfig(config) ? config : this.convertToNewConfig(config);
     this._images = this._config.images;
     this.selectedLanguage = this._config.selected_language || localStorage.getItem('selectedLanguage') || 'en';
   }
@@ -82,18 +88,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     return localize(string, this.selectedLanguage, search, replace);
   };
 
-  protected updated(changedProps: PropertyValues): void {
-    if (changedProps.has('config.name')) {
-      console.log('Name option changed:', this._config.name);
-    }
-  }
-
-  protected shouldUpdate(_changedProperties: PropertyValues): boolean {
-    if (!this.hass || !this._config) {
-      return false;
-    }
-    return true;
-  }
   private getCarEntity = (): string => {
     if (!this.hass) return '';
     const entities = Object.keys(this.hass.states).filter(
@@ -216,69 +210,12 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     return this.panelTemplate('showConfig', 'showConfig', 'mdi:toggle-switch', switches);
   }
 
-  // private _renderNameEntityForm(): TemplateResult {
-  //   // You can restrict on domain type
-  //   // const entities = Object.keys(this.hass.states).filter((entity) => entity.startsWith('sensor'));
-
-  //   const entities = Object.keys(this.hass.states).filter(
-  //     (entity) => entity.startsWith('sensor') && entity.endsWith('_car'),
-  //   );
-  //   const modelName = this._modelName;
-  //   const nameInput = html` <div><p>${modelName}</p></div> `;
-  //   const nameTextField = html` <div>
-  //     <ha-textfield
-  //       label="Name (Optional)"
-  //       .value=${this._config.name}
-  //       .configValue=${'name'}
-  //       @input=${this._onCustomNameInput}
-  //     ></ha-textfield>
-  //   </div>`;
-
-  //   // The select dropdown to choose between model name and custom name
-  //   const nameSelect = html`
-  //     <ha-select
-  //       label="Name"
-  //       .value=${this._name}
-  //       @selected=${this._onNameOptionChanged}
-  //       @closed=${(ev: Event) => ev.stopPropagation()}
-  //     >
-  //       <mwc-list-item value="model">${modelName}</mwc-list-item>
-  //       <mwc-list-item value="custom">Custom</mwc-list-item>
-  //     </ha-select>
-  //   `;
-
-  //   // The combo-box for entering a custom name, only visible if "Custom" is selected
-  //   const customNameInput = html`
-  //     <ha-combo-box
-  //       .hass=${this.hass}
-  //       .label=${'Enter Custom Name'}
-  //       .value=${this._name}
-  //       .items=${[]}
-  //       .allowCustomValue=${true}
-  //       @value-changed=${this._onCustomNameInput}
-  //     ></ha-combo-box>
-  //   `;
-
-  //   return html`
-  //     ${nameSelect} ${this._nameOption === 'custom' ? customNameInput : nameInput}
-  //     <ha-entity-picker
-  //       .hass=${this.hass}
-  //       .value=${this._config?.entity}
-  //       .required=${true}
-  //       .configValue=${'entity'}
-  //       @value-changed=${this._valueChanged}
-  //       allow-custom-entity
-  //       .includeEntities=${entities}
-  //     ></ha-entity-picker>
-  //   `;
-  // }
-
   private _renderNameEntityForm(): TemplateResult {
     // Filter entities as per your requirement
     const entities = Object.keys(this.hass.states).filter(
       (entity) => entity.startsWith('sensor') && entity.endsWith('_car'),
     );
-    const modelName = this._config.model_name || '';
+    const modelName = this._config.model_name;
 
     // Define options for the combo-box
     const options = [{ value: modelName, label: modelName }];
@@ -369,7 +306,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private _renderImageConfig(): TemplateResult {
     const textFormInput = html`<div class="image-config">
-        ${this._images.map((image, index) => {
+        ${this._config.images.map((image, index) => {
           return html`<div class="custom-background-wrapper">
             <ha-textfield
               class="image-input"
@@ -530,11 +467,11 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       return;
     }
     if (this._config) {
-      const images = [...this._images]; // Create a copy of the array
+      const images = [...this._config.images]; // Create a copy of the array
       images.push({ url: input.value, title: input.value });
       input.value = '';
-      this._images = images;
       this._config = { ...this._config, images };
+      console.log('New image added:', images[images.length - 1].url);
       this.configChanged();
     }
   }
@@ -542,10 +479,10 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   private _handleImageChange(ev: Event, index: number): void {
     const input = ev.target as HTMLInputElement;
     if (this._config) {
-      const images = [...this._images]; // Create a copy of the array
+      const images = [...this._config.images]; // Create a copy of the array
       images[index] = { ...images[index], url: input.value, title: input.value };
-      this._images = images;
       this._config = { ...this._config, images };
+      console.log('Image changed:', images[index].url);
       this.configChanged();
     }
   }

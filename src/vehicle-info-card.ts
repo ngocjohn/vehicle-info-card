@@ -224,21 +224,17 @@ export class VehicleCard extends LitElement {
   }
 
   // https://lit.dev/docs/components/lifecycle/#reactive-update-cycle-performing
-  protected shouldUpdate(changedProps: PropertyValues): boolean {
+  protected shouldUpdate(_changedProps: PropertyValues): boolean {
     if (!this.config || !this.hass) {
       return false;
     }
-    if (changedProps.has('hass') || changedProps.has('config')) {
-      return true;
-    }
-
     if (!this.activeCardType) {
       this.applyMarquee();
       this.hideAllSubCards();
       return true;
     }
 
-    return hasConfigOrEntityChanged(this, changedProps, false);
+    return hasConfigOrEntityChanged(this, _changedProps, false);
   }
 
   /* -------------------------------------------------------------------------- */
