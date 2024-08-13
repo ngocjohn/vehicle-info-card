@@ -303,47 +303,61 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _renderImageConfig(): TemplateResult {
-    const textFormInput = html`<div class="image-config">
-        ${this._config.images.map((image, index) => {
-          return html`<div class="custom-background-wrapper">
-            <ha-textfield
-              class="image-input"
-              .label=${'IMAGE #' + (index + 1)}
-              .configValue=${'images'}
-              .value=${image.title}
-              @input=${(event: Event) => this._handleImageInputChange(event, index)}
-            ></ha-textfield>
-            <div class="file-upload">
-              <ha-icon icon="mdi:delete" @click=${() => this._removeImage(index)}></ha-icon>
-            </div>
-          </div>`;
-        })}
+    const showImageIndex = html`<ha-formfield .label=${'Show Image Index'}>
+      <ha-checkbox
+        .checked=${this._config?.show_image_index !== false}
+        .configValue=${'show_image_index'}
+        @change=${this._valueChanged}
+      ></ha-checkbox>
+    </ha-formfield>`;
 
-        <div class="custom-background-wrapper">
+    const fileUploadWrapper = html`
+      <ha-button @click=${() => this.shadowRoot?.getElementById('file-upload-new')?.click()}> Upload Image </ha-button>
+
+      <input
+        type="file"
+        id="file-upload-new"
+        class="file-input"
+        @change=${this._handleFilePicked.bind(this)}
+        accept="image/*"
+        multiple
+        style="display: none"
+      />
+    `;
+
+    const imageList = html`<div class="image-config">
+      ${this._config.images.map((image, index) => {
+        return html`<div class="custom-background-wrapper">
           <ha-textfield
-            .label=${'Add URL or Upload'}
-            .configValue=${'new_image_url'}
-            @change=${(event: Event) => this._handleImageInputChange(event)}
+            class="image-input"
+            .label=${'IMAGE #' + (index + 1)}
+            .configValue=${'images'}
+            .value=${image.title}
+            @input=${(event: Event) => this._handleImageInputChange(event, index)}
           ></ha-textfield>
           <div class="file-upload">
-            <ha-icon icon="mdi:plus" @click=${() => this._handleImageInputChange}></ha-icon>
+            <ha-icon icon="mdi:delete" @click=${() => this._removeImage(index)}></ha-icon>
           </div>
-          <label for="file-upload-new" class="file-upload">
-            <ha-icon icon="mdi:upload"></ha-icon>
-            <input
-              type="file"
-              id="file-upload-new"
-              class="file-input"
-              @change=${this._handleFilePicked.bind(this)}
-              accept="image/*"
-              multiple
-            />
-          </label>
+        </div>`;
+      })}
+
+      <div class="custom-background-wrapper">
+        <ha-textfield
+          .label=${'Add URL'}
+          .configValue=${'new_image_url'}
+          @change=${(event: Event) => this._handleImageInputChange(event)}
+        ></ha-textfield>
+        <div class="file-upload">
+          <ha-icon icon="mdi:plus" @click=${() => this._handleImageInputChange}></ha-icon>
         </div>
       </div>
+    </div> `;
+
+    const content = html`${imageList}
+      <div class="custom-background-wrapper">${showImageIndex} ${fileUploadWrapper}</div>
       ${this._renderToast()}`;
 
-    return this.panelTemplate('imagesConfig', 'imagesConfig', 'mdi:image', textFormInput);
+    return this.panelTemplate('imagesConfig', 'imagesConfig', 'mdi:image', content);
   }
 
   private _renderMapPopupConfig(): TemplateResult {

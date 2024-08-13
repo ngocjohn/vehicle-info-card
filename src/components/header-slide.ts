@@ -7,6 +7,7 @@ import swipercss from '../css/swiper-bundle.css';
 @customElement('header-slide')
 export class HeaderSlide extends LitElement {
   @property({ type: Boolean }) editMode = false;
+  @property({ type: Boolean }) showImageIndex = false;
   @property({ type: Array }) images: Array<{ url: string; title: string }> = [];
 
   @property({ type: Object })
@@ -110,7 +111,7 @@ export class HeaderSlide extends LitElement {
             ${images.map(
               (image, index) => html`
                 <div class="swiper-slide">
-                  ${this.editMode
+                  ${this.editMode && this.showImageIndex
                     ? html`<span class="image-index">[${index + 1} / ${imagesLength}] - ${image.title}</span>`
                     : ''}
                   <img src="${image.url}" />

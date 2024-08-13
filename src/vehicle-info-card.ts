@@ -392,8 +392,13 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     if (!this.config.images || !this.config.show_slides) return html``;
 
     const images = this.config.images;
+    const showImageIndex = this.config?.show_image_index;
 
-    return html`<header-slide .images=${images} .editMode=${this.editMode}></header-slide>`;
+    return html`<header-slide
+      .images=${images}
+      .editMode=${this.editMode}
+      .showImageIndex=${showImageIndex}
+    ></header-slide>`;
   }
 
   private _renderMap(): TemplateResult | void {

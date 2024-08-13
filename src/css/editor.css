@@ -58,8 +58,10 @@ h3 {
 .custom-background-wrapper {
   display: inline-flex;
   align-items: center;
-  gap: 1rem;
+  gap: 8px;
   text-wrap: nowrap;
+  width: 100%;
+  justify-content: space-between;
 }
 .file-input {
   display: none;
