@@ -44,7 +44,7 @@ const languageObjectEntries = currentFiles
 const languageOptions = currentFiles
   .map((file) => {
     const key = path.basename(file, path.extname(file));
-    return `  { key: '${key}', name: ${key}.name },`;
+    return `  { key: '${key}', name: ${key}.name, nativeName: ${key}.nativeName },`;
   })
   .join('\n');
 
