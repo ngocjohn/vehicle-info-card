@@ -1,6 +1,5 @@
 {
     "name": "English",
-    "nativeName": "English",
     "card": {
         "common": {
             "lastUpdate": "Last update",
@@ -29,16 +28,16 @@
         "chargingOverview": {
             "chargingPower": "Power",
             "maxSoc": "Maximum",
-            "selectedProgram": "Program",
+            "selectedProgram": "Programme",
             "soc": "Current state"
         },
         "doorAttributes": {
-            "decklidstatus": "Luggage compartment",
+            "decklidstatus": "Load compartment",
             "doorstatusfrontleft": "Door front left",
             "doorstatusfrontright": "Door front right",
             "doorstatusrearleft": "Door rear left",
             "doorstatusrearright": "Door rear right",
-            "enginehoodstatus": "Engine hood",
+            "enginehoodstatus": "Bonnet",
             "sunroofstatus": "Sunroof"
         },
         "ecoCard": {
@@ -52,12 +51,12 @@
         "lockAttributes": {
             "doorlockstatusfrontleft": "Door lock front left",
             "doorlockstatusfrontright": "Door lock front right",
-            "doorlockstatusgas": "Fuel filler flap lock",
+            "doorlockstatusgas": "Fuel flap lock",
             "doorlockstatusrearleft": "Door lock rear left",
             "doorlockstatusrearright": "Door lock rear right"
         },
         "serviceData": {
-            "labelChargeProgram": "Charge program",
+            "labelChargeProgram": "Charge programme",
             "labelCity": "City",
             "labelClose": "Close",
             "labelDepartureTime": "Departure time",
@@ -129,8 +128,8 @@
             "adBlueLevel": "AdBlue level",
             "averageSpeedReset": "Average speed",
             "averageSpeedStart": "Average speed",
-            "distanceReset": "Distance traveled",
-            "distanceStart": "Distance traveled",
+            "distanceReset": "Distance travelled",
+            "distanceStart": "Distance travelled",
             "drivenTimeReset": "Driving time",
             "drivenTimeStart": "Driving time",
             "electricConsumptionReset": "Average consumption",
@@ -165,8 +164,8 @@
             "lowCoolantLevel": "Coolant",
             "lowWashWater": "Washer fluid",
             "parkBrake": "Parking brake",
-            "starterBatteryState": "Starter battery",
-            "tirePressureWarning": "Tire pressure",
+            "starterBatteryState": "12v battery",
+            "tirePressureWarning": "Tyre pressure",
             "vehicleStatus": "Vehicle status",
             "vehicleWarnings": "Warnings",
             "windowsClosed": "Windows"
