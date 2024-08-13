@@ -1,3 +1,5 @@
+// This file is generated automatically by the generate-lang-imports script. Do not modify it manually.
+
 import * as cs from '../languages/cs.json';
 import * as de from '../languages/de.json';
 import * as en from '../languages/en.json';
