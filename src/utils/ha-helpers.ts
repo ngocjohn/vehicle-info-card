@@ -1,5 +1,6 @@
+import { PropertyValues } from 'lit';
 import { HomeAssistant } from 'custom-card-helpers';
-import { VehicleEntities, VehicleEntity } from '../types';
+import { VehicleEntities, VehicleEntity, VehicleCardConfig } from '../types';
 import { combinedFilters } from '../const/const';
 
 /**
@@ -212,4 +213,49 @@ export async function uploadImage(hass: HomeAssistant, file: File): Promise<stri
   }
 
   return `/api/image/serve/${imageId}/original`;
+}
+
+/**
+ * Update config with changed properties
+ * @param config
+ * @param changedProps
+ **/
+
+function getCarEntity(this: any): string {
+  console.log('Getting car entity');
+  const entities = Object.keys(this.hass.states).filter(
+    (entity) => entity.startsWith('sensor.') && entity.endsWith('_car'),
+  );
+  return entities[0] || '';
+}
+
+export async function handleFirstUpdated(
+  component: any, // Replace 'any' with the correct type for your component if available
+  _changedProperties: PropertyValues,
+): Promise<void> {
+  console.log('First updated');
+  const updates: Partial<VehicleCardConfig> = {};
+
+  if (!component._config.entity) {
+    console.log('Entity not found, fetching...');
+    updates.entity = getCarEntity.call(component);
+  }
+
+  // After setting the entity, fetch the model name
+  if (updates.entity || !component._config.model_name) {
+    const entity = updates.entity || component._config.entity;
+    updates.model_name = await getModelName(component.hass as HomeAssistant, entity);
+    console.log('Model name:', updates.model_name);
+  }
+
+  if (!component._config.selected_language) {
+    updates.selected_language = localStorage.getItem('selectedLanguage') || 'en';
+    console.log('Selected language:', updates.selected_language);
+  }
+
+  if (Object.keys(updates).length > 0) {
+    console.log('Updating config with:', updates);
+    component._config = { ...component._config, ...updates };
+    component.configChanged();
+  }
 }

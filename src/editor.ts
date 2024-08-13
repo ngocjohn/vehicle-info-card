@@ -21,7 +21,7 @@ import { cardTypes } from './const/data-keys';
 import { editorShowOpts } from './const/data-keys';
 import { CARD_VERSION } from './const/const';
 import { languageOptions, localize } from './localize/localize';
-import { getModelName, uploadImage } from './utils/ha-helpers';
+import { getModelName, uploadImage, handleFirstUpdated } from './utils/ha-helpers';
 import { loadHaComponents } from './utils/loader';
 import editorcss from './css/editor.css';
 
@@ -30,7 +30,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   @property({ attribute: false }) public hass!: HomeAssistant;
 
   @state() private _config!: VehicleCardConfig;
-  @state() private selectedLanguage!: string;
   @state() private _activeSubcardType: string | null = null;
   private _system_language = localStorage.getItem('selectedLanguage');
 
@@ -54,30 +53,24 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private _validateConfig(config: VehicleCardConfig): boolean {
     if (Array.isArray(config.images) && config.images.length > 0 && typeof config.images[0] === 'object') {
-      console.log('Config is valid');
       return true;
-    } else {
-      console.log('Config is invalid');
-      return false;
     }
+
+    console.log('Config is invalid');
+    return false;
   }
 
   public async setConfig(config: VehicleCardConfig): Promise<void> {
     this._config = this._validateConfig(config) ? config : this.convertToNewConfig(config);
-    this.selectedLanguage = this._config.selected_language || localStorage.getItem('selectedLanguage') || 'en';
   }
 
-  protected async firstUpdated(_changedProperties: PropertyValues): Promise<void> {
-    super.firstUpdated(_changedProperties);
-    if (!this._config.entity) {
-      console.log('Entity not found, fetching...');
-      this._config.entity = this.getCarEntity();
-    }
-    if (!this._config.model_name) {
-      const modelName = await getModelName(this.hass, this._config.entity);
-      this._config = { ...this._config, model_name: modelName };
-      this.configChanged();
-    }
+  protected async firstUpdated(changedProperties: PropertyValues): Promise<void> {
+    super.firstUpdated(changedProperties);
+    await handleFirstUpdated(this, changedProperties);
+  }
+
+  private get selectedLanguage(): string {
+    return this._config.selected_language || 'en';
   }
 
   private localize = (string: string, search = '', replace = ''): string => {
@@ -144,7 +137,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
             @click=${() => (this._activeSubcardType = null)}
             style="cursor: pointer"
           ></ha-icon>
-          <div>
+          <div class="sub-card-title">
             <h3>${name}</h3>
             <ha-icon icon=${icon}></ha-icon>
           </div>
@@ -244,18 +237,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     `;
   }
 
-  private _onCustomNameInput(event: CustomEvent) {
-    const newValue = event.detail.value;
-    // Update the config.name with the custom name entered by the user
-    this._config = {
-      ...this._config,
-      name: newValue,
-    };
-
-    // Trigger a re-render if needed
-    this.configChanged();
-  }
-
   private _renderThemesConfig(): TemplateResult {
     if (!this.hass) return html``;
     const sysLang = this._system_language || 'en';
@@ -321,7 +302,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         @change=${this._handleFilePicked.bind(this)}
         accept="image/*"
         multiple
-        style="display: none"
       />
     `;
 
@@ -387,11 +367,11 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           @input=${this._valueChanged}
         ></ha-textfield>
         <ha-formfield style="flex: 1;" .label=${enableMapPopupSwtich?.label}>
-          <ha-switch
+          <ha-checkbox
             .checked=${this._getConfigShowValue(enableMapPopupSwtich?.configKey as keyof ShowOptions) !== false}
             .configValue=${enableMapPopupSwtich?.configKey}
             @change=${this._showValueChanged}
-          ></ha-switch>
+          ></ha-checkbox>
         </ha-formfield>
       </div>
       <ha-alert alert-type="info">${infoAlert}</ha-alert>
@@ -583,6 +563,18 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     this.configChanged();
   }
 
+  private _onCustomNameInput(event: CustomEvent) {
+    const newValue = event.detail.value;
+    // Update the config.name with the custom name entered by the user
+    this._config = {
+      ...this._config,
+      name: newValue,
+    };
+
+    // Trigger a re-render if needed
+    this.configChanged();
+  }
+
   private _servicesValueChanged(ev: any): void {
     if (!this._config || !this.hass) {
       return;
@@ -624,6 +616,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     }),
       this.configChanged();
   }
+
   private _valueChanged(ev: any): void {
     if (!this._config || !this.hass) {
       return;
