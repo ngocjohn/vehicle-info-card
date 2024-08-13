@@ -10,7 +10,7 @@
   margin: 0.5rem;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  /* grid-gap: 1rem; */
+  grid-gap: 1rem;
 }
 
 ha-select,
@@ -19,11 +19,10 @@ ha-textfield {
   display: block;
   width: 100%;
 }
-/* ha-formfield {
+ha-formfield {
   padding-bottom: 8px;
   width: 100%;
-} */
-
+}
 ha-switch {
   --mdc-theme-secondary: var(--switch-checked-color);
 }

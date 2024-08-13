@@ -9,10 +9,7 @@ export const loadHaComponents = () => {
   if (!customElements.get('ha-card-conditions-editor')) {
     (customElements.get('hui-conditional-card') as any)?.getConfigElement();
   }
-  if (!customElements.get('ha-form-multi_select')) {
-    // Load the component by invoking a related component's method
-    (customElements.get('hui-entities-card') as any)?.getConfigElement();
-  }
+  // console.log('loadHaComponents done');
 };
 
 export const loadCustomElement = async <T = any>(name: string) => {
