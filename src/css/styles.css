@@ -516,7 +516,7 @@ header h1 {
 }
 
 .subcard-icon.active {
-  transform: rotate(90deg);
+  transform: rotate(180deg);
 }
 
 .subcard-icon.hidden {
@@ -525,12 +525,10 @@ header h1 {
 
 .sub-attributes {
   overflow: hidden;
-  padding-top: 0 !important;
+  padding-top: 0px !important;
   max-height: 0;
   opacity: 0;
-  transition:
-    opacity 0.5s ease-in-out,
-    max-height 0.7s ease-in-out;
+  transition: all 0.5s ease-in-out;
 }
 
 .sub-attributes.active {
