@@ -13,6 +13,7 @@ import {
   LovelaceCardConfig,
   LovelaceCardEditor,
   applyThemesOnElement,
+  LovelaceCard,
 } from 'custom-card-helpers';
 
 // Custom Types and Constants
@@ -42,13 +43,13 @@ import './components/remote-control';
 // Functions
 import { localize } from './localize/localize';
 import { formatTimestamp, convertMinutes } from './utils/helpers';
-import { setupCardListeners } from './utils/get-device-entities';
-import { getVehicleEntities } from './utils/get-device-entities';
+import { setupCardListeners } from './utils/ha-helpers';
+import { getVehicleEntities } from './utils/ha-helpers';
 
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
 
 @customElement('vehicle-info-card')
-export class VehicleCard extends LitElement {
+export class VehicleCard extends LitElement implements LovelaceCard {
   public static async getConfigElement(): Promise<LovelaceCardEditor> {
     await import('./editor');
     return document.createElement('vehicle-info-card-editor');
@@ -56,6 +57,7 @@ export class VehicleCard extends LitElement {
 
   @property({ attribute: false }) public hass!: HomeAssistant;
   @property({ type: Object }) private config!: VehicleCardConfig;
+  @property({ type: Boolean }) public editMode = false;
 
   @state() private selectedLanguage!: string;
   @state() private selectedTheme!: string;
@@ -224,21 +226,17 @@ export class VehicleCard extends LitElement {
   }
 
   // https://lit.dev/docs/components/lifecycle/#reactive-update-cycle-performing
-  protected shouldUpdate(changedProps: PropertyValues): boolean {
+  protected shouldUpdate(_changedProps: PropertyValues): boolean {
     if (!this.config || !this.hass) {
       return false;
     }
-    if (changedProps.has('hass') || changedProps.has('config')) {
-      return true;
-    }
-
     if (!this.activeCardType) {
       this.applyMarquee();
       this.hideAllSubCards();
       return true;
     }
 
-    return hasConfigOrEntityChanged(this, changedProps, false);
+    return hasConfigOrEntityChanged(this, _changedProps, false);
   }
 
   /* -------------------------------------------------------------------------- */
@@ -391,9 +389,9 @@ export class VehicleCard extends LitElement {
   private _renderHeaderSlides(): TemplateResult {
     if (!this.config.images || !this.config.show_slides) return html``;
 
-    const images: string[] = this.config.images.map((image) => image.url);
+    const images = this.config.images;
 
-    return html`<header-slide .images=${images}></header-slide>`;
+    return html`<header-slide .images=${images} .editMode=${this.editMode}></header-slide>`;
   }
 
   private _renderMap(): TemplateResult | void {
