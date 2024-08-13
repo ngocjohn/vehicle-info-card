@@ -22,7 +22,6 @@ import { editorShowOpts } from './const/data-keys';
 import { CARD_VERSION } from './const/const';
 import { languageOptions, localize } from './localize/localize';
 import { getModelName, uploadImage } from './utils/ha-helpers';
-import { getModelName, uploadImage } from './utils/ha-helpers';
 import { loadHaComponents } from './utils/loader';
 import editorcss from './css/editor.css';
 
@@ -31,6 +30,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   @property({ attribute: false }) public hass!: HomeAssistant;
 
   @state() private _config!: VehicleCardConfig;
+  @state() private selectedLanguage!: string;
   @state() private _activeSubcardType: string | null = null;
   private _system_language = localStorage.getItem('selectedLanguage');
 
@@ -40,7 +40,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private convertToNewConfig(oldConfig: VehicleCardConfig): VehicleImagesList {
-    console.log('converting old config to new config');
     console.log('converting old config to new config');
     const newImages: VehicleImage[] = (oldConfig.images || []).map((url: string) => ({
       url,
@@ -65,38 +64,20 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   public async setConfig(config: VehicleCardConfig): Promise<void> {
     this._config = this._validateConfig(config) ? config : this.convertToNewConfig(config);
+    this.selectedLanguage = this._config.selected_language || localStorage.getItem('selectedLanguage') || 'en';
   }
 
   protected async firstUpdated(_changedProperties: PropertyValues): Promise<void> {
     super.firstUpdated(_changedProperties);
-
-    const updates: Partial<VehicleCardConfig> = {};
-
     if (!this._config.entity) {
       console.log('Entity not found, fetching...');
-      updates.entity = this.getCarEntity();
+      this._config.entity = this.getCarEntity();
     }
-    // After setting the entity, fetch the model name
-    if (updates.entity || !this._config.model_name) {
-      const entity = updates.entity || this._config.entity;
-      updates.model_name = await getModelName(this.hass, entity);
-      console.log('Model name:', updates.model_name);
-    }
-
-    if (!this._config.selected_language) {
-      updates.selected_language = localStorage.getItem('selectedLanguage') || 'en';
-      console.log('Selected language:', updates.selected_language);
-    }
-
-    if (Object.keys(updates).length > 0) {
-      console.log('Updating config with:', updates);
-      this._config = { ...this._config, ...updates };
+    if (!this._config.model_name) {
+      const modelName = await getModelName(this.hass, this._config.entity);
+      this._config = { ...this._config, model_name: modelName };
       this.configChanged();
     }
-  }
-
-  private get selectedLanguage(): string {
-    return this._config.selected_language || 'en';
   }
 
   private localize = (string: string, search = '', replace = ''): string => {
@@ -211,9 +192,9 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         ${showOptions.map(
           (option) => html`
             <ha-formfield .label=${option.label}>
-              <ha-checkbox
+              <ha-switch
                 .checked=${this._getConfigShowValue(option.configKey) !== false}
-                .value=${option.configKey}
+                .configValue=${option.configKey}
                 @change=${this._showValueChanged}
               ></ha-switch>
             </ha-formfield>
@@ -230,7 +211,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const entities = Object.keys(this.hass.states).filter(
       (entity) => entity.startsWith('sensor') && entity.endsWith('_car'),
     );
-    const modelName = this._config.model_name;
     const modelName = this._config.model_name;
 
     // Define options for the combo-box
@@ -278,31 +258,32 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private _renderThemesConfig(): TemplateResult {
     if (!this.hass) return html``;
-    const sysLang = this._system_language;
+    const customThemes = Object.keys(this.hass.themes.themes);
+    const themesOpts = ['Default', ...customThemes];
+    const sysLang = this._system_language || 'en';
     const langOpts = [
       { key: sysLang, name: 'System' },
       ...languageOptions.sort((a, b) => a.name.localeCompare(b.name)),
     ];
-    const themeMode = ['system', 'dark', 'light'];
     const themesConfig = html`
       <ha-select
         label="Language"
-        .value=${this._config?.selected_language}
+        .value=${this.selectedLanguage}
         .configValue=${'selected_language'}
         @selected=${this._valueChanged}
         @closed=${(ev: Event) => ev.stopPropagation()}
       >
         ${langOpts.map((lang) => html`<mwc-list-item value=${lang.key}>${lang.name}</mwc-list-item> `)}
       </ha-select>
-      <ha-theme-picker
-        .hass=${this.hass}
-        .value=${this._config?.selected_theme?.theme}
+      <ha-select
+        label="Theme"
+        .value=${this._config?.selected_theme?.theme || 'Default'}
         .configValue=${'theme'}
-        .includeDefault=${true}
-        @value-changed=${this._valueChanged}
+        @selected=${this._valueChanged}
         @closed=${(ev: Event) => ev.stopPropagation()}
-        .required=${false}
-      ></ha-theme-picker>
+      >
+        ${themesOpts.map((theme) => html`<mwc-list-item value=${theme}>${theme}</mwc-list-item> `)}
+      </ha-select>
 
       <ha-select
         label="Theme mode"
@@ -311,7 +292,9 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         @selected=${this._valueChanged}
         @closed=${(ev: Event) => ev.stopPropagation()}
       >
-        ${themeMode.map((mode) => html`<mwc-list-item value=${mode}>${mode}</mwc-list-item> `)}
+        <mwc-list-item value="system">System</mwc-list-item>
+        <mwc-list-item value="dark">Dark</mwc-list-item>
+        <mwc-list-item value="light">Light</mwc-list-item>
       </ha-select>
     `;
     return this.panelTemplate('themeLangConfig', 'themeLangConfig', 'mdi:palette', themesConfig);
@@ -320,14 +303,12 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   private _renderImageConfig(): TemplateResult {
     const textFormInput = html`<div class="image-config">
         ${this._config.images.map((image, index) => {
-        ${this._config.images.map((image, index) => {
           return html`<div class="custom-background-wrapper">
             <ha-textfield
               class="image-input"
               .label=${'IMAGE #' + (index + 1)}
               .configValue=${'images'}
               .value=${image.title}
-              @input=${(event: Event) => this._handleImageInputChange(event, index)}
               @input=${(event: Event) => this._handleImageInputChange(event, index)}
             ></ha-textfield>
             <div class="file-upload">
@@ -338,14 +319,10 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
         <div class="custom-background-wrapper">
           <ha-textfield
-            .label=${'Add URL or Upload (multiple allowed)'}
+            .label=${'Add URL or Upload'}
             .configValue=${'new_image_url'}
             @change=${(event: Event) => this._handleImageInputChange(event)}
-            @change=${(event: Event) => this._handleImageInputChange(event)}
           ></ha-textfield>
-          <div class="file-upload">
-            <ha-icon icon="mdi:plus" @click=${() => this._handleImageInputChange}></ha-icon>
-          </div>
           <div class="file-upload">
             <ha-icon icon="mdi:plus" @click=${() => this._handleImageInputChange}></ha-icon>
           </div>
@@ -357,7 +334,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
               class="file-input"
               @change=${this._handleFilePicked.bind(this)}
               accept="image/*"
-              multiple
               multiple
             />
           </label>
@@ -442,37 +418,17 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         ${Object.entries(servicesCtrl(this.selectedLanguage)).map(
           ([key, { name }]) => html`
             <ha-formfield .label=${name}>
-              <ha-checkbox
+              <ha-switch
                 .checked=${this._getServicesConfigValue(key as keyof Services) !== false}
-                .value="${key}"
-                @change=${this._servicesValueChangedToggle}
-              ></ha-checkbox>
+                .configValue="${key}"
+                @change=${this._servicesValueChanged}
+              ></ha-switch>
             </ha-formfield>
           `,
         )}
       </div>
     `;
     return this.panelTemplate('servicesConfig', 'servicesConfig', 'mdi:car-cog', servicesConfig);
-  }
-
-  private _servicesValueChangedToggle(event: Event): void {
-    const target = event.target as HTMLInputElement;
-    const serviceKey = target.value as keyof Services;
-    const isChecked = target.checked;
-
-    console.log(`Service ${serviceKey} was ${isChecked ? 'enabled' : 'disabled'}`);
-
-    // Update the config with the selected services
-    const updatedServices: Partial<Services> = {
-      [serviceKey]: isChecked,
-    };
-
-    this._config = {
-      ...this._config,
-      services: { ...this._config.services, ...updatedServices },
-    };
-
-    this.configChanged();
   }
 
   private _renderToast(): TemplateResult {
@@ -505,7 +461,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   /* --------------------- ADDITIONAL HANDLERS AND METHODS -------------------- */
 
   private _handleImageInputChange(ev: Event, index?: number): void {
-  private _handleImageInputChange(ev: Event, index?: number): void {
     const input = ev.target as HTMLInputElement;
     const url = input.value;
 
@@ -519,24 +474,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     } else {
       // Add new image
       images.push({ url, title: url });
-    const url = input.value;
-
-    if (!url || !this._config) return;
-
-    const images = [...this._config.images];
-
-    if (index !== undefined) {
-      // Update existing image
-      images[index] = { ...images[index], url, title: url };
-    } else {
-      // Add new image
-      images.push({ url, title: url });
       input.value = '';
-    }
-
-    this._config = { ...this._config, images };
-    console.log(index !== undefined ? 'Image changed:' : 'New image added:', url);
-    this.configChanged();
     }
 
     this._config = { ...this._config, images };
@@ -564,45 +502,16 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         console.error('Error uploading image:', error);
         this.launchToast();
       }
-    const files = Array.from(input.files); // Convert FileList to Array for easier iteration
-
-    for (const file of files) {
-      try {
-        const imageUrl = await uploadImage(this.hass, file);
-        if (!imageUrl) continue;
-
-        const imageName = file.name.toUpperCase();
-        this._addImage(imageUrl, imageName);
-      } catch (error) {
-        console.error('Error uploading image:', error);
-        this.launchToast();
-      }
     }
   }
 
-  private _addImage(url: string, title: string): void {
-    console.log('Image added:', url);
   private _addImage(url: string, title: string): void {
     console.log('Image added:', url);
     if (this._config) {
       const images = [...this._config.images];
       images.push({ url, title });
       this._config = { ...this._config, images };
-      const images = [...this._config.images];
-      images.push({ url, title });
-      this._config = { ...this._config, images };
       this.configChanged();
-    }
-  }
-
-  private _removeImage(index: number): void {
-    if (!this._config) return;
-
-    const images = [...this._config.images];
-    images.splice(index, 1);
-    this._config = { ...this._config, images };
-    console.log('Image removed:', index);
-    this.configChanged();
     }
   }
 
@@ -658,6 +567,29 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     this.configChanged();
   }
 
+  private _servicesValueChanged(ev: any): void {
+    if (!this._config || !this.hass) {
+      return;
+    }
+
+    const target = ev.target;
+    const configValue = target.configValue;
+
+    if (this[`${configValue}`] === target.checked) {
+      return;
+    }
+
+    this._config = {
+      ...this._config,
+      services: {
+        ...this._config.services,
+        [configValue]: target.checked,
+      },
+    };
+
+    this.configChanged();
+  }
+
   private _showValueChanged(ev: any): void {
     if (!this._config || !this.hass) {
       return;
@@ -676,7 +608,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     }),
       this.configChanged();
   }
-
   private _valueChanged(ev: any): void {
     if (!this._config || !this.hass) {
       return;
