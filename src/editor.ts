@@ -260,19 +260,23 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     if (!this.hass) return html``;
     const sysLang = this._system_language || 'en';
     const langOpts = [
-      { key: sysLang, name: 'System' },
+      { key: sysLang, name: 'System', nativeName: 'System' },
       ...languageOptions.sort((a, b) => a.name.localeCompare(b.name)),
     ];
     const themesConfig = html`
       <ha-select
-        label="Language"
+        .label=${this.hass.localize('ui.panel.profile.language.dropdown_label') || 'Language'}
         .value=${this.selectedLanguage}
         .configValue=${'selected_language'}
         @selected=${this._valueChanged}
         @closed=${(ev: Event) => ev.stopPropagation()}
       >
-        ${langOpts.map((lang) => html`<mwc-list-item value=${lang.key}>${lang.name}</mwc-list-item> `)}
+        ${langOpts.map(
+          (lang) =>
+            html`<mwc-list-item value=${lang.key}>${lang.nativeName ? lang.nativeName : lang.name}</mwc-list-item> `,
+        )}
       </ha-select>
+
       <ha-theme-picker
         .hass=${this.hass}
         .value=${this._config?.selected_theme?.theme}

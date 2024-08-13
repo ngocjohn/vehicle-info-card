@@ -21,14 +21,14 @@ const languages: any = {
 };
 
 export const languageOptions = [
-  { key: 'cs', name: cs.name },
-  { key: 'de', name: de.name },
-  { key: 'en', name: en.name },
-  { key: 'fr', name: fr.name },
-  { key: 'lt', name: lt.name },
-  { key: 'pl', name: pl.name },
-  { key: 'sk', name: sk.name },
-  { key: 'vi', name: vi.name },
+  { key: 'cs', name: cs.name, nativeName: cs.nativeName },
+  { key: 'de', name: de.name, nativeName: de.nativeName },
+  { key: 'en', name: en.name, nativeName: en.nativeName },
+  { key: 'fr', name: fr.name, nativeName: fr.nativeName },
+  { key: 'lt', name: lt.name, nativeName: lt.nativeName },
+  { key: 'pl', name: pl.name, nativeName: pl.nativeName },
+  { key: 'sk', name: sk.name, nativeName: sk.nativeName },
+  { key: 'vi', name: vi.name, nativeName: vi.nativeName },
 ];
 
 export { languages };
