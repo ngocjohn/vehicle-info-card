@@ -51,7 +51,7 @@ export interface VehicleImage {
 }
 
 export interface VehicleImagesList extends VehicleCardConfig {
-  images: VehicleImage[];
+  images?: VehicleImage[];
 }
 
 export interface ThemesConfig {
@@ -72,7 +72,7 @@ export interface VehicleCardConfig extends LovelaceCardConfig {
   device_tracker?: string;
   google_api_key?: string;
   selected_language?: string | null;
-  model_name?: string;
+  model_name: string;
   map_popup_config: MapPopupConfig;
   selected_theme: ThemesConfig;
   services: Services;
@@ -138,6 +138,7 @@ export const defaultConfig: Partial<VehicleCardConfig> = {
   type: 'custom:vehicle-info-card',
   name: 'Mercedes Vehicle Card',
   entity: '',
+  model_name: '',
   show_slides: false,
   show_map: false,
   show_buttons: true,

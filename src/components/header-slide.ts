@@ -6,8 +6,8 @@ import swipercss from '../css/swiper-bundle.css';
 
 @customElement('header-slide')
 export class HeaderSlide extends LitElement {
-  @property({ type: Array })
-  images: string[] = [];
+  @property({ type: Boolean }) editMode = false;
+  @property({ type: Array }) images: Array<{ url: string; title: string }> = [];
 
   @property({ type: Object })
   swiper: Swiper | null = null;
@@ -44,6 +44,18 @@ export class HeaderSlide extends LitElement {
         max-height: 150px;
         object-fit: scale-down;
       }
+      .swiper-slide .image-index {
+        position: absolute;
+        bottom: 0;
+        left: var(--vic-card-padding);
+        padding: var(--vic-gutter-gap);
+        background-color: var(--swiper-theme-color);
+        color: var(--primary-background-color);
+        font-size: 1rem;
+        font-weight: bold;
+        z-index: 1;
+      }
+
       .swiper-pagination-bullet {
         background-color: var(--swiper-theme-color);
         transition: all 0.3s ease-in-out !important;
@@ -90,14 +102,18 @@ export class HeaderSlide extends LitElement {
     if (!images || images.length === 0) {
       return html``;
     }
+    const imagesLength = images.length;
     return html`
       <section id="swiper">
         <div class="swiper-container">
           <div class="swiper-wrapper">
             ${images.map(
-              (image) => html`
+              (image, index) => html`
                 <div class="swiper-slide">
-                  <img src="${image}" />
+                  ${this.editMode
+                    ? html`<span class="image-index">[${index + 1} / ${imagesLength}] - ${image.title}</span>`
+                    : ''}
+                  <img src="${image.url}" />
                 </div>
               `,
             )}
