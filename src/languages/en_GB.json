@@ -33,7 +33,7 @@
             "soc": "Current state"
         },
         "doorAttributes": {
-            "decklidstatus": "Luggage compartment",
+            "decklidstatus": "Tailgate",
             "doorstatusfrontleft": "Door front left",
             "doorstatusfrontright": "Door front right",
             "doorstatusrearleft": "Door rear left",
