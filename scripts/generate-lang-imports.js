@@ -48,7 +48,9 @@ const languageOptions = currentFiles
   })
   .join('\n');
 
-const content = `${imports}
+const content = `// This file is generated automatically by the generate-lang-imports script. Do not modify it manually.
+
+${imports}
 
 const languages: any = {
 ${languageObjectEntries}
