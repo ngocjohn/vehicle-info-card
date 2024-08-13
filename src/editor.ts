@@ -192,11 +192,11 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         ${showOptions.map(
           (option) => html`
             <ha-formfield .label=${option.label}>
-              <ha-switch
+              <ha-checkbox
                 .checked=${this._getConfigShowValue(option.configKey) !== false}
                 .configValue=${option.configKey}
                 @change=${this._showValueChanged}
-              ></ha-switch>
+              ></ha-checkbox>
             </ha-formfield>
           `,
         )}
@@ -258,8 +258,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private _renderThemesConfig(): TemplateResult {
     if (!this.hass) return html``;
-    const customThemes = Object.keys(this.hass.themes.themes);
-    const themesOpts = ['Default', ...customThemes];
     const sysLang = this._system_language || 'en';
     const langOpts = [
       { key: sysLang, name: 'System' },
@@ -275,15 +273,15 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       >
         ${langOpts.map((lang) => html`<mwc-list-item value=${lang.key}>${lang.name}</mwc-list-item> `)}
       </ha-select>
-      <ha-select
-        label="Theme"
-        .value=${this._config?.selected_theme?.theme || 'Default'}
+      <ha-theme-picker
+        .hass=${this.hass}
+        .value=${this._config?.selected_theme?.theme}
         .configValue=${'theme'}
-        @selected=${this._valueChanged}
+        .includeDefault=${true}
+        @value-changed=${this._valueChanged}
         @closed=${(ev: Event) => ev.stopPropagation()}
-      >
-        ${themesOpts.map((theme) => html`<mwc-list-item value=${theme}>${theme}</mwc-list-item> `)}
-      </ha-select>
+        .required=${false}
+      ></ha-theme-picker>
 
       <ha-select
         label="Theme mode"
@@ -418,11 +416,11 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         ${Object.entries(servicesCtrl(this.selectedLanguage)).map(
           ([key, { name }]) => html`
             <ha-formfield .label=${name}>
-              <ha-switch
+              <ha-checkbox
                 .checked=${this._getServicesConfigValue(key as keyof Services) !== false}
                 .configValue="${key}"
                 @change=${this._servicesValueChanged}
-              ></ha-switch>
+              ></ha-checkbox>
             </ha-formfield>
           `,
         )}
