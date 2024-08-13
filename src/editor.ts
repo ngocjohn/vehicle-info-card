@@ -22,6 +22,7 @@ import { editorShowOpts } from './const/data-keys';
 import { CARD_VERSION } from './const/const';
 import { languageOptions, localize } from './localize/localize';
 import { getModelName, uploadImage } from './utils/ha-helpers';
+import { getModelName, uploadImage } from './utils/ha-helpers';
 import { loadHaComponents } from './utils/loader';
 import editorcss from './css/editor.css';
 
@@ -40,6 +41,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private convertToNewConfig(oldConfig: VehicleCardConfig): VehicleImagesList {
     console.log('converting old config to new config');
+    console.log('converting old config to new config');
     const newImages: VehicleImage[] = (oldConfig.images || []).map((url: string) => ({
       url,
       title: url,
@@ -52,11 +54,13 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _validateConfig(config: VehicleCardConfig): boolean {
-    // Check if the images are an array of objects and not an array of strings (old config)
     if (Array.isArray(config.images) && config.images.length > 0 && typeof config.images[0] === 'object') {
+      console.log('Config is valid');
       return true;
+    } else {
+      console.log('Config is invalid');
+      return false;
     }
-    return false;
   }
 
   public async setConfig(config: VehicleCardConfig): Promise<void> {
@@ -227,6 +231,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       (entity) => entity.startsWith('sensor') && entity.endsWith('_car'),
     );
     const modelName = this._config.model_name;
+    const modelName = this._config.model_name;
 
     // Define options for the combo-box
     const options = [{ value: modelName, label: modelName }];
@@ -315,12 +320,14 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   private _renderImageConfig(): TemplateResult {
     const textFormInput = html`<div class="image-config">
         ${this._config.images.map((image, index) => {
+        ${this._config.images.map((image, index) => {
           return html`<div class="custom-background-wrapper">
             <ha-textfield
               class="image-input"
               .label=${'IMAGE #' + (index + 1)}
               .configValue=${'images'}
               .value=${image.title}
+              @input=${(event: Event) => this._handleImageInputChange(event, index)}
               @input=${(event: Event) => this._handleImageInputChange(event, index)}
             ></ha-textfield>
             <div class="file-upload">
@@ -334,7 +341,11 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
             .label=${'Add URL or Upload (multiple allowed)'}
             .configValue=${'new_image_url'}
             @change=${(event: Event) => this._handleImageInputChange(event)}
+            @change=${(event: Event) => this._handleImageInputChange(event)}
           ></ha-textfield>
+          <div class="file-upload">
+            <ha-icon icon="mdi:plus" @click=${() => this._handleImageInputChange}></ha-icon>
+          </div>
           <div class="file-upload">
             <ha-icon icon="mdi:plus" @click=${() => this._handleImageInputChange}></ha-icon>
           </div>
@@ -346,6 +357,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
               class="file-input"
               @change=${this._handleFilePicked.bind(this)}
               accept="image/*"
+              multiple
               multiple
             />
           </label>
@@ -493,6 +505,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   /* --------------------- ADDITIONAL HANDLERS AND METHODS -------------------- */
 
   private _handleImageInputChange(ev: Event, index?: number): void {
+  private _handleImageInputChange(ev: Event, index?: number): void {
     const input = ev.target as HTMLInputElement;
     const url = input.value;
 
@@ -506,7 +519,24 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     } else {
       // Add new image
       images.push({ url, title: url });
+    const url = input.value;
+
+    if (!url || !this._config) return;
+
+    const images = [...this._config.images];
+
+    if (index !== undefined) {
+      // Update existing image
+      images[index] = { ...images[index], url, title: url };
+    } else {
+      // Add new image
+      images.push({ url, title: url });
       input.value = '';
+    }
+
+    this._config = { ...this._config, images };
+    console.log(index !== undefined ? 'Image changed:' : 'New image added:', url);
+    this.configChanged();
     }
 
     this._config = { ...this._config, images };
@@ -534,16 +564,45 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         console.error('Error uploading image:', error);
         this.launchToast();
       }
+    const files = Array.from(input.files); // Convert FileList to Array for easier iteration
+
+    for (const file of files) {
+      try {
+        const imageUrl = await uploadImage(this.hass, file);
+        if (!imageUrl) continue;
+
+        const imageName = file.name.toUpperCase();
+        this._addImage(imageUrl, imageName);
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        this.launchToast();
+      }
     }
   }
 
+  private _addImage(url: string, title: string): void {
+    console.log('Image added:', url);
   private _addImage(url: string, title: string): void {
     console.log('Image added:', url);
     if (this._config) {
       const images = [...this._config.images];
       images.push({ url, title });
       this._config = { ...this._config, images };
+      const images = [...this._config.images];
+      images.push({ url, title });
+      this._config = { ...this._config, images };
       this.configChanged();
+    }
+  }
+
+  private _removeImage(index: number): void {
+    if (!this._config) return;
+
+    const images = [...this._config.images];
+    images.splice(index, 1);
+    this._config = { ...this._config, images };
+    console.log('Image removed:', index);
+    this.configChanged();
     }
   }
 
