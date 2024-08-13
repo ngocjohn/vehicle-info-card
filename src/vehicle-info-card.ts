@@ -59,7 +59,6 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   @property({ type: Object }) private config!: VehicleCardConfig;
   @property({ type: Boolean }) public editMode = false;
 
-  @state() private selectedLanguage!: string;
   @state() private selectedTheme!: string;
   @state() private vehicleEntities: VehicleEntities = {};
   @state() private additionalCards: { [key: string]: any[] } = {};
@@ -123,7 +122,6 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       ...config,
     };
     this.selectedTheme = this.config.selected_theme?.theme || 'Default';
-    this.selectedLanguage = this.config.selected_language || localStorage.getItem('selectedLanguage') || 'en';
     const lang = this.selectedLanguage;
 
     for (const cardType of cardTypes(lang)) {
@@ -198,6 +196,10 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     }
     window.removeEventListener('editor-event', this._editorEventsHandler);
     super.disconnectedCallback();
+  }
+
+  private get selectedLanguage(): string {
+    return this.config.selected_language || localStorage.getItem('selectedLanguage') || 'en';
   }
 
   private async createCards(cardConfigs: LovelaceCardConfig[], stateProperty: string): Promise<void> {
@@ -804,7 +806,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
                   ? html`
                       <ha-icon
                         class="subcard-icon ${subCard.visible ? 'active' : ''}"
-                        icon="mdi:chevron-right"
+                        icon="mdi:chevron-down"
                       ></ha-icon>
                     `
                   : ''}
@@ -920,7 +922,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       if (key === 'fromStart' || key === 'fromReset' || key === 'ecoScores') {
         return html`
           <div class="subcard-icon ${active ? 'active' : ''}" @click=${() => toggleSubTripCard(key)}>
-            <ha-icon icon="mdi:chevron-right"></ha-icon>
+            <ha-icon icon="mdi:chevron-down"></ha-icon>
           </div>
         `;
       }
