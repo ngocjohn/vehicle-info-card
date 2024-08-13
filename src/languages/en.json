@@ -32,7 +32,7 @@
             "soc": "Current state"
         },
         "doorAttributes": {
-            "decklidstatus": "Deck lid",
+            "decklidstatus": "Luggage compartment",
             "doorstatusfrontleft": "Door front left",
             "doorstatusfrontright": "Door front right",
             "doorstatusrearleft": "Door rear left",
@@ -51,7 +51,7 @@
         "lockAttributes": {
             "doorlockstatusfrontleft": "Door lock front left",
             "doorlockstatusfrontright": "Door lock front right",
-            "doorlockstatusgas": "Gas lock",
+            "doorlockstatusgas": "Fuel filler flap lock",
             "doorlockstatusrearleft": "Door lock rear left",
             "doorlockstatusrearright": "Door lock rear right"
         },
