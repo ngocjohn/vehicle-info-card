@@ -18,6 +18,26 @@
 - **Visual Slideshow**: Features a visual slideshow of the vehicle.
 - **Centralized Remote Control**: Offers available remote control functions and settings, all accessible from a single card.
 - **Individual Sub-Card Customization**: Allows customization for each individual sub-card to suit specific needs and preferences.
+- **Multilingual Support**: The card includes various translations, making it accessible in multiple languages.
+
+### Supported Localization
+
+<details>
+  <summary>The following languages are supported in this project</summary>
+
+| Language Code | Language (Native Name) |
+| ------------- | ---------------------- |
+| `cs.json`     | Čeština                |
+| `de.json`     | Deutsch                |
+| `en.json`     | English                |
+| `en_GB.json`  | English (British)      |
+| `fr.json`     | Français               |
+| `lt.json`     | Lietuvių               |
+| `pl.json`     | Polski                 |
+| `sk.json`     | Slovenčina             |
+| `vi.json`     | Tiếng Việt             |
+
+</details>
 
 ### View options
 
