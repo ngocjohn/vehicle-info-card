@@ -322,14 +322,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   private _renderImageConfig(): TemplateResult {
     const configImages = this._config.images as VehicleImage[];
 
-    const showImageIndex = html`<ha-formfield .label=${'Show Image Index'}>
-      <ha-checkbox
-        .checked=${this._config?.show_image_index !== false}
-        .configValue=${'show_image_index'}
-        @change=${this._valueChanged}
-      ></ha-checkbox>
-    </ha-formfield>`;
-
     const imageList = html`<div class="images-list" id="images-list">
       ${repeat(
         configImages,
