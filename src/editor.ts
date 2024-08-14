@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { LitElement, html, TemplateResult, CSSResultGroup, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators';
+import { repeat } from 'lit/directives/repeat';
 import YAML from 'yaml';
 
 // Custom card helpers
@@ -21,9 +22,11 @@ import { cardTypes } from './const/data-keys';
 import { editorShowOpts } from './const/data-keys';
 import { CARD_VERSION } from './const/const';
 import { languageOptions, localize } from './localize/localize';
-import { getModelName, uploadImage, handleFirstUpdated } from './utils/ha-helpers';
+import { uploadImage, handleFirstUpdated } from './utils/ha-helpers';
 import { loadHaComponents } from './utils/loader';
 import editorcss from './css/editor.css';
+
+import Sortable from 'sortablejs';
 
 @customElement('vehicle-info-card-editor')
 export class VehicleCardEditor extends LitElement implements LovelaceCardEditor {
@@ -31,7 +34,11 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   @state() private _config!: VehicleCardConfig;
   @state() private _activeSubcardType: string | null = null;
+  @state() private _newImageUrl: string = '';
+
   private _system_language = localStorage.getItem('selectedLanguage');
+  private _sortable: Sortable | null = null;
+  private _selectedItems: Set<string> = new Set();
 
   connectedCallback() {
     super.connectedCallback();
@@ -67,6 +74,43 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   protected async firstUpdated(changedProperties: PropertyValues): Promise<void> {
     super.firstUpdated(changedProperties);
     await handleFirstUpdated(this, changedProperties);
+    const el = this.shadowRoot!.getElementById('images-list');
+    if (el) {
+      this._sortable = new Sortable(el, {
+        handle: '.handle',
+        animation: 150,
+        ghostClass: 'ghost',
+        onEnd: (evt) => {
+          console.log('Sortable onEnd triggered');
+          this._handleSortEnd(evt);
+        },
+      });
+      console.log('Created sortable:', this._sortable);
+    }
+  }
+
+  protected updated(changedProperties: PropertyValues): void {
+    super.updated(changedProperties);
+  }
+
+  private _handleSortEnd(evt: any) {
+    const oldIndex = evt.oldIndex;
+    const newIndex = evt.newIndex;
+
+    console.log('Images before reorder:', this._config.images);
+    console.log(`Reordering images: moving from index ${oldIndex} to ${newIndex}`);
+
+    if (oldIndex !== newIndex) {
+      this._reorderImages(oldIndex, newIndex);
+    }
+  }
+
+  private _reorderImages(oldIndex: number, newIndex: number) {
+    const configImages = this._config.images!.concat();
+    const movedItem = configImages.splice(oldIndex, 1)[0];
+    configImages.splice(newIndex, 0, movedItem);
+    this._config = { ...this._config, images: configImages };
+    this.configChanged();
   }
 
   private get selectedLanguage(): string {
@@ -75,14 +119,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private localize = (string: string, search = '', replace = ''): string => {
     return localize(string, this.selectedLanguage, search, replace);
-  };
-
-  private getCarEntity = (): string => {
-    if (!this.hass) return '';
-    const entities = Object.keys(this.hass.states).filter(
-      (entity) => entity.startsWith('sensor') && entity.endsWith('_car'),
-    );
-    return entities[0] || '';
   };
 
   private _getServicesConfigValue<K extends keyof Services>(key: K): boolean {
@@ -284,6 +320,8 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _renderImageConfig(): TemplateResult {
+    const configImages = this._config.images as VehicleImage[];
+
     const showImageIndex = html`<ha-formfield .label=${'Show Image Index'}>
       <ha-checkbox
         .checked=${this._config?.show_image_index !== false}
@@ -292,52 +330,99 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       ></ha-checkbox>
     </ha-formfield>`;
 
-    const fileUploadWrapper = html`
-      <ha-button @click=${() => this.shadowRoot?.getElementById('file-upload-new')?.click()}> Upload Image </ha-button>
+    const imageList = html`<div class="images-list" id="images-list">
+      ${repeat(
+        configImages,
+        (image) => image.url,
+        (image, index) =>
+          html`<div class="custom-background-wrapper" data-url="${image.url}">
+            <div class="handle"><ha-icon icon="mdi:drag"></ha-icon></div>
+            <ha-textfield
+              class="image-input"
+              .label=${'IMAGE #' + (index + 1)}
+              .configValue=${'images'}
+              .value=${image.title}
+              @input=${(event: Event) => this._handleImageInputChange(event, index)}
+            ></ha-textfield>
+            <ha-checkbox
+              .checked=${false}
+              @change=${(event: Event) => this._toggleSelection(event, image.url)}
+            ></ha-checkbox>
+          </div>`,
+      )}
+    </div>`;
+    const showIndexDeleteBtn =
+      this._config.images && this._config.images.length > 0
+        ? html` <div class="custom-background-wrapper">
+            <ha-formfield .label=${'Show Image Index'}>
+              <ha-checkbox
+                .checked=${this._config?.show_image_index !== false}
+                .configValue=${'show_image_index'}
+                @change=${this._valueChanged}
+              ></ha-checkbox>
+            </ha-formfield>
+            <ha-button @click=${this._deleteSelectedItems}>Delete Selected</ha-button>
+          </div>`
+        : '';
 
-      <input
-        type="file"
-        id="file-upload-new"
-        class="file-input"
-        @change=${this._handleFilePicked.bind(this)}
-        accept="image/*"
-        multiple
-      />
-    `;
-
-    const imageList = html`<div class="image-config">
-      ${this._config.images.map((image, index) => {
-        return html`<div class="custom-background-wrapper">
-          <ha-textfield
-            class="image-input"
-            .label=${'IMAGE #' + (index + 1)}
-            .configValue=${'images'}
-            .value=${image.title}
-            @input=${(event: Event) => this._handleImageInputChange(event, index)}
-          ></ha-textfield>
-          <div class="file-upload">
-            <ha-icon icon="mdi:delete" @click=${() => this._removeImage(index)}></ha-icon>
-          </div>
-        </div>`;
-      })}
-
+    const urlInput = html`
       <div class="custom-background-wrapper">
+        <ha-button @click=${() => this.shadowRoot?.getElementById('file-upload-new')?.click()}>
+          Upload Image
+        </ha-button>
+
+        <input
+          type="file"
+          id="file-upload-new"
+          class="file-input"
+          @change=${this._handleFilePicked.bind(this)}
+          accept="image/*"
+          multiple
+        />
         <ha-textfield
           .label=${'Add URL'}
           .configValue=${'new_image_url'}
-          @change=${(event: Event) => this._handleImageInputChange(event)}
+          .value=${this._newImageUrl}
+          @input=${this.toggleAddButton}
         ></ha-textfield>
-        <div class="file-upload">
-          <ha-icon icon="mdi:plus" @click=${() => this._handleImageInputChange}></ha-icon>
+        <div class="new-url-btn">
+          <ha-icon icon="mdi:plus" @click=${this._addNewImageUrl}></ha-icon>
         </div>
       </div>
-    </div> `;
+    `;
 
-    const content = html`${imageList}
-      <div class="custom-background-wrapper">${showImageIndex} ${fileUploadWrapper}</div>
-      ${this._renderToast()}`;
+    const content = html`${imageList}${showIndexDeleteBtn} ${urlInput} ${this._renderToast()}`;
 
     return this.panelTemplate('imagesConfig', 'imagesConfig', 'mdi:image', content);
+  }
+
+  private _toggleSelection(event: Event, imageUrl: string): void {
+    const checkbox = event.target as HTMLInputElement;
+    if (checkbox.checked) {
+      this._selectedItems.add(imageUrl);
+    } else {
+      this._selectedItems.delete(imageUrl);
+    }
+    console.log('Selected items:', this._selectedItems);
+  }
+
+  private _deleteSelectedItems(): void {
+    if (this._selectedItems.size === 0) {
+      return;
+    }
+
+    const remainingImages = this._config.images.filter((image) => !this._selectedItems.has(image.url));
+
+    console.log('Remaining images after deletion:', remainingImages);
+
+    // Update the config with the remaining images
+    this._config = { ...this._config, images: remainingImages };
+
+    // Clear the selected items
+    this._selectedItems.clear();
+
+    // Trigger any additional change handlers
+    this.configChanged();
   }
 
   private _renderMapPopupConfig(): TemplateResult {
@@ -455,6 +540,26 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   /* --------------------- ADDITIONAL HANDLERS AND METHODS -------------------- */
+  private toggleAddButton(ev: Event): void {
+    const target = ev.target as HTMLInputElement;
+    const addButton = target.parentElement?.querySelector('.new-url-btn') as HTMLElement;
+    if (!addButton) return;
+    if (target.value && target.value.length > 0) {
+      this._newImageUrl = target.value;
+      addButton.classList.add('show');
+    } else {
+      addButton.classList.remove('show');
+    }
+  }
+
+  private _addNewImageUrl(): void {
+    if (!this._newImageUrl || !this._config) return;
+    const images = [...this._config.images];
+    images.push({ url: this._newImageUrl, title: this._newImageUrl });
+    this._config = { ...this._config, images };
+    this._newImageUrl = '';
+    this.configChanged();
+  }
 
   private _handleImageInputChange(ev: Event, index?: number): void {
     const input = ev.target as HTMLInputElement;
@@ -511,13 +616,27 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     }
   }
 
-  private _removeImage(index: number): void {
+  private _removeImage(imageUrl: string): void {
     if (!this._config) return;
 
-    const images = [...this._config.images];
-    images.splice(index, 1);
-    this._config = { ...this._config, images };
-    console.log('Image removed:', index);
+    console.log('Images before removal:', this._config.images);
+
+    // Find the index of the image by its URL before removing
+    const imageIndex = this._config.images.findIndex((image) => image.url === imageUrl);
+    console.log('Attempting to remove image at index:', imageIndex);
+
+    // If the image is not found, return early (safeguard)
+    if (imageIndex === 0) return;
+
+    // Create a new array without the image to be removed
+    const images = this._config.images.filter((image) => image.url !== imageUrl);
+
+    console.log('Images after removal:', images);
+
+    // Force LitElement to recognize the change by reassigning to a new array
+    this._config = { ...this._config, images: [...images] };
+
+    // Trigger any additional change handlers
     this.configChanged();
   }
 
