@@ -19,10 +19,6 @@ ha-textfield {
   display: block;
   width: 100%;
 }
-/* ha-formfield {
-  padding-bottom: 8px;
-  width: 100%;
-} */
 
 ha-switch {
   --mdc-theme-secondary: var(--switch-checked-color);
@@ -63,16 +59,41 @@ h3 {
   width: 100%;
   justify-content: space-between;
 }
+.custom-background-wrapper.dragging {
+  background-color: var(--primary-color);
+}
+.custom-background-wrapper .handle {
+  cursor: grab;
+  color: var(--secondary-text-color);
+}
+
+.custom-background-wrapper .handle:active {
+  cursor: grabbing;
+  color: var(--primary-color);
+}
+.ghost {
+  opacity: 0.5;
+  background: var(--primary-color);
+  border-radius: var(--ha-card-border-radius, 12px);
+}
+
+.new-url-btn,
 .file-input {
   display: none;
 }
+
+.new-url-btn.show,
 .file-upload {
   cursor: pointer;
   display: inline-block;
+  color: var(--secondary-text-color);
 }
+
+.new-url-btn:hover,
 .file-upload:hover {
   color: var(--primary-color);
 }
+
 .image-input {
   text-transform: uppercase !important;
   letter-spacing: inherit;
