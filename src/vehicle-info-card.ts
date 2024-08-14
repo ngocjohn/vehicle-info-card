@@ -31,7 +31,7 @@ import * as StateMapping from './const/state-mapping';
 
 import { AttributeType, SubcardVisibilityProperties, cardTypes } from './const/data-keys';
 // Styles and Assets
-import { amgBlack, amgWhite, tyreBg } from './const/imgconst';
+import { amgBlack, amgWhite, tyreBg, logoLoading } from './const/imgconst';
 import styles from './css/styles.css';
 
 // Components
@@ -58,12 +58,12 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   @property({ attribute: false }) public hass!: HomeAssistant;
   @property({ type: Object }) private config!: VehicleCardConfig;
   @property({ type: Boolean }) public editMode = false;
+  @property({ type: Boolean }) loading = true;
 
   @state() private selectedTheme!: string;
   @state() private vehicleEntities: VehicleEntities = {};
   @state() private additionalCards: { [key: string]: any[] } = {};
   @state() private activeCardType: string | null = null;
-
   @state() private ecoScoresVisible!: boolean;
   @state() private lockAttributesVisible!: boolean;
   @state() private windowAttributesVisible!: boolean;
@@ -71,6 +71,8 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   @state() private chargingInfoVisible!: boolean;
   @state() private tripFromStartVisible!: boolean;
   @state() private tripFromResetVisible!: boolean;
+
+  @state() private isTyreHorizontal!: boolean;
 
   constructor() {
     super();
@@ -152,6 +154,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     this.configureAsync();
     this.applyTheme(this.selectedTheme);
   }
+
   private getGridRowSize(): number {
     const { show_slides, show_map, show_buttons } = this.config;
 
@@ -164,7 +167,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
   public getCardSize() {
     // console.log('mansory', this.getGridRowSize());
-    return 2;
+    return 3;
   }
 
   public getLayoutOptions() {
@@ -187,6 +190,14 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     if (process.env.ROLLUP_WATCH === 'true') {
       window.BenzCard = this;
     }
+    if (this.editMode !== true) {
+      setTimeout(() => {
+        this.loading = false;
+      }, 2000);
+    } else {
+      this.loading = false;
+    }
+
     this.applyMarquee();
   }
 
@@ -247,6 +258,9 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
   // https://lit.dev/docs/components/rendering/
   protected render(): TemplateResult | void {
+    if (this.loading) {
+      return this._renderLoading();
+    }
     if (!this.config || !this.hass) {
       return html``;
     }
@@ -259,6 +273,17 @@ export class VehicleCard extends LitElement implements LovelaceCard {
           <h1>${name}</h1>
         </header>
         ${this.activeCardType ? this._renderCustomCard() : this._renderMainCard()}
+      </ha-card>
+    `;
+  }
+
+  // Render loading template
+  private _renderLoading(): TemplateResult {
+    return html`
+      <ha-card>
+        <div class="loading-image">
+          <img src="${logoLoading}" alt="Loading" />
+        </div>
       </ha-card>
     `;
   }
@@ -285,42 +310,48 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     const defaultIndicData = this.createDataArray([{ key: 'lockSensor' }, { key: 'parkBrake' }]);
     const isChargingVisible = this.isCharging && this.config.enable_services_control ? 'base-menu' : '';
 
-    const defaultIdicator = defaultIndicData.map(({ state, icon }) => {
-      return html`
+    // Helper function to render items
+    const renderItem = (icon: string, label: string, onClick: () => void, isActive: boolean = false) => html`
+      <div class="item active-btn" @click=${onClick}>
+        <ha-icon icon=${icon}></ha-icon>
+        <div class="added-item-arrow">
+          <span class="${isChargingVisible}">${label}</span>
+          <div class="subcard-icon ${isActive ? 'active' : ''}" style="margin-bottom: 2px">
+            <ha-icon icon="mdi:chevron-down"></ha-icon>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Render default indicators
+    const defaultIndicators = defaultIndicData.map(
+      ({ state, icon }) => html`
         <div class="item">
           <ha-icon .icon=${icon}></ha-icon>
           <div><span class="${isChargingVisible}">${state}</span></div>
         </div>
-      `;
-    });
+      `,
+    );
 
+    // Render added charging info if charging
     const addedChargingInfo = this.isCharging
-      ? html` <div class="item active-btn" @click=${() => (this.chargingInfoVisible = !this.chargingInfoVisible)}>
-          <ha-icon icon=${'mdi:ev-station'}></ha-icon>
-          <div class="added-item-arrow">
-            <span class="${isChargingVisible}">${this.localize('card.common.stateCharging')}</span>
-            <div class="subcard-icon ${this.chargingInfoVisible ? 'active' : ''}" style="margin-bottom: 2px">
-              <ha-icon icon="mdi:chevron-right"></ha-icon>
-            </div>
-          </div>
-        </div>`
-      : html``;
+      ? renderItem(
+          'mdi:ev-station',
+          this.localize('card.common.stateCharging'),
+          () => (this.chargingInfoVisible = !this.chargingInfoVisible),
+          this.chargingInfoVisible,
+        )
+      : nothing;
 
+    // Render service control if enabled
     const serviceControl = this.config.enable_services_control
-      ? html`
-          <div class="item active-btn" @click=${() => this.toggleCardFromButtons('servicesCard')}>
-            <ha-icon icon="mdi:car-cog"></ha-icon>
-            <div class="added-item-arrow">
-              <span class="${isChargingVisible}">${this.localize('card.common.titleServices')}</span>
-              <div class="subcard-icon" style="margin-bottom: 2px">
-                <ha-icon icon="mdi:chevron-right"></ha-icon>
-              </div>
-            </div>
-          </div>
-        `
-      : html``;
+      ? renderItem('mdi:car-cog', this.localize('card.common.titleServices'), () =>
+          this.toggleCardFromButtons('servicesCard'),
+        )
+      : nothing;
 
-    return html`<div class="info-box">${defaultIdicator} ${serviceControl} ${addedChargingInfo}</div> `;
+    // Combine all parts and render
+    return html` <div class="info-box">${defaultIndicators} ${serviceControl} ${addedChargingInfo}</div> `;
   }
 
   private _renderChargingInfo(): TemplateResult | void {
@@ -631,14 +662,22 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     const tyreInfo = isPressureWarning ? tireWarningProblem : tireWarningOk;
     const infoClass = isPressureWarning ? 'warning' : '';
 
+    const isHorizontal = this.isTyreHorizontal ? 'rotated' : '';
+    const toggleHorizontal = () => {
+      this.isTyreHorizontal = !this.isTyreHorizontal;
+    };
+
     return html`
       <div class="default-card">
         <div class="data-header">${tireCardTitle}</div>
-        <div class="data-box tyre-wrapper">
+        <div class="tyre-toggle-btn click-shrink" @click=${toggleHorizontal}>
+          <ha-icon icon="mdi:rotate-right-variant"></ha-icon>
+        </div>
+        <div class="data-box tyre-wrapper ${isHorizontal}">
           <div class="background" style="background-image: url(${tyreBg})"></div>
           ${DataKeys.tyrePressures(lang).map(
             (tyre) =>
-              html` <div class="tyre-box ${tyre.key.replace('tirePressure', '').toLowerCase()}">
+              html` <div class="tyre-box ${isHorizontal} ${tyre.key.replace('tirePressure', '').toLowerCase()}">
                 <span class="tyre-value">${this.getStateDisplay(this.vehicleEntities[tyre.key]?.entity_id)}</span>
                 <span class="tyre-name">${tyre.name}</span>
               </div>`,
