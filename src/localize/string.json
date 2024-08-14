@@ -52,7 +52,7 @@
         "lockAttributes": {
             "doorlockstatusfrontleft": "Door lock front left",
             "doorlockstatusfrontright": "Door lock front right",
-            "doorlockstatusgas": "Fuel filler flap lock",
+            "doorlockstatusgas": "Gas cap lock",
             "doorlockstatusrearleft": "Door lock rear left",
             "doorlockstatusrearright": "Door lock rear right"
         },
