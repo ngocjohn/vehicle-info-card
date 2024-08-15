@@ -23,7 +23,7 @@
         "cardType": {
             "ecoCards": "Eco display",
             "tripCards": "Trip data",
-            "tyreCards": "Tyre pressure",
+            "tyreCards": "Tire pressure",
             "vehicleCards": "Vehicle status"
         },
         "chargingOverview": {
@@ -153,8 +153,8 @@
             "tirePressureRearLeft": "Rear left",
             "tirePressureRearRight": "Rear right",
             "tireWarningOk": "No pressure loss detected",
-            "tireWarningProblem": "Pressure loss detected. Check tyres.",
-            "tyrePressure": "Tyre pressures"
+            "tireWarningProblem": "Pressure loss detected. Check tires.",
+            "tyrePressure": "Tire pressures"
         },
         "vehicleCard": {
             "doorStatusOverall": "Doors",
