@@ -32,6 +32,8 @@ const sensorDeviceFilters: {
   averageSpeedStart: { suffix: '_averagespeedstart' },
   distanceReset: { suffix: '_distancereset' },
   distanceStart: { suffix: '_distancestart' },
+  distanceZEReset: { suffix: '_distancezereset' },
+  distanceZEStart: { suffix: '_distancezestart' },
   liquidConsumptionReset: { suffix: '_liquidconsumptionreset' },
   liquidConsumptionStart: { suffix: '_liquidconsumptionstart' },
   electricConsumptionReset: { suffix: '_electricconsumptionreset' },
