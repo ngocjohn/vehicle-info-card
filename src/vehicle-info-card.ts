@@ -44,6 +44,7 @@ import './components/remote-control';
 import { localize } from './localize/localize';
 import { formatTimestamp, convertMinutes } from './utils/helpers';
 import { setupCardListeners } from './utils/ha-helpers';
+// import { getVehicleEntities } from './test/get-device-entities_test';
 import { getVehicleEntities } from './utils/ha-helpers';
 
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
@@ -397,14 +398,14 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       getEntityInfo(this.vehicleEntities[entity]?.entity_id),
     );
 
-    const renderInfoBox = (icon: string, state: number, fuelInfo: string, rangeInfo: string) => html`
-      <div class="info-box">
+    const renderInfoBox = (icon: string, state: number, fuelInfo: string, rangeInfo: string, eletric: boolean) => html`
+      <div class="info-box range">
         <div class="item">
           <ha-icon icon="${icon}"></ha-icon>
           <div><span>${fuelInfo}</span></div>
         </div>
         <div class="fuel-wrapper">
-          <div class="fuel-level-bar" style="width: ${state}%;"></div>
+          <div class="fuel-level-bar ${eletric ? 'electric' : ''}" style="width: ${state}%;"></div>
         </div>
         <div class="item">
           <span>${rangeInfo}</span>
@@ -412,11 +413,49 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       </div>
     `;
 
-    return fuelInfo?.state && rangeLiquidInfo?.state
-      ? renderInfoBox('mdi:gas-station', fuelInfo.state, fuelInfo.stateDisplay, rangeLiquidInfo.stateDisplay)
-      : rangeElectricInfo?.state && socInfo?.state
-        ? renderInfoBox('mdi:ev-station', socInfo.state, socInfo.stateDisplay, rangeElectricInfo.stateDisplay)
-        : undefined;
+    const renderBothInfoBoxes = () =>
+      html` <div class="combined-info-box">
+        ${fuelInfo && rangeLiquidInfo
+          ? renderInfoBox(
+              'mdi:gas-station',
+              fuelInfo.state!,
+              fuelInfo.stateDisplay!,
+              rangeLiquidInfo.stateDisplay!,
+              false,
+            )
+          : ''}
+        ${socInfo && rangeElectricInfo
+          ? renderInfoBox(
+              'mdi:ev-station',
+              socInfo.state!,
+              socInfo.stateDisplay!,
+              rangeElectricInfo.stateDisplay!,
+              true,
+            )
+          : ''}
+      </div>`;
+
+    if (rangeLiquidInfo && fuelInfo && rangeElectricInfo && socInfo) {
+      return renderBothInfoBoxes();
+    } else if (rangeLiquidInfo && fuelInfo) {
+      return renderInfoBox(
+        'mdi:gas-station',
+        fuelInfo.state!,
+        fuelInfo.stateDisplay!,
+        rangeLiquidInfo.stateDisplay!,
+        false,
+      );
+    } else if (rangeElectricInfo && socInfo) {
+      return renderInfoBox(
+        'mdi:ev-station',
+        socInfo.state!,
+        socInfo.stateDisplay!,
+        rangeElectricInfo.stateDisplay!,
+        true,
+      );
+    } else {
+      return undefined;
+    }
   }
 
   private _renderHeaderSlides(): TemplateResult {

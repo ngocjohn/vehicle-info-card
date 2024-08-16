@@ -77,6 +77,14 @@ header h1 {
   transition: all 0.5s ease;
   margin-bottom: var(--vic-gutter-gap);
 }
+.combined-info-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  width: 100%;
+  height: fit-content;
+}
 
 .info-box {
   --mdc-icon-size: 17px;
@@ -88,8 +96,17 @@ header h1 {
   height: fit-content;
   gap: var(--vic-gutter-gap);
   flex-wrap: wrap;
-  /* opacity: 0.8; */
-  /* text-transform: capitalize; */
+}
+
+.info-box.range {
+  flex-wrap: nowrap !important;
+  justify-content: center;
+  text-wrap: nowrap;
+  .item {
+    display: flex;
+    align-items: center;
+    gap: 4px !important;
+  }
 }
 
 .info-box .item {
@@ -153,15 +170,18 @@ header h1 {
   background-color: #909090;
   border-radius: 5px;
   position: relative;
-  .fuel-level-bar {
-    position: absolute;
-    background-color: #4caf50;
-    border-radius: 5px;
-    transition: width 0.5s ease;
-    height: 5px;
-  }
+}
+.fuel-level-bar {
+  position: absolute;
+  background-color: #4caf50;
+  border-radius: 5px;
+  transition: width 0.5s ease;
+  height: 5px;
 }
 
+.fuel-level-bar.electric {
+  background-color: #2196f3 !important;
+}
 .grid-container {
   display: grid;
   grid-template-columns: repeat(2, minmax(140px, 1fr));
