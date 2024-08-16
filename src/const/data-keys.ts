@@ -72,6 +72,8 @@ export const tripOverview = (lang: string) => [
 export const tripFromReset = (lang: string): CardItem[] => [
   createItem('distanceReset', 'tripCard.distanceReset', lang),
   createItem('drivenTimeReset', 'tripCard.drivenTimeReset', lang, 'mdi:clock'),
+  createItem('distanceZEReset', 'tripCard.distanceZEReset', lang),
+  createItem('drivenTimeZEReset', 'tripCard.drivenTimeZEReset', lang, 'mdi:clock'),
   createItem('averageSpeedReset', 'tripCard.averageSpeedReset', lang, 'mdi:speedometer'),
   createItem('liquidConsumptionReset', 'tripCard.liquidConsumptionReset', lang),
   createItem('electricConsumptionReset', 'tripCard.electricConsumptionReset', lang),
@@ -80,6 +82,8 @@ export const tripFromReset = (lang: string): CardItem[] => [
 export const tripFromStart = (lang: string): CardItem[] => [
   createItem('distanceStart', 'tripCard.distanceStart', lang),
   createItem('drivenTimeStart', 'tripCard.drivenTimeStart', lang, 'mdi:clock'),
+  createItem('distanceZEStart', 'tripCard.distanceZEStart', lang),
+  createItem('drivenTimeZEStart', 'tripCard.drivenTimeZEStart', lang, 'mdi:clock'),
   createItem('averageSpeedStart', 'tripCard.averageSpeedStart', lang, 'mdi:speedometer-slow'),
   createItem('liquidConsumptionStart', 'tripCard.liquidConsumptionStart', lang),
   createItem('electricConsumptionStart', 'tripCard.electricConsumptionStart', lang),

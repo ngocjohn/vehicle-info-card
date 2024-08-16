@@ -44,7 +44,7 @@ import './components/remote-control';
 import { localize } from './localize/localize';
 import { formatTimestamp, convertMinutes } from './utils/helpers';
 import { setupCardListeners } from './utils/ha-helpers';
-// import { getVehicleEntities } from './test/get-device-entities_test';
+// import { getVehicleEntities } from './test/get-device-entities_test'; // Mocked data
 import { getVehicleEntities } from './utils/ha-helpers';
 
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
@@ -1101,6 +1101,13 @@ export class VehicleCard extends LitElement implements LovelaceCard {
         const entityKey = key === 'drivenTimeReset' ? 'distanceReset' : 'distanceStart';
         const timeState = this.getEntityAttribute(this.vehicleEntities[entityKey]?.entity_id, key);
         newState = timeState ? convertMinutes(parseInt(timeState)) : '';
+        break;
+
+      case 'drivenTimeZEReset':
+      case 'drivenTimeZEStart':
+        const zeKey = key === 'drivenTimeZEReset' ? 'distanceZEReset' : 'distanceZEStart';
+        const zeTime = this.getEntityAttribute(this.vehicleEntities[zeKey]?.entity_id, key);
+        newState = zeTime ? convertMinutes(parseInt(zeTime)) : '';
         break;
     }
 
