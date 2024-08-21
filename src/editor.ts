@@ -23,7 +23,8 @@ import { editorShowOpts } from './const/data-keys';
 import { CARD_VERSION } from './const/const';
 import { languageOptions, localize } from './localize/localize';
 import { uploadImage, handleFirstUpdated } from './utils/ha-helpers';
-import { loadHaComponents } from './utils/loader';
+import { loadHaComponents, fetchLatestReleaseTag } from './utils/loader';
+import { compareVersions } from './utils/helpers';
 import editorcss from './css/editor.css';
 
 import Sortable from 'sortablejs';
@@ -36,13 +37,17 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   @state() private _activeSubcardType: string | null = null;
   @state() private _newImageUrl: string = '';
 
-  private _system_language = localStorage.getItem('selectedLanguage');
+  @state() private _latestRelease: string = '';
+  private _system_language = this.hass?.language;
   private _sortable: Sortable | null = null;
   private _selectedItems: Set<string> = new Set();
 
   connectedCallback() {
     super.connectedCallback();
     void loadHaComponents();
+    if (process.env.ROLLUP_WATCH === 'true') {
+      window.BenzEditor = this;
+    }
   }
 
   private convertToNewConfig(oldConfig: VehicleCardConfig): VehicleImagesList {
@@ -81,11 +86,9 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         animation: 150,
         ghostClass: 'ghost',
         onEnd: (evt) => {
-          console.log('Sortable onEnd triggered');
           this._handleSortEnd(evt);
         },
       });
-      console.log('Created sortable:', this._sortable);
     }
   }
 
@@ -149,10 +152,23 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       <div class="base-config">
         ${this._renderNameEntityForm()} ${this._renderCardEditorButtons()} ${this._renderMapPopupConfig()}
         ${this._renderImageConfig()} ${this._renderServicesConfig()} ${this._renderThemesConfig()}
-        ${this._renderSwitches()}
-        <div class="note">
-          <p>version: ${CARD_VERSION}</p>
+        ${this._renderSwitches()} ${this._renderVersionInfo()}
+      </div>
+    `;
+  }
+
+  private _renderVersionInfo(): TemplateResult {
+    return html`
+        <div class="version">
+          <span
+            >${
+              CARD_VERSION === this._latestRelease
+                ? html`version: ${CARD_VERSION}`
+                : html`version: ${CARD_VERSION} -> <span class="update">${this._latestRelease}</span>`
+            }</span
+          >
         </div>
+        ${this._renderUpdateToast()}
       </div>
     `;
   }
@@ -275,7 +291,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private _renderThemesConfig(): TemplateResult {
     if (!this.hass) return html``;
-    const sysLang = this._system_language || 'en';
+    const sysLang = this._system_language;
     const langOpts = [
       { key: sysLang, name: 'System', nativeName: 'System' },
       ...languageOptions.sort((a, b) => a.name.localeCompare(b.name)),
@@ -508,8 +524,40 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const toastMsg = this.localize('card.common.toastImageError');
     return html`
       <div id="toast">
-        <ha-alert alert-type="warning" dismissable @alert-dismissed-clicked=${this._handleAlertDismissed}
+        <ha-alert alert-type="warning" dismissable @alert-dismissed-clicked=${this._handleAlertDismissed('toast')}>
           >${toastMsg}
+        </ha-alert>
+      </div>
+    `;
+  }
+
+  private _renderUpdateToast(): TemplateResult {
+    const versionResult = compareVersions(CARD_VERSION, this._latestRelease);
+    if (versionResult === 0) {
+      return html``;
+    }
+
+    const content = {
+      '-1': {
+        title: 'New version available',
+        icon: '🎉',
+      },
+      1: {
+        title: 'You are using a beta version',
+        icon: '🚨',
+      },
+    };
+
+    return html`
+      <div id="toast-update">
+        <ha-alert
+          alert-type="info"
+          title="${content[versionResult].title}"
+          dismissable="true"
+          @alert-dismissed-clicked=${() => this._handleToastUpdateDismissed()}
+        >
+          <span class="alert-icon" slot="icon">${content[versionResult].icon}</span>
+          <span class="content">Latest: ${this._latestRelease}</span>
         </ha-alert>
       </div>
     `;
@@ -593,7 +641,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         this._addImage(imageUrl, imageName);
       } catch (error) {
         console.error('Error uploading image:', error);
-        this.launchToast();
+        this.launchToast('toast');
       }
     }
   }
@@ -608,41 +656,24 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     }
   }
 
-  private _removeImage(imageUrl: string): void {
-    if (!this._config) return;
-
-    console.log('Images before removal:', this._config.images);
-
-    // Find the index of the image by its URL before removing
-    const imageIndex = this._config.images.findIndex((image) => image.url === imageUrl);
-    console.log('Attempting to remove image at index:', imageIndex);
-
-    // If the image is not found, return early (safeguard)
-    if (imageIndex === 0) return;
-
-    // Create a new array without the image to be removed
-    const images = this._config.images.filter((image) => image.url !== imageUrl);
-
-    console.log('Images after removal:', images);
-
-    // Force LitElement to recognize the change by reassigning to a new array
-    this._config = { ...this._config, images: [...images] };
-
-    // Trigger any additional change handlers
-    this.configChanged();
-  }
-
-  private launchToast(): void {
-    const toast = this.shadowRoot?.getElementById('toast') as HTMLElement;
+  private launchToast(id: string): void {
+    const toast = this.shadowRoot?.getElementById(id) as HTMLElement;
     if (!toast) return;
 
     toast.classList.add('show');
   }
 
-  private _handleAlertDismissed(): void {
-    const toast = this.shadowRoot?.getElementById('toast') as HTMLElement;
+  private _handleAlertDismissed(id: string): void {
+    const toast = this.shadowRoot?.getElementById(id) as HTMLElement;
     if (toast) {
       toast.classList.remove('show');
+    }
+  }
+
+  private _handleToastUpdateDismissed(): void {
+    const toast = this.shadowRoot?.getElementById('toast-update') as HTMLElement;
+    if (toast) {
+      toast.classList.add('hidden');
     }
   }
 
@@ -804,6 +835,10 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 }
 
 declare global {
+  interface Window {
+    BenzEditor: VehicleCardEditor;
+  }
+
   interface HTMLElementTagNameMap {
     'vehicle-info-card-editor': LovelaceCardEditor;
   }

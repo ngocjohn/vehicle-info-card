@@ -2,6 +2,7 @@
   width: 100%;
   margin-block: 0.5rem;
 }
+
 .panel-container {
   margin-top: 1rem;
 }
@@ -41,11 +42,13 @@ h3 {
   color: var(--secondary-text-color);
   text-align: start;
 }
+
 .cards-buttons {
   display: flex;
   justify-content: space-around;
   flex-direction: column;
 }
+
 .image-config {
   display: flex;
   flex-direction: column;
@@ -59,9 +62,11 @@ h3 {
   width: 100%;
   justify-content: space-between;
 }
+
 .custom-background-wrapper.dragging {
   background-color: var(--primary-color);
 }
+
 .custom-background-wrapper .handle {
   cursor: grab;
   color: var(--secondary-text-color);
@@ -71,6 +76,7 @@ h3 {
   cursor: grabbing;
   color: var(--primary-color);
 }
+
 .ghost {
   opacity: 0.5;
   background: var(--primary-color);
@@ -107,7 +113,15 @@ h3 {
   align-items: center;
   border-bottom: 1px solid var(--divider-color);
 }
+
+
 #toast {
+  visibility: hidden;
+  opacity: 0;
+  max-height: 0;
+}
+
+#toast-update.hidden {
   visibility: hidden;
   opacity: 0;
   max-height: 0;
@@ -119,6 +133,39 @@ h3 {
   max-height: 100px;
   animation: fade-in 0.3s ease-in-out forwards;
 }
+
+#toast-update {
+  visibility: visible;
+  opacity: 1;
+  max-height: 100px;
+}
+
+.version {
+  margin-top: 2rem;
+  color: var(--secondary-text-color);
+  align-items: stretch;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.version .update {
+  color: var(--accent-color);
+  opacity: 0.7;
+}
+
+ha-alert {
+  width: 100%;
+}
+
+ha-alert>.alert-icon {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 0.5rem;
+}
+
 .sub-card-config {
   margin-top: 16px;
 }
