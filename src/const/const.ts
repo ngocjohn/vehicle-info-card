@@ -1,7 +1,7 @@
-import { version } from '../../package.json';
+import { version, repository } from '../../package.json';
 
-export const CARD_VERSION = version;
-
+export const CARD_VERSION = `v${version}`;
+export const REPOSITORY = repository.repo;
 /**
  * Filters for binary sensors.
  */

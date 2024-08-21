@@ -2,7 +2,7 @@ import { PropertyValues } from 'lit';
 import { HomeAssistant } from 'custom-card-helpers';
 import { VehicleEntities, VehicleEntity, VehicleCardConfig } from '../types';
 import { combinedFilters } from '../const/const';
-
+import { fetchLatestReleaseTag } from './loader';
 /**
  *
  * @param car
@@ -233,7 +233,11 @@ export async function handleFirstUpdated(
   component: any, // Replace 'any' with the correct type for your component if available
   _changedProperties: PropertyValues,
 ): Promise<void> {
-  console.log('First updated');
+  fetchLatestReleaseTag().then((latestRelease) => {
+    console.log('Latest release tag:', latestRelease);
+    component._latestRelease = latestRelease;
+  });
+
   const updates: Partial<VehicleCardConfig> = {};
 
   if (!component._config.entity) {
