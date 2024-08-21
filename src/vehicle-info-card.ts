@@ -83,36 +83,12 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     });
   }
 
-  private localize = (string: string, search = '', replace = ''): string => {
-    return localize(string, this.selectedLanguage, search, replace);
-  };
+  public static getStubConfig = (hass: HomeAssistant): Record<string, unknown> => {
+    const lang = hass?.language === 'en-GB' ? 'en_GB' : hass?.language;
 
-  private get isCharging(): boolean {
-    return this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'chargingactive');
-  }
-
-  private get carVinNumber(): string {
-    if (!this.config.entity) return '';
-    return this.getEntityAttribute(this.config.entity, 'vin');
-  }
-
-  private get isDark(): boolean {
-    if (this.config?.selected_theme?.mode === 'dark') {
-      return true;
-    } else if (this.config?.selected_theme?.mode === 'light') {
-      return false;
-    }
-    return this.hass.themes.darkMode;
-  }
-
-  // https://lit.dev/docs/components/styles/
-  public static get styles(): CSSResultGroup {
-    return styles;
-  }
-
-  public static getStubConfig = (): Record<string, unknown> => {
     return {
       ...defaultConfig,
+      selected_language: lang,
     };
   };
 
@@ -124,6 +100,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     this.config = {
       ...config,
     };
+
     this.selectedTheme = this.config.selected_theme?.theme || 'Default';
     const lang = this.selectedLanguage;
 
@@ -183,6 +160,33 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   private async configureAsync(): Promise<void> {
     this.vehicleEntities = await getVehicleEntities(this.hass, this.config);
     this.requestUpdate();
+  }
+
+  private localize = (string: string, search = '', replace = ''): string => {
+    return localize(string, this.selectedLanguage, search, replace);
+  };
+
+  private get isCharging(): boolean {
+    return this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'chargingactive');
+  }
+
+  private get carVinNumber(): string {
+    if (!this.config.entity) return '';
+    return this.getEntityAttribute(this.config.entity, 'vin');
+  }
+
+  private get isDark(): boolean {
+    if (this.config?.selected_theme?.mode === 'dark') {
+      return true;
+    } else if (this.config?.selected_theme?.mode === 'light') {
+      return false;
+    }
+    return this.hass.themes.darkMode;
+  }
+
+  // https://lit.dev/docs/components/styles/
+  public static get styles(): CSSResultGroup {
+    return styles;
   }
 
   connectedCallback(): void {
@@ -250,7 +254,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       return true;
     }
 
-    return hasConfigOrEntityChanged(this, _changedProps, false);
+    return hasConfigOrEntityChanged(this, _changedProps, true);
   }
 
   /* -------------------------------------------------------------------------- */
