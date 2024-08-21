@@ -146,6 +146,10 @@ export const defaultConfig: Partial<VehicleCardConfig> = {
   enable_map_popup: false,
   enable_services_control: false,
   show_error_notify: false,
+  map_popup_config: {
+    hours_to_show: 0,
+    default_zoom: 14,
+  },
   services: {
     auxheat: false,
     charge: false,
