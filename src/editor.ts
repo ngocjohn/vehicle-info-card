@@ -23,7 +23,7 @@ import { editorShowOpts } from './const/data-keys';
 import { CARD_VERSION } from './const/const';
 import { languageOptions, localize } from './localize/localize';
 import { uploadImage, handleFirstUpdated } from './utils/ha-helpers';
-import { loadHaComponents, fetchLatestReleaseTag } from './utils/loader';
+import { loadHaComponents } from './utils/loader';
 import { compareVersions } from './utils/helpers';
 import editorcss from './css/editor.css';
 
@@ -291,7 +291,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private _renderThemesConfig(): TemplateResult {
     if (!this.hass) return html``;
-    const sysLang = this._system_language;
     const langOpts = [
       { key: 'system', name: 'System', nativeName: 'System' },
       ...languageOptions.sort((a, b) => a.name.localeCompare(b.name)),
