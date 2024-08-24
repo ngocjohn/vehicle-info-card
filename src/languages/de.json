@@ -15,6 +15,7 @@
             "statePartlyUnlocked": "Teilweise entriegelt",
             "stateUnknown": "Unbekannt",
             "stateUnlocked": "Entriegelt",
+            "statePressed": "Gedrückt",
             "titleRemoteControl": "Fernbedienung",
             "titleServices": "Dienste",
             "toastCommandSent": "Befehl gesendet!",
@@ -39,7 +40,8 @@
             "doorstatusrearleft": "Tür hinten links",
             "doorstatusrearright": "Tür hinten rechts",
             "enginehoodstatus": "Motorhaube",
-            "sunroofstatus": "Schiebedach"
+            "sunroofstatus": "Schiebedach",
+            "chargeflapdcstatus": "Ladeklappenstatus"
         },
         "ecoCard": {
             "ecoDisplay": "Ökoanzeige",

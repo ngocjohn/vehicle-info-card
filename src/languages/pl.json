@@ -15,6 +15,7 @@
             "statePartlyUnlocked": "Częściowo odblokowane",
             "stateUnknown": "Nieznany",
             "stateUnlocked": "Odblokowane",
+            "statePressed": "Naciśnięte",
             "titleRemoteControl": "Zdalne sterowanie",
             "titleServices": "Usługi",
             "toastCommandSent": "Polecenie wysłane pomyślnie!",
@@ -39,7 +40,8 @@
             "doorstatusrearleft": "Tylne lewe drzwi",
             "doorstatusrearright": "Tylne prawe drzwi",
             "enginehoodstatus": "Maska silnika",
-            "sunroofstatus": "Szyberdach"
+            "sunroofstatus": "Szyberdach",
+            "chargeflapdcstatus": "Klapa gniazda ładowania"
         },
         "ecoCard": {
             "ecoDisplay": "Status ECO",

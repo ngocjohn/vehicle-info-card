@@ -15,6 +15,7 @@
             "statePartlyUnlocked": "Partiellement déverrouillé",
             "stateUnknown": "Inconnu",
             "stateUnlocked": "Déverrouillé",
+            "statePressed": "Appuyé",
             "titleRemoteControl": "Télécommande",
             "titleServices": "Services",
             "toastCommandSent": "Commande envoyée avec succès !",
@@ -39,7 +40,8 @@
             "doorstatusrearleft": "Porte arrière gauche",
             "doorstatusrearright": "Porte arrière droite",
             "enginehoodstatus": "Capot moteur",
-            "sunroofstatus": "Toit ouvrant"
+            "sunroofstatus": "Toit ouvrant",
+            "chargeflapdcstatus": "Trappe de charge"
         },
         "ecoCard": {
             "ecoDisplay": "Affichage éco",

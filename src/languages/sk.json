@@ -15,6 +15,7 @@
             "statePartlyUnlocked": "Čiastočne odomknuté",
             "stateUnknown": "Neznáme",
             "stateUnlocked": "Odomknuté",
+            "statePressed": "Stlačené",
             "titleRemoteControl": "Vzdialené ovládanie",
             "titleServices": "Služby",
             "toastCommandSent": "Príkaz úspešne odoslaný!",
@@ -39,7 +40,8 @@
             "doorstatusrearleft": "Zadné ľavé dvere",
             "doorstatusrearright": "Zadné pravé dvere",
             "enginehoodstatus": "Kapota motora",
-            "sunroofstatus": "Strešné okno"
+            "sunroofstatus": "Strešné okno",
+            "chargeflapdcstatus": "Klapka nabíjania"
         },
         "ecoCard": {
             "ecoDisplay": "Ukazovateľ ECO",

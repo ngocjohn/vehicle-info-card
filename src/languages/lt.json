@@ -15,6 +15,7 @@
             "statePartlyUnlocked": "Iš dalies atrakinta",
             "stateUnknown": "Nežinomas",
             "stateUnlocked": "Atrakinta",
+            "statePressed": "Paspausta",
             "titleRemoteControl": "Nuotolinis valdymas",
             "titleServices": "Paslaugos",
             "toastCommandSent": "Komanda išsiųsta sėkmingai!",
@@ -39,7 +40,8 @@
             "doorstatusrearleft": "Galinės kairės pusės durys",
             "doorstatusrearright": "Galinės dešinės pusės durys",
             "enginehoodstatus": "Variklio gaubtas",
-            "sunroofstatus": "Stoglangis"
+            "sunroofstatus": "Stoglangis",
+            "chargeflapdcstatus": "Įkrovos lizdas"
         },
         "ecoCard": {
             "ecoDisplay": "Eco ekranas",

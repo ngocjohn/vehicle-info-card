@@ -15,6 +15,7 @@
             "statePartlyUnlocked": "Mở khóa một phần",
             "stateUnknown": "Không rõ",
             "stateUnlocked": "Đã mở khóa",
+            "statePressed": "Đã nhấn",
             "titleRemoteControl": "Điều khiển từ xa",
             "titleServices": "Dịch vụ",
             "toastCommandSent": "Lệnh đã được gửi thành công!",
@@ -39,7 +40,8 @@
             "doorstatusrearleft": "Cửa sau trái",
             "doorstatusrearright": "Cửa sau phải",
             "enginehoodstatus": "Nắp động cơ",
-            "sunroofstatus": "Cửa sổ trời"
+            "sunroofstatus": "Cửa sổ trời",
+            "chargeflapdcstatus": "Nắp cổng sạc"
         },
         "ecoCard": {
             "ecoDisplay": "Hiển thị Eco",

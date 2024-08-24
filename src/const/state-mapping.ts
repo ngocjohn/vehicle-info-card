@@ -26,6 +26,7 @@ const createDoorStatus = (lang: string) => ({
   '2': localize('card.common.stateNotExisting', lang),
   '3': localize('card.common.stateUnknown', lang),
 });
+
 export const doorStatus = createDoorStatus;
 
 const createLockStates = (lang: string) => ({
@@ -137,6 +138,16 @@ export const doorAttributes = (lang: string) => ({
       '10': 'card.sunroofState.intermediatePosition',
       '11': 'card.sunroofState.openingLifting',
       '12': 'card.sunroofState.closingLifting',
+    },
+    lang,
+  ),
+  chargeflapdcstatus: createNameStateWithMap(
+    'card.doorAttributes.chargeflapdcstatus',
+    {
+      '0': 'card.common.stateOpen',
+      '1': 'card.common.stateClosed',
+      '2': 'card.common.statePressed',
+      '3': 'card.common.stateUnknown',
     },
     lang,
   ),
