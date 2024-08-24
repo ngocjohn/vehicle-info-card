@@ -100,36 +100,12 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     this.config = {
       ...config,
     };
-
-    this.selectedTheme = this.config.selected_theme?.theme || 'Default';
-    const lang = this.selectedLanguage;
-
-    for (const cardType of cardTypes(lang)) {
-      if (this.config[cardType.config]) {
-        this.createCards(this.config[cardType.config], cardType.type);
-      }
-    }
-
-    if (this.config.device_tracker) {
-      const { default_zoom, hours_to_show, theme_mode } = this.config.map_popup_config;
-      const haMapConfig = {
-        type: 'map',
-        default_zoom: default_zoom,
-        hours_to_show: hours_to_show,
-        theme_mode: theme_mode,
-        entities: [
-          {
-            entity: this.config.device_tracker,
-          },
-        ],
-      };
-      this.createCards([haMapConfig], 'mapDialog');
-    }
   }
 
   protected firstUpdated(changedProps: PropertyValues): void {
     super.firstUpdated(changedProps);
     this.configureAsync();
+    this.configureCustomCards();
     this.applyTheme(this.selectedTheme);
   }
 
@@ -155,6 +131,33 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       grid_columns: 4,
       grid_min_columns: 4,
     };
+  }
+
+  private configureCustomCards(): void {
+    this.selectedTheme = this.config.selected_theme?.theme || 'Default';
+    const lang = this.selectedLanguage;
+
+    for (const cardType of cardTypes(lang)) {
+      if (this.config[cardType.config]) {
+        this.createCards(this.config[cardType.config], cardType.type);
+      }
+    }
+
+    if (this.config.device_tracker) {
+      const { default_zoom, hours_to_show, theme_mode } = this.config.map_popup_config;
+      const haMapConfig = {
+        type: 'map',
+        default_zoom: default_zoom || 14,
+        hours_to_show: hours_to_show,
+        theme_mode: theme_mode,
+        entities: [
+          {
+            entity: this.config.device_tracker,
+          },
+        ],
+      };
+      this.createCards([haMapConfig], 'mapDialog');
+    }
   }
 
   private async configureAsync(): Promise<void> {
@@ -918,10 +921,10 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
     // Iterate over the keys of the stateMapping object
     Object.keys(stateMapping).forEach((attribute) => {
-      let attributeState;
+      let attributeState: string | boolean | null | undefined;
       // Check if the attribute is the charge flap DC status
-      if (attribute === 'chargeflapdcstatus') {
-        attributeState = this.getEntityState(this.vehicleEntities?.chargeFlapDCStatus.entity_id);
+      if (attribute === 'chargeflapdcstatus' && this.vehicleEntities.chargeFlapDCStatus?.entity_id !== undefined) {
+        attributeState = this.getEntityState(this.vehicleEntities.chargeFlapDCStatus.entity_id);
       } else {
         attributeState = this.getEntityAttribute(entityID, attribute);
       }

@@ -60,8 +60,8 @@ export interface ThemesConfig {
 }
 
 export interface MapPopupConfig {
-  hours_to_show: number;
-  default_zoom: number;
+  hours_to_show?: number;
+  default_zoom?: number;
   theme_mode?: 'dark' | 'light' | 'auto';
 }
 
