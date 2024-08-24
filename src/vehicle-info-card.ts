@@ -43,9 +43,7 @@ import './components/remote-control';
 // Functions
 import { localize } from './localize/localize';
 import { formatTimestamp, convertMinutes } from './utils/helpers';
-import { setupCardListeners } from './utils/ha-helpers';
-// import { getVehicleEntities } from './test/get-device-entities_test'; // Mocked data
-import { getVehicleEntities } from './utils/ha-helpers';
+import { setupCardListeners, getVehicleEntities } from './utils/ha-helpers';
 
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
 
@@ -134,7 +132,6 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   }
 
   private configureCustomCards(): void {
-    this.selectedTheme = this.config.selected_theme?.theme || 'Default';
     const lang = this.selectedLanguage;
 
     for (const cardType of cardTypes(lang)) {
@@ -144,7 +141,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     }
 
     if (this.config.device_tracker) {
-      const { default_zoom, hours_to_show, theme_mode } = this.config.map_popup_config;
+      const { default_zoom, hours_to_show, theme_mode } = this.config.map_popup_config || {};
       const haMapConfig = {
         type: 'map',
         default_zoom: default_zoom || 14,
@@ -161,6 +158,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   }
 
   private async configureAsync(): Promise<void> {
+    this.selectedTheme = this.config.selected_theme?.theme || 'Default';
     this.vehicleEntities = await getVehicleEntities(this.hass, this.config);
     this.requestUpdate();
   }
