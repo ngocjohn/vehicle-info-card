@@ -293,7 +293,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     if (!this.hass) return html``;
     const sysLang = this._system_language;
     const langOpts = [
-      { key: sysLang, name: 'System', nativeName: 'System' },
+      { key: 'system', name: 'System', nativeName: 'System' },
       ...languageOptions.sort((a, b) => a.name.localeCompare(b.name)),
     ];
     const themesConfig = html`
@@ -792,6 +792,12 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           [configValue]: newValue,
         },
       };
+    } else if (configValue === 'selected_language') {
+      newValue = target.value === 'system' ? this.hass.language : target.value;
+      this._config = {
+        ...this._config,
+        [configValue]: newValue,
+      };
     } else if (['theme', 'mode'].includes(configValue)) {
       newValue = target.value;
       this._config = {
@@ -829,6 +835,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     this.dispatchEvent(ev);
     console.log('Test event dispatched:', detail);
   }
+
   static get styles(): CSSResultGroup {
     return editorcss;
   }
