@@ -24,6 +24,7 @@ import {
   EntityConfig,
   VehicleEntities,
   EcoData,
+  ButtonConfigItem,
 } from './types';
 
 import * as DataKeys from './const/data-keys';
@@ -62,6 +63,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   @state() private selectedTheme!: string;
   @state() private vehicleEntities: VehicleEntities = {};
   @state() private additionalCards: { [key: string]: any[] } = {};
+  @state() private customButtons: { [key: string]: any[] } = {};
   @state() private activeCardType: string | null = null;
   @state() private ecoScoresVisible!: boolean;
   @state() private lockAttributesVisible!: boolean;
@@ -137,6 +139,9 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     for (const cardType of cardTypes(lang)) {
       if (this.config[cardType.config]) {
         this.createCards(this.config[cardType.config], cardType.type);
+      }
+      if (this.config[cardType.button]) {
+        this.createCustomButtons(this.config[cardType.button], cardType.type);
       }
     }
 
@@ -233,6 +238,13 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     }
   }
 
+  private createCustomButtons(buttonConfigs: ButtonConfigItem | ButtonConfigItem[], stateProperty: string) {
+    const btn = Array.isArray(buttonConfigs)
+      ? buttonConfigs.map((config) => ({ ...config, type: stateProperty }))
+      : [{ ...buttonConfigs, type: stateProperty }];
+    this.customButtons[stateProperty] = btn;
+  }
+
   protected updated(changedProps: PropertyValues) {
     super.updated(changedProps);
     // Log all changed properties for debugging
@@ -255,7 +267,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       return true;
     }
 
-    return hasConfigOrEntityChanged(this, _changedProps, true);
+    return hasConfigOrEntityChanged(this, _changedProps, false);
   }
 
   /* -------------------------------------------------------------------------- */
@@ -513,33 +525,39 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
     return html`<eco-chart .ecoData=${ecoDataObj} .selectedLanguage=${lang}></eco-chart>`;
   }
-
   private _renderButtons(): TemplateResult {
     const showError = this.config.show_error_notify;
     if (!this.config.show_buttons) return html``;
     const baseCardTypes = cardTypes(this.selectedLanguage);
+
     return html`
       <div class="grid-container">
-        ${baseCardTypes.map(
-          (cardType) => html`
+        ${baseCardTypes.map((cardType) => {
+          const customBtn = this.config[cardType.button];
+          const buttonName = customBtn?.primary || cardType.name;
+          const buttonIcon = customBtn?.icon || cardType.icon;
+          const secondaryInfo = customBtn?.secondary || this.getSecondaryInfo(cardType.type);
+          const btnNotify = customBtn?.notify || this.getErrorNotify(cardType.type);
+
+          return html`
             <div class="grid-item click-shrink" @click=${() => this.toggleCardFromButtons(cardType.type)}>
               <div class="item-icon">
-                <div class="icon-background"><ha-icon .icon="${cardType.icon}"></ha-icon></div>
+                <div class="icon-background"><ha-icon .icon="${buttonIcon}"></ha-icon></div>
                 ${showError
                   ? html`
-                      <div class="item-notify ${this.getErrorNotify(cardType.type) ? '' : 'hidden'}">
+                      <div class="item-notify ${btnNotify ? '' : 'hidden'}">
                         <ha-icon icon="mdi:alert-circle"></ha-icon>
                       </div>
                     `
                   : nothing}
               </div>
               <div class="item-content">
-                <div class="primary"><span class="title">${cardType.name}</span></div>
-                <span class="secondary">${this.getSecondaryInfo(cardType.type)}</span>
+                <div class="primary"><span class="title">${buttonName}</span></div>
+                <span class="secondary">${secondaryInfo}</span>
               </div>
             </div>
-          `,
-        )}
+          `;
+        })}
       </div>
     `;
   }
@@ -757,6 +775,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   private _showWarning(warning: string): TemplateResult {
     return html` <hui-warning>${warning}</hui-warning> `;
   }
+
   /* --------------------------- ADDITIONAL METHODS --------------------------- */
 
   private computeClasses() {
