@@ -885,7 +885,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
                   .icon="${icon}"
                   @click=${() => toggleMoreInfo(key)}
                 ></ha-icon>
-                <span style="text-transform: none;">${name}</span>
+                <span class="data-label">${name}</span>
               </div>
               <div class="data-value-unit" @click=${subCard?.toggleVisibility || (() => {})}>
                 <span class=${!active ? 'warning' : ''} style="text-transform: capitalize;">${state}</span>
@@ -918,7 +918,15 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
     // Iterate over the keys of the stateMapping object
     Object.keys(stateMapping).forEach((attribute) => {
-      const attributeState = this.getEntityAttribute(entityID, attribute);
+      let attributeState;
+      // Check if the attribute is the charge flap DC status
+      if (attribute === 'chargeflapdcstatus') {
+        attributeState = this.getEntityState(this.vehicleEntities?.chargeFlapDCStatus.entity_id);
+      } else {
+        attributeState = this.getEntityAttribute(entityID, attribute);
+      }
+      // Check if the attribute state
+
       if (attributeState !== undefined && attributeState !== null) {
         state[attribute] = attributeState;
       }
@@ -931,7 +939,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
           // Check if the state is valid and the attribute mapping exists
           if (rawState !== undefined && rawState !== null && stateMapping[attribute]) {
             const readableState = stateMapping[attribute].state[rawState] || 'Unknown';
-            const classState = rawState === '2' || rawState === false ? '' : 'warning';
+            const classState = rawState === '2' || rawState === false || rawState === '1' ? '' : 'warning';
             return html`
               <div class="data-row">
                 <span>${stateMapping[attribute].name}</span>
@@ -1026,7 +1034,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
                 <div class="data-row">
                   <div>
                     <ha-icon class="data-icon" .icon="${icon}"></ha-icon>
-                    <span>${name}</span>
+                    <span class="data-label">${name}</span>
                   </div>
                   <div
                     class="data-value-unit"

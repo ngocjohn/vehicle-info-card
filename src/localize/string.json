@@ -15,6 +15,7 @@
             "statePartlyUnlocked": "Partly unlocked",
             "stateUnknown": "Unknown",
             "stateUnlocked": "Unlocked",
+            "statePressed": "Pressed",
             "titleRemoteControl": "Remote control",
             "titleServices": "Services",
             "toastCommandSent": "Command sent sucess!",
@@ -39,7 +40,8 @@
             "doorstatusrearleft": "Door rear left",
             "doorstatusrearright": "Door rear right",
             "enginehoodstatus": "Engine hood",
-            "sunroofstatus": "Sunroof"
+            "sunroofstatus": "Sunroof",
+            "chargeflapdcstatus": "Charging socket flap"
         },
         "ecoCard": {
             "ecoDisplay": "Eco display",

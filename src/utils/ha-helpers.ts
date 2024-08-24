@@ -47,7 +47,7 @@ export async function getVehicleEntities(hass: HomeAssistant, config: { entity?:
       if (prefix) {
         return e.entity_id.startsWith(prefix) && e.entity_id.endsWith(suffix);
       }
-      return e.unique_id.endsWith(suffix);
+      return e.unique_id.endsWith(suffix) || e.entity_id.endsWith(suffix);
     });
 
     if (entity) {
@@ -253,7 +253,7 @@ export async function handleFirstUpdated(
   }
 
   if (!component._config.selected_language) {
-    updates.selected_language = localStorage.getItem('selectedLanguage') || 'en';
+    updates.selected_language = component.hass.language;
     console.log('Selected language:', updates.selected_language);
   }
 

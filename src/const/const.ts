@@ -58,6 +58,7 @@ const sensorDeviceFilters: {
   soc: { prefix: 'sensor.', suffix: 'soc' },
   chargingPower: { suffix: '_chargingpowerkw' },
   iginitionState: { suffix: '_ignitionstate' },
+  chargeFlapDCStatus: { suffix: '_chargeflapdcstatus' },
 };
 
 export const combinedFilters = { ...binarySensorsFilters, ...sensorDeviceFilters };

@@ -15,6 +15,7 @@
             "statePartlyUnlocked": "Částečně odemčeno",
             "stateUnknown": "Neznámý",
             "stateUnlocked": "Odemknuté",
+            "statePressed": "Stisknuto",
             "titleRemoteControl": "Vzdálené ovládání",
             "titleServices": "Služby",
             "toastCommandSent": "Příkaz odeslán úspěšně!",
@@ -39,7 +40,8 @@
             "doorstatusrearleft": "Zadní levé dveře",
             "doorstatusrearright": "Zadní pravé dveře",
             "enginehoodstatus": "Kapota",
-            "sunroofstatus": "Střešní okno"
+            "sunroofstatus": "Střešní okno",
+            "chargeflapdcstatus": "Krytka nabíjecího zásuvu"
         },
         "ecoCard": {
             "ecoDisplay": "Ukazatel ECO",
