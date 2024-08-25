@@ -35,6 +35,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   @state() private _config!: VehicleCardConfig;
   @state() private _activeSubcardType: string | null = null;
+  @state() private _yamlConfig: { [key: string]: any } = {};
   @state() private _newImageUrl: string = '';
 
   @state() private _latestRelease: string = '';
@@ -90,10 +91,14 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         },
       });
     }
-  }
-
-  protected updated(changedProperties: PropertyValues): void {
-    super.updated(changedProperties);
+    for (const cardType of this.baseCardTypes) {
+      if (this._config[cardType.config]) {
+        const yamlString = YAML.stringify(this._config[cardType.config]);
+        this._yamlConfig[cardType.config] = yamlString;
+      } else {
+        this._yamlConfig[cardType.config] = [];
+      }
+    }
   }
 
   private _handleSortEnd(evt: any) {
@@ -139,6 +144,14 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   protected render(): TemplateResult | void {
     if (!this.hass || !this._config) {
       return html``;
+    }
+    const root = document.querySelector('body > home-assistant')?.shadowRoot;
+    const dialog = root?.querySelector('hui-dialog-edit-card')?.shadowRoot;
+    const previewElement = dialog?.querySelector('ha-dialog > div.content > div.element-preview') as HTMLElement;
+    // Change the default preview element to be sticky
+    if (previewElement && previewElement.style.position !== 'sticky') {
+      previewElement.style.position = 'sticky';
+      previewElement.style.top = '0';
     }
     return html`
       <div class="card-config">
@@ -216,19 +229,60 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       </ha-formfield>
     `;
 
+    // const cardCodeEditor = html`
+    //   <ha-code-editor
+    //     .autofocus=${true}
+    //     .autocompleteEntities=${true}
+    //     .autocompleteIcons=${true}
+    //     .dir=${'ltr'}
+    //     .mode=${'yaml'}
+    //     .hass=${this.hass}
+    //     .linewrap=${false}
+    //     .value=${YAML.stringify(this._config?.[card.config] || [])}
+    //     @focusout=${(ev: any) => this._customCardChange(ev, card.config)}
+    //   ></ha-code-editor>
+    // `;
+
     const cardCodeEditor = html`
       <ha-code-editor
-        autofocus
-        autocomplete-entities
-        autocomplete-icons
-        .value=${YAML.stringify(this._config?.[card.config] || [])}
-        @blur=${(ev: CustomEvent) => this._handleCardConfigChange(ev, card.config)}
+        .autofocus=${true}
+        .autocompleteEntities=${true}
+        .autocompleteIcons=${true}
+        .dir=${'ltr'}
+        .mode=${'yaml'}
+        .hass=${this.hass}
+        .linewrap=${false}
+        .value=${this._yamlConfig[card.config] || ''}
+        .configValue=${card.config}
+        @value-changed=${(ev: any) => this._customCardChange(ev)}
       ></ha-code-editor>
     `;
 
     const cardCodeEditorWrapper = html` <div class="card-code-editor">${useCustomRadioBtn} ${cardCodeEditor}</div> `;
 
     return this.panelTemplate('customCardConfig', 'customCardConfig', 'mdi:code-json', cardCodeEditorWrapper);
+  }
+
+  private _customCardChange(ev: any): void {
+    ev.stopPropagation();
+    const target = ev.target;
+    const value = target.value;
+    const configKey = target.configValue;
+    let parsedYaml: any[];
+    try {
+      parsedYaml = YAML.parse(value); // Parse YAML content
+    } catch (e) {
+      console.error(`Parsing error for ${configKey}:`, e);
+      return;
+    }
+
+    if (this._config) {
+      this._config = {
+        ...this._config,
+        [configKey]: parsedYaml,
+      };
+    }
+    this.configChanged();
   }
 
   private _renderCustomButtonTemplate(card: CardTypeConfig): TemplateResult {
@@ -285,8 +339,8 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           .configBtnType=${button}
           .readOnly=${!useDefault}
           @value-changed=${this._customBtnChanged}
-          dir="ltr"
-          .linewrap=${true}
+          .linewrap=${false}
+          .autofocus=${false}
           .autocompleteEntities=${true}
         ></ha-code-editor>
         <ha-input-helper-text>${helper}</ha-input-helper-text>
@@ -794,6 +848,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     }
   }
   private _customBtnChanged(ev: any): void {
+    ev.stopPropagation();
     if (!this._config || !this.hass) {
       return;
     }
@@ -813,16 +868,16 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     fireEvent(this, 'config-changed', { config: this._config });
   }
 
-  private _handleCardConfigChange(ev: CustomEvent, configKey: keyof VehicleCardConfig): void {
+  private _handleCardConfigChange(ev: any, configKey: keyof VehicleCardConfig): void {
     if (!this._config || !this.hass) {
       return;
     }
 
-    const target = ev.target as HTMLInputElement;
+    const target = ev.target;
     let newValue: LovelaceCardConfig[];
-
     try {
       newValue = YAML.parse(target.value); // Parse YAML content
+      console.log('Parsed value:', newValue);
 
       // If the parsed value is null or not an array, set it to an empty array
       if (!newValue || !Array.isArray(newValue)) {
