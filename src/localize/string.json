@@ -229,6 +229,14 @@
         "themeLangConfig": {
             "desc": "Choose the theme and language.",
             "title": "Themes & Language"
+        },
+        "customButtonConfig": {
+            "title": "Custom Button",
+            "desc": "Set the value for the custom button"
+        },
+        "customCardConfig": {
+            "title": "Custom Card",
+            "desc": "Yaml configuration for lovelace card"
         }
     }
 }

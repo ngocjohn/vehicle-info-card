@@ -229,6 +229,14 @@
         "themeLangConfig": {
             "desc": "Wybierz temat i język.",
             "title": "Tematy i język"
+        },
+        "customButtonConfig": {
+            "title": "",
+            "desc": ""
+        },
+        "customCardConfig": {
+            "title": "",
+            "desc": ""
         }
     }
 }

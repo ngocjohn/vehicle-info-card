@@ -44,7 +44,7 @@ import './components/remote-control';
 // Functions
 import { localize } from './localize/localize';
 import { formatTimestamp, convertMinutes } from './utils/helpers';
-import { setupCardListeners, getVehicleEntities } from './utils/ha-helpers';
+import { setupCardListeners, getVehicleEntities, getTemplateValue, getBooleanTemplate } from './utils/ha-helpers';
 
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
 
@@ -72,7 +72,8 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   @state() private chargingInfoVisible!: boolean;
   @state() private tripFromStartVisible!: boolean;
   @state() private tripFromResetVisible!: boolean;
-
+  @state() private templateValues: { [key: string]: string } = {};
+  @state() private customNotify: { [key: string]: boolean } = {};
   @state() private isTyreHorizontal!: boolean;
 
   constructor() {
@@ -106,6 +107,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     super.firstUpdated(changedProps);
     this.configureAsync();
     this.configureCustomCards();
+    this._loadTemplateValues();
     this.applyTheme(this.selectedTheme);
   }
 
@@ -188,6 +190,22 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       return false;
     }
     return this.hass.themes.darkMode;
+  }
+
+  private async _loadTemplateValues() {
+    const templateValues: { [key: string]: string } = {};
+    const customNotify: { [key: string]: boolean } = {};
+    for (const cardType of cardTypes(this.selectedLanguage)) {
+      const customBtn = this.customButtons[cardType.type]?.find((btn) => btn.enabled !== false);
+      if (customBtn && customBtn.secondary) {
+        templateValues[cardType.type] = await getTemplateValue(this.hass, customBtn.secondary);
+        this.templateValues = templateValues;
+      }
+      if (customBtn && customBtn.notify) {
+        customNotify[cardType.type] = await getBooleanTemplate(this.hass, customBtn.notify);
+        this.customNotify = customNotify;
+      }
+    }
   }
 
   // https://lit.dev/docs/components/styles/
@@ -525,6 +543,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
     return html`<eco-chart .ecoData=${ecoDataObj} .selectedLanguage=${lang}></eco-chart>`;
   }
+
   private _renderButtons(): TemplateResult {
     const showError = this.config.show_error_notify;
     if (!this.config.show_buttons) return html``;
@@ -533,11 +552,11 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     return html`
       <div class="grid-container">
         ${baseCardTypes.map((cardType) => {
-          const customBtn = this.config[cardType.button];
+          const customBtn = this.customButtons[cardType.type]?.find((btn) => btn.enabled !== false);
           const buttonName = customBtn?.primary || cardType.name;
           const buttonIcon = customBtn?.icon || cardType.icon;
-          const secondaryInfo = customBtn?.secondary || this.getSecondaryInfo(cardType.type);
-          const btnNotify = customBtn?.notify || this.getErrorNotify(cardType.type);
+          const secondaryInfo = this.templateValues[cardType.type] || this.getSecondaryInfo(cardType.type);
+          const btnNotify = this.customNotify[cardType.type] || this.getErrorNotify(cardType.type);
 
           return html`
             <div class="grid-item click-shrink" @click=${() => this.toggleCardFromButtons(cardType.type)}>
@@ -561,6 +580,44 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       </div>
     `;
   }
+
+  // private _renderButtons(): TemplateResult {
+  //   const showError = this.config.show_error_notify;
+  //   if (!this.config.show_buttons) return html``;
+  //   const baseCardTypes = cardTypes(this.selectedLanguage);
+
+  //   return html`
+  //     <div class="grid-container">
+  //       ${baseCardTypes.map((cardType) => {
+  //         const customBtn = this.customButtons[cardType.type]?.find((btn) => btn.enabled !== false);
+  //         const buttonName = customBtn?.primary || cardType.name;
+  //         const buttonIcon = customBtn?.icon || cardType.icon;
+  //         const secondaryInfo =
+  //           getTemplateValue(this.hass, customBtn?.secondary) || this.getSecondaryInfo(cardType.type);
+  //         const btnNotify = customBtn?.notify || this.getErrorNotify(cardType.type);
+
+  //         return html`
+  //           <div class="grid-item click-shrink" @click=${() => this.toggleCardFromButtons(cardType.type)}>
+  //             <div class="item-icon">
+  //               <div class="icon-background"><ha-icon .icon="${buttonIcon}"></ha-icon></div>
+  //               ${showError
+  //                 ? html`
+  //                     <div class="item-notify ${btnNotify ? '' : 'hidden'}">
+  //                       <ha-icon icon="mdi:alert-circle"></ha-icon>
+  //                     </div>
+  //                   `
+  //                 : nothing}
+  //             </div>
+  //             <div class="item-content">
+  //               <div class="primary"><span class="title">${buttonName}</span></div>
+  //               <span class="secondary">${secondaryInfo}</span>
+  //             </div>
+  //           </div>
+  //         `;
+  //       })}
+  //     </div>
+  //   `;
+  // }
 
   private _renderCustomCard(): TemplateResult {
     if (!this.activeCardType) return html``;
