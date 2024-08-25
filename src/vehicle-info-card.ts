@@ -168,7 +168,6 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   private async configureAsync(): Promise<void> {
     this.selectedTheme = this.config.selected_theme?.theme || 'Default';
     this.vehicleEntities = await getVehicleEntities(this.hass, this.config);
-    this.requestUpdate();
   }
 
   private localize = (string: string, search = '', replace = ''): string => {
@@ -630,7 +629,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     const locale = this.hass.locale;
     const localeLang = {
       ...locale,
-      language: this.selectedLanguage,
+      language: this.selectedLanguage.replace(/"/g, ''),
     };
     const formattedDate = localeLang
       ? formatDateTime(new Date(lastCarUpdate), localeLang)
