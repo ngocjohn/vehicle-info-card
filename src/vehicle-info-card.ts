@@ -206,6 +206,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
         this.customNotify = customNotify;
       }
     }
+    this.requestUpdate();
   }
 
   // https://lit.dev/docs/components/styles/
@@ -553,10 +554,10 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       <div class="grid-container">
         ${baseCardTypes.map((cardType) => {
           const customBtn = this.customButtons[cardType.type]?.find((btn) => btn.enabled !== false);
-          const buttonName = customBtn?.primary || cardType.name;
-          const buttonIcon = customBtn?.icon || cardType.icon;
-          const secondaryInfo = this.templateValues[cardType.type] || this.getSecondaryInfo(cardType.type);
-          const btnNotify = this.customNotify[cardType.type] || this.getErrorNotify(cardType.type);
+          const buttonName = customBtn?.primary ?? cardType.name;
+          const buttonIcon = customBtn?.icon ?? cardType.icon;
+          const secondaryInfo = this.templateValues[cardType.type] ?? this.getSecondaryInfo(cardType.type);
+          const btnNotify = this.customNotify[cardType.type] ?? this.getErrorNotify(cardType.type);
 
           return html`
             <div class="grid-item click-shrink" @click=${() => this.toggleCardFromButtons(cardType.type)}>

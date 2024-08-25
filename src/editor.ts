@@ -785,7 +785,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const configValue = target.configValue;
     const details = target.configBtnType;
 
-    const value = target?.checked !== undefined ? target.checked : ev.detail.value;
+    const value = target?.checked !== undefined ? target.checked : target.value;
 
     const updates: Partial<VehicleCardConfig> = {};
     updates[details] = { ...this._config[details], [configValue]: value };
