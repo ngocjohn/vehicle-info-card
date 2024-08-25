@@ -231,12 +231,12 @@
             "title": "Témy a jazyk"
         },
         "customButtonConfig": {
-            "title": "",
-            "desc": ""
+            "title": "Vlastné tlačidlo",
+            "desc": "Nastavte hodnotu pre vlastné tlačidlo"
         },
         "customCardConfig": {
-            "title": "",
-            "desc": ""
+            "title": "Vlastná karta",
+            "desc": "Konfigurácia YAML pre kartu lovelace"
         }
     }
 }
