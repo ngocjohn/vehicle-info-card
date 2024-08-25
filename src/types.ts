@@ -66,6 +66,7 @@ export interface MapPopupConfig {
 }
 
 export type ButtonConfigItem = {
+  enabled: boolean;
   primary: string;
   secondary: string;
   icon: string;
@@ -81,6 +82,10 @@ export interface CustomCards extends VehicleCardConfig {
   trip_card?: LovelaceCardConfig[];
   eco_card?: LovelaceCardConfig[];
   tyre_card?: LovelaceCardConfig[];
+  eco_button?: ButtonConfigItem[];
+  trip_button?: ButtonConfigItem[];
+  vehicle_button?: ButtonConfigItem[];
+  tyre_button?: ButtonConfigItem[];
 }
 
 export interface VehicleCardConfig extends LovelaceCardConfig {
@@ -144,7 +149,6 @@ export interface CardTypeConfig {
   name: string;
   icon: string;
   config: string;
-  editor: string;
   button: string;
 }
 
@@ -175,5 +179,21 @@ export const defaultConfig: Partial<VehicleCardConfig> = {
     sigPos: false,
     sunroof: false,
     windows: false,
+  },
+  eco_button: {
+    enabled: false,
+  },
+  trip_button: {
+    enabled: false,
+  },
+  vehicle_button: {
+    enabled: false,
+  },
+  tyre_button: {
+    enabled: false,
+  },
+  selected_theme: {
+    theme: 'default',
+    mode: 'system',
   },
 };
