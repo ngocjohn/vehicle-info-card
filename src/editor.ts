@@ -215,7 +215,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _renderCustomButtonTemplate(card: CardTypeConfig): TemplateResult {
-    const { button, type } = card;
+    const { button } = card;
     const primaryCfgValue = this._config[button]?.primary || '';
     const secondaryCfgValue = this._config[button]?.secondary || '';
     const notifyCfgValue = this._config[button]?.notify || '';
