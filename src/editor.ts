@@ -180,7 +180,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _renderSubCardConfig(card: CardTypeConfig): TemplateResult {
-    const { config, name, icon } = card;
+    const { name, icon } = card;
 
     const subCardHeader = html`
       <div class="sub-card-header">
@@ -196,22 +196,39 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       </div>
     `;
 
-    const editorWrapper = this.panelTemplate(
-      'customCardConfig',
-      'customCardConfig',
-      'mdi:code-json',
-      html` <ha-code-editor
+    const buttonTemplate = this._renderCustomButtonTemplate(card);
+    const editorWrapper = this._renderCustomCardEditor(card);
+
+    return html` <div class="sub-card-config">${subCardHeader}${buttonTemplate} ${editorWrapper}</div> `;
+  }
+
+  private _renderCustomCardEditor(card: CardTypeConfig): TemplateResult {
+    const useCustomCard = this._config?.use_custom_cards?.[card.config] === true;
+
+    const useCustomRadioBtn = html`
+      <ha-formfield .label=${'Use custom card?'}>
+        <ha-checkbox
+          .checked=${useCustomCard}
+          .configValue=${card.config}
+          .configBtnType=${'use_custom_cards'}
+          @change=${this._customBtnChanged}
+        ></ha-checkbox>
+      </ha-formfield>
+    `;
+
+    const cardCodeEditor = html`
+      <ha-code-editor
         autofocus
         autocomplete-entities
         autocomplete-icons
-        .value=${YAML.stringify(this._config?.[config] || [])}
-        @blur=${(ev: CustomEvent) => this._handleCardConfigChange(ev, config)}
-      ></ha-code-editor>`,
-    );
+        .value=${YAML.stringify(this._config?.[card.config] || [])}
+        @blur=${(ev: CustomEvent) => this._handleCardConfigChange(ev, card.config)}
+      ></ha-code-editor>
+    `;
 
-    const buttonTemplate = this._renderCustomButtonTemplate(card);
+    const cardCodeEditorWrapper = html` <div class="card-code-editor">${useCustomRadioBtn} ${cardCodeEditor}</div> `;
 
-    return html` <div class="sub-card-config">${subCardHeader}${buttonTemplate} ${editorWrapper}</div> `;
+    return this.panelTemplate('customCardConfig', 'customCardConfig', 'mdi:code-json', cardCodeEditorWrapper);
   }
 
   private _renderCustomButtonTemplate(card: CardTypeConfig): TemplateResult {
@@ -224,9 +241,9 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const useDefault = this._config[button]?.enabled === true;
 
     const useDefaultRadioBtn = html`
-      <ha-formfield .label=${'Use custom'}>
+      <ha-formfield .label=${'Use custom button?'}>
         <ha-checkbox
-          .checked=${this._config[button]?.enabled !== false}
+          .checked=${this._config[button]?.enabled}
           .configValue=${'enabled'}
           .configBtnType=${button}
           @change=${this._customBtnChanged}
@@ -793,7 +810,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       ...this._config,
       ...updates,
     };
-
     fireEvent(this, 'config-changed', { config: this._config });
   }
 

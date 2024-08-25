@@ -77,6 +77,13 @@ export interface CustomButtons {
   [key: string]: ButtonConfigItem[]; // Updated to store arrays of button items
 }
 
+export interface UseCustomCards {
+  vehicle_card: boolean;
+  trip_card: boolean;
+  eco_card: boolean;
+  tyre_card: boolean;
+}
+
 export interface CustomCards extends VehicleCardConfig {
   vehicle_card?: LovelaceCardConfig[];
   trip_card?: LovelaceCardConfig[];
@@ -98,6 +105,7 @@ export interface VehicleCardConfig extends LovelaceCardConfig {
   model_name: string;
   map_popup_config: MapPopupConfig;
   selected_theme: ThemesConfig;
+  use_custom_cards?: UseCustomCards;
   services: Services;
   tap_action?: ActionConfig;
   hold_action?: ActionConfig;
@@ -192,6 +200,13 @@ export const defaultConfig: Partial<VehicleCardConfig> = {
   tyre_button: {
     enabled: false,
   },
+  use_custom_cards: {
+    vehicle_card: true,
+    trip_card: true,
+    eco_card: true,
+    tyre_card: true,
+  },
+
   selected_theme: {
     theme: 'default',
     mode: 'system',

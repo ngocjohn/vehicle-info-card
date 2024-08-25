@@ -625,18 +625,22 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     const { config } = this;
     const cardConfigMap = {
       tripCards: {
+        use_card: config.use_custom_cards?.trip_card,
         config: config.trip_card,
         defaultRender: this._renderDefaultTripCard.bind(this),
       },
       vehicleCards: {
+        use_card: config.use_custom_cards?.vehicle_card,
         config: config.vehicle_card,
         defaultRender: this._renderDefaultVehicleCard.bind(this),
       },
       ecoCards: {
+        use_card: config.use_custom_cards?.eco_card,
         config: config.eco_card,
         defaultRender: this._renderDefaultEcoCard.bind(this),
       },
       tyreCards: {
+        use_card: config.use_custom_cards?.tyre_card,
         config: config.tyre_card,
         defaultRender: this._renderDefaultTyreCard.bind(this),
       },
@@ -656,7 +660,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       return html``;
     }
 
-    const isDefaultCard = !cardInfo.config || cardInfo.config.length === 0;
+    const isDefaultCard = !cardInfo.use_card || !cardInfo.config || cardInfo.config.length === 0;
     const cards = isDefaultCard ? cardInfo.defaultRender() : this.additionalCards[this.activeCardType];
 
     const lastCarUpdate = config.entity ? this.hass.states[config.entity].last_changed : '';
