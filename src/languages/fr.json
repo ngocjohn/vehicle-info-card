@@ -231,12 +231,12 @@
             "title": "Thèmes & Langage"
         },
         "customButtonConfig": {
-            "title": "",
-            "desc": ""
+            "title": "Bouton personnalisé",
+            "desc": "Définir la valeur du bouton personnalisé"
         },
         "customCardConfig": {
-            "title": "",
-            "desc": ""
+            "title": "Carte personnalisée",
+            "desc": "Configuration YAML pour la carte Lovelace"
         }
     }
 }

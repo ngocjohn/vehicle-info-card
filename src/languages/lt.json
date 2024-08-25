@@ -231,12 +231,12 @@
             "title": "Temos ir kalba"
         },
         "customButtonConfig": {
-            "title": "",
-            "desc": ""
+            "title": "Pasirinktinis mygtukas",
+            "desc": "Nustatykite pasirinktinio mygtuko reikšmę"
         },
         "customCardConfig": {
-            "title": "",
-            "desc": ""
+            "title": "Pasirinktinė kortelė",
+            "desc": "Yaml konfigūracija lovelace kortelei"
         }
     }
 }

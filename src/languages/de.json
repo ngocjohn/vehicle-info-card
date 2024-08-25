@@ -231,12 +231,12 @@
             "title": "Themen & Sprache"
         },
         "customButtonConfig": {
-            "title": "",
-            "desc": ""
+            "title": "Benutzerdefinierte Schaltfläche",
+            "desc": "Legen Sie den Wert für die benutzerdefinierte Schaltfläche fest"
         },
         "customCardConfig": {
-            "title": "",
-            "desc": ""
+            "title": "Benutzerdefinierte Karte",
+            "desc": "Yaml-Konfiguration für Lovelace-Karte"
         }
     }
 }

@@ -231,12 +231,12 @@
             "title": "Tematy i język"
         },
         "customButtonConfig": {
-            "title": "",
-            "desc": ""
+            "title": "Niestandardowy przycisk",
+            "desc": "Ustaw wartość dla niestandardowego przycisku"
         },
         "customCardConfig": {
-            "title": "",
-            "desc": ""
+            "title": "Niestandardowa karta",
+            "desc": "Konfiguracja YAML dla karty lovelace"
         }
     }
 }
