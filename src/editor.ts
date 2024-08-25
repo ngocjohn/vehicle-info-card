@@ -38,8 +38,8 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   @state() private _newImageUrl: string = '';
 
   @state() private _latestRelease: string = '';
-  private _system_language = this.hass?.language;
-  private _sortable: Sortable | null = null;
+  public _system_language = this.hass?.language;
+  public _sortable: Sortable | null = null;
   private _selectedItems: Set<string> = new Set();
 
   connectedCallback() {
@@ -181,28 +181,123 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private _renderSubCardConfig(card: CardTypeConfig): TemplateResult {
     const { config, name, icon } = card;
-    return html`
-      <div class="sub-card-config">
-        <div class="sub-card-header">
-          <ha-icon
-            icon="mdi:arrow-left"
-            @click=${() => (this._activeSubcardType = null)}
-            style="cursor: pointer"
-          ></ha-icon>
-          <div class="sub-card-title">
-            <h3>${name}</h3>
-            <ha-icon icon=${icon}></ha-icon>
-          </div>
+
+    const subCardHeader = html`
+      <div class="sub-card-header">
+        <ha-icon
+          icon="mdi:arrow-left"
+          @click=${() => (this._activeSubcardType = null)}
+          style="cursor: pointer"
+        ></ha-icon>
+        <div class="sub-card-title">
+          <h3>${name}</h3>
+          <ha-icon icon=${icon}></ha-icon>
         </div>
-        <ha-code-editor
-          autofocus
-          autocomplete-entities
-          autocomplete-icons
-          .value=${YAML.stringify(this._config?.[config] || [])}
-          @blur=${(ev: CustomEvent) => this._handleCardConfigChange(ev, config)}
-        ></ha-code-editor>
       </div>
     `;
+
+    const editorWrapper = this.panelTemplate(
+      'customCardConfig',
+      'customCardConfig',
+      'mdi:code-json',
+      html` <ha-code-editor
+        autofocus
+        autocomplete-entities
+        autocomplete-icons
+        .value=${YAML.stringify(this._config?.[config] || [])}
+        @blur=${(ev: CustomEvent) => this._handleCardConfigChange(ev, config)}
+      ></ha-code-editor>`,
+    );
+
+    const buttonTemplate = this._renderCustomButtonTemplate(card);
+
+    return html` <div class="sub-card-config">${subCardHeader}${buttonTemplate} ${editorWrapper}</div> `;
+  }
+
+  private _renderCustomButtonTemplate(card: CardTypeConfig): TemplateResult {
+    const { button, type } = card;
+    const primaryCfgValue = this._config[button]?.primary || '';
+    const secondaryCfgValue = this._config[button]?.secondary || '';
+    const notifyCfgValue = this._config[button]?.notify || '';
+    const iconCfgValue = this._config[button]?.icon || '';
+
+    const useDefault = this._config[button]?.enabled === true;
+
+    const useDefaultRadioBtn = html`
+      <ha-formfield .label=${'Use custom'}>
+        <ha-checkbox
+          .checked=${this._config[button]?.enabled !== false}
+          .configValue=${'enabled'}
+          .configBtnType=${button}
+          @change=${this._customBtnChanged}
+        ></ha-checkbox>
+      </ha-formfield>
+    `;
+
+    const primaryInfo = html`
+      <ha-textfield
+        .disabled=${!useDefault}
+        .label=${'Button Title'}
+        .value=${primaryCfgValue}
+        .configValue=${'primary'}
+        .configBtnType=${button}
+        @change=${this._customBtnChanged}
+      ></ha-textfield>
+    `;
+
+    const iconSelector = html`
+      <ha-icon-picker
+        .disabled=${!useDefault}
+        .hass=${this.hass}
+        .label=${'Icon'}
+        .value=${iconCfgValue}
+        .configValue=${'icon'}
+        .configBtnType=${button}
+        @value-changed=${this._customBtnChanged}
+      ></ha-icon-picker>
+    `;
+
+    const templateUI = (label: string, value: string, configValue: string, helper: string) => html`
+      <div class="template-ui">
+        <p>${label}</p>
+        <ha-code-editor
+          mode="jinja2"
+          .hass=${this.hass}
+          .value=${value}
+          .configValue=${configValue}
+          .configBtnType=${button}
+          .readOnly=${!useDefault}
+          @value-changed=${this._customBtnChanged}
+          dir="ltr"
+          .linewrap=${true}
+          .autocompleteEntities=${true}
+        ></ha-code-editor>
+        <ha-input-helper-text>${helper}</ha-input-helper-text>
+      </div>
+    `;
+    const secondaryTemplateEditor = templateUI(
+      'Secondary information',
+      secondaryCfgValue,
+      'secondary',
+      'Use Jinja2 template to display secondary information',
+    );
+
+    const notifyTemplate = templateUI(
+      'Notify config',
+      notifyCfgValue,
+      'notify',
+      `The result must return 'True' boolean to show the notification`,
+    );
+
+    return this.panelTemplate(
+      'customButtonConfig',
+      'customButtonConfig',
+      'mdi:button-cursor',
+      html` ${useDefaultRadioBtn}
+        <div class="card-button-cfg">${primaryInfo} ${iconSelector}</div>
+        ${secondaryTemplateEditor} ${notifyTemplate}`,
+      true,
+    );
   }
 
   private _renderCardEditorButtons(): TemplateResult {
@@ -214,7 +309,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           (card) => html`
             <ha-button
               @click=${() => {
-                this._dispatchCardEvent(card.type);
+                // this._dispatchCardEvent(card.type);
                 this._activeSubcardType = card.type;
               }}
               >${card.name}</ha-button
@@ -562,13 +657,19 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     `;
   }
 
-  private panelTemplate(titleKey: string, descKey: string, icon: string, content: TemplateResult): TemplateResult {
+  private panelTemplate(
+    titleKey: string,
+    descKey: string,
+    icon: string,
+    content: TemplateResult,
+    expanded: boolean = false,
+  ): TemplateResult {
     const localTitle = this.localize(`editor.${titleKey}.title`);
     const localDesc = this.localize(`editor.${descKey}.desc`);
 
     return html`
       <div class="panel-container">
-        <ha-expansion-panel .outlined=${true} .header=${localTitle} .secondary=${localDesc}>
+        <ha-expansion-panel .outlined=${true} .header=${localTitle} .secondary=${localDesc} .expanded=${expanded}>
           <div class="right-icon" slot="icons">
             <ha-icon icon=${icon}></ha-icon>
           </div>
@@ -674,6 +775,26 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     if (toast) {
       toast.classList.add('hidden');
     }
+  }
+  private _customBtnChanged(ev: any): void {
+    if (!this._config || !this.hass) {
+      return;
+    }
+
+    const target = ev.target;
+    const configValue = target.configValue;
+    const details = target.configBtnType;
+
+    const value = target?.checked !== undefined ? target.checked : ev.detail.value;
+
+    const updates: Partial<VehicleCardConfig> = {};
+    updates[details] = { ...this._config[details], [configValue]: value };
+    this._config = {
+      ...this._config,
+      ...updates,
+    };
+
+    fireEvent(this, 'config-changed', { config: this._config });
   }
 
   private _handleCardConfigChange(ev: CustomEvent, configKey: keyof VehicleCardConfig): void {

@@ -24,6 +24,7 @@ import {
   EntityConfig,
   VehicleEntities,
   EcoData,
+  ButtonConfigItem,
 } from './types';
 
 import * as DataKeys from './const/data-keys';
@@ -43,7 +44,7 @@ import './components/remote-control';
 // Functions
 import { localize } from './localize/localize';
 import { formatTimestamp, convertMinutes } from './utils/helpers';
-import { setupCardListeners, getVehicleEntities } from './utils/ha-helpers';
+import { setupCardListeners, getVehicleEntities, getTemplateValue, getBooleanTemplate } from './utils/ha-helpers';
 
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
 
@@ -62,6 +63,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   @state() private selectedTheme!: string;
   @state() private vehicleEntities: VehicleEntities = {};
   @state() private additionalCards: { [key: string]: any[] } = {};
+  @state() private customButtons: { [key: string]: any[] } = {};
   @state() private activeCardType: string | null = null;
   @state() private ecoScoresVisible!: boolean;
   @state() private lockAttributesVisible!: boolean;
@@ -70,7 +72,8 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   @state() private chargingInfoVisible!: boolean;
   @state() private tripFromStartVisible!: boolean;
   @state() private tripFromResetVisible!: boolean;
-
+  @state() private templateValues: { [key: string]: string } = {};
+  @state() private customNotify: { [key: string]: boolean } = {};
   @state() private isTyreHorizontal!: boolean;
 
   constructor() {
@@ -104,6 +107,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     super.firstUpdated(changedProps);
     this.configureAsync();
     this.configureCustomCards();
+    this._loadTemplateValues();
     this.applyTheme(this.selectedTheme);
   }
 
@@ -137,6 +141,9 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     for (const cardType of cardTypes(lang)) {
       if (this.config[cardType.config]) {
         this.createCards(this.config[cardType.config], cardType.type);
+      }
+      if (this.config[cardType.button]) {
+        this.createCustomButtons(this.config[cardType.button], cardType.type);
       }
     }
 
@@ -183,6 +190,22 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       return false;
     }
     return this.hass.themes.darkMode;
+  }
+
+  private async _loadTemplateValues() {
+    const templateValues: { [key: string]: string } = {};
+    const customNotify: { [key: string]: boolean } = {};
+    for (const cardType of cardTypes(this.selectedLanguage)) {
+      const customBtn = this.customButtons[cardType.type]?.find((btn) => btn.enabled !== false);
+      if (customBtn && customBtn.secondary) {
+        templateValues[cardType.type] = await getTemplateValue(this.hass, customBtn.secondary);
+        this.templateValues = templateValues;
+      }
+      if (customBtn && customBtn.notify) {
+        customNotify[cardType.type] = await getBooleanTemplate(this.hass, customBtn.notify);
+        this.customNotify = customNotify;
+      }
+    }
   }
 
   // https://lit.dev/docs/components/styles/
@@ -233,6 +256,13 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     }
   }
 
+  private createCustomButtons(buttonConfigs: ButtonConfigItem | ButtonConfigItem[], stateProperty: string) {
+    const btn = Array.isArray(buttonConfigs)
+      ? buttonConfigs.map((config) => ({ ...config, type: stateProperty }))
+      : [{ ...buttonConfigs, type: stateProperty }];
+    this.customButtons[stateProperty] = btn;
+  }
+
   protected updated(changedProps: PropertyValues) {
     super.updated(changedProps);
     // Log all changed properties for debugging
@@ -255,7 +285,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       return true;
     }
 
-    return hasConfigOrEntityChanged(this, _changedProps, true);
+    return hasConfigOrEntityChanged(this, _changedProps, false);
   }
 
   /* -------------------------------------------------------------------------- */
@@ -518,31 +548,76 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     const showError = this.config.show_error_notify;
     if (!this.config.show_buttons) return html``;
     const baseCardTypes = cardTypes(this.selectedLanguage);
+
     return html`
       <div class="grid-container">
-        ${baseCardTypes.map(
-          (cardType) => html`
+        ${baseCardTypes.map((cardType) => {
+          const customBtn = this.customButtons[cardType.type]?.find((btn) => btn.enabled !== false);
+          const buttonName = customBtn?.primary || cardType.name;
+          const buttonIcon = customBtn?.icon || cardType.icon;
+          const secondaryInfo = this.templateValues[cardType.type] || this.getSecondaryInfo(cardType.type);
+          const btnNotify = this.customNotify[cardType.type] || this.getErrorNotify(cardType.type);
+
+          return html`
             <div class="grid-item click-shrink" @click=${() => this.toggleCardFromButtons(cardType.type)}>
               <div class="item-icon">
-                <div class="icon-background"><ha-icon .icon="${cardType.icon}"></ha-icon></div>
+                <div class="icon-background"><ha-icon .icon="${buttonIcon}"></ha-icon></div>
                 ${showError
                   ? html`
-                      <div class="item-notify ${this.getErrorNotify(cardType.type) ? '' : 'hidden'}">
+                      <div class="item-notify ${btnNotify ? '' : 'hidden'}">
                         <ha-icon icon="mdi:alert-circle"></ha-icon>
                       </div>
                     `
                   : nothing}
               </div>
               <div class="item-content">
-                <div class="primary"><span class="title">${cardType.name}</span></div>
-                <span class="secondary">${this.getSecondaryInfo(cardType.type)}</span>
+                <div class="primary"><span class="title">${buttonName}</span></div>
+                <span class="secondary">${secondaryInfo}</span>
               </div>
             </div>
-          `,
-        )}
+          `;
+        })}
       </div>
     `;
   }
+
+  // private _renderButtons(): TemplateResult {
+  //   const showError = this.config.show_error_notify;
+  //   if (!this.config.show_buttons) return html``;
+  //   const baseCardTypes = cardTypes(this.selectedLanguage);
+
+  //   return html`
+  //     <div class="grid-container">
+  //       ${baseCardTypes.map((cardType) => {
+  //         const customBtn = this.customButtons[cardType.type]?.find((btn) => btn.enabled !== false);
+  //         const buttonName = customBtn?.primary || cardType.name;
+  //         const buttonIcon = customBtn?.icon || cardType.icon;
+  //         const secondaryInfo =
+  //           getTemplateValue(this.hass, customBtn?.secondary) || this.getSecondaryInfo(cardType.type);
+  //         const btnNotify = customBtn?.notify || this.getErrorNotify(cardType.type);
+
+  //         return html`
+  //           <div class="grid-item click-shrink" @click=${() => this.toggleCardFromButtons(cardType.type)}>
+  //             <div class="item-icon">
+  //               <div class="icon-background"><ha-icon .icon="${buttonIcon}"></ha-icon></div>
+  //               ${showError
+  //                 ? html`
+  //                     <div class="item-notify ${btnNotify ? '' : 'hidden'}">
+  //                       <ha-icon icon="mdi:alert-circle"></ha-icon>
+  //                     </div>
+  //                   `
+  //                 : nothing}
+  //             </div>
+  //             <div class="item-content">
+  //               <div class="primary"><span class="title">${buttonName}</span></div>
+  //               <span class="secondary">${secondaryInfo}</span>
+  //             </div>
+  //           </div>
+  //         `;
+  //       })}
+  //     </div>
+  //   `;
+  // }
 
   private _renderCustomCard(): TemplateResult {
     if (!this.activeCardType) return html``;
@@ -757,6 +832,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   private _showWarning(warning: string): TemplateResult {
     return html` <hui-warning>${warning}</hui-warning> `;
   }
+
   /* --------------------------- ADDITIONAL METHODS --------------------------- */
 
   private computeClasses() {

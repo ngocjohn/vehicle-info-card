@@ -20,7 +20,7 @@ export interface CardType {
   name: string;
   icon: string;
   config: string;
-  editor: string;
+  button: string;
 }
 
 const createCard = (
@@ -28,21 +28,21 @@ const createCard = (
   nameKey: string,
   icon: string,
   config: string,
-  editor: string,
+  button: string,
   lang: string,
 ): CardType => ({
   type: key,
   name: localize(`card.${nameKey}`, lang),
   icon,
   config,
-  editor,
+  button,
 });
 
 export const cardTypes = (lang: string) => [
-  createCard('tripCards', 'cardType.tripCards', 'mdi:map-marker-path', 'trip_card', 'isTripCardEditor', lang),
-  createCard('vehicleCards', 'cardType.vehicleCards', 'mdi:car-info', 'vehicle_card', 'isVehicleCardEditor', lang),
-  createCard('ecoCards', 'cardType.ecoCards', 'mdi:leaf', 'eco_card', 'isEcoCardEditor', lang),
-  createCard('tyreCards', 'cardType.tyreCards', 'mdi:tire', 'tyre_card', 'isTyreCardEditor', lang),
+  createCard('tripCards', 'cardType.tripCards', 'mdi:map-marker-path', 'trip_card', 'trip_button', lang),
+  createCard('vehicleCards', 'cardType.vehicleCards', 'mdi:car-info', 'vehicle_card', 'vehicle_button', lang),
+  createCard('ecoCards', 'cardType.ecoCards', 'mdi:leaf', 'eco_card', 'eco_button', lang),
+  createCard('tyreCards', 'cardType.tyreCards', 'mdi:tire', 'tyre_card', 'tyre_button', lang),
 ];
 
 export interface CardItem {

@@ -229,12 +229,47 @@ function getCarEntity(this: any): string {
   return entities[0] || '';
 }
 
+export async function getTemplateValue(hass: HomeAssistant, templateConfig: string): Promise<string> {
+  const response = await fetch('/api/template', {
+    method: 'POST',
+    body: JSON.stringify({ template: templateConfig }),
+    headers: {
+      Authorization: `Bearer ${hass.auth.data.access_token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    return '';
+  }
+
+  const data = await response.text();
+  return data;
+}
+
+export async function getBooleanTemplate(hass: HomeAssistant, templateConfig: string): Promise<boolean> {
+  const response = await fetch('/api/template', {
+    method: 'POST',
+    body: JSON.stringify({ template: templateConfig }),
+    headers: {
+      Authorization: `Bearer ${hass.auth.data.access_token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    return false;
+  }
+
+  const data = await response.text();
+  return data.trim().toLowerCase() === 'true';
+}
+
 export async function handleFirstUpdated(
   component: any, // Replace 'any' with the correct type for your component if available
   _changedProperties: PropertyValues,
 ): Promise<void> {
   fetchLatestReleaseTag().then((latestRelease) => {
-    console.log('Latest release tag:', latestRelease);
     component._latestRelease = latestRelease;
   });
 

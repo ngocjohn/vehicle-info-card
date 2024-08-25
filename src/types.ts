@@ -65,6 +65,29 @@ export interface MapPopupConfig {
   theme_mode?: 'dark' | 'light' | 'auto';
 }
 
+export type ButtonConfigItem = {
+  enabled: boolean;
+  primary: string;
+  secondary: string;
+  icon: string;
+  notify: boolean;
+};
+
+export interface CustomButtons {
+  [key: string]: ButtonConfigItem[]; // Updated to store arrays of button items
+}
+
+export interface CustomCards extends VehicleCardConfig {
+  vehicle_card?: LovelaceCardConfig[];
+  trip_card?: LovelaceCardConfig[];
+  eco_card?: LovelaceCardConfig[];
+  tyre_card?: LovelaceCardConfig[];
+  eco_button?: ButtonConfigItem[];
+  trip_button?: ButtonConfigItem[];
+  vehicle_button?: ButtonConfigItem[];
+  tyre_button?: ButtonConfigItem[];
+}
+
 export interface VehicleCardConfig extends LovelaceCardConfig {
   type: string;
   entity: string;
@@ -76,10 +99,6 @@ export interface VehicleCardConfig extends LovelaceCardConfig {
   map_popup_config: MapPopupConfig;
   selected_theme: ThemesConfig;
   services: Services;
-  vehicle_card?: LovelaceCardConfig[];
-  trip_card?: LovelaceCardConfig[];
-  eco_card?: LovelaceCardConfig[];
-  tyre_card?: LovelaceCardConfig[];
   tap_action?: ActionConfig;
   hold_action?: ActionConfig;
   double_tap_action?: ActionConfig;
@@ -130,7 +149,7 @@ export interface CardTypeConfig {
   name: string;
   icon: string;
   config: string;
-  editor: string;
+  button: string;
 }
 
 // Default configuration for the Vehicle Card.
@@ -160,5 +179,21 @@ export const defaultConfig: Partial<VehicleCardConfig> = {
     sigPos: false,
     sunroof: false,
     windows: false,
+  },
+  eco_button: {
+    enabled: false,
+  },
+  trip_button: {
+    enabled: false,
+  },
+  vehicle_button: {
+    enabled: false,
+  },
+  tyre_button: {
+    enabled: false,
+  },
+  selected_theme: {
+    theme: 'default',
+    mode: 'system',
   },
 };
