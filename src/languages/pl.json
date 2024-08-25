@@ -186,6 +186,13 @@
             "windowstatusrearleftblind": "Tylne lewe okno z roletą",
             "windowstatusrearright": "Tylne prawe okno",
             "windowstatusrearrightblind": "Tylne prawe okno z roletą"
+        },
+        "ignitionState": {
+            "ignitionLock": "Zablokowany",
+            "ignitionOff": "Wyłączony",
+            "ignitionAccessory": "Akcesoria",
+            "ignitionOn": "Włączony",
+            "ignitionStart": "Rozruch"
         }
     },
     "editor": {

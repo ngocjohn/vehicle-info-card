@@ -45,6 +45,7 @@ import './components/remote-control';
 import { localize } from './localize/localize';
 import { formatTimestamp, convertMinutes } from './utils/helpers';
 import { setupCardListeners, getVehicleEntities, getTemplateValue, getBooleanTemplate } from './utils/ha-helpers';
+import { languages } from './localize/languageImports';
 
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
 
@@ -582,44 +583,6 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     `;
   }
 
-  // private _renderButtons(): TemplateResult {
-  //   const showError = this.config.show_error_notify;
-  //   if (!this.config.show_buttons) return html``;
-  //   const baseCardTypes = cardTypes(this.selectedLanguage);
-
-  //   return html`
-  //     <div class="grid-container">
-  //       ${baseCardTypes.map((cardType) => {
-  //         const customBtn = this.customButtons[cardType.type]?.find((btn) => btn.enabled !== false);
-  //         const buttonName = customBtn?.primary || cardType.name;
-  //         const buttonIcon = customBtn?.icon || cardType.icon;
-  //         const secondaryInfo =
-  //           getTemplateValue(this.hass, customBtn?.secondary) || this.getSecondaryInfo(cardType.type);
-  //         const btnNotify = customBtn?.notify || this.getErrorNotify(cardType.type);
-
-  //         return html`
-  //           <div class="grid-item click-shrink" @click=${() => this.toggleCardFromButtons(cardType.type)}>
-  //             <div class="item-icon">
-  //               <div class="icon-background"><ha-icon .icon="${buttonIcon}"></ha-icon></div>
-  //               ${showError
-  //                 ? html`
-  //                     <div class="item-notify ${btnNotify ? '' : 'hidden'}">
-  //                       <ha-icon icon="mdi:alert-circle"></ha-icon>
-  //                     </div>
-  //                   `
-  //                 : nothing}
-  //             </div>
-  //             <div class="item-content">
-  //               <div class="primary"><span class="title">${buttonName}</span></div>
-  //               <span class="secondary">${secondaryInfo}</span>
-  //             </div>
-  //           </div>
-  //         `;
-  //       })}
-  //     </div>
-  //   `;
-  // }
-
   private _renderCustomCard(): TemplateResult {
     if (!this.activeCardType) return html``;
     const { config } = this;
@@ -664,9 +627,13 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     const cards = isDefaultCard ? cardInfo.defaultRender() : this.additionalCards[this.activeCardType];
 
     const lastCarUpdate = config.entity ? this.hass.states[config.entity].last_changed : '';
-
-    const formattedDate = this.hass.locale
-      ? formatDateTime(new Date(lastCarUpdate), this.hass.locale)
+    const locale = this.hass.locale;
+    const localeLang = {
+      ...locale,
+      language: this.selectedLanguage,
+    };
+    const formattedDate = localeLang
+      ? formatDateTime(new Date(lastCarUpdate), localeLang)
       : formatTimestamp(lastCarUpdate);
 
     const cardHeaderBox = html` <div class="added-card-header">
@@ -1140,13 +1107,13 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   }
 
   private getEntityInfoByKey = ({ key, name, icon, state, unit }: EntityConfig): EntityConfig => {
-    const vehicleEntity = this.vehicleEntities[key];
+    const vehicleEntityKey = this.vehicleEntities[key];
 
-    if (!vehicleEntity) {
+    if (!vehicleEntityKey) {
       return this.getFallbackEntityInfo({ key, name, icon, state, unit });
     }
 
-    const defaultInfo = this.getDefaultEntityInfo({ key, name, icon, state, unit }, vehicleEntity);
+    const defaultInfo = this.getDefaultEntityInfo({ key, name, icon, state, unit }, vehicleEntityKey);
 
     const entityInfoMap = {
       soc: this.getSocInfo,
@@ -1162,9 +1129,9 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     const getInfoFunction = entityInfoMap[key];
 
     if (getInfoFunction) {
-      return getInfoFunction(defaultInfo, vehicleEntity);
+      return getInfoFunction(defaultInfo, vehicleEntityKey);
     } else {
-      return this.getWarningOrDefaultInfo(defaultInfo, key, vehicleEntity);
+      return this.getWarningOrDefaultInfo(defaultInfo, key, vehicleEntityKey);
     }
   };
 
@@ -1174,7 +1141,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     const lang = this.selectedLanguage;
 
     let newState = state;
-    let activeState;
+    let activeState: boolean = false;
 
     switch (key) {
       case 'selectedProgram':
@@ -1296,12 +1263,13 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   };
 
   private getIgnitionStateInfo = (defaultInfo: EntityConfig, vehicleEntity: any): EntityConfig => {
-    const shortValue = this.getEntityAttribute(vehicleEntity.entity_id, 'value_short');
     const realState = this.getEntityState(vehicleEntity.entity_id);
+    const stateStr =
+      StateMapping.ignitionState(this.selectedLanguage)[realState] || this.localize('card.common.stateUnknown');
     const activeState = realState === '0' || realState === '1' ? true : false;
     return {
       ...defaultInfo,
-      state: shortValue || 'Unknown',
+      state: stateStr,
       active: activeState,
     };
   };

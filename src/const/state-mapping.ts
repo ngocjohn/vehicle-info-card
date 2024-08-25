@@ -177,3 +177,13 @@ export const windowAttributes = (lang: string) => ({
   windowstatusfrontleftblind: createWindowStatus('card.windowAttributes.windowstatusfrontleftblind', lang),
   windowstatusfrontrightblind: createWindowStatus('card.windowAttributes.windowstatusfrontrightblind', lang),
 });
+
+const createIgnitionState = (lang: string) => ({
+  '0': localize('card.ignitionState.ignitionLock', lang),
+  '1': localize('card.ignitionState.ignitionOff', lang),
+  '2': localize('card.ignitionState.ignitionAccessory', lang),
+  '4': localize('card.ignitionState.ignitionOn', lang),
+  '5': localize('card.ignitionState.ignitionStart', lang),
+});
+
+export const ignitionState = createIgnitionState;

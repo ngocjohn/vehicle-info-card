@@ -186,6 +186,13 @@
             "windowstatusrearleftblind": "Cửa sổ che sau trái",
             "windowstatusrearright": "Cửa sổ sau phải",
             "windowstatusrearrightblind": "Cửa sổ che sau phải"
+        },
+        "ignitionState": {
+            "ignitionLock": "Khóa",
+            "ignitionOff": "Tắt",
+            "ignitionAccessory": "Phụ kiện",
+            "ignitionOn": "Bật",
+            "ignitionStart": "Khởi động"
         }
     },
     "editor": {

@@ -186,6 +186,13 @@
             "windowstatusrearleftblind": "Fenster hinten links blind",
             "windowstatusrearright": "Fenster hinten rechts",
             "windowstatusrearrightblind": "Fenster hinten rechts blind"
+        },
+        "ignitionState": {
+            "ignitionLock": "Zündschloss",
+            "ignitionOff": "Aus",
+            "ignitionAccessory": "Zubehör",
+            "ignitionOn": "An",
+            "ignitionStart": "Start"
         }
     },
     "editor": {

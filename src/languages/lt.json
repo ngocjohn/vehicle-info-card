@@ -186,6 +186,13 @@
             "windowstatusrearleftblind": "Galinio lango kairės pusės žaliuzė",
             "windowstatusrearright": "Užpakalinis dešinės pusės langas",
             "windowstatusrearrightblind": "Galinio lango dešinės pusės žaliuzė"
+        },
+        "ignitionState": {
+            "ignitionLock": "Užrakinti",
+            "ignitionOff": "Išjungta",
+            "ignitionAccessory": "Priedas",
+            "ignitionOn": "Įjungta",
+            "ignitionStart": "Pradėti"
         }
     },
     "editor": {

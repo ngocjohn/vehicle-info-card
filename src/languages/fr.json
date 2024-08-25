@@ -186,6 +186,13 @@
             "windowstatusrearleftblind": "Store arrière gauche",
             "windowstatusrearright": "Vitre arrière droite",
             "windowstatusrearrightblind": "Store arrière droit"
+        },
+        "ignitionState": {
+            "ignitionLock": "Verrouillage",
+            "ignitionOff": "Éteint",
+            "ignitionAccessory": "Accessoire",
+            "ignitionOn": "Allumé",
+            "ignitionStart": "Démarrage"
         }
     },
     "editor": {

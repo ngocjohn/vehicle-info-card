@@ -186,6 +186,13 @@
             "windowstatusrearleftblind": "Okno zadní levé roleta",
             "windowstatusrearright": "Okno zadní pravé",
             "windowstatusrearrightblind": "Okno zadní pravé roleta"
+        },
+        "ignitionState": {
+            "ignitionLock": "zamčeno",
+            "ignitionOff": "vypnuto",
+            "ignitionAccessory": "příslušenství",
+            "ignitionOn": "zapnuto",
+            "ignitionStart": "start"
         }
     },
     "editor": {

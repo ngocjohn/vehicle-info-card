@@ -186,6 +186,13 @@
             "windowstatusrearleftblind": "Zadné ľavé okno so žalúziou",
             "windowstatusrearright": "Zadné pravé okno",
             "windowstatusrearrightblind": "Zadné pravé okno so žalúziou"
+        },
+        "ignitionState": {
+            "ignitionLock": "Zamknuté",
+            "ignitionOff": "Vypnuté",
+            "ignitionAccessory": "Príslušenstvo",
+            "ignitionOn": "Zapnuté",
+            "ignitionStart": "Štart"
         }
     },
     "editor": {

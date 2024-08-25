@@ -186,6 +186,13 @@
             "windowstatusrearleftblind": "Window rear left blind",
             "windowstatusrearright": "Window rear right",
             "windowstatusrearrightblind": "Window rear right blind"
+        },
+        "ignitionState": {
+            "ignitionLock": "Lock",
+            "ignitionOff": "Off",
+            "ignitionAccessory": "Accessory",
+            "ignitionOn": "On",
+            "ignitionStart": "Start"
         }
     },
     "editor": {
