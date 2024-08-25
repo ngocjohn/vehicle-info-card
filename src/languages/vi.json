@@ -231,12 +231,12 @@
             "title": "Chủ đề và ngôn ngữ"
         },
         "customButtonConfig": {
-            "title": "",
-            "desc": ""
+            "title": "Nút tùy chỉnh",
+            "desc": "Đặt giá trị cho nút tùy chỉnh"
         },
         "customCardConfig": {
-            "title": "",
-            "desc": ""
+            "title": "Thẻ tùy chỉnh",
+            "desc": "Cấu hình YAML cho thẻ lovelace"
         }
     }
 }
