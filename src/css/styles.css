@@ -20,9 +20,7 @@ ha-card {
   background-color: var(--card-background-color);
 }
 
-/* ha-card.--dark {
-  background-color: #0c0c0c;
-} */
+
 
 header h1 {
   color: var(--ha-card-header-color, --primary-text-color);
@@ -175,19 +173,60 @@ header h1 {
   background-color: #909090;
   border-radius: 5px;
   position: relative;
+  overflow: hidden;
 }
 
 .fuel-level-bar {
   position: absolute;
   background-color: #4caf50;
   border-radius: 5px;
-  transition: width 0.5s ease;
-  height: 5px;
+  height: 100%;
+  width: var(--vic-range-width);
 }
 
 .fuel-level-bar.electric {
   background-color: #2196f3 !important;
 }
+
+.fuel-level-bar.electric::after {
+  content: '';
+  position: absolute;
+  width: 15%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  border-radius: 5px;
+  animation: pulse 3.7s ease-in-out forwards infinite;
+  display: none;
+}
+
+.fuel-level-bar.electric.show-after::after {
+  display: block !important;
+}
+
+@keyframes pulse {
+  0% {
+    background: rgba(255, 255, 255, 1);
+    box-shadow: inset 0px 0px 10px 2px rgba(117, 182, 255, 0.5),
+      0px 0px 40px 2px rgba(105, 135, 255, 1);
+    left: 0;
+    opacity: 0.3;
+  }
+
+  50% {
+    left: var(--vic-range-width);
+    opacity: 0.5;
+  }
+
+  100% {
+    background: rgba(255, 255, 255, 0);
+    box-shadow: inset 0px 0px 10px 2px rgba(117, 182, 255, 0.5),
+      0px 0px 30px 2px rgba(105, 135, 255, 0.3);
+    left: 0;
+    opacity: 0.7;
+  }
+}
+
 
 .grid-container {
   display: grid;

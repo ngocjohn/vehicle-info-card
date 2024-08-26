@@ -74,7 +74,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   public async setConfig(config: VehicleCardConfig): Promise<void> {
-    this._config = this._validateConfig(config) ? config : this.convertToNewConfig(config);
+    this._config = config;
   }
 
   protected async firstUpdated(changedProperties: PropertyValues): Promise<void> {
@@ -172,17 +172,14 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private _renderVersionInfo(): TemplateResult {
     return html`
-        <div class="version">
-          <span
-            >${
-              CARD_VERSION === this._latestRelease
-                ? html`version: ${CARD_VERSION}`
-                : html`version: ${CARD_VERSION} -> <span class="update">${this._latestRelease}</span>`
-            }</span
-          >
-        </div>
-        ${this._renderUpdateToast()}
+      <div class="version">
+        <span>
+          ${CARD_VERSION === this._latestRelease
+            ? html`version: ${CARD_VERSION}`
+            : html`version: ${CARD_VERSION} -> <span class="update">${this._latestRelease}</span>`}
+        </span>
       </div>
+      ${this._renderUpdateToast()}
     `;
   }
 
@@ -228,20 +225,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         ></ha-checkbox>
       </ha-formfield>
     `;
-
-    // const cardCodeEditor = html`
-    //   <ha-code-editor
-    //     .autofocus=${true}
-    //     .autocompleteEntities=${true}
-    //     .autocompleteIcons=${true}
-    //     .dir=${'ltr'}
-    //     .mode=${'yaml'}
-    //     .hass=${this.hass}
-    //     .linewrap=${false}
-    //     .value=${YAML.stringify(this._config?.[card.config] || [])}
-    //     @focusout=${(ev: any) => this._customCardChange(ev, card.config)}
-    //   ></ha-code-editor>
-    // `;
 
     const cardCodeEditor = html`
       <ha-code-editor
@@ -350,14 +333,14 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       'Secondary information',
       secondaryCfgValue,
       'secondary',
-      'Use Jinja2 template to display secondary information',
+      'Use Jinja2 template to display secondary information'
     );
 
     const notifyTemplate = templateUI(
       'Notify config',
       notifyCfgValue,
       'notify',
-      `The result must return 'True' boolean to show the notification`,
+      `The result must return 'True' boolean to show the notification`
     );
 
     return this.panelTemplate(
@@ -367,7 +350,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       html` ${useDefaultRadioBtn}
         <div class="card-button-cfg">${primaryInfo} ${iconSelector}</div>
         ${secondaryTemplateEditor} ${notifyTemplate}`,
-      true,
+      false
     );
   }
 
@@ -385,7 +368,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
               }}
               >${card.name}</ha-button
             >
-          `,
+          `
         )}
       </div>
     `;
@@ -409,7 +392,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
                 @change=${this._showValueChanged}
               ></ha-checkbox>
             </ha-formfield>
-          `,
+          `
         )}
       </div>
     `;
@@ -420,7 +403,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   private _renderNameEntityForm(): TemplateResult {
     // Filter entities as per your requirement
     const entities = Object.keys(this.hass.states).filter(
-      (entity) => entity.startsWith('sensor') && entity.endsWith('_car'),
+      (entity) => entity.startsWith('sensor') && entity.endsWith('_car')
     );
     const modelName = this._config.model_name;
 
@@ -471,7 +454,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       >
         ${langOpts.map(
           (lang) =>
-            html`<mwc-list-item value=${lang.key}>${lang.nativeName ? lang.nativeName : lang.name}</mwc-list-item> `,
+            html`<mwc-list-item value=${lang.key}>${lang.nativeName ? lang.nativeName : lang.name}</mwc-list-item> `
         )}
       </ha-select>
 
@@ -521,7 +504,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
               .checked=${false}
               @change=${(event: Event) => this._toggleSelection(event, image.url)}
             ></ha-checkbox>
-          </div>`,
+          </div>`
       )}
     </div>`;
     const showIndexDeleteBtn =
@@ -601,7 +584,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   private _renderMapPopupConfig(): TemplateResult {
     const infoAlert = this.localize('editor.common.infoMap');
     const enableMapPopupSwtich = editorShowOpts(this.selectedLanguage).find(
-      (option) => option.configKey === 'enable_map_popup',
+      (option) => option.configKey === 'enable_map_popup'
     );
 
     const mapConfig = html`
@@ -678,7 +661,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
                 @change=${this._servicesValueChanged}
               ></ha-checkbox>
             </ha-formfield>
-          `,
+          `
         )}
       </div>
     `;
@@ -733,7 +716,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     descKey: string,
     icon: string,
     content: TemplateResult,
-    expanded: boolean = false,
+    expanded: boolean = false
   ): TemplateResult {
     const localTitle = this.localize(`editor.${titleKey}.title`);
     const localDesc = this.localize(`editor.${descKey}.desc`);
@@ -984,7 +967,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         },
       };
     } else if (configValue === 'selected_language') {
-      newValue = target.value === 'system' ? this.hass.language : target.value;
+      newValue = target.value === 'system' ? this.hass.language.replace(/"/g, '') : target.value;
       this._config = {
         ...this._config,
         [configValue]: newValue,

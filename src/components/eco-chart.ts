@@ -1,4 +1,4 @@
-import { LitElement, html, TemplateResult, css } from 'lit';
+import { LitElement, html, TemplateResult, css, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
 import type { EcoData } from '../types';
@@ -10,6 +10,7 @@ import ApexCharts from 'apexcharts';
 export class EcoChart extends LitElement {
   @property({ type: Object }) ecoData!: EcoData;
   @property({ type: String }) selectedLanguage!: string;
+  @property() private activeCard: string | undefined;
 
   @state() private chart: ApexCharts | undefined;
 
@@ -53,8 +54,6 @@ export class EcoChart extends LitElement {
               formatter: () => {
                 return `${this.ecoData.bonusRange || 0} km`;
               },
-              offsetX: 50,
-              offsetY: 10,
             },
           },
           barLabels: {
@@ -92,9 +91,14 @@ export class EcoChart extends LitElement {
     this.chart.render();
   }
 
-  updated(changedProperties: Map<string | number | symbol, unknown>) {
-    if (changedProperties.has('ecoData')) {
+  protected updated(changedProps: PropertyValues) {
+    if (changedProps.has('activeCard') && this.activeCard === 'ecoCards') {
       this.updateChart();
+      console.log('updated');
+    } else if (changedProps.has('activeCard') && this.activeCard !== 'ecoCards') {
+      this.chart?.destroy();
+      this.chart = undefined;
+      console.log('destroyed');
     }
   }
 
@@ -132,7 +136,7 @@ export class EcoChart extends LitElement {
       justify-content: center;
       position: relative;
       width: 100%;
-      max-height: 350px;
+      height: 100%;
       margin: 0;
       font-family:
         system-ui,
