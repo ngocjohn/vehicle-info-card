@@ -91,7 +91,7 @@ export async function getModelName(hass: HomeAssistant, entityCar: string): Prom
 
 export function setupCardListeners(
   cardElement: Element | null,
-  toggleCard: (direction: 'next' | 'prev') => void,
+  toggleCard: (direction: 'next' | 'prev') => void
 ): void {
   if (!cardElement) return;
   // Variables to store touch/mouse coordinates
@@ -221,11 +221,9 @@ export async function uploadImage(hass: HomeAssistant, file: File): Promise<stri
  * @param changedProps
  **/
 
-function getCarEntity(this: any): string {
+export function getCarEntity(hass: HomeAssistant): string {
   console.log('Getting car entity');
-  const entities = Object.keys(this.hass.states).filter(
-    (entity) => entity.startsWith('sensor.') && entity.endsWith('_car'),
-  );
+  const entities = Object.keys(hass.states).filter((entity) => entity.startsWith('sensor.') && entity.endsWith('_car'));
   return entities[0] || '';
 }
 
@@ -267,7 +265,7 @@ export async function getBooleanTemplate(hass: HomeAssistant, templateConfig: st
 
 export async function handleFirstUpdated(
   component: any, // Replace 'any' with the correct type for your component if available
-  _changedProperties: PropertyValues,
+  _changedProperties: PropertyValues
 ): Promise<void> {
   fetchLatestReleaseTag().then((latestRelease) => {
     component._latestRelease = latestRelease;
@@ -275,16 +273,15 @@ export async function handleFirstUpdated(
 
   const updates: Partial<VehicleCardConfig> = {};
 
-  if (!component._config.entity) {
+  if (!component._config.entity || component._config.entity === '') {
     console.log('Entity not found, fetching...');
-    updates.entity = getCarEntity.call(component);
+    updates.entity = getCarEntity(component.hass as HomeAssistant);
   }
 
   // After setting the entity, fetch the model name
   if (updates.entity || !component._config.model_name) {
     const entity = updates.entity || component._config.entity;
     updates.model_name = await getModelName(component.hass as HomeAssistant, entity);
-    console.log('Model name:', updates.model_name);
   }
 
   if (!component._config.selected_language) {
@@ -297,4 +294,79 @@ export async function handleFirstUpdated(
     component._config = { ...component._config, ...updates };
     component.configChanged();
   }
+}
+
+// Default configuration for the Vehicle Card.
+
+export const defaultConfig: Partial<VehicleCardConfig> = {
+  type: 'custom:vehicle-info-card',
+  name: 'Mercedes Vehicle Card',
+  entity: '',
+  model_name: '',
+  selected_language: 'system',
+  show_slides: false,
+  show_map: false,
+  show_buttons: true,
+  show_background: true,
+  enable_map_popup: false,
+  enable_services_control: false,
+  show_error_notify: false,
+  device_tracker: '',
+  map_popup_config: {
+    hours_to_show: 0,
+    default_zoom: 14,
+    theme_mode: 'auto',
+  },
+  selected_theme: {
+    theme: 'default',
+    mode: 'auto',
+  },
+  services: {
+    auxheat: false,
+    charge: false,
+    doorsLock: false,
+    engine: false,
+    preheat: false,
+    sendRoute: false,
+    sigPos: false,
+    sunroof: false,
+    windows: false,
+  },
+  eco_button: {
+    enabled: false,
+  },
+  trip_button: {
+    enabled: false,
+  },
+  vehicle_button: {
+    enabled: false,
+  },
+  tyre_button: {
+    enabled: false,
+  },
+  use_custom_cards: {
+    vehicle_card: true,
+    trip_card: true,
+    eco_card: true,
+    tyre_card: true,
+  },
+};
+
+export function deepMerge(target: any, source: any): any {
+  const output = { ...target };
+
+  for (const key of Object.keys(source)) {
+    if (source[key] === null) {
+      // If the source value is null, use the target's value
+      output[key] = target[key];
+    } else if (source[key] instanceof Object && key in target) {
+      // If the value is an object and exists in the target, merge deeply
+      output[key] = deepMerge(target[key], source[key]);
+    } else {
+      // Otherwise, use the source's value
+      output[key] = source[key];
+    }
+  }
+
+  return output;
 }

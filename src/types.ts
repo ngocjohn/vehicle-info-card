@@ -51,18 +51,18 @@ export interface VehicleImage {
 }
 
 export interface VehicleImagesList extends VehicleCardConfig {
-  images?: VehicleImage[];
+  images: VehicleImage[];
 }
 
 export interface ThemesConfig {
   theme: string;
-  mode: 'system' | 'dark' | 'light';
+  mode: 'auto' | 'dark' | 'light';
 }
 
 export interface MapPopupConfig {
-  hours_to_show?: number;
-  default_zoom?: number;
-  theme_mode?: 'dark' | 'light' | 'auto';
+  hours_to_show: number;
+  default_zoom: number;
+  theme_mode: 'dark' | 'light' | 'auto';
 }
 
 export type ButtonConfigItem = {
@@ -159,56 +159,3 @@ export interface CardTypeConfig {
   config: string;
   button: string;
 }
-
-// Default configuration for the Vehicle Card.
-export const defaultConfig: Partial<VehicleCardConfig> = {
-  type: 'custom:vehicle-info-card',
-  name: 'Mercedes Vehicle Card',
-  entity: '',
-  model_name: '',
-  show_slides: false,
-  show_map: false,
-  show_buttons: true,
-  show_background: true,
-  enable_map_popup: false,
-  enable_services_control: false,
-  show_error_notify: false,
-  map_popup_config: {
-    hours_to_show: 0,
-    default_zoom: 14,
-  },
-  services: {
-    auxheat: false,
-    charge: false,
-    doorsLock: false,
-    engine: false,
-    preheat: false,
-    sendRoute: false,
-    sigPos: false,
-    sunroof: false,
-    windows: false,
-  },
-  eco_button: {
-    enabled: false,
-  },
-  trip_button: {
-    enabled: false,
-  },
-  vehicle_button: {
-    enabled: false,
-  },
-  tyre_button: {
-    enabled: false,
-  },
-  use_custom_cards: {
-    vehicle_card: true,
-    trip_card: true,
-    eco_card: true,
-    tyre_card: true,
-  },
-
-  selected_theme: {
-    theme: 'default',
-    mode: 'system',
-  },
-};
