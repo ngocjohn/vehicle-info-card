@@ -20,7 +20,6 @@ import {
 import {
   HomeAssistantExtended as HomeAssistant,
   VehicleCardConfig,
-  defaultConfig,
   EntityConfig,
   VehicleEntities,
   EcoData,
@@ -44,7 +43,16 @@ import './components/remote-control';
 // Functions
 import { localize } from './localize/localize';
 import { formatTimestamp, convertMinutes } from './utils/helpers';
-import { setupCardListeners, getVehicleEntities, getTemplateValue, getBooleanTemplate } from './utils/ha-helpers';
+import {
+  setupCardListeners,
+  getVehicleEntities,
+  getTemplateValue,
+  getBooleanTemplate,
+  defaultConfig,
+  getCarEntity,
+} from './utils/ha-helpers';
+import { languages } from './localize/languageImports';
+import { imageOverlay } from 'leaflet';
 
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
 
@@ -75,6 +83,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   @state() private templateValues: { [key: string]: string } = {};
   @state() private customNotify: { [key: string]: boolean } = {};
   @state() private isTyreHorizontal!: boolean;
+  @state() private selectedLanguage: string = 'en';
 
   constructor() {
     super();
@@ -85,11 +94,12 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   }
 
   public static getStubConfig = (hass: HomeAssistant): Record<string, unknown> => {
-    const lang = hass?.language === 'en-GB' ? 'en_GB' : hass?.language;
-
+    const entity = getCarEntity(hass);
+    console.log('entity', entity);
     return {
       ...defaultConfig,
-      selected_language: lang,
+      entity: entity,
+      images: [],
     };
   };
 
@@ -128,6 +138,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
   public getLayoutOptions() {
     const gridRowSize = this.getGridRowSize();
+    console.log('sections', gridRowSize);
     return {
       grid_min_rows: gridRowSize,
       grid_columns: 4,
@@ -166,17 +177,17 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
   private async configureAsync(): Promise<void> {
     this.selectedTheme = this.config.selected_theme?.theme || 'Default';
+    if (this.config.selected_language && this.config.selected_language === 'system') {
+      this.selectedLanguage = this.hass.language;
+    } else {
+      this.selectedLanguage = this.config.selected_language || 'en';
+    }
     this.vehicleEntities = await getVehicleEntities(this.hass, this.config);
   }
 
   private localize = (string: string, search = '', replace = ''): string => {
     return localize(string, this.selectedLanguage, search, replace);
   };
-
-  // private get isCharging(): boolean {
-  //   return this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'chargingactive');
-
-  // }
 
   private get isCharging(): boolean {
     const chargingActive = this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'chargingactive');
@@ -232,7 +243,6 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     } else {
       this.loading = false;
     }
-
     this.applyMarquee();
   }
 
@@ -242,10 +252,6 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     }
     window.removeEventListener('editor-event', this._editorEventsHandler);
     super.disconnectedCallback();
-  }
-
-  private get selectedLanguage(): string {
-    return this.config.selected_language || localStorage.getItem('selectedLanguage') || 'en';
   }
 
   private async createCards(cardConfigs: LovelaceCardConfig[], stateProperty: string): Promise<void> {
@@ -281,7 +287,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
     // Handle addition or removal of 'show-after' class based on isCharging state
     if (changedProps.has('hass') || !this.activeCardType) {
-      const eletricBar = this.shadowRoot?.querySelector('.fuel-level-bar.electric');
+      const eletricBar = this.shadowRoot?.querySelector('.fuel-level-bar.electric') as HTMLElement;
 
       if (this.isCharging && eletricBar && !eletricBar.classList.contains('show-after')) {
         eletricBar.classList.add('show-after');
@@ -320,7 +326,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
     const name = this.config.name || '';
     return html`
-      <ha-card class=${this.computeClasses()}>
+      <ha-card class="${this.computeClasses()} main-card">
         ${this._renderHeaderBackground()}
         <header>
           <h1>${name}</h1>
@@ -332,9 +338,10 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
   // Render loading template
   private _renderLoading(): TemplateResult {
+    const cardHeight = this.getGridRowSize() * 56;
     return html`
       <ha-card>
-        <div class="loading-image">
+        <div class="loading-image" style="height: ${cardHeight}px">
           <img src="${logoLoading}" alt="Loading" />
         </div>
       </ha-card>
@@ -642,13 +649,11 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     const cards = isDefaultCard ? cardInfo.defaultRender() : this.additionalCards[this.activeCardType];
 
     const lastCarUpdate = config.entity ? this.hass.states[config.entity].last_changed : '';
-    const locale = this.hass.locale;
-    const localeLang = {
-      ...locale,
-      language: this.selectedLanguage.replace(/"/g, ''),
-    };
-    const formattedDate = localeLang
-      ? formatDateTime(new Date(lastCarUpdate), localeLang)
+    const hassLocale = this.hass.locale;
+    hassLocale.language = this.selectedLanguage;
+
+    const formattedDate = hassLocale
+      ? formatDateTime(new Date(lastCarUpdate), hassLocale)
       : formatTimestamp(lastCarUpdate);
 
     const cardHeaderBox = html` <div class="added-card-header">

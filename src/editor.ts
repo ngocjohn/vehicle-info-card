@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { LitElement, html, TemplateResult, CSSResultGroup, PropertyValues } from 'lit';
+import { LitElement, html, TemplateResult, CSSResultGroup, PropertyValues, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators';
 import { repeat } from 'lit/directives/repeat';
 import YAML from 'yaml';
@@ -22,7 +22,7 @@ import { cardTypes } from './const/data-keys';
 import { editorShowOpts } from './const/data-keys';
 import { CARD_VERSION } from './const/const';
 import { languageOptions, localize } from './localize/localize';
-import { uploadImage, handleFirstUpdated } from './utils/ha-helpers';
+import { uploadImage, handleFirstUpdated, deepMerge, defaultConfig } from './utils/ha-helpers';
 import { loadHaComponents } from './utils/loader';
 import { compareVersions } from './utils/helpers';
 import editorcss from './css/editor.css';
@@ -39,9 +39,9 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   @state() private _newImageUrl: string = '';
 
   @state() private _latestRelease: string = '';
-  public _system_language = this.hass?.language;
-  public _sortable: Sortable | null = null;
+  private _sortable: Sortable | null = null;
   private _selectedItems: Set<string> = new Set();
+  @state() private _selectedLanguage: string = '';
 
   connectedCallback() {
     super.connectedCallback();
@@ -74,12 +74,28 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   public async setConfig(config: VehicleCardConfig): Promise<void> {
-    this._config = config;
+    this._config = deepMerge(defaultConfig, config);
+    fireEvent(this, 'config-changed', { config: this._config });
   }
 
   protected async firstUpdated(changedProperties: PropertyValues): Promise<void> {
     super.firstUpdated(changedProperties);
     await handleFirstUpdated(this, changedProperties);
+
+    for (const cardType of this.baseCardTypes) {
+      if (this._config[cardType.config]) {
+        const yamlString = YAML.stringify(this._config[cardType.config]);
+        this._yamlConfig[cardType.config] = yamlString;
+      } else {
+        this._yamlConfig[cardType.config] = [];
+      }
+    }
+    if (this._config.images) {
+      this.initSortable();
+    }
+  }
+
+  private initSortable() {
     const el = this.shadowRoot!.getElementById('images-list');
     if (el) {
       this._sortable = new Sortable(el, {
@@ -90,14 +106,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           this._handleSortEnd(evt);
         },
       });
-    }
-    for (const cardType of this.baseCardTypes) {
-      if (this._config[cardType.config]) {
-        const yamlString = YAML.stringify(this._config[cardType.config]);
-        this._yamlConfig[cardType.config] = yamlString;
-      } else {
-        this._yamlConfig[cardType.config] = [];
-      }
     }
   }
 
@@ -121,12 +129,8 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     this.configChanged();
   }
 
-  private get selectedLanguage(): string {
-    return this._config.selected_language || 'en';
-  }
-
   private localize = (string: string, search = '', replace = ''): string => {
-    return localize(string, this.selectedLanguage, search, replace);
+    return localize(string, this._selectedLanguage, search, replace);
   };
 
   private _getServicesConfigValue<K extends keyof Services>(key: K): boolean {
@@ -138,7 +142,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private get baseCardTypes() {
-    return cardTypes(this.selectedLanguage);
+    return cardTypes(this._selectedLanguage);
   }
 
   protected render(): TemplateResult | void {
@@ -376,7 +380,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _renderSwitches(): TemplateResult {
-    let showOptions = editorShowOpts(this.selectedLanguage);
+    let showOptions = editorShowOpts(this._selectedLanguage);
     // Filter out the enable_map_popup option
 
     showOptions = showOptions.filter((option) => option.configKey !== 'enable_map_popup');
@@ -420,7 +424,9 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         .items=${options}
         .allowCustomValue=${true}
         .value=${this._config.name}
-        @value-changed=${this._onCustomNameInput}
+        .configValue=${'name'}
+        @value-changed=${this._valueChanged}
+        @closed=${(ev: Event) => ev.stopPropagation()}
       ></ha-combo-box>
     `;
 
@@ -444,10 +450,16 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       { key: 'system', name: 'System', nativeName: 'System' },
       ...languageOptions.sort((a, b) => a.name.localeCompare(b.name)),
     ];
+    const themeMode = [
+      { key: 'auto', name: 'Auto' },
+      { key: 'dark', name: 'Dark' },
+      { key: 'light', name: 'Light' },
+    ];
+
     const themesConfig = html`
       <ha-select
         .label=${this.hass.localize('ui.panel.profile.language.dropdown_label') || 'Language'}
-        .value=${this.selectedLanguage}
+        .value=${this._config.selected_language}
         .configValue=${'selected_language'}
         @selected=${this._valueChanged}
         @closed=${(ev: Event) => ev.stopPropagation()}
@@ -463,21 +475,19 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         .value=${this._config?.selected_theme?.theme}
         .configValue=${'theme'}
         .includeDefault=${true}
-        @value-changed=${this._valueChanged}
+        @selected=${this._valueChanged}
         @closed=${(ev: Event) => ev.stopPropagation()}
-        .required=${false}
+        .required=${true}
       ></ha-theme-picker>
 
       <ha-select
         label="Theme mode"
-        .value=${this._config?.selected_theme?.mode || 'system'}
+        .value=${this._config?.selected_theme?.mode}
         .configValue=${'mode'}
         @selected=${this._valueChanged}
         @closed=${(ev: Event) => ev.stopPropagation()}
       >
-        <mwc-list-item value="system">System</mwc-list-item>
-        <mwc-list-item value="dark">Dark</mwc-list-item>
-        <mwc-list-item value="light">Light</mwc-list-item>
+        ${themeMode.map((mode) => html`<mwc-list-item value=${mode.key}>${mode.name}</mwc-list-item>`)}
       </ha-select>
     `;
     return this.panelTemplate('themeLangConfig', 'themeLangConfig', 'mdi:palette', themesConfig);
@@ -583,9 +593,15 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private _renderMapPopupConfig(): TemplateResult {
     const infoAlert = this.localize('editor.common.infoMap');
-    const enableMapPopupSwtich = editorShowOpts(this.selectedLanguage).find(
+    const enableMapPopupSwtich = editorShowOpts(this._selectedLanguage).find(
       (option) => option.configKey === 'enable_map_popup'
     );
+
+    const themeMode = [
+      { key: 'auto', name: 'Auto' },
+      { key: 'dark', name: 'Dark' },
+      { key: 'light', name: 'Light' },
+    ];
 
     const mapConfig = html`
       <ha-entity-picker
@@ -618,28 +634,26 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       <ha-alert alert-type="info">${infoAlert}</ha-alert>
       <ha-textfield
         label="Hours to show"
-        type="number"
-        .value=${this._config?.map_popup_config?.hours_to_show || 0}
+        .min=${0}
+        .value=${this._config.map_popup_config.hours_to_show}
         .configValue=${'hours_to_show'}
         @input=${this._valueChanged}
       ></ha-textfield>
       <ha-textfield
-        label="Default zoom"
-        type="number"
-        .value=${this._config?.map_popup_config?.default_zoom || 14}
+        .label=${'Default Zoom'}
+        .min=${0}
+        .value=${this._config.map_popup_config.default_zoom}
         .configValue=${'default_zoom'}
         @input=${this._valueChanged}
       ></ha-textfield>
       <ha-select
-        label="Theme mode"
-        .value=${this._config?.map_popup_config?.theme_mode || 'auto'}
+        .label=${'Theme mode'}
+        .value=${this._config.map_popup_config.theme_mode}
         .configValue=${'theme_mode'}
         @selected=${this._valueChanged}
         @closed=${(ev: Event) => ev.stopPropagation()}
       >
-        <mwc-list-item value="auto">Auto</mwc-list-item>
-        <mwc-list-item value="dark">Dark</mwc-list-item>
-        <mwc-list-item value="light">Light</mwc-list-item>
+        ${themeMode.map((mode) => html`<mwc-list-item value=${mode.key}>${mode.name}</mwc-list-item>`)}
       </ha-select>
     `;
     return this.panelTemplate('mapConfig', 'mapConfig', 'mdi:map-search', mapConfig);
@@ -647,12 +661,11 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private _renderServicesConfig(): TemplateResult {
     const infoAlert = this.localize('editor.common.infoServices');
-
     const servicesConfig = html`
       <ha-alert alert-type="info"> ${infoAlert} </ha-alert>
 
       <div class="switches">
-        ${Object.entries(servicesCtrl(this.selectedLanguage)).map(
+        ${Object.entries(servicesCtrl(this._selectedLanguage)).map(
           ([key, { name }]) => html`
             <ha-formfield .label=${name}>
               <ha-checkbox
@@ -813,7 +826,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   private launchToast(id: string): void {
     const toast = this.shadowRoot?.getElementById(id) as HTMLElement;
     if (!toast) return;
-
     toast.classList.add('show');
   }
 
@@ -940,62 +952,51 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
     const target = ev.target;
     const configValue = target.configValue;
+    const checked = target.checked;
 
-    if (this[`${configValue}`] === target.value) {
-      return;
-    }
+    let newValue: any = target.value;
 
-    let newValue: any;
-    if (['hours_to_show', 'default_zoom'].includes(configValue)) {
-      newValue = target.value === '' ? undefined : Number(target.value);
-      if (!isNaN(newValue)) {
-        this._config = {
-          ...this._config,
-          map_popup_config: {
-            ...this._config.map_popup_config,
-            [configValue]: newValue,
-          },
-        };
+    const updates: Partial<VehicleCardConfig> = {};
+
+    if (configValue in this._config.map_popup_config) {
+      const key = configValue as keyof typeof this._config.map_popup_config;
+      if (this._config.map_popup_config[key] === newValue) {
+        return;
       }
-    } else if (configValue === 'theme_mode') {
-      newValue = target.value;
-      this._config = {
-        ...this._config,
-        map_popup_config: {
-          ...this._config.map_popup_config,
-          [configValue]: newValue,
-        },
+      updates.map_popup_config = {
+        ...this._config.map_popup_config,
+        [key]: parseInt(newValue) || newValue,
       };
+      console.log('Map popup config changed:', key, newValue);
+    } else if (configValue in this._config.selected_theme) {
+      const key = configValue as keyof VehicleCardConfig['selected_theme'];
+      if (this._config.selected_theme[key] === newValue) {
+        return;
+      }
+      updates.selected_theme = {
+        ...this._config.selected_theme,
+        [key]: newValue,
+      };
+      console.log('Selected theme changed:', key, newValue);
     } else if (configValue === 'selected_language') {
-      newValue = target.value === 'system' ? this.hass.language.replace(/"/g, '') : target.value;
-      this._config = {
-        ...this._config,
-        [configValue]: newValue,
-      };
-    } else if (['theme', 'mode'].includes(configValue)) {
-      newValue = target.value;
-      this._config = {
-        ...this._config,
-        selected_theme: {
-          ...this._config.selected_theme,
-          [configValue]: newValue,
-        },
-      };
+      if (this._config.selected_language === newValue) {
+        return;
+      }
+      newValue === 'system' ? (this._selectedLanguage = this.hass.language) : (this._selectedLanguage = newValue);
+      updates.selected_language = newValue;
+      console.log('Selected language changed:', newValue);
     } else {
-      newValue = target.checked !== undefined ? target.checked : target.value;
-      this._config = {
-        ...this._config,
-        [configValue]: newValue,
-      };
+      newValue = target.checked !== undefined ? target.checked : ev.detail.value;
+      updates[configValue] = newValue;
     }
 
-    if (newValue && newValue.length === 0) {
-      // Check for an empty array
-      const tmpConfig = { ...this._config };
-      delete tmpConfig[configValue];
-      this._config = tmpConfig;
+    if (Object.keys(updates).length > 0) {
+      this._config = {
+        ...this._config,
+        ...updates,
+      };
+      this.configChanged();
     }
-    this.configChanged();
   }
 
   private configChanged() {
