@@ -51,8 +51,6 @@ import {
   defaultConfig,
   getCarEntity,
 } from './utils/ha-helpers';
-import { languages } from './localize/languageImports';
-import { imageOverlay } from 'leaflet';
 
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
 
@@ -67,10 +65,10 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   @property({ type: Object }) private config!: VehicleCardConfig;
   @property({ type: Boolean }) public editMode = false;
   @property({ type: Boolean }) loading = true;
+  @property() public additionalCards: { [key: string]: any[] } = {};
 
   @state() private selectedTheme!: string;
   @state() private vehicleEntities: VehicleEntities = {};
-  @state() private additionalCards: { [key: string]: any[] } = {};
   @state() private customButtons: { [key: string]: any[] } = {};
   @state() private activeCardType: string | null = null;
   @state() private ecoScoresVisible!: boolean;
@@ -121,31 +119,6 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     this.applyTheme(this.selectedTheme);
   }
 
-  private getGridRowSize(): number {
-    const { show_slides, show_map, show_buttons } = this.config;
-
-    let gridRowSize = 2;
-    if (show_slides) gridRowSize += 2;
-    if (show_map) gridRowSize += 2;
-    if (show_buttons) gridRowSize += 2;
-    return gridRowSize;
-  }
-
-  public getCardSize() {
-    // console.log('mansory', this.getGridRowSize());
-    return 3;
-  }
-
-  public getLayoutOptions() {
-    const gridRowSize = this.getGridRowSize();
-    console.log('sections', gridRowSize);
-    return {
-      grid_min_rows: gridRowSize,
-      grid_columns: 4,
-      grid_min_columns: 4,
-    };
-  }
-
   private configureCustomCards(): void {
     const lang = this.selectedLanguage;
 
@@ -173,6 +146,46 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       };
       this.createCards([haMapConfig], 'mapDialog');
     }
+  }
+
+  private async createCards(cardConfigs: LovelaceCardConfig[], stateProperty: string): Promise<void> {
+    if (HELPERS) {
+      const helpers = await HELPERS;
+      const cards = await Promise.all(
+        cardConfigs.map(async (cardConfig) => {
+          const element = await helpers.createCardElement(cardConfig);
+          element.hass = this.hass;
+          return element;
+        })
+      );
+      this.additionalCards[stateProperty] = cards;
+    }
+    this.requestUpdate();
+  }
+
+  private getGridRowSize(): number {
+    const { show_slides, show_map, show_buttons } = this.config;
+
+    let gridRowSize = 2;
+    if (show_slides) gridRowSize += 2;
+    if (show_map) gridRowSize += 2;
+    if (show_buttons) gridRowSize += 2;
+    return gridRowSize;
+  }
+
+  public getCardSize() {
+    // console.log('mansory', this.getGridRowSize());
+    return 3;
+  }
+
+  public getLayoutOptions() {
+    const gridRowSize = this.getGridRowSize();
+    console.log('sections', gridRowSize);
+    return {
+      grid_min_rows: gridRowSize,
+      grid_columns: 4,
+      grid_min_columns: 4,
+    };
   }
 
   private async configureAsync(): Promise<void> {
@@ -222,7 +235,6 @@ export class VehicleCard extends LitElement implements LovelaceCard {
         this.customNotify = customNotify;
       }
     }
-    this.requestUpdate();
   }
 
   // https://lit.dev/docs/components/styles/
@@ -254,20 +266,6 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     super.disconnectedCallback();
   }
 
-  private async createCards(cardConfigs: LovelaceCardConfig[], stateProperty: string): Promise<void> {
-    if (HELPERS) {
-      const helpers = await HELPERS;
-      const cards = await Promise.all(
-        cardConfigs.map(async (cardConfig) => {
-          const element = await helpers.createCardElement(cardConfig);
-          element.hass = this.hass;
-          return element;
-        })
-      );
-      this.additionalCards[stateProperty] = cards;
-    }
-  }
-
   private createCustomButtons(buttonConfigs: ButtonConfigItem | ButtonConfigItem[], stateProperty: string) {
     const btn = Array.isArray(buttonConfigs)
       ? buttonConfigs.map((config) => ({ ...config, type: stateProperty }))
@@ -295,6 +293,18 @@ export class VehicleCard extends LitElement implements LovelaceCard {
         eletricBar.classList.remove('show-after');
       }
     }
+    //update hass on custom cards
+    if (changedProps.has('hass')) {
+      this._updateHassOnCards();
+    }
+  }
+
+  private _updateHassOnCards(): void {
+    Object.keys(this.additionalCards).forEach((stateProperty) => {
+      this.additionalCards[stateProperty].forEach((card) => {
+        card.hass = this.hass;
+      });
+    });
   }
 
   // https://lit.dev/docs/components/lifecycle/#reactive-update-cycle-performing
