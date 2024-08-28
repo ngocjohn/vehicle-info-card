@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { LitElement, html, TemplateResult, CSSResultGroup, PropertyValues, nothing } from 'lit';
+import { LitElement, html, TemplateResult, CSSResultGroup, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators';
 import { repeat } from 'lit/directives/repeat';
 import YAML from 'yaml';
@@ -952,7 +952,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
     const target = ev.target;
     const configValue = target.configValue;
-    const checked = target.checked;
 
     let newValue: any = target.value;
 
