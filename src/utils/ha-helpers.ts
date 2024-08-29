@@ -292,6 +292,7 @@ export async function handleFirstUpdated(
   if (Object.keys(updates).length > 0) {
     console.log('Updating config with:', updates);
     component._config = { ...component._config, ...updates };
+    console.log('New config:', component._config);
     component.configChanged();
   }
 }

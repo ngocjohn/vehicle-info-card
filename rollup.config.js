@@ -22,72 +22,72 @@ const currentVersion = dev ? 'DEVELOPMENT' : `v${version}`;
 const custombanner = logCardInfo(currentVersion);
 
 const replaceOpts = {
-    'process.env.ROLLUP_WATCH': JSON.stringify(dev),
-    'process.env.MAPBOX_API': JSON.stringify(process.env.MAPBOX_API),
-    preventAssignment: true,
+  'process.env.ROLLUP_WATCH': JSON.stringify(dev),
+  'process.env.MAPBOX_API': JSON.stringify(process.env.MAPBOX_API),
+  preventAssignment: true,
 };
 
 const serveopts = {
-    contentBase: ['./dev'],
-    port,
-    allowCrossOrigin: true,
-    headers: {
-        'Access-Control-Allow-Origin': '*',
-    },
+  contentBase: ['./dev'],
+  port,
+  allowCrossOrigin: true,
+  headers: {
+    'Access-Control-Allow-Origin': '*',
+  },
 };
 
 const terserOpt = {
-    module: true,
-    compress: {
-        drop_console: ['log', 'error'],
-        module: false,
-    },
+  module: true,
+  compress: {
+    drop_console: ['log', 'error'],
+    module: false,
+  },
 };
 
 const plugins = [
-    nodeResolve({}),
-    commonjs(),
-    typescript(),
-    json(),
-    image(),
-    babel({
-        babelHelpers: 'bundled',
-        exclude: 'node_modules/**',
-    }),
-    postcss({
-        plugins: [
-            postcssPresetEnv({
-                stage: 1,
-                features: {
-                    'nesting-rules': true,
-                },
-            }),
-        ],
-        extract: false,
-    }),
-    replace(replaceOpts),
-    postcssLit(),
-    dev && serve(serveopts),
-    !dev && terser(terserOpt),
-    !dev && filesize(),
+  nodeResolve({}),
+  commonjs(),
+  typescript(),
+  json(),
+  image(),
+  babel({
+    babelHelpers: 'bundled',
+    exclude: 'node_modules/**',
+  }),
+  postcss({
+    plugins: [
+      postcssPresetEnv({
+        stage: 1,
+        features: {
+          'nesting-rules': true,
+        },
+      }),
+    ],
+    extract: false,
+  }),
+  replace(replaceOpts),
+  postcssLit(),
+  dev && serve(serveopts),
+  !dev && terser(terserOpt),
+  !dev && filesize(),
 ];
 
 export default [
-    {
-        input: 'src/vehicle-info-card.ts',
-        output: {
-            file: dev ? 'dev/vehicle-info-card.js' : 'dist/vehicle-info-card.js',
-            format: 'es',
-            sourcemap: dev,
-            inlineDynamicImports: true,
-            banner: custombanner,
-        },
-        plugins: [...plugins],
-        moduleContext: {
-            // Set specific module contexts if needed
-            'node_modules/@formatjs/intl-utils/lib/src/diff.js': 'window',
-            'node_modules/@formatjs/intl-utils/lib/src/resolve-locale.js': 'window',
-            // Add other modules as needed
-        },
+  {
+    input: 'src/vehicle-info-card.ts',
+    output: {
+      file: dev ? 'dev/vehicle-info-card.js' : 'dist/vehicle-info-card.js',
+      format: 'es',
+      sourcemap: true,
+      inlineDynamicImports: true,
+      banner: custombanner,
     },
+    plugins: [...plugins],
+    moduleContext: {
+      // Set specific module contexts if needed
+      'node_modules/@formatjs/intl-utils/lib/src/diff.js': 'window',
+      'node_modules/@formatjs/intl-utils/lib/src/resolve-locale.js': 'window',
+      // Add other modules as needed
+    },
+  },
 ];

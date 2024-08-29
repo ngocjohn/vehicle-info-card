@@ -812,3 +812,22 @@ dialog::backdrop {
     opacity: 0;
   }
 }
+
+.redGlows {
+  animation: redGlow 1s infinite;
+  animation-iteration-count: 5;
+}
+
+@keyframes redGlow {
+  0% {
+    box-shadow: 0 0 10px 0 rgba(255, 0, 0, 0.5);
+  }
+
+  50% {
+    box-shadow: 0 0 20px 0 rgba(255, 0, 0, 0.5);
+  }
+
+  100% {
+    box-shadow: 0 0 10px 0 rgba(255, 0, 0, 0.5);
+  }
+}

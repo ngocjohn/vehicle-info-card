@@ -5,7 +5,7 @@ import { repeat } from 'lit/directives/repeat';
 import YAML from 'yaml';
 
 // Custom card helpers
-import { fireEvent, LovelaceCardEditor, LovelaceCardConfig } from 'custom-card-helpers';
+import { fireEvent, LovelaceCardEditor } from 'custom-card-helpers';
 
 // Local types
 import {
@@ -83,20 +83,15 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     await handleFirstUpdated(this, changedProperties);
 
     for (const cardType of this.baseCardTypes) {
-      if (this._config[cardType.config]) {
+      if (this._config[cardType.config] && Array.isArray(this._config[cardType.config])) {
         const yamlString = YAML.stringify(this._config[cardType.config]);
         this._yamlConfig[cardType.config] = yamlString;
-      } else {
-        this._yamlConfig[cardType.config] = [];
       }
-    }
-    if (this._config.images) {
-      this.initSortable();
     }
   }
 
   private initSortable() {
-    const el = this.shadowRoot!.getElementById('images-list');
+    const el = this.shadowRoot?.getElementById('images-list');
     if (el) {
       this._sortable = new Sortable(el, {
         handle: '.handle',
@@ -107,26 +102,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         },
       });
     }
-  }
-
-  private _handleSortEnd(evt: any) {
-    const oldIndex = evt.oldIndex;
-    const newIndex = evt.newIndex;
-
-    console.log('Images before reorder:', this._config.images);
-    console.log(`Reordering images: moving from index ${oldIndex} to ${newIndex}`);
-
-    if (oldIndex !== newIndex) {
-      this._reorderImages(oldIndex, newIndex);
-    }
-  }
-
-  private _reorderImages(oldIndex: number, newIndex: number) {
-    const configImages = this._config.images!.concat();
-    const movedItem = configImages.splice(oldIndex, 1)[0];
-    configImages.splice(newIndex, 0, movedItem);
-    this._config = { ...this._config, images: configImages };
-    this.configChanged();
   }
 
   private localize = (string: string, search = '', replace = ''): string => {
@@ -200,7 +175,10 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       <div class="sub-card-header">
         <ha-icon
           icon="mdi:arrow-left"
-          @click=${() => (this._activeSubcardType = null)}
+          @click=${() => {
+            this._activeSubcardType = null;
+            this._dispatchCardEvent('customClose');
+          }}
           style="cursor: pointer"
         ></ha-icon>
         <div class="sub-card-title">
@@ -220,14 +198,17 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const useCustomCard = this._config?.use_custom_cards?.[card.config] === true;
 
     const useCustomRadioBtn = html`
-      <ha-formfield .label=${'Use custom card?'}>
-        <ha-checkbox
-          .checked=${useCustomCard}
-          .configValue=${card.config}
-          .configBtnType=${'use_custom_cards'}
-          @change=${this._customBtnChanged}
-        ></ha-checkbox>
-      </ha-formfield>
+      <div class="sub-card-header">
+        <ha-formfield .label=${'Use custom card?'}>
+          <ha-checkbox
+            .checked=${useCustomCard}
+            .configValue=${card.config}
+            .configBtnType=${'use_custom_cards'}
+            @change=${this._customBtnChanged}
+          ></ha-checkbox>
+        </ha-formfield>
+        <ha-button @click=${() => this._dispatchCardEvent(card.type)}>Show Card</ha-button>
+      </div>
     `;
 
     const cardCodeEditor = html`
@@ -242,6 +223,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         .value=${this._yamlConfig[card.config] || ''}
         .configValue=${card.config}
         @value-changed=${(ev: any) => this._customCardChange(ev)}
+        @focus=${(ev: any) => this.toggleEditorFocus(ev)}
       ></ha-code-editor>
     `;
 
@@ -250,30 +232,12 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     return this.panelTemplate('customCardConfig', 'customCardConfig', 'mdi:code-json', cardCodeEditorWrapper);
   }
 
-  private _customCardChange(ev: any): void {
-    ev.stopPropagation();
-    const target = ev.target;
-    const value = target.value;
-    const configKey = target.configValue;
-    let parsedYaml: any[];
-    try {
-      parsedYaml = YAML.parse(value); // Parse YAML content
-    } catch (e) {
-      console.error(`Parsing error for ${configKey}:`, e);
-      return;
-    }
-
-    if (this._config) {
-      this._config = {
-        ...this._config,
-        [configKey]: parsedYaml,
-      };
-    }
-    this.configChanged();
+  private toggleEditorFocus(ev: any): void {
+    console.log('Editor focused:', ev);
   }
 
   private _renderCustomButtonTemplate(card: CardTypeConfig): TemplateResult {
-    const { button } = card;
+    const { button, type } = card;
     const primaryCfgValue = this._config[button]?.primary || '';
     const secondaryCfgValue = this._config[button]?.secondary || '';
     const notifyCfgValue = this._config[button]?.notify || '';
@@ -282,14 +246,17 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const useDefault = this._config[button]?.enabled === true;
 
     const useDefaultRadioBtn = html`
-      <ha-formfield .label=${'Use custom button?'}>
-        <ha-checkbox
-          .checked=${this._config[button]?.enabled}
-          .configValue=${'enabled'}
-          .configBtnType=${button}
-          @change=${this._customBtnChanged}
-        ></ha-checkbox>
-      </ha-formfield>
+      <div class="sub-card-header">
+        <ha-formfield .label=${'Use custom button?'}>
+          <ha-checkbox
+            .checked=${this._config[button]?.enabled}
+            .configValue=${'enabled'}
+            .configBtnType=${button}
+            @change=${this._customBtnChanged}
+          ></ha-checkbox>
+        </ha-formfield>
+        <ha-button @click=${() => this._dispatchCardEvent(`btn_${type}`)}>Show Button</ha-button>
+      </div>
     `;
 
     const primaryInfo = html`
@@ -367,7 +334,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           (card) => html`
             <ha-button
               @click=${() => {
-                // this._dispatchCardEvent(card.type);
                 this._activeSubcardType = card.type;
               }}
               >${card.name}</ha-button
@@ -472,7 +438,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
       <ha-theme-picker
         .hass=${this.hass}
-        .value=${this._config?.selected_theme?.theme}
+        .value=${this._config.selected_theme.theme}
         .configValue=${'theme'}
         .includeDefault=${true}
         @selected=${this._valueChanged}
@@ -482,7 +448,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
       <ha-select
         label="Theme mode"
-        .value=${this._config?.selected_theme?.mode}
+        .value=${this._config.selected_theme.mode}
         .configValue=${'mode'}
         @selected=${this._valueChanged}
         @closed=${(ev: Event) => ev.stopPropagation()}
@@ -669,7 +635,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           ([key, { name }]) => html`
             <ha-formfield .label=${name}>
               <ha-checkbox
-                .checked=${this._getServicesConfigValue(key as keyof Services) !== false}
+                .checked=${this._getServicesConfigValue(key as keyof Services)}
                 .configValue="${key}"
                 @change=${this._servicesValueChanged}
               ></ha-checkbox>
@@ -736,7 +702,14 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
     return html`
       <div class="panel-container">
-        <ha-expansion-panel .outlined=${true} .header=${localTitle} .secondary=${localDesc} .expanded=${expanded}>
+        <ha-expansion-panel
+          id="${titleKey}"
+          .outlined=${true}
+          .header=${localTitle}
+          .secondary=${localDesc}
+          .expanded=${expanded}
+          @expanded-changed=${(e: Event) => this._handlePanelExpandedChanged(e, titleKey)}
+        >
           <div class="right-icon" slot="icons">
             <ha-icon icon=${icon}></ha-icon>
           </div>
@@ -747,6 +720,39 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   /* --------------------- ADDITIONAL HANDLERS AND METHODS -------------------- */
+
+  private _handleSortEnd(evt: any) {
+    const oldIndex = evt.oldIndex;
+    const newIndex = evt.newIndex;
+
+    // console.log('Images before reorder:', this._config.images);
+    // console.log(`Reordering images: moving from index ${oldIndex} to ${newIndex}`);
+
+    if (oldIndex !== newIndex) {
+      this._reorderImages(oldIndex, newIndex);
+    }
+  }
+
+  private _reorderImages(oldIndex: number, newIndex: number) {
+    const configImages = this._config.images!.concat();
+    const movedItem = configImages.splice(oldIndex, 1)[0];
+    configImages.splice(newIndex, 0, movedItem);
+    this._config = { ...this._config, images: configImages };
+    this.configChanged();
+  }
+
+  private _handlePanelExpandedChanged(e: Event, titleKey: string): void {
+    const panel = e.target as HTMLElement;
+    if (titleKey === 'imagesConfig' && (panel as any).expanded) {
+      console.log('Images panel expanded');
+      this.initSortable();
+    }
+    // if (titleKey === 'customCardConfig' && (panel as any).expanded) {
+    //   this._dispatchCardEvent(this._activeSubcardType as string);
+    //   console.log('Custom card panel expanded', this._activeSubcardType);
+    // }
+  }
+
   private toggleAddButton(ev: Event): void {
     const target = ev.target as HTMLInputElement;
     const addButton = target.parentElement?.querySelector('.new-url-btn') as HTMLElement;
@@ -842,6 +848,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       toast.classList.add('hidden');
     }
   }
+
   private _customBtnChanged(ev: any): void {
     ev.stopPropagation();
     if (!this._config || !this.hass) {
@@ -863,47 +870,29 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     fireEvent(this, 'config-changed', { config: this._config });
   }
 
-  private _handleCardConfigChange(ev: any, configKey: keyof VehicleCardConfig): void {
-    if (!this._config || !this.hass) {
-      return;
-    }
-
+  private _customCardChange(ev: any): void {
     const target = ev.target;
-    let newValue: LovelaceCardConfig[];
+    const value = target.value;
+    const configKey = target.configValue;
+    let parsedYaml: any[];
     try {
-      newValue = YAML.parse(target.value); // Parse YAML content
-      console.log('Parsed value:', newValue);
-
-      // If the parsed value is null or not an array, set it to an empty array
-      if (!newValue || !Array.isArray(newValue)) {
-        newValue = [];
-      }
+      parsedYaml = YAML.parse(value); // Parse YAML content
     } catch (e) {
       console.error(`Parsing error for ${configKey}:`, e);
       return;
     }
 
-    this._config = {
-      ...this._config,
-      [configKey]: newValue,
-    };
-
-    this.configChanged();
-  }
-
-  private _onCustomNameInput(event: CustomEvent) {
-    const newValue = event.detail.value;
-    // Update the config.name with the custom name entered by the user
-    this._config = {
-      ...this._config,
-      name: newValue,
-    };
-
-    // Trigger a re-render if needed
+    if (this._config) {
+      this._config = {
+        ...this._config,
+        [configKey]: parsedYaml,
+      };
+    }
     this.configChanged();
   }
 
   private _servicesValueChanged(ev: any): void {
+    ev.stopImmediatePropagation();
     if (!this._config || !this.hass) {
       return;
     }
@@ -911,17 +900,25 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const target = ev.target;
     const configValue = target.configValue;
 
-    if (this[`${configValue}`] === target.checked) {
+    let newValue: any = target.checked;
+    const updates: Partial<VehicleCardConfig> = {};
+
+    if (this._config.services[configValue] === target.checked) {
       return;
     }
 
+    newValue = target.checked;
+    updates.services = {
+      ...this._config.services,
+      [configValue]: newValue,
+    };
+
     this._config = {
       ...this._config,
-      services: {
-        ...this._config.services,
-        [configValue]: target.checked,
-      },
+      ...updates,
     };
+
+    console.log('Services config changed:', configValue, newValue);
 
     this.configChanged();
   }
@@ -994,6 +991,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         ...this._config,
         ...updates,
       };
+      console.log('Config changed:', updates);
       this.configChanged();
     }
   }
@@ -1007,7 +1005,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const detail = cardType;
     const ev = new CustomEvent('editor-event', { detail, bubbles: true, composed: true });
     this.dispatchEvent(ev);
-    console.log('Test event dispatched:', detail);
+    console.log('Dispatched custom event:', cardType);
   }
 
   static get styles(): CSSResultGroup {

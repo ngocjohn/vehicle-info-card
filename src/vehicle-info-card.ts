@@ -61,15 +61,18 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     return document.createElement('vehicle-info-card-editor');
   }
 
-  @property({ attribute: false }) public hass!: HomeAssistant;
+  // @property({ attribute: false }) public hass!: HomeAssistant;
+  @property({ attribute: false }) private _hass!: HomeAssistant;
   @property({ type: Object }) private config!: VehicleCardConfig;
   @property({ type: Boolean }) public editMode = false;
   @property({ type: Boolean }) loading = true;
-  @property() public additionalCards: { [key: string]: any[] } = {};
 
-  @state() private selectedTheme!: string;
-  @state() private vehicleEntities: VehicleEntities = {};
+  @state() private additionalCards: { [key: string]: any[] } = {};
   @state() private customButtons: { [key: string]: any[] } = {};
+  @state() private templateValues: { [key: string]: string } = {};
+  @state() private customNotify: { [key: string]: boolean } = {};
+
+  @state() private vehicleEntities: VehicleEntities = {};
   @state() private activeCardType: string | null = null;
   @state() private ecoScoresVisible!: boolean;
   @state() private lockAttributesVisible!: boolean;
@@ -78,10 +81,14 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   @state() private chargingInfoVisible!: boolean;
   @state() private tripFromStartVisible!: boolean;
   @state() private tripFromResetVisible!: boolean;
-  @state() private templateValues: { [key: string]: string } = {};
-  @state() private customNotify: { [key: string]: boolean } = {};
+
   @state() private isTyreHorizontal!: boolean;
   @state() private selectedLanguage: string = 'en';
+  @state() private isCustomCardEditing = false;
+
+  set hass(hass: HomeAssistant) {
+    this._hass = hass;
+  }
 
   constructor() {
     super();
@@ -111,12 +118,11 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     };
   }
 
-  protected firstUpdated(changedProps: PropertyValues): void {
-    super.firstUpdated(changedProps);
+  protected firstUpdated(_changedProperties: PropertyValues): void {
+    super.firstUpdated(_changedProperties);
     this.configureAsync();
     this.configureCustomCards();
     this._loadTemplateValues();
-    this.applyTheme(this.selectedTheme);
   }
 
   private configureCustomCards(): void {
@@ -154,13 +160,24 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       const cards = await Promise.all(
         cardConfigs.map(async (cardConfig) => {
           const element = await helpers.createCardElement(cardConfig);
-          element.hass = this.hass;
+          element.hass = this._hass;
           return element;
         })
       );
       this.additionalCards[stateProperty] = cards;
     }
     this.requestUpdate();
+  }
+
+  private async configureAsync(): Promise<void> {
+    if (this.config.selected_language && this.config.selected_language === 'system') {
+      this.selectedLanguage = this._hass.language;
+    } else {
+      this.selectedLanguage = this.config.selected_language || 'en';
+    }
+    if (this.config.entity) {
+      this.vehicleEntities = await getVehicleEntities(this._hass, this.config);
+    }
   }
 
   private getGridRowSize(): number {
@@ -188,16 +205,6 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     };
   }
 
-  private async configureAsync(): Promise<void> {
-    this.selectedTheme = this.config.selected_theme?.theme || 'Default';
-    if (this.config.selected_language && this.config.selected_language === 'system') {
-      this.selectedLanguage = this.hass.language;
-    } else {
-      this.selectedLanguage = this.config.selected_language || 'en';
-    }
-    this.vehicleEntities = await getVehicleEntities(this.hass, this.config);
-  }
-
   private localize = (string: string, search = '', replace = ''): string => {
     return localize(string, this.selectedLanguage, search, replace);
   };
@@ -218,7 +225,12 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     } else if (this.config?.selected_theme?.mode === 'light') {
       return false;
     }
-    return this.hass.themes.darkMode;
+    return this._hass.themes.darkMode;
+  }
+
+  private get isEditorPreview(): boolean {
+    const parentElementClassPreview = this.offsetParent?.classList.contains('element-preview');
+    return parentElementClassPreview || false;
   }
 
   private async _loadTemplateValues() {
@@ -227,11 +239,15 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     for (const cardType of cardTypes(this.selectedLanguage)) {
       const customBtn = this.customButtons[cardType.type]?.find((btn) => btn.enabled !== false);
       if (customBtn && customBtn.secondary) {
-        templateValues[cardType.type] = await getTemplateValue(this.hass, customBtn.secondary);
+        if (customBtn.secondary.includes('{{ ')) {
+          templateValues[cardType.type] = await getTemplateValue(this._hass, customBtn.secondary);
+        } else {
+          templateValues[cardType.type] = customBtn.secondary;
+        }
         this.templateValues = templateValues;
       }
       if (customBtn && customBtn.notify) {
-        customNotify[cardType.type] = await getBooleanTemplate(this.hass, customBtn.notify);
+        customNotify[cardType.type] = await getBooleanTemplate(this._hass, customBtn.notify);
         this.customNotify = customNotify;
       }
     }
@@ -273,52 +289,69 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     this.customButtons[stateProperty] = btn;
   }
 
-  protected updated(changedProps: PropertyValues) {
+  protected updated(changedProps: PropertyValues): void {
     super.updated(changedProps);
     // Log all changed properties for debugging
-    if (this.activeCardType !== 'mapDialog' && this.activeCardType !== null) {
+    if (
+      changedProps.has('activeCardType') &&
+      this.activeCardType !== 'mapDialog' &&
+      this.activeCardType !== null &&
+      !this.editMode
+    ) {
       const cardElement = this.shadowRoot?.querySelector('.card-element');
       if (cardElement) {
         setupCardListeners(cardElement, this.toggleCard.bind(this));
       }
     }
-
-    // Handle addition or removal of 'show-after' class based on isCharging state
-    if (changedProps.has('hass') || !this.activeCardType) {
-      const eletricBar = this.shadowRoot?.querySelector('.fuel-level-bar.electric') as HTMLElement;
-
-      if (this.isCharging && eletricBar && !eletricBar.classList.contains('show-after')) {
-        eletricBar.classList.add('show-after');
-      } else if (!this.isCharging && eletricBar && eletricBar.classList.contains('show-after')) {
-        eletricBar.classList.remove('show-after');
-      }
-    }
-    //update hass on custom cards
-    if (changedProps.has('hass')) {
-      this._updateHassOnCards();
+    if ((!this.activeCardType && this.isCharging) || !this.isCharging) {
+      this.toggleCharginAnimation();
     }
   }
 
   private _updateHassOnCards(): void {
+    // Iterate over all keys in additionalCards
     Object.keys(this.additionalCards).forEach((stateProperty) => {
       this.additionalCards[stateProperty].forEach((card) => {
-        card.hass = this.hass;
+        // Update the hass property for each card in additionalCards
+        card.hass = this._hass;
       });
     });
   }
 
   // https://lit.dev/docs/components/lifecycle/#reactive-update-cycle-performing
   protected shouldUpdate(_changedProps: PropertyValues): boolean {
-    if (!this.config || !this.hass) {
+    if (!this.config || !this._hass) {
+      console.log('config or hass is null');
       return false;
     }
-    if (!this.activeCardType) {
+
+    if (_changedProps.has('activeCardType') && !this.activeCardType && !this.editMode) {
       this.applyMarquee();
       this.hideAllSubCards();
-      return true;
     }
 
-    return hasConfigOrEntityChanged(this, _changedProps, true);
+    if (_changedProps.has('config') && this.config.selected_theme?.theme !== 'default') {
+      this.applyTheme(this.config.selected_theme.theme);
+    }
+    if (_changedProps.has('_hass') && !this.isCustomCardEditing) {
+      this._updateHassOnCards();
+    }
+
+    if (_changedProps.has('isCustomCardEditing') && this.isCustomCardEditing === true) {
+      console.log('isCustomCardEditing', this.isCustomCardEditing);
+      return false;
+    }
+    return hasConfigOrEntityChanged(this, _changedProps, false);
+  }
+
+  private toggleCharginAnimation(): void {
+    const eletricBar = this.shadowRoot?.querySelector('.fuel-level-bar.electric') as HTMLElement;
+
+    if (this.isCharging && eletricBar && !eletricBar.classList.contains('show-after')) {
+      eletricBar.classList.add('show-after');
+    } else if (!this.isCharging && eletricBar && eletricBar.classList.contains('show-after')) {
+      eletricBar.classList.remove('show-after');
+    }
   }
 
   /* -------------------------------------------------------------------------- */
@@ -330,7 +363,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     if (this.loading) {
       return this._renderLoading();
     }
-    if (!this.config || !this.hass) {
+    if (!this.config || !this._hass) {
       return html``;
     }
 
@@ -529,42 +562,46 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   private _renderHeaderSlides(): TemplateResult {
     if (!this.config.images || !this.config.show_slides) return html``;
 
-    const images = this.config.images;
-    const showImageIndex = this.config?.show_image_index;
-
-    return html`<header-slide
-      .images=${images}
-      .editMode=${this.editMode}
-      .showImageIndex=${showImageIndex}
-    ></header-slide>`;
+    return html`<header-slide .config=${this.config} .editMode=${this.editMode}></header-slide>`;
   }
 
   private _renderMap(): TemplateResult | void {
-    const { config, hass } = this;
+    const { config } = this;
     if (!config.show_map) {
       return;
     }
     if (!config.device_tracker && config.show_map) {
       return this._showWarning('No device_tracker entity provided.');
     }
-
+    const deviceTracker = this.getDeviceTrackerLatLong();
+    const google_api_key = config.google_api_key;
+    const darkMode = this.isDark;
+    const mapPopup = config.enable_map_popup;
     return html`
       <div id="map-box">
         <vehicle-map
-          .hass=${hass}
-          .config=${config}
-          .darkMode=${this.isDark}
-          .apiKey=${this.config.google_api_key || ''}
+          .deviceTracker=${deviceTracker}
+          .darkMode=${darkMode}
+          .apiKey=${google_api_key || ''}
+          .mapPopup=${mapPopup}
           @toggle-map-popup=${() => (this.activeCardType = 'mapDialog')}
         ></vehicle-map>
       </div>
     `;
   }
 
+  private getDeviceTrackerLatLong(): { lat: number; lon: number } | undefined {
+    if (!this.config.device_tracker) return;
+    const deviceTracker = this._hass.states[this.config.device_tracker];
+    if (!deviceTracker) return;
+    const lat = deviceTracker.attributes.latitude;
+    const lon = deviceTracker.attributes.longitude;
+    return { lat, lon };
+  }
+
   private _renderEcoChart(): TemplateResult {
     if (this.activeCardType !== 'ecoCards') return html``;
     const lang = this.selectedLanguage;
-    const card = this.activeCardType;
     const getEcoScore = (entity: any): number => parseFloat(this.getEntityState(entity?.entity_id)) || 0;
 
     const ecoDataObj = DataKeys.ecoScores(lang).reduce((acc, score) => {
@@ -575,7 +612,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       return acc;
     }, {} as EcoData);
 
-    return html`<eco-chart .ecoData=${ecoDataObj} .selectedLanguage=${lang} .activeCard=${card}></eco-chart>`;
+    return html`<eco-chart .ecoData=${ecoDataObj} .selectedLanguage=${lang}></eco-chart>`;
   }
 
   private _renderButtons(): TemplateResult {
@@ -593,7 +630,11 @@ export class VehicleCard extends LitElement implements LovelaceCard {
           const btnNotify = this.customNotify[cardType.type] ?? this.getErrorNotify(cardType.type);
 
           return html`
-            <div class="grid-item click-shrink" @click=${() => this.toggleCardFromButtons(cardType.type)}>
+            <div
+              id="${cardType.type}"
+              class="grid-item click-shrink"
+              @click=${() => this.toggleCardFromButtons(cardType.type)}
+            >
               <div class="item-icon">
                 <div class="icon-background"><ha-icon .icon="${buttonIcon}"></ha-icon></div>
                 ${showError
@@ -658,8 +699,8 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     const isDefaultCard = !cardInfo.use_card || !cardInfo.config || cardInfo.config.length === 0;
     const cards = isDefaultCard ? cardInfo.defaultRender() : this.additionalCards[this.activeCardType];
 
-    const lastCarUpdate = config.entity ? this.hass.states[config.entity].last_changed : '';
-    const hassLocale = this.hass.locale;
+    const lastCarUpdate = config.entity ? this._hass.states[config.entity].last_changed : '';
+    const hassLocale = this._hass.locale;
     hassLocale.language = this.selectedLanguage;
 
     const formattedDate = hassLocale
@@ -812,7 +853,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   }
 
   private _renderServiceControl(): TemplateResult | void {
-    const hass = this.hass;
+    const hass = this._hass;
     const serviceControl = this.config.services;
     const carVin = this.carVinNumber;
     const carLockEntity = this.vehicleEntities.lock?.entity_id;
@@ -844,13 +885,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   }
 
   private applyTheme(theme: string): void {
-    if (!this.hass) return;
-    if (theme === 'Default') {
-      this.resetTheme();
-      return;
-    }
-
-    const themeData = this.hass.themes.themes[theme];
+    const themeData = this._hass.themes.themes[theme];
     if (themeData) {
       // Filter out only top-level properties for CSS variables and the modes property
       const filteredThemeData = Object.keys(themeData)
@@ -872,7 +907,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
       applyThemesOnElement(
         this,
-        { themes: { [theme]: allThemeData }, default_theme: this.hass.themes.default_theme },
+        { themes: { [theme]: allThemeData }, default_theme: this._hass.themes.default_theme },
         theme,
         false
       );
@@ -880,7 +915,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   }
 
   private resetTheme(): void {
-    applyThemesOnElement(this, this.hass.themes, this.hass.themes.default_theme, false);
+    applyThemesOnElement(this, this._hass.themes, this._hass.themes.default_theme, false);
   }
 
   /* -------------------------------------------------------------------------- */
@@ -1241,7 +1276,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     const powerStateValue = powerState ? parseFloat(powerState) : 0;
     const powerStateUnit = this.getEntityAttribute(vehicleEntity.entity_id, 'unit_of_measurement') || 'kW';
 
-    const powerStateDecimals = formatNumber(powerStateValue, this.hass.locale);
+    const powerStateDecimals = formatNumber(powerStateValue, this._hass.locale);
     const powerStateDislay = powerStateDecimals + ' ' + powerStateUnit;
 
     return { ...defaultInfo, state: powerStateDislay };
@@ -1347,8 +1382,8 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   /* --------------------- GET ENTITY STATE AND ATTRIBUTES -------------------- */
 
   private getStateDisplay(entityId: string | undefined): string {
-    if (!entityId || !this.hass.states[entityId]) return '';
-    return this.hass.formatEntityState(this.hass.states[entityId]);
+    if (!entityId || !this._hass.states[entityId]) return '';
+    return this._hass.formatEntityState(this._hass.states[entityId]);
   }
 
   private getSecondaryInfo(cardType: string): string {
@@ -1376,18 +1411,18 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   }
 
   private getBooleanState(entity: string | undefined): boolean {
-    if (!entity || !this.hass.states[entity]) return false;
-    return this.hass.states[entity].state === 'on';
+    if (!entity || !this._hass.states[entity]) return false;
+    return this._hass.states[entity].state === 'on';
   }
 
   private getEntityState(entity: string | undefined): string {
-    if (!entity || !this.hass.states[entity]) return '';
-    return this.hass.states[entity].state;
+    if (!entity || !this._hass.states[entity]) return '';
+    return this._hass.states[entity].state;
   }
 
   private getEntityAttribute(entity: string | undefined, attribute: string): any {
-    if (!entity || !this.hass.states[entity] || !this.hass.states[entity].attributes) return undefined;
-    return this.hass.states[entity].attributes[attribute];
+    if (!entity || !this._hass.states[entity] || !this._hass.states[entity].attributes) return undefined;
+    return this._hass.states[entity].attributes[attribute];
   }
 
   private toggleMoreInfo(entity: string): void {
@@ -1453,9 +1488,30 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
   /* ----------------------------- EVENTS HANDLERS ---------------------------- */
   private _editorEventsHandler(e: Event): void {
+    if (!this.isEditorPreview) return;
     const cardType = (e as CustomEvent).detail;
-    this.activeCardType = cardType;
-    // this.requestUpdate(); // Trigger a re-render
+    if (cardType === 'customClose') {
+      console.log('customClose');
+      this.isCustomCardEditing = false;
+    } else if (cardType.includes('btn_')) {
+      const btnType = cardType.replace('btn_', '');
+      this.activeCardType = null;
+      this.showCustomBtnEditor(btnType);
+    } else {
+      this.activeCardType = cardType;
+      this.isCustomCardEditing = true;
+    }
+  }
+
+  private showCustomBtnEditor(btnType: string): void {
+    this.updateComplete.then(() => {
+      const btnElt = this.shadowRoot?.getElementById(btnType) as HTMLElement;
+      if (!btnElt) return;
+      btnElt.classList.add('redGlows');
+      setTimeout(() => {
+        btnElt.classList.remove('redGlows');
+      }, 5000);
+    });
   }
 }
 

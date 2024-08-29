@@ -1,6 +1,6 @@
 {
   "name": "vehicle-info-card",
-  "version": "1.2.0-beta_2",
+  "version": "1.2.0-beta_3",
   "description": "Lovelace custom card for displaying vehicle information from Mercedes Component integration",
   "keywords": [
     "home-assistant",
@@ -21,11 +21,9 @@
   "dependencies": {
     "@rollup/plugin-babel": "^6.0.4",
     "@rollup/plugin-typescript": "^11.1.6",
-    "apexcharts": "^3.50.0",
     "custom-card-helpers": "^1.7.2",
     "home-assistant-js-websocket": "^9.4.0",
-    "lit": "^3.1.4",
-    "sortablejs": "^1.15.2"
+    "lit": "^3.1.4"
   },
   "devDependencies": {
     "@babel/core": "^7.17.8",
@@ -40,6 +38,7 @@
     "@types/sortablejs": "^1.15.8",
     "@typescript-eslint/eslint-plugin": "^7.15.0",
     "@typescript-eslint/parser": "^7.15.0",
+    "apexcharts": "^3.52.0",
     "devcert": "^1.2.2",
     "dotenv": "^16.4.5",
     "eslint": "^8.9.0",
@@ -61,6 +60,7 @@
     "rollup-plugin-postcss-lit": "^2.1.0",
     "rollup-plugin-serve": "^1.1.1",
     "rollup-plugin-typescript2": "^0.36.0",
+    "sortablejs": "^1.15.2",
     "swiper": "^11.1.4",
     "typescript": "^5.4.5"
   },
