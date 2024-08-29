@@ -1,17 +1,80 @@
-import { LitElement, css, html, TemplateResult } from 'lit';
-import { customElement, property } from 'lit/decorators';
+import { LitElement, css, html, TemplateResult, PropertyValues } from 'lit';
+import { customElement, property, state } from 'lit/decorators';
 import Swiper from 'swiper';
 import { Pagination } from 'swiper/modules';
 import swipercss from '../css/swiper-bundle.css';
+import { VehicleCardConfig } from '../types';
+import _ from 'lodash';
 
 @customElement('header-slide')
 export class HeaderSlide extends LitElement {
-  @property({ type: Boolean }) editMode = false;
-  @property({ type: Boolean }) showImageIndex = false;
-  @property({ type: Array }) images: Array<{ url: string; title: string }> = [];
+  @state() private config!: VehicleCardConfig;
+  @state() private editMode!: boolean;
+  @state() private showImageIndex!: boolean;
+  @state() private images: { url: string; title: string }[] = [];
 
-  @property({ type: Object })
-  swiper: Swiper | null = null;
+  private swiper: Swiper | null = null;
+
+  protected firstUpdated(_changedProperties: PropertyValues): void {
+    super.firstUpdated(_changedProperties);
+    this.images = this.config.images;
+    this.showImageIndex = this.config.show_image_index;
+    this.updateComplete.then(() => {
+      this.initSwiper();
+    });
+  }
+
+  initSwiper(): void {
+    // Destroy the existing Swiper instance if it exists
+
+    const swiperCon = this.shadowRoot?.querySelector('.swiper-container');
+    if (!swiperCon) return;
+    const paginationEl = swiperCon.querySelector('.swiper-pagination') as HTMLElement;
+    this.swiper = new Swiper(swiperCon as HTMLElement, {
+      modules: [Pagination],
+      centeredSlides: true,
+      grabCursor: true,
+      speed: 500,
+      roundLengths: true,
+      keyboard: {
+        enabled: true,
+        onlyInViewport: true,
+      },
+      loop: true,
+      slidesPerView: 1,
+      pagination: {
+        el: paginationEl,
+        clickable: true,
+      },
+    });
+  }
+
+  render(): TemplateResult {
+    const images = this.images;
+    if (!images || images.length === 0) {
+      return html``;
+    }
+    const imagesLength = images.length;
+    return html`
+      <section id="swiper">
+        <div class="swiper-container">
+          <div class="swiper-wrapper">
+            ${images.map(
+              (image, index) => html`
+                <div class="swiper-slide">
+                  ${this.editMode && this.showImageIndex
+                    ? html`<span class="image-index">[${index + 1} / ${imagesLength}] - ${image.title}</span>`
+                    : ''}
+                  <img src="${image.url}" />
+                </div>
+              `
+            )}
+          </div>
+          <div class="swiper-pagination"></div>
+        </div>
+      </section>
+    `;
+  }
 
   static styles = [
     swipercss,
@@ -68,60 +131,4 @@ export class HeaderSlide extends LitElement {
       }
     `,
   ];
-
-  firstUpdated(): void {
-    if (!this.swiper) {
-      this.initSwiper();
-    }
-  }
-
-  initSwiper(): void {
-    const swiperCon = this.shadowRoot?.querySelector('.swiper-container');
-    if (!swiperCon) return;
-    const paginationEl = swiperCon.querySelector('.swiper-pagination') as HTMLElement;
-    this.swiper = new Swiper(swiperCon as HTMLElement, {
-      modules: [Pagination],
-      centeredSlides: true,
-      grabCursor: true,
-      speed: 500,
-      roundLengths: true,
-      keyboard: {
-        enabled: true,
-        onlyInViewport: true,
-      },
-      loop: true,
-      slidesPerView: 1,
-      pagination: {
-        el: paginationEl,
-        clickable: true,
-      },
-    });
-  }
-
-  render(): TemplateResult {
-    const images = this.images;
-    if (!images || images.length === 0) {
-      return html``;
-    }
-    const imagesLength = images.length;
-    return html`
-      <section id="swiper">
-        <div class="swiper-container">
-          <div class="swiper-wrapper">
-            ${images.map(
-              (image, index) => html`
-                <div class="swiper-slide">
-                  ${this.editMode && this.showImageIndex
-                    ? html`<span class="image-index">[${index + 1} / ${imagesLength}] - ${image.title}</span>`
-                    : ''}
-                  <img src="${image.url}" />
-                </div>
-              `,
-            )}
-          </div>
-          <div class="swiper-pagination"></div>
-        </div>
-      </section>
-    `;
-  }
 }
