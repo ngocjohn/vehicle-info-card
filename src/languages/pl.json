@@ -210,7 +210,10 @@
         },
         "imagesConfig": {
             "desc": "Dodaj URL-e obrazów.",
-            "title": "Konfiguracja obrazów"
+            "title": "Konfiguracja obrazów",
+            "selectAll": "Wybierz wszystko",
+            "deselectAll": "Odznacz wszystko",
+            "deleteSelected": "Usuń zaznaczone"
         },
         "mapConfig": {
             "desc": "Wybierz konfigurację dla mapy",

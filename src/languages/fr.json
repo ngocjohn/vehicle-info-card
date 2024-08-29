@@ -210,7 +210,10 @@
         },
         "imagesConfig": {
             "desc": "Ajouter les URL des images.",
-            "title": "Configuration image"
+            "title": "Configuration image",
+            "selectAll": "Tout sélectionner",
+            "deselectAll": "Tout désélectionner",
+            "deleteSelected": "Supprimer la sélection"
         },
         "mapConfig": {
             "desc": "Choisissez la configuration de la carte",

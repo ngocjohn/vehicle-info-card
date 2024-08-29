@@ -210,7 +210,10 @@
         },
         "imagesConfig": {
             "desc": "Thêm URL của hình ảnh.",
-            "title": "Cấu hình hình ảnh"
+            "title": "Cấu hình hình ảnh",
+            "selectAll": "Chọn tất cả",
+            "deselectAll": "Bỏ chọn tất cả",
+            "deleteSelected": "Xóa hình ảnh đã chọn"
         },
         "mapConfig": {
             "desc": "Chọn cấu hình cho bản đồ",

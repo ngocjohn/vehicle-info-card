@@ -210,7 +210,10 @@
         },
         "imagesConfig": {
             "desc": "Pridėkite paveikslėlių URL adresus.",
-            "title": "Paveikslėlio konfigūracija"
+            "title": "Paveikslėlio konfigūracija",
+            "selectAll": "Pasirinkti visus",
+            "deselectAll": "Atšaukti visus",
+            "deleteSelected": "Ištrinti pasirinktus"
         },
         "mapConfig": {
             "desc": "Pasirinkite žemėlapio konfigūraciją",

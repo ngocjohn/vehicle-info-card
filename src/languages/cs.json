@@ -210,7 +210,10 @@
         },
         "imagesConfig": {
             "desc": "Přidejte URL adresy obrázků.",
-            "title": "Konfigurace obrázků"
+            "title": "Konfigurace obrázků",
+            "selectAll": "Vybrat vše",
+            "deselectAll": "Zrušit výběr",
+            "deleteSelected": "Smazat vybrané"
         },
         "mapConfig": {
             "desc": "Vyberte konfiguraci pro mapu",

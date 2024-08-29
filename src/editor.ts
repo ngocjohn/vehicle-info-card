@@ -461,6 +461,20 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private _renderImageConfig(): TemplateResult {
     const configImages = this._config.images as VehicleImage[];
+    const imagesActions = {
+      selectAll: {
+        label: this.localize('editor.imagesConfig.selectAll'),
+        action: this._selectAll,
+      },
+      deselectAll: {
+        label: this.localize('editor.imagesConfig.deselectAll'),
+        action: this._deselectAll,
+      },
+      deleteSelected: {
+        label: this.localize('editor.imagesConfig.deleteSelected'),
+        action: this._deleteSelectedItems,
+      },
+    };
 
     const imageList = html`<div class="images-list" id="images-list">
       ${repeat(
@@ -485,16 +499,22 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     </div>`;
     const showIndexDeleteBtn =
       this._config.images && this._config.images.length > 0
-        ? html` <div class="custom-background-wrapper">
-            <ha-formfield .label=${'Show Image Index'}>
-              <ha-checkbox
-                .checked=${this._config?.show_image_index !== false}
-                .configValue=${'show_image_index'}
-                @change=${this._valueChanged}
-              ></ha-checkbox>
-            </ha-formfield>
-            <ha-button @click=${this._deleteSelectedItems}>Delete Selected</ha-button>
-          </div>`
+        ? html`
+            <div class="custom-background-wrapper">
+              ${Object.keys(imagesActions).map(
+                (key) => html` <ha-button @click=${imagesActions[key].action}>${imagesActions[key].label}</ha-button> `
+              )}
+            </div>
+            <div class="custom-background-wrapper">
+              <ha-formfield .label=${'Show Image Index'}>
+                <ha-checkbox
+                  .checked=${this._config?.show_image_index !== false}
+                  .configValue=${'show_image_index'}
+                  @change=${this._valueChanged}
+                ></ha-checkbox>
+              </ha-formfield>
+            </div>
+          `
         : '';
 
     const urlInput = html`
@@ -526,35 +546,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const content = html`${imageList}${showIndexDeleteBtn} ${urlInput} ${this._renderToast()}`;
 
     return this.panelTemplate('imagesConfig', 'imagesConfig', 'mdi:image', content);
-  }
-
-  private _toggleSelection(event: Event, imageUrl: string): void {
-    const checkbox = event.target as HTMLInputElement;
-    if (checkbox.checked) {
-      this._selectedItems.add(imageUrl);
-    } else {
-      this._selectedItems.delete(imageUrl);
-    }
-    console.log('Selected items:', this._selectedItems);
-  }
-
-  private _deleteSelectedItems(): void {
-    if (this._selectedItems.size === 0) {
-      return;
-    }
-
-    const remainingImages = this._config.images.filter((image) => !this._selectedItems.has(image.url));
-
-    console.log('Remaining images after deletion:', remainingImages);
-
-    // Update the config with the remaining images
-    this._config = { ...this._config, images: remainingImages };
-
-    // Clear the selected items
-    this._selectedItems.clear();
-
-    // Trigger any additional change handlers
-    this.configChanged();
   }
 
   private _renderMapPopupConfig(): TemplateResult {
@@ -751,6 +742,58 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     //   this._dispatchCardEvent(this._activeSubcardType as string);
     //   console.log('Custom card panel expanded', this._activeSubcardType);
     // }
+  }
+  private _toggleSelection(event: Event, imageUrl: string): void {
+    const checkbox = event.target as HTMLInputElement;
+    if (checkbox.checked) {
+      this._selectedItems.add(imageUrl);
+    } else {
+      this._selectedItems.delete(imageUrl);
+    }
+    // console.log('Selected items:', this._selectedItems);
+  }
+  private _selectAll(): void {
+    const checkboxes = this.shadowRoot?.querySelectorAll('.images-list ha-checkbox') as NodeListOf<HTMLInputElement>;
+    checkboxes.forEach((checkbox) => {
+      checkbox.checked = true;
+    });
+
+    this._selectedItems.clear(); // Clear existing selections
+    this._config.images.forEach((image: { url: string }) => this._selectedItems.add(image.url));
+
+    // Optionally, update the UI or perform any additional actions
+    this.requestUpdate();
+  }
+
+  private _deselectAll(): void {
+    const checkboxes = this.shadowRoot?.querySelectorAll('.images-list ha-checkbox') as NodeListOf<HTMLInputElement>;
+    checkboxes.forEach((checkbox) => {
+      checkbox.checked = false;
+    });
+
+    this._selectedItems.clear(); // Clear all selections
+
+    // Optionally, update the UI or perform any additional actions
+    this.requestUpdate();
+  }
+
+  private _deleteSelectedItems(): void {
+    if (this._selectedItems.size === 0) {
+      return;
+    }
+
+    const remainingImages = this._config.images.filter((image) => !this._selectedItems.has(image.url));
+
+    // console.log('Remaining images after deletion:', remainingImages);
+
+    // Update the config with the remaining images
+    this._config = { ...this._config, images: remainingImages };
+
+    // Clear the selected items
+    this._selectedItems.clear();
+
+    // Trigger any additional change handlers
+    this.configChanged();
   }
 
   private toggleAddButton(ev: Event): void {

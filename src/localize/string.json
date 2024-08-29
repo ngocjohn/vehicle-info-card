@@ -210,7 +210,10 @@
         },
         "imagesConfig": {
             "desc": "Add the URLs of the images.",
-            "title": "Image configuration"
+            "title": "Image configuration",
+            "selectAll": "Select all",
+            "deselectAll": "Deselect all",
+            "deleteSelected": "Delete selected"
         },
         "mapConfig": {
             "desc": "Choose the configuration for the map",
