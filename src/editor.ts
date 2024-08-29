@@ -144,7 +144,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       <div class="base-config">
         ${this._renderNameEntityForm()} ${this._renderCardEditorButtons()} ${this._renderMapPopupConfig()}
         ${this._renderImageConfig()} ${this._renderServicesConfig()} ${this._renderThemesConfig()}
-        ${this._renderSwitches()} ${this._renderVersionInfo()}
+        ${this._renderShowOptions()} ${this._renderVersionInfo()}
       </div>
     `;
   }
@@ -336,7 +336,8 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
               @click=${() => {
                 this._activeSubcardType = card.type;
               }}
-              >${card.name}</ha-button
+            >
+              <ha-icon icon=${card.icon}></ha-icon> ${card.name}</ha-button
             >
           `
         )}
@@ -345,7 +346,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     return this.panelTemplate('buttonConfig', 'buttonConfig', 'mdi:view-dashboard', subcardBtns);
   }
 
-  private _renderSwitches(): TemplateResult {
+  private _renderShowOptions(): TemplateResult {
     let showOptions = editorShowOpts(this._selectedLanguage);
     // Filter out the enable_map_popup option
 
@@ -423,38 +424,40 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     ];
 
     const themesConfig = html`
-      <ha-select
-        .label=${this.hass.localize('ui.panel.profile.language.dropdown_label') || 'Language'}
-        .value=${this._config.selected_language}
-        .configValue=${'selected_language'}
-        @selected=${this._valueChanged}
-        @closed=${(ev: Event) => ev.stopPropagation()}
-      >
-        ${langOpts.map(
-          (lang) =>
-            html`<mwc-list-item value=${lang.key}>${lang.nativeName ? lang.nativeName : lang.name}</mwc-list-item> `
-        )}
-      </ha-select>
+      <div class="switches">
+        <ha-select
+          .label=${this.hass.localize('ui.panel.profile.language.dropdown_label') || 'Language'}
+          .value=${this._config.selected_language}
+          .configValue=${'selected_language'}
+          @selected=${this._valueChanged}
+          @closed=${(ev: Event) => ev.stopPropagation()}
+        >
+          ${langOpts.map(
+            (lang) =>
+              html`<mwc-list-item value=${lang.key}>${lang.nativeName ? lang.nativeName : lang.name}</mwc-list-item> `
+          )}
+        </ha-select>
 
-      <ha-theme-picker
-        .hass=${this.hass}
-        .value=${this._config.selected_theme.theme}
-        .configValue=${'theme'}
-        .includeDefault=${true}
-        @selected=${this._valueChanged}
-        @closed=${(ev: Event) => ev.stopPropagation()}
-        .required=${true}
-      ></ha-theme-picker>
+        <ha-theme-picker
+          .hass=${this.hass}
+          .value=${this._config.selected_theme.theme}
+          .configValue=${'theme'}
+          .includeDefault=${true}
+          @selected=${this._valueChanged}
+          @closed=${(ev: Event) => ev.stopPropagation()}
+          .required=${true}
+        ></ha-theme-picker>
 
-      <ha-select
-        label="Theme mode"
-        .value=${this._config.selected_theme.mode}
-        .configValue=${'mode'}
-        @selected=${this._valueChanged}
-        @closed=${(ev: Event) => ev.stopPropagation()}
-      >
-        ${themeMode.map((mode) => html`<mwc-list-item value=${mode.key}>${mode.name}</mwc-list-item>`)}
-      </ha-select>
+        <ha-select
+          label="Theme mode"
+          .value=${this._config.selected_theme.mode}
+          .configValue=${'mode'}
+          @selected=${this._valueChanged}
+          @closed=${(ev: Event) => ev.stopPropagation()}
+        >
+          ${themeMode.map((mode) => html`<mwc-list-item value=${mode.key}>${mode.name}</mwc-list-item>`)}
+        </ha-select>
+      </div>
     `;
     return this.panelTemplate('themeLangConfig', 'themeLangConfig', 'mdi:palette', themesConfig);
   }
@@ -559,6 +562,34 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       { key: 'dark', name: 'Dark' },
       { key: 'light', name: 'Light' },
     ];
+    const mapPopupConfig = html`
+      <ha-alert alert-type="info">${infoAlert}</ha-alert>
+      <div class="switches">
+        <ha-textfield
+          label="Hours to show"
+          .min=${0}
+          .value=${this._config.map_popup_config.hours_to_show}
+          .configValue=${'hours_to_show'}
+          @input=${this._valueChanged}
+        ></ha-textfield>
+        <ha-textfield
+          .label=${'Default Zoom'}
+          .min=${0}
+          .value=${this._config.map_popup_config.default_zoom}
+          .configValue=${'default_zoom'}
+          @input=${this._valueChanged}
+        ></ha-textfield>
+        <ha-select
+          .label=${'Theme mode'}
+          .value=${this._config.map_popup_config.theme_mode}
+          .configValue=${'theme_mode'}
+          @selected=${this._valueChanged}
+          @closed=${(ev: Event) => ev.stopPropagation()}
+        >
+          ${themeMode.map((mode) => html`<mwc-list-item value=${mode.key}>${mode.name}</mwc-list-item>`)}
+        </ha-select>
+      </div>
+    `;
 
     const mapConfig = html`
       <ha-entity-picker
@@ -588,31 +619,9 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           ></ha-checkbox>
         </ha-formfield>
       </div>
-      <ha-alert alert-type="info">${infoAlert}</ha-alert>
-      <ha-textfield
-        label="Hours to show"
-        .min=${0}
-        .value=${this._config.map_popup_config.hours_to_show}
-        .configValue=${'hours_to_show'}
-        @input=${this._valueChanged}
-      ></ha-textfield>
-      <ha-textfield
-        .label=${'Default Zoom'}
-        .min=${0}
-        .value=${this._config.map_popup_config.default_zoom}
-        .configValue=${'default_zoom'}
-        @input=${this._valueChanged}
-      ></ha-textfield>
-      <ha-select
-        .label=${'Theme mode'}
-        .value=${this._config.map_popup_config.theme_mode}
-        .configValue=${'theme_mode'}
-        @selected=${this._valueChanged}
-        @closed=${(ev: Event) => ev.stopPropagation()}
-      >
-        ${themeMode.map((mode) => html`<mwc-list-item value=${mode.key}>${mode.name}</mwc-list-item>`)}
-      </ha-select>
+      ${mapPopupConfig}
     `;
+
     return this.panelTemplate('mapConfig', 'mapConfig', 'mdi:map-search', mapConfig);
   }
 
