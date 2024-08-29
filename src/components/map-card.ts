@@ -20,18 +20,16 @@ interface Address {
 
 @customElement('vehicle-map')
 export class VehicleMap extends LitElement {
-  @property({ attribute: false }) hass!: HomeAssistant;
-  @property({ type: Object }) config!: VehicleCardConfig;
-  @property({ type: Boolean }) darkMode?: boolean;
+  @state() private deviceTracker: { lat: number; lon: number } = { lat: 0, lon: 0 };
+  @state() private darkMode!: boolean;
+  @state() private apiKey?: string;
+  @state() private mapPopup!: boolean;
   @state() private map: L.Map | null = null;
   @state() private marker: L.Marker | null = null;
-  @state() private lat = 0;
-  @state() private lon = 0;
   @state() private zoom = 16;
   @state() private state = '';
   @state() private address: Partial<Address> = {};
   @state() private enableAdress = false;
-  @state() private apiKey = '';
 
   static get styles(): CSSResultGroup {
     return [
@@ -168,14 +166,11 @@ export class VehicleMap extends LitElement {
   }
 
   setEntityAttribute(): void {
-    if (!this.config.device_tracker) return;
-    const deviceTracker = this.hass.states[this.config.device_tracker];
-    if (deviceTracker) {
-      this.lat = deviceTracker.attributes.latitude;
-      this.lon = deviceTracker.attributes.longitude;
-      this.state = deviceTracker.state;
-      this.getAddress(this.lat, this.lon);
+    const { lat, lon } = this.deviceTracker;
+    if (lat && lon) {
+      this.getAddress(lat, lon);
     }
+
     setTimeout(() => {
       this.initMap();
     }, 200);
@@ -195,7 +190,7 @@ export class VehicleMap extends LitElement {
 
   async getAddress(lat: number, lon: number): Promise<void> {
     let address: Partial<Address> | null = null;
-    if (this.apiKey !== '') {
+    if (this.apiKey) {
       address = await this.getAddressFromGoggle(lat, lon);
     } else {
       address = await this.getAddressFromOpenStreet(lat, lon);
@@ -210,16 +205,14 @@ export class VehicleMap extends LitElement {
   }
 
   initMap(): void {
+    const { lat, lon } = this.deviceTracker;
     const mapOptions = {
       dragging: true,
       zoomControl: false,
       scrollWheelZoom: true,
     };
 
-    this.map = L.map(this.shadowRoot?.getElementById('map') as HTMLElement, mapOptions).setView(
-      [this.lat, this.lon],
-      this.zoom,
-    );
+    this.map = L.map(this.shadowRoot?.getElementById('map') as HTMLElement, mapOptions).setView([lat, lon], this.zoom);
 
     // const tileLayer = this.darkMode ? 'CartoDB.DarkMatter' : 'CartoDB.Positron'; Stadia.StamenTonerLite, CartoDB.PositronOnlyLabels
     const provider = 'CartoDB.DarkMatterOnlyLabels';
@@ -250,9 +243,9 @@ export class VehicleMap extends LitElement {
     });
 
     // Add marker to map
-    this.marker = L.marker([this.lat, this.lon], { icon: customIcon }).addTo(this.map);
+    this.marker = L.marker([lat, lon], { icon: customIcon }).addTo(this.map);
     // Add click event listener to marker
-    if (this.config.enable_map_popup) {
+    if (this.mapPopup) {
       this.marker.on('click', () => {
         this.togglePopup();
       });
@@ -274,15 +267,10 @@ export class VehicleMap extends LitElement {
 
   private updateMap(): void {
     if (!this.map || !this.marker) return;
-    const offset: [number, number] = this.calculateLatLngOffset(
-      this.map,
-      this.lat,
-      this.lon,
-      this.map.getSize().x / 5,
-      3,
-    );
+    const { lat, lon } = this.deviceTracker;
+    const offset: [number, number] = this.calculateLatLngOffset(this.map, lat, lon, this.map.getSize().x / 5, 3);
     this.map.setView(offset, this.zoom);
-    this.marker.setLatLng([this.lat, this.lon]);
+    this.marker.setLatLng([lat, lon]);
   }
 
   private calculateLatLngOffset(
@@ -290,7 +278,7 @@ export class VehicleMap extends LitElement {
     lat: number,
     lng: number,
     xOffset: number,
-    yOffset: number,
+    yOffset: number
   ): [number, number] {
     // Convert the lat/lng to a point
     const point = map.latLngToContainerPoint([lat, lng]);
