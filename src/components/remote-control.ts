@@ -14,17 +14,16 @@ const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelper
 
 @customElement('remote-control')
 export class RemoteControl extends LitElement {
-  @property({ attribute: false }) hass!: HomeAssistant;
-  @property({ type: Object }) servicesConfig?: Services;
-  @property({ type: String }) carVin!: string;
-  @property({ type: String }) carLockEntity!: string;
-  @property({ type: String }) selectedLanguage!: string;
+  @state() private hass!: HomeAssistant;
+  @state() private servicesConfig!: Services;
+  @state() private carVin!: string;
+  @state() private carLockEntity!: string;
+  @state() private selectedLanguage!: string;
 
   @state() private subcardType: string | null = null;
   @state() private serviceData: any = {};
 
-  protected firstUpdated(_changedProperties: PropertyValues) {
-    super.firstUpdated(_changedProperties);
+  firstUpdated(): void {
     this.initializeServiceData();
   }
 
@@ -484,7 +483,7 @@ export class RemoteControl extends LitElement {
             acc[key] = convertToMinutes(hour, minute);
             return acc;
           },
-          {} as Record<string, number>,
+          {} as Record<string, number>
         );
 
         const dataAux = {
@@ -515,7 +514,7 @@ export class RemoteControl extends LitElement {
             acc[key] = inputValue;
             return acc;
           },
-          {} as Record<string, number>,
+          {} as Record<string, number>
         );
 
         this.callService(service, dataWindows);
@@ -528,7 +527,7 @@ export class RemoteControl extends LitElement {
             acc[key] = inputValue;
             return acc;
           },
-          {} as Record<string, string>,
+          {} as Record<string, string>
         );
         this.callService(service, dataRoute);
         break;
@@ -606,7 +605,7 @@ export class RemoteControl extends LitElement {
 
     setTimeout(() => {
       const gridBtn = this.shadowRoot?.querySelectorAll(
-        '.control-btn-rounded:not(.active).click-shrink',
+        '.control-btn-rounded:not(.active).click-shrink'
       ) as NodeListOf<HTMLDivElement>;
 
       gridBtn?.forEach((btn) => {
@@ -621,7 +620,7 @@ export class RemoteControl extends LitElement {
             () => {
               btn.classList.add('hidden');
             },
-            { once: true },
+            { once: true }
           );
         }
       });
