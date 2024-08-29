@@ -8,9 +8,8 @@ import ApexCharts from 'apexcharts';
 
 @customElement('eco-chart')
 export class EcoChart extends LitElement {
-  @property({ type: Object }) ecoData!: EcoData;
-  @property({ type: String }) selectedLanguage!: string;
-  @property() private activeCard: string | undefined;
+  @property({ type: Object }) private ecoData!: EcoData;
+  @state() private selectedLanguage!: string;
 
   @state() private chart: ApexCharts | undefined;
 
@@ -86,20 +85,16 @@ export class EcoChart extends LitElement {
     };
   }
 
-  protected firstUpdated() {
-    this.chart = new ApexCharts(this.shadowRoot?.getElementById('chart'), this.options);
-    this.chart.render();
-  }
-
   protected updated(changedProps: PropertyValues) {
-    if (changedProps.has('activeCard') && this.activeCard === 'ecoCards') {
-      this.updateChart();
-      console.log('updated');
-    } else if (changedProps.has('activeCard') && this.activeCard !== 'ecoCards') {
-      this.chart?.destroy();
-      this.chart = undefined;
-      console.log('destroyed');
-    }
+    super.updated(changedProps);
+    this.updateComplete.then(() => {
+      if (!this.chart) {
+        this.chart = new ApexCharts(this.shadowRoot?.getElementById('chart'), this.options);
+        this.chart.render();
+      } else {
+        this.updateChart();
+      }
+    });
   }
 
   private updateChart() {
@@ -138,18 +133,6 @@ export class EcoChart extends LitElement {
       width: 100%;
       height: 100%;
       margin: 0;
-      font-family:
-        system-ui,
-        -apple-system,
-        BlinkMacSystemFont,
-        'Segoe UI',
-        Roboto,
-        Oxygen,
-        Ubuntu,
-        Cantarell,
-        'Open Sans',
-        'Helvetica Neue',
-        sans-serif !important;
     }
     .apexcharts-datalabels-group .apexcharts-text {
       font-size: 1.2rem;
