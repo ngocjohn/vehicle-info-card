@@ -1,4 +1,4 @@
-console.info('Platform Entities Extractor 2');
+console.info('Platform Entities Extractor 5');
 
 export class HassEntityDownloader {
   constructor(hassInstance) {
@@ -6,25 +6,27 @@ export class HassEntityDownloader {
   }
 
   async getEntitiesByPlatform(platformToFind) {
-    // Fetch all entities from the config entity registry
-    const allEntities = await this._hass.callWS({
-      type: 'config/entity_registry/list',
-    });
+    try {
+      // Fetch all entities from the config entity registry
+      const allEntities = await this._hass.callWS({
+        type: 'config/entity_registry/list',
+      });
 
-    // Filter to get all sub-entities for the device
-    const platformEntities = allEntities.filter((e) => e.platform === platformToFind);
+      // Filter to get all sub-entities for the device
+      const platformEntities = allEntities.filter((e) => e.platform === platformToFind);
 
-    if (!platformEntities || platformEntities.length === 0) {
-      console.log('Entities not found');
-      return;
-    }
+      if (!platformEntities || platformEntities.length === 0) {
+        console.log('Entities not found');
+        return;
+      }
 
-    console.log('Raw data:', platformEntities);
-
-    const entStates = this.extractEntityStates(platformEntities);
-
-    if (Object.keys(entStates).length > 0) {
-      console.log('Entities with state:', entStates);
+      const entStates = this.extractEntityStates(platformEntities);
+      console.log('Raw data:', platformEntities);
+      if (Object.keys(entStates).length > 0) {
+        console.log('Entities with state:', entStates);
+      }
+    } catch (error) {
+      console.error('Error fetching entities:', error);
     }
   }
 
@@ -46,9 +48,7 @@ export class HassEntityDownloader {
           attributes: entAttr,
         };
       } else {
-        console.log(
-          `| ${entityState.attributes.friendly_name.padEnd(22)} | ${entity.entity_id.padEnd(24)} | -`.replace(/ /g, ' ')
-        );
+        console.log(`Entity ${entity.entity_id} not found`);
       }
     }
 
@@ -56,26 +56,31 @@ export class HassEntityDownloader {
   }
 
   async downloadEntitiesByPlatform(platformToFind) {
-    // Fetch all entities from the config entity registry
-    const allEntities = await this._hass.callWS({
-      type: 'config/entity_registry/list',
-    });
+    try {
+      // Fetch all entities from the config entity registry
+      const allEntities = await this._hass.callWS({
+        type: 'config/entity_registry/list',
+      });
 
-    // Filter to get all sub-entities for the device
-    const platformEntities = allEntities.filter((e) => e.platform === platformToFind);
+      // Filter to get all sub-entities for the device
+      const platformEntities = allEntities.filter((e) => e.platform === platformToFind);
 
-    if (!platformEntities || platformEntities.length === 0) {
-      console.log('Entities not found');
-      return;
-    }
+      if (!platformEntities || platformEntities.length === 0) {
+        console.log('Entities not found');
+        return;
+      } else {
+        console.log('Raw data to download', platformEntities);
+        this.downloadJSON(platformEntities, `${platformToFind}_raw_data.json`);
+      }
 
-    console.log('Raw data to download:', platformEntities);
-    this.downloadJSON(platformEntities, `${platformToFind}_entities_raw.json`);
-    const entStates = this.extractEntityStates(platformEntities);
+      const entStates = this.extractEntityStates(platformEntities);
 
-    if (Object.keys(entStates).length > 0) {
-      console.log('Entities with state to download:', entStates);
-      this.downloadJSON(entStates, `${platformToFind}_entities.json`);
+      if (Object.keys(entStates).length > 0) {
+        console.log('Entities with state to download', entStates);
+        this.downloadJSON(entStates, `${platformToFind}_state_data.json`);
+      }
+    } catch (error) {
+      console.error('Error downloading entities:', error);
     }
   }
 
