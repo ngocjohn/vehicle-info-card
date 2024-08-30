@@ -37,11 +37,11 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   @state() private _activeSubcardType: string | null = null;
   @state() private _yamlConfig: { [key: string]: any } = {};
   @state() private _newImageUrl: string = '';
+  @state() private _selectedLanguage: string = 'system';
 
   @state() private _latestRelease: string = '';
   private _sortable: Sortable | null = null;
   private _selectedItems: Set<string> = new Set();
-  @state() private _selectedLanguage: string = '';
 
   connectedCallback() {
     super.connectedCallback();
@@ -49,28 +49,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     if (process.env.ROLLUP_WATCH === 'true') {
       window.BenzEditor = this;
     }
-  }
-
-  private convertToNewConfig(oldConfig: VehicleCardConfig): VehicleImagesList {
-    console.log('converting old config to new config');
-    const newImages: VehicleImage[] = (oldConfig.images || []).map((url: string) => ({
-      url,
-      title: url,
-    }));
-
-    return {
-      ...oldConfig,
-      images: newImages,
-    };
-  }
-
-  private _validateConfig(config: VehicleCardConfig): boolean {
-    if (Array.isArray(config.images) && config.images.length > 0 && typeof config.images[0] === 'object') {
-      return true;
-    }
-
-    console.log('Config is invalid');
-    return false;
   }
 
   public async setConfig(config: VehicleCardConfig): Promise<void> {
@@ -81,7 +59,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   protected async firstUpdated(changedProperties: PropertyValues): Promise<void> {
     super.firstUpdated(changedProperties);
     await handleFirstUpdated(this, changedProperties);
-
     for (const cardType of this.baseCardTypes) {
       if (this._config[cardType.config] && Array.isArray(this._config[cardType.config])) {
         const yamlString = YAML.stringify(this._config[cardType.config]);
@@ -223,17 +200,12 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         .value=${this._yamlConfig[card.config] || ''}
         .configValue=${card.config}
         @value-changed=${(ev: any) => this._customCardChange(ev)}
-        @focus=${(ev: any) => this.toggleEditorFocus(ev)}
       ></ha-code-editor>
     `;
 
     const cardCodeEditorWrapper = html` <div class="card-code-editor">${useCustomRadioBtn} ${cardCodeEditor}</div> `;
 
     return this.panelTemplate('customCardConfig', 'customCardConfig', 'mdi:code-json', cardCodeEditorWrapper);
-  }
-
-  private toggleEditorFocus(ev: any): void {
-    console.log('Editor focused:', ev);
   }
 
   private _renderCustomButtonTemplate(card: CardTypeConfig): TemplateResult {
@@ -793,19 +765,15 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
     const remainingImages = this._config.images.filter((image) => !this._selectedItems.has(image.url));
 
-    // console.log('Remaining images after deletion:', remainingImages);
-
-    // Update the config with the remaining images
     this._config = { ...this._config, images: remainingImages };
-
     // Clear the selected items
     this._selectedItems.clear();
-
     // Trigger any additional change handlers
     this.configChanged();
   }
 
   private toggleAddButton(ev: Event): void {
+    ev.stopPropagation();
     const target = ev.target as HTMLInputElement;
     const addButton = target.parentElement?.querySelector('.new-url-btn') as HTMLElement;
     if (!addButton) return;
@@ -827,6 +795,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _handleImageInputChange(ev: Event, index?: number): void {
+    ev.stopPropagation();
     const input = ev.target as HTMLInputElement;
     const url = input.value;
 
@@ -944,7 +913,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _servicesValueChanged(ev: any): void {
-    ev.stopImmediatePropagation();
+    ev.stopPropagation();
     if (!this._config || !this.hass) {
       return;
     }
@@ -1027,9 +996,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       };
       console.log('Selected theme changed:', key, newValue);
     } else if (configValue === 'selected_language') {
-      if (this._config.selected_language === newValue) {
-        return;
-      }
       newValue === 'system' ? (this._selectedLanguage = this.hass.language) : (this._selectedLanguage = newValue);
       updates.selected_language = newValue;
       console.log('Selected language changed:', newValue);

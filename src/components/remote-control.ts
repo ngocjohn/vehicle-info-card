@@ -10,8 +10,6 @@ import styles from '../css/remote-control.css';
 import mainstyle from '../css/styles.css';
 import { localize } from '../localize/localize';
 
-const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
-
 @customElement('remote-control')
 export class RemoteControl extends LitElement {
   @state() private hass!: HomeAssistant;
@@ -148,7 +146,7 @@ export class RemoteControl extends LitElement {
 
   /* ---------------------------- TEMPLATE RENDERS ---------------------------- */
 
-  private _renderServiceBtn(serviceKey: string, serviceItem): TemplateResult {
+  private _renderServiceBtn(serviceKey: string, serviceItem: any): TemplateResult {
     const { command, icon, label } = serviceItem;
     const handleClick = serviceKey.includes('DATA_')
       ? () => this.saveConfigChange(command)
