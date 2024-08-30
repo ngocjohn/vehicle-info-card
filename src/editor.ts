@@ -11,7 +11,6 @@ import { fireEvent, LovelaceCardEditor } from 'custom-card-helpers';
 import {
   HomeAssistantExtended as HomeAssistant,
   VehicleCardConfig,
-  VehicleImagesList,
   VehicleImage,
   ShowOptions,
   Services,
