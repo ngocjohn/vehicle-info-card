@@ -28,7 +28,7 @@ const replaceOpts = {
 };
 
 const serveopts = {
-  contentBase: ['./dev'],
+  contentBase: ['./dist'],
   port,
   allowCrossOrigin: true,
   headers: {
@@ -76,11 +76,14 @@ export default [
   {
     input: 'src/vehicle-info-card.ts',
     output: {
-      file: dev ? 'dev/vehicle-info-card.js' : 'dist/vehicle-info-card.js',
+      dir: './dist',
       format: 'es',
-      sourcemap: true,
+      sourcemap: dev ? true : false,
       inlineDynamicImports: true,
       banner: custombanner,
+    },
+    watch: {
+      exclude: 'node_modules/**',
     },
     plugins: [...plugins],
     moduleContext: {

@@ -18,5 +18,6 @@
     "rootDir": "./src",
     "typeRoots": ["./node_modules/@types", "./src/declarations.d.ts"],
     "sourceMap": true
-  }
+  },
+  "include": ["src/*", "src/**/*"]
 }
