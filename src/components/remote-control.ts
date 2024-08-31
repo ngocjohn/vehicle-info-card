@@ -10,6 +10,13 @@ import styles from '../css/remote-control.css';
 import mainstyle from '../css/styles.css';
 import { localize } from '../localize/localize';
 
+interface ServiceItem {
+  [key: string]: {
+    name: string;
+    icon: string;
+  };
+}
+
 @customElement('remote-control')
 export class RemoteControl extends LitElement {
   @state() private hass!: HomeAssistant;
@@ -20,9 +27,40 @@ export class RemoteControl extends LitElement {
 
   @state() private subcardType: string | null = null;
   @state() private serviceData: any = {};
+  @state() private activeServices: ServiceItem = {};
 
-  firstUpdated(): void {
+  protected firstUpdated(): void {
+    console.log('servicesConfig firstUpdated');
     this.initializeServiceData();
+    this.getActiveServices(); // Get active services from servicesConfig
+  }
+
+  private getActiveServices(): void {
+    // Ensure servicesConfig is initialized before calling this
+    if (!this.servicesConfig) {
+      console.error('servicesConfig is not initialized');
+      return;
+    }
+
+    Object.entries(this.servicesConfig).forEach(([key, value]) => {
+      if (value) {
+        this.activeServices[key] = {
+          name: Srvc.servicesCtrl(this.selectedLanguage)[key].name,
+          icon: Srvc.servicesCtrl(this.selectedLanguage)[key].icon,
+        };
+      }
+    });
+    console.log('activeServices:', this.activeServices);
+  }
+
+  connectedCallback(): void {
+    super.connectedCallback();
+    window.RemoteControl = this;
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    window.RemoteControl = null as any;
   }
 
   private initializeServiceData() {
@@ -37,11 +75,6 @@ export class RemoteControl extends LitElement {
   private localize = (string: string, search = '', replace = ''): string => {
     return localize(string, this.selectedLanguage, search, replace);
   };
-
-  private isAnyServiceEnabled(): boolean {
-    if (!this.servicesConfig) return false;
-    return Object.values(this.servicesConfig).some((service) => service);
-  }
 
   private get auxheatConfig() {
     return this.serviceData.auxheatConfig;
@@ -76,7 +109,7 @@ export class RemoteControl extends LitElement {
   }
 
   protected render(): TemplateResult {
-    if (!this.isAnyServiceEnabled()) return html`<hui-warning>No service selected.</hui-warning>`;
+    if (Object.keys(this.activeServices).length === 0) return html`<hui-warning>No service selected.</hui-warning>`;
 
     return html`
       <div class="service-control">
@@ -108,10 +141,6 @@ export class RemoteControl extends LitElement {
   }
 
   private _renderControlBtn(): TemplateResult {
-    const activeServices = Object.entries(this.servicesConfig ?? {})
-      .filter(([_, isActive]) => isActive === true)
-      .map(([type, _]) => type as keyof Services);
-
     const handleClick = (type: string) => {
       if (type === 'sigPos') {
         this.callService('sigpos_start');
@@ -120,9 +149,7 @@ export class RemoteControl extends LitElement {
       }
     };
 
-    const controlBtns = activeServices.map((type) => {
-      const lang = this.selectedLanguage;
-      const { name, icon } = Srvc.servicesCtrl(lang)[type]; // Get name and icon from servicesCtrl
+    const controlBtns = Object.entries(this.activeServices).map(([type, { name, icon }]) => {
       const activeClass = this.subcardType === type ? 'active' : '';
       return html`
         <div @click=${() => handleClick(type)} class="control-btn-rounded ${activeClass} click-shrink">
@@ -136,7 +163,7 @@ export class RemoteControl extends LitElement {
   }
 
   private _renderToast(): TemplateResult {
-    const toastMsg = this.localize('card.common.toastCommandSent', this.selectedLanguage);
+    const toastMsg = this.localize('card.common.toastCommandSent');
     return html`
       <div id="toast">
         <ha-alert alert-type="success">${toastMsg} </ha-alert>
@@ -215,10 +242,9 @@ export class RemoteControl extends LitElement {
     const { preheatConfig } = this;
     const time = preheatConfig.data.time;
     const service = preheatConfig.service;
-    const labelDepartureTime = this.localize('card.serviceData.labelDepartureTime', this.selectedLanguage);
     const preheatDepartureTimeEL = html`
       <div class="items-row">
-        <div>${labelDepartureTime}</div>
+        <div>${preheatConfig.data.departure_time.label}</div>
         <div class="time-input-wrap">
           <ha-textfield
             type="number"
@@ -277,11 +303,10 @@ export class RemoteControl extends LitElement {
     const maxSoc = data.max_soc;
 
     const services = chargeConfig.service;
-    const labelChargeProgram = this.localize('card.serviceData.labelChargeProgram', this.selectedLanguage);
-    const labelMaxSoc = this.localize('card.serviceData.labelMaxStateOfCharge', this.selectedLanguage);
+
     const selectChargeProgram = html`
       <div class="items-row">
-        <div class="item-label">${labelChargeProgram}</div>
+        <div class="item-label">${data.program_select.label}</div>
         <ha-select
           .value=${String(selectedProgram)}
           @change=${(e: Event) => this.handleChargeProgramChange('selected_program', e)}
@@ -324,12 +349,11 @@ export class RemoteControl extends LitElement {
     const timeItems = auxheatConfig.data.items;
     const selectedTimeSelection = auxheatConfig.data.time_selection;
     const timeSelectOptions = auxheatConfig.data.time_selection_options;
-
     const service = auxheatConfig.service;
-    const titleTimeSelection = this.localize('card.serviceData.labelTimeSelection', this.selectedLanguage);
+
     const timeSelectEl = html`
       <div class="items-row">
-        <div>${titleTimeSelection}</div>
+        <div>${auxheatConfig.data.selection_time.label}</div>
         <ha-select
           .value=${String(selectedTimeSelection)}
           @change=${(e: Event) => this.handleAuxheatChange('time_selection', '', e)}
@@ -422,8 +446,7 @@ export class RemoteControl extends LitElement {
           <ha-icon icon=${icon}></ha-icon><span>${stateDisplay}</span>
         </div>
         <div class="control-btn-sm click-shrink" @click=${this.lockMoreInfo}>
-          <ha-icon icon="mdi:information"></ha-icon
-          ><span>${this.localize('card.serviceData.labelMoreInfo', this.selectedLanguage)}</span>
+          <ha-icon icon="mdi:information"></ha-icon><span>${this.localize('card.serviceData.labelMoreInfo')}</span>
         </div>
       </div>
     `;
@@ -649,5 +672,11 @@ export class RemoteControl extends LitElement {
     setTimeout(() => {
       toast.classList.remove('show');
     }, 3000);
+  }
+}
+
+declare global {
+  interface Window {
+    RemoteControl: RemoteControl;
   }
 }
