@@ -26,8 +26,8 @@ import {
   ButtonConfigItem,
 } from './types';
 
-import * as DataKeys from './const/data-keys';
 import * as StateMapping from './const/state-mapping';
+import * as DataKeys from './const/data-keys';
 
 import { AttributeType, SubcardVisibilityProperties, cardTypes } from './const/data-keys';
 // Styles and Assets
@@ -126,9 +126,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   }
 
   private configureCustomCards(): void {
-    const lang = this.selectedLanguage;
-
-    for (const cardType of cardTypes(lang)) {
+    for (const cardType of cardTypes(this.selectedLanguage)) {
       if (this.config[cardType.config]) {
         this.createCards(this.config[cardType.config], cardType.type);
       }
@@ -197,7 +195,6 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
   public getLayoutOptions() {
     const gridRowSize = this.getGridRowSize();
-    console.log('sections', gridRowSize);
     return {
       grid_min_rows: gridRowSize,
       grid_columns: 4,
@@ -333,14 +330,11 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     if (_changedProps.has('config') && this.config.selected_theme?.theme !== 'default') {
       this.applyTheme(this.config.selected_theme.theme);
     }
+
     if (_changedProps.has('_hass') && !this.isCustomCardEditing) {
       this._updateHassOnCards();
     }
 
-    if (_changedProps.has('isCustomCardEditing') && this.isCustomCardEditing === true) {
-      console.log('isCustomCardEditing', this.isCustomCardEditing);
-      return false;
-    }
     return hasConfigOrEntityChanged(this, _changedProps, false);
   }
 
@@ -1498,7 +1492,8 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       this.activeCardType = null;
       this.showCustomBtnEditor(btnType);
     } else {
-      this.activeCardType = cardType;
+      const isAlreadyActive = this.activeCardType === cardType;
+      !isAlreadyActive ? (this.activeCardType = cardType) : (this.activeCardType = cardType);
       this.isCustomCardEditing = true;
     }
   }

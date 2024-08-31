@@ -43,6 +43,7 @@ export const serviceData = (lang: string) => ({
         time_2: { label: localize('card.serviceData.labelTime2', lang), value: 0, hour: '00', minute: '00' },
         time_3: { label: localize('card.serviceData.labelTime3', lang), value: 0, hour: '00', minute: '00' },
       },
+      selection_time: { label: localize('card.serviceData.labelSelectionTime', lang) },
     },
   },
 
@@ -71,6 +72,7 @@ export const serviceData = (lang: string) => ({
     },
     data: {
       time: { label: localize('card.serviceData.labelDepartureTime', lang), value: 0, hour: '00', minute: '00' },
+      departure_time: { label: localize('card.serviceData.labelDepartureTime', lang) },
     },
   },
 
@@ -87,13 +89,13 @@ export const serviceData = (lang: string) => ({
         'battery_max_soc_configure',
         'mdi:battery-charging-high',
         'serviceData.labelSetMaxSoc',
-        lang,
+        lang
       ),
       DATA_CHARGE_PROGRAM: createService(
         'charge_program_configure',
         'mdi:ev-station',
         'serviceData.labelSetProgram',
-        lang,
+        lang
       ),
     },
     data: {
@@ -104,6 +106,7 @@ export const serviceData = (lang: string) => ({
         3: 'WORK',
       },
       max_soc: { label: localize('card.serviceData.labelMaxStateOfCharge', lang), value: 50 },
+      program_select: { label: localize('card.serviceData.labelChargeProgram', lang) },
     },
   },
 
