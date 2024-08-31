@@ -1,8 +1,5 @@
 import { LitElement, html, css, TemplateResult, PropertyValues, CSSResultGroup } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
-
-import { HomeAssistantExtended as HomeAssistant } from '../types';
-import { VehicleCardConfig } from '../types';
+import { customElement, state } from 'lit/decorators.js';
 
 import L from 'leaflet';
 import 'leaflet-providers/leaflet-providers.js';
@@ -154,6 +151,7 @@ export class VehicleMap extends LitElement {
   }
 
   firstUpdated(): void {
+    console.log('firstUpdated map');
     this.updateCSSVariables();
     this.setEntityAttribute();
   }
