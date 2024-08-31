@@ -1,10 +1,9 @@
 import { LitElement, css, html, TemplateResult, PropertyValues } from 'lit';
-import { customElement, property, state } from 'lit/decorators';
+import { customElement, state } from 'lit/decorators';
 import Swiper from 'swiper';
 import { Pagination } from 'swiper/modules';
 import swipercss from '../css/swiper-bundle.css';
 import { VehicleCardConfig } from '../types';
-import _ from 'lodash';
 
 @customElement('header-slide')
 export class HeaderSlide extends LitElement {
