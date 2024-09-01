@@ -1209,9 +1209,9 @@ export class VehicleCard extends LitElement implements LovelaceCard {
         break;
 
       case 'doorStatusOverall':
-        const doorValue = this.getEntityAttribute(this.vehicleEntities.lockSensor?.entity_id, 'doorStatusOverall');
-        newState = StateMapping.doorStatus(lang)[doorValue] || 'Unknown';
-        activeState = doorValue === '1' ? true : false;
+        const doorStatus = this.getDoorStatusInfo();
+        newState = doorStatus.state;
+        activeState = doorStatus.active;
         break;
 
       case 'drivenTimeReset':
@@ -1285,6 +1285,38 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       ...defaultInfo,
       state: entityState,
       active: parkBrakeState,
+    };
+  };
+
+  private getDoorStatusInfo = (): { state: string; active: boolean } => {
+    let doorStatusOverall: string;
+    const lang = this.selectedLanguage;
+    const doorState = this.getEntityAttribute(this.vehicleEntities.lockSensor?.entity_id, 'doorStatusOverall');
+    const chargeFlapDCStatus = this.getEntityState(this.vehicleEntities.chargeFlapDCStatus?.entity_id);
+
+    if (doorState === '0' && chargeFlapDCStatus === '1') {
+      doorStatusOverall = this.localize('card.common.stateClosed');
+    } else {
+      const doorAttributeStates: Record<string, any> = {};
+      Object.keys(StateMapping.doorAttributes(lang)).forEach((attribute) => {
+        if (attribute === 'chargeflapdcstatus' && this.vehicleEntities.chargeFlapDCStatus?.entity_id !== undefined) {
+          doorAttributeStates[attribute] = this.getEntityState(this.vehicleEntities.chargeFlapDCStatus.entity_id);
+        } else {
+          doorAttributeStates[attribute] = this.getEntityAttribute(
+            this.vehicleEntities.lockSensor.entity_id,
+            attribute
+          );
+        }
+      });
+      const openDoors = Object.keys(doorAttributeStates).filter(
+        (attribute) => doorAttributeStates[attribute] === '0' || doorAttributeStates[attribute] === true
+      ).length;
+      doorStatusOverall = `${openDoors} ${this.localize('card.common.stateOpen')}`;
+    }
+
+    return {
+      state: doorStatusOverall,
+      active: doorState === '0' && chargeFlapDCStatus === '1' ? true : false,
     };
   };
 
@@ -1459,6 +1491,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
         return false;
     }
   }
+
   private applyMarquee() {
     this.updateComplete.then(() => {
       const items = this.shadowRoot?.querySelectorAll('.primary') as NodeListOf<HTMLElement>;
