@@ -43,7 +43,7 @@ export const serviceData = (lang: string) => ({
         time_2: { label: localize('card.serviceData.labelTime2', lang), value: 0, hour: '00', minute: '00' },
         time_3: { label: localize('card.serviceData.labelTime3', lang), value: 0, hour: '00', minute: '00' },
       },
-      selection_time: { label: localize('card.serviceData.labelSelectionTime', lang) },
+      selection_time: { label: localize('card.serviceData.labelTimeSelection', lang) },
     },
   },
 
