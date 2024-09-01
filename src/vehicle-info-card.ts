@@ -1482,6 +1482,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
   /* ----------------------------- EVENTS HANDLERS ---------------------------- */
   private _editorEventsHandler(e: Event): void {
+    e.stopPropagation();
     if (!this.isEditorPreview) return;
     const cardType = (e as CustomEvent).detail;
     if (cardType === 'customClose') {
@@ -1500,10 +1501,18 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
   private showCustomBtnEditor(btnType: string): void {
     this.updateComplete.then(() => {
+      const gridBtns = this.shadowRoot?.querySelectorAll('.grid-item') as NodeListOf<HTMLElement>;
       const btnElt = this.shadowRoot?.getElementById(btnType) as HTMLElement;
+      const filteredBtns = Array.from(gridBtns).filter((btn) => btn.id !== btnType);
       if (!btnElt) return;
+      filteredBtns.forEach((btn) => {
+        btn.style.opacity = '0.2';
+      });
       btnElt.classList.add('redGlows');
       setTimeout(() => {
+        filteredBtns.forEach((btn) => {
+          btn.style.opacity = '';
+        });
         btnElt.classList.remove('redGlows');
       }, 5000);
     });
