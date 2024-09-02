@@ -65,7 +65,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   @property({ type: Boolean }) public editMode = false;
   @property({ type: Boolean }) loading = true;
   @property({ type: Boolean }) isBtnPreview = false;
-  @property({ type: Boolean }) isCustomCardEditing = false;
+  @property({ type: Boolean }) isCardPreview = false;
 
   @state() private additionalCards: { [key: string]: any[] } = {};
   @state() private customButtons: { [key: string]: any } = {};
@@ -74,7 +74,6 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
   @state() private vehicleEntities: VehicleEntities = {};
   @state() private activeCardType: string | null = null;
-  @state() private activeBtnType: string | null = null;
   @state() private ecoScoresVisible!: boolean;
   @state() private lockAttributesVisible!: boolean;
   @state() private windowAttributesVisible!: boolean;
@@ -94,7 +93,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
   constructor() {
     super();
-    this._editorEventsHandler = this._editorEventsHandler.bind(this);
+    this.handleEditorEvents = this.handleEditorEvents.bind(this);
     SubcardVisibilityProperties.forEach((prop) => {
       (this as any)[prop] = false;
     });
@@ -152,6 +151,14 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       };
       this.createCards([haMapConfig], 'mapDialog');
     }
+
+    if (this.config.card_preview !== undefined && this.config.card_preview !== null) {
+      this.createCards(this.config.card_preview, 'cardPreview');
+      this.isCardPreview = true;
+      this.requestUpdate();
+    } else {
+      this.isCardPreview = false;
+    }
   }
 
   private async createCards(cardConfigs: LovelaceCardConfig[], stateProperty: string): Promise<void> {
@@ -170,7 +177,6 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   }
 
   private async configureAsync(): Promise<void> {
-    console.log('configureAsync');
     if (this.config.selected_language && this.config.selected_language === 'system') {
       this.selectedLanguage = this._hass.language;
     } else {
@@ -276,7 +282,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
   connectedCallback(): void {
     super.connectedCallback();
-    window.addEventListener('editor-event', this._editorEventsHandler);
+    window.addEventListener('editor-event', this.handleEditorEvents);
     if (process.env.ROLLUP_WATCH === 'true') {
       window.BenzCard = this;
     }
@@ -294,7 +300,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     if (process.env.ROLLUP_WATCH === 'true' && window.BenzCard === this) {
       window.BenzCard = undefined;
     }
-    window.removeEventListener('editor-event', this._editorEventsHandler);
+    window.removeEventListener('editor-event', this.handleEditorEvents);
     super.disconnectedCallback();
   }
 
@@ -346,6 +352,11 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       this._loadTemplateValues();
       return true;
     }
+    if (_changedProps.has('config') && this.isCardPreview) {
+      this.configureCustomCards();
+      return true;
+    }
+
     if (
       (_changedProps.has('_hass') || _changedProps.has('activeCardType')) &&
       this.activeCardType &&
@@ -410,6 +421,10 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       return this._renderBtnPreview(this._previewTemplateValues as ButtonConfigItem);
     }
 
+    if (this.isCardPreview) {
+      return this._renderCardPreview(this.additionalCards['cardPreview']);
+    }
+
     const name = this.config.name || '';
     return html`
       <ha-card class="${this.computeClasses()} main-card">
@@ -437,7 +452,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   private _renderBtnPreview(btn: ButtonConfigItem): TemplateResult {
     const { primary, icon, secondary, notify } = btn;
     return html`
-      <ha-card class="button-preview-card">
+      <ha-card class="preview-card">
         <div class="grid-item">
           <div class="item-icon">
             <div class="icon-background"><ha-icon .icon="${icon}"></ha-icon></div>
@@ -452,6 +467,10 @@ export class VehicleCard extends LitElement implements LovelaceCard {
         </div>
       </ha-card>
     `;
+  }
+
+  private _renderCardPreview(cards: LovelaceCard[]): TemplateResult {
+    return html` <ha-card class="preview-card">${cards} </ha-card> `;
   }
 
   private _renderHeaderBackground(): TemplateResult {
@@ -651,15 +670,6 @@ export class VehicleCard extends LitElement implements LovelaceCard {
         ></vehicle-map>
       </div>
     `;
-  }
-
-  private getDeviceTrackerLatLong(): { lat: number; lon: number } | undefined {
-    if (!this.config.device_tracker) return;
-    const deviceTracker = this._hass.states[this.config.device_tracker];
-    if (!deviceTracker) return;
-    const lat = deviceTracker.attributes.latitude;
-    const lon = deviceTracker.attributes.longitude;
-    return { lat, lon };
   }
 
   private _renderEcoChart(): TemplateResult {
@@ -1481,6 +1491,15 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
   /* --------------------- GET ENTITY STATE AND ATTRIBUTES -------------------- */
 
+  private getDeviceTrackerLatLong = (): { lat: number; lon: number } | undefined => {
+    if (!this.config.device_tracker) return;
+    const deviceTracker = this._hass.states[this.config.device_tracker];
+    if (!deviceTracker) return;
+    const lat = deviceTracker.attributes.latitude;
+    const lon = deviceTracker.attributes.longitude;
+    return { lat, lon };
+  };
+
   private getStateDisplay(entityId: string | undefined): string {
     if (!entityId || !this._hass.states[entityId]) return '';
     return this._hass.formatEntityState(this._hass.states[entityId]);
@@ -1589,34 +1608,36 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
   /* ----------------------------- EVENTS HANDLERS ---------------------------- */
 
-  private _editorEventsHandler(e: Event): void {
+  private handleEditorEvents(e: Event): void {
     e.stopPropagation();
     if (!this.isEditorPreview) return;
     const cardType = (e as CustomEvent).detail;
     if (cardType === 'customClose') {
       console.log('customClose');
-      this.isCustomCardEditing = false;
+      this.isCardPreview = false;
       this.isBtnPreview = false;
-      this.activeBtnType = null;
-    } else if (cardType.includes('editor_')) {
-      this.isCustomCardEditing = true;
-      const customType = cardType.replace('editor_', '');
-      console.log('custom editing', customType);
     } else if (cardType.includes('btn_')) {
       const btnType = cardType.replace('btn_', '');
       this.isBtnPreview = false;
       this.updateComplete.then(() => {
         this.showCustomBtnEditor(btnType);
       });
-    } else if (cardType.includes('toggle_preview')) {
+    } else if (cardType.includes('toggle_card_')) {
+      const card = cardType.replace('toggle_card_', '');
+      this.isCardPreview = false;
+      this.updateComplete.then(() => {
+        this.activeCardType = card;
+      });
+    } else if (cardType === 'toggle_preview') {
       this.isBtnPreview = true;
-    } else if (cardType.includes('close_preview')) {
+    } else if (cardType === 'close_preview') {
       this.isBtnPreview = false;
       this.requestUpdate();
-    } else {
-      const isAlreadyActive = this.activeCardType === cardType;
-      !isAlreadyActive ? (this.activeCardType = cardType) : (this.activeCardType = cardType);
-      this.isCustomCardEditing = true;
+    } else if (cardType === 'show_card_preview') {
+      this.isCardPreview = true;
+    } else if (cardType === 'close_card_preview') {
+      this.isCardPreview = false;
+      this.requestUpdate();
     }
   }
 
