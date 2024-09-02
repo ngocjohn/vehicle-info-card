@@ -44,7 +44,7 @@ import { localize } from './localize/localize';
 import { formatTimestamp, convertMinutes } from './utils/helpers';
 import {
   setupCardListeners,
-  getVehicleEntities,
+  handleCardFirstUpdated,
   getTemplateValue,
   getBooleanTemplate,
   defaultConfig,
@@ -64,8 +64,8 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   @property({ type: Object }) private config!: VehicleCardConfig;
   @property({ type: Boolean }) public editMode = false;
   @property({ type: Boolean }) loading = true;
-  @property({ type: Boolean }) isBtnPreview = false;
-  @property({ type: Boolean }) isCardPreview = false;
+  @property({ type: Boolean }) isBtnPreview!: boolean;
+  @property({ type: Boolean }) isCardPreview!: boolean;
 
   @state() private additionalCards: { [key: string]: any[] } = {};
   @state() private customButtons: { [key: string]: any } = {};
@@ -119,12 +119,12 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     };
   }
 
-  protected firstUpdated(_changedProperties: PropertyValues): void {
+  protected async firstUpdated(_changedProperties: PropertyValues): Promise<void> {
     super.firstUpdated(_changedProperties);
-    this.configureAsync();
+    await handleCardFirstUpdated(this, _changedProperties);
     this.configureCustomCards();
     this._loadTemplateValues();
-    if (this.config.btn_preview) {
+    if (this.config.btn_preview !== undefined && this.config.btn_preview !== null) {
       this._loadPreviewTemplateValues();
     }
   }
@@ -176,42 +176,6 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       );
       this.additionalCards[stateProperty] = cards;
     }
-    this.requestUpdate();
-  }
-
-  private async configureAsync(): Promise<void> {
-    if (this.config.selected_language && this.config.selected_language === 'system') {
-      this.selectedLanguage = this._hass.language;
-    } else {
-      this.selectedLanguage = this.config.selected_language || 'en';
-    }
-    if (this.config.entity) {
-      this.vehicleEntities = await getVehicleEntities(this._hass, this.config);
-    }
-  }
-
-  private getGridRowSize(): number {
-    const { show_slides, show_map, show_buttons } = this.config;
-
-    let gridRowSize = 2;
-    if (show_slides) gridRowSize += 2;
-    if (show_map) gridRowSize += 2;
-    if (show_buttons) gridRowSize += 2;
-    return gridRowSize;
-  }
-
-  public getCardSize() {
-    // console.log('mansory', this.getGridRowSize());
-    return 3;
-  }
-
-  public getLayoutOptions() {
-    const gridRowSize = this.getGridRowSize();
-    return {
-      grid_min_rows: gridRowSize,
-      grid_columns: 4,
-      grid_min_columns: 4,
-    };
   }
 
   private localize = (string: string, search = '', replace = ''): string => {
@@ -248,7 +212,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     for (const cardType of cardTypes(this.selectedLanguage)) {
       const customBtn = this.customButtons[cardType.type];
       if (customBtn && customBtn.secondary) {
-        if (customBtn.secondary.includes('{{ ')) {
+        if (customBtn.secondary.includes('{{')) {
           templateValues[cardType.type] = await getTemplateValue(this._hass, customBtn.secondary);
         } else {
           templateValues[cardType.type] = customBtn.secondary;
@@ -285,8 +249,6 @@ export class VehicleCard extends LitElement implements LovelaceCard {
           this._previewTemplateValues = {};
           this.isBtnPreview = false;
         }
-
-        this.requestUpdate();
       }
     } else {
       this.isBtnPreview = false;
@@ -330,6 +292,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   protected updated(changedProps: PropertyValues): void {
     super.updated(changedProps);
     // Log all changed properties for debugging
+
     if (
       changedProps.has('activeCardType') &&
       this.activeCardType !== 'mapDialog' &&
@@ -1693,8 +1656,32 @@ export class VehicleCard extends LitElement implements LovelaceCard {
           btn.style.opacity = '';
         });
         btnElt.classList.remove('redGlows');
-      }, 5000);
+      }, 3000);
     });
+  }
+
+  private getGridRowSize(): number {
+    const { show_slides, show_map, show_buttons } = this.config;
+
+    let gridRowSize = 2;
+    if (show_slides) gridRowSize += 2;
+    if (show_map) gridRowSize += 2;
+    if (show_buttons) gridRowSize += 2;
+    return gridRowSize;
+  }
+
+  public getCardSize() {
+    // console.log('mansory', this.getGridRowSize());
+    return 3;
+  }
+
+  public getLayoutOptions() {
+    const gridRowSize = this.getGridRowSize();
+    return {
+      grid_min_rows: gridRowSize,
+      grid_columns: 4,
+      grid_min_columns: 4,
+    };
   }
 }
 
