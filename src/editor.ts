@@ -335,7 +335,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       <div class="cards-buttons">
         ${this.baseCardTypes.map(
           (card) => html`
-            <ha-button @click=${() => (this._activeSubcardType = card.type)}>
+            <ha-button class="custom-btn" @click=${() => (this._activeSubcardType = card.type)}>
               <ha-icon icon=${card.icon}></ha-icon> ${card.name}</ha-button
             >
           `

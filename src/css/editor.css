@@ -52,8 +52,18 @@ h3 {
 
 .cards-buttons {
   display: flex;
-  justify-content: space-around;
-  flex-direction: column;
+  justify-content: space-between;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: stretch;
+  align-content: stretch;
+  gap: 8px 0px;
+}
+
+ha-button.custom-btn {
+  display: inline-flex;
+  width: 50%;
+  height: 100%;
 }
 
 .image-config {
