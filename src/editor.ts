@@ -7,7 +7,7 @@ import Sortable from 'sortablejs';
 
 // Custom card helpers
 import { fireEvent, LovelaceCardEditor } from 'custom-card-helpers';
-import { debounce, toMerged } from 'es-toolkit';
+import { debounce } from 'es-toolkit';
 
 // Local types
 import {
@@ -30,17 +30,6 @@ import { loadHaComponents } from './utils/loader';
 import { compareVersions } from './utils/helpers';
 
 import editorcss from './css/editor.css';
-
-const select = {
-  name: 'Select Multiple',
-  selector: {
-    select: {
-      multiple: true,
-      custom_value: true,
-      options: ['Option 1', 'Option 2', 'Option 3', 'Option 4', 'Option 5', 'Option 6'],
-    },
-  },
-};
 
 @customElement('vehicle-info-card-editor')
 export class VehicleCardEditor extends LitElement implements LovelaceCardEditor {
@@ -228,7 +217,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _renderCustomButtonTemplate(card: CardTypeConfig): TemplateResult {
-    const { button, type } = card;
+    const { button } = card;
 
     const primaryCfgValue = this._customBtns[button].primary;
     const secondaryCfgValue = this._customBtns[button].secondary;

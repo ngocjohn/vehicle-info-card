@@ -1,6 +1,6 @@
 {
   "name": "vehicle-info-card",
-  "version": "1.2.0",
+  "version": "1.3.0-beta_1",
   "description": "Lovelace custom card for displaying vehicle information from Mercedes Component integration",
   "keywords": [
     "home-assistant",
