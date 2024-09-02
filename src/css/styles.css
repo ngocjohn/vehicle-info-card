@@ -20,6 +20,11 @@ ha-card {
   background-color: var(--card-background-color);
 }
 
+ha-card.preview-card {
+  padding: 0;
+  border: none;
+}
+
 .fade-in {
   animation: fadeIn 0.5s ease-in;
 }

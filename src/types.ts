@@ -70,7 +70,7 @@ export type ButtonConfigItem = {
   primary: string;
   secondary: string;
   icon: string;
-  notify: boolean;
+  notify: string;
 };
 
 export interface CustomButtons {
@@ -89,6 +89,8 @@ export interface CustomCards extends VehicleCardConfig {
   trip_card?: LovelaceCardConfig[];
   eco_card?: LovelaceCardConfig[];
   tyre_card?: LovelaceCardConfig[];
+}
+export interface CustomButtonsConfig extends VehicleCardConfig {
   eco_button?: ButtonConfigItem[];
   trip_button?: ButtonConfigItem[];
   vehicle_button?: ButtonConfigItem[];
