@@ -124,6 +124,9 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     this.configureAsync();
     this.configureCustomCards();
     this._loadTemplateValues();
+    if (this.config.btn_preview) {
+      this._loadPreviewTemplateValues();
+    }
   }
 
   private configureCustomCards(): void {
@@ -257,20 +260,35 @@ export class VehicleCard extends LitElement implements LovelaceCard {
         this.customNotify = customNotify;
       }
     }
-    if (this.config.btn_preview !== undefined) {
+  }
+
+  private async _loadPreviewTemplateValues(): Promise<void> {
+    if (this.config.btn_preview !== undefined && this.config.btn_preview !== null) {
       const btn = this.config.btn_preview;
       if (btn) {
-        this._previewTemplateValues = {
-          primary: btn.primary,
-          icon: btn.icon,
-          secondary: await getTemplateValue(this._hass, btn.secondary),
-          notify: await getBooleanTemplate(this._hass, btn.notify),
-        };
-        this.isBtnPreview = true;
+        try {
+          const [secondary, notify] = await Promise.all([
+            getTemplateValue(this._hass, btn.secondary),
+            getBooleanTemplate(this._hass, btn.notify),
+          ]);
+
+          this._previewTemplateValues = {
+            primary: btn.primary,
+            icon: btn.icon,
+            secondary: secondary,
+            notify: notify,
+          };
+
+          this.isBtnPreview = true;
+        } catch (error) {
+          console.error('Error processing templates: ', error);
+          this._previewTemplateValues = {};
+          this.isBtnPreview = false;
+        }
+
         this.requestUpdate();
       }
     } else {
-      this._previewTemplateValues = {};
       this.isBtnPreview = false;
     }
   }
@@ -349,7 +367,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       this.applyTheme(this.config.selected_theme.theme);
     }
     if (_changedProps.has('config') && this.isBtnPreview) {
-      this._loadTemplateValues();
+      this._loadPreviewTemplateValues();
       return true;
     }
     if (_changedProps.has('config') && this.isCardPreview) {
@@ -1611,33 +1629,52 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   private handleEditorEvents(e: Event): void {
     e.stopPropagation();
     if (!this.isEditorPreview) return;
-    const cardType = (e as CustomEvent).detail;
-    if (cardType === 'customClose') {
-      console.log('customClose');
-      this.isCardPreview = false;
-      this.isBtnPreview = false;
-    } else if (cardType.includes('btn_')) {
-      const btnType = cardType.replace('btn_', '');
-      this.isBtnPreview = false;
-      this.updateComplete.then(() => {
-        this.showCustomBtnEditor(btnType);
-      });
-    } else if (cardType.includes('toggle_card_')) {
-      const card = cardType.replace('toggle_card_', '');
-      this.isCardPreview = false;
-      this.updateComplete.then(() => {
-        this.activeCardType = card;
-      });
-    } else if (cardType === 'toggle_preview') {
-      this.isBtnPreview = true;
-    } else if (cardType === 'close_preview') {
-      this.isBtnPreview = false;
-      this.requestUpdate();
-    } else if (cardType === 'show_card_preview') {
-      this.isCardPreview = true;
-    } else if (cardType === 'close_card_preview') {
-      this.isCardPreview = false;
-      this.requestUpdate();
+
+    const actionType = (e as CustomEvent).detail;
+
+    switch (true) {
+      case actionType === 'customClose':
+        console.log('customClose');
+        this.isCardPreview = false;
+        this.isBtnPreview = false;
+        break;
+
+      case actionType.startsWith('btn_'):
+        const btnType = actionType.replace('btn_', '');
+        this.isBtnPreview = false;
+        this.updateComplete.then(() => {
+          this.showCustomBtnEditor(btnType);
+        });
+        break;
+
+      case actionType.startsWith('toggle_card_'):
+        const card = actionType.replace('toggle_card_', '');
+        this.isCardPreview = false;
+        this.updateComplete.then(() => {
+          this.activeCardType = card;
+        });
+        break;
+
+      case actionType === 'toggle_preview':
+        this.isBtnPreview = true;
+        break;
+
+      case actionType === 'close_preview':
+        this.isBtnPreview = false;
+        this.requestUpdate();
+        break;
+
+      case actionType === 'show_card_preview':
+        this.isCardPreview = true;
+        break;
+
+      case actionType === 'close_card_preview':
+        this.isCardPreview = false;
+        this.requestUpdate();
+        break;
+
+      default:
+        break;
     }
   }
 

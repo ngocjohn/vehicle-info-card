@@ -232,13 +232,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
             @change=${this._customBtnChanged}
           ></ha-checkbox>
         </ha-formfield>
-        <ha-button
-          @click=${() => {
-            this._dispatchCardEvent(`btn_${type}`);
-            this._closePreview();
-          }}
-          >Show Button</ha-button
-        >
+        <ha-button @click=${() => this._toggleShowButton(card)}>Show Button</ha-button>
         ${!this._btnPreview
           ? html`<ha-button
               @click=${() => {
@@ -248,7 +242,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
             >`
           : html`<ha-button
               @click=${() => {
-                this._closePreview();
+                this._closePreview(button);
               }}
               >Close Preview</ha-button
             >`}
@@ -282,16 +276,18 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       <div class="template-ui">
         <p>${label}</p>
         <ha-code-editor
-          mode="jinja2"
+          .mode=${'jinja2'}
           .hass=${this.hass}
+          .dir=${'ltr'}
           .value=${value}
           .configValue=${configValue}
           .configBtnType=${button}
           .readOnly=${!useDefault}
-          @value-changed=${this._customBtnChanged}
+          @value-changed=${(ev: any) => this._customBtnChanged(ev)}
           .linewrap=${false}
-          .autofocus=${false}
+          .autofocus=${true}
           .autocompleteEntities=${true}
+          .autocompleteIcons=${true}
         ></ha-code-editor>
         <ha-input-helper-text>${helper}</ha-input-helper-text>
       </div>
@@ -928,7 +924,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       ...this._config,
       ...updates,
     };
-    fireEvent(this, 'config-changed', { config: this._config });
+    this.configChanged();
   }
 
   private _customCardChange(ev: any): void {
@@ -1126,7 +1122,9 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     }, 100);
   }
 
-  private _closePreview(): void {
+  private _closePreview(button: string): void {
+    const changedBtn = this._config.btn_preview;
+    this._customBtns[button] = changedBtn;
     this._config = {
       ...this._config,
       btn_preview: null,
@@ -1138,23 +1136,28 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     }, 100);
   }
 
-  private _toggleShowCard(card: CardTypeConfig): void {
-    this.updateComplete.then(() => {
-      this._dispatchCardEvent(`toggle_card_${card.type}`);
-    });
+  private _toggleShowButton(card: CardTypeConfig): void {
+    if (this._btnPreview) {
+      this._closePreview(card.button);
+      setTimeout(() => {
+        this._dispatchCardEvent(`btn_${card.type}`);
+      }, 100);
+    } else {
+      this._dispatchCardEvent(`btn_${card.type}`);
+    }
   }
 
   private _closeSubCardEditor(card: CardTypeConfig): void {
     this._activeSubcardType = null;
-    this._btnPreview ? this._closePreview() : this._cardPreview ? this._closeCardPreview(card.config) : null;
-    console.log('Closing sub-card editor:', card.name, card.config);
+    this._btnPreview ? this._closePreview(card.button) : this._cardPreview ? this._closeCardPreview(card.config) : null;
+    // console.log('Closing sub-card editor:', card.name, card.config);
   }
   private _dispatchCardEvent(cardType: string): void {
     // Dispatch the custom event with the cardType name
     const detail = cardType;
     const ev = new CustomEvent('editor-event', { detail, bubbles: true, composed: true });
     this.dispatchEvent(ev);
-    console.log('Dispatched custom event:', cardType);
+    // console.log('Dispatched custom event:', cardType);
   }
 
   static get styles(): CSSResultGroup {
