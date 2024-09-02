@@ -297,6 +297,18 @@ export async function handleFirstUpdated(
   }
 }
 
+export async function handleCardFirstUpdated(
+  component: any, // Replace 'any' with the correct type for your component if available
+  _changedProperties: PropertyValues
+): Promise<void> {
+  component.vehicleEntities = await getVehicleEntities(component._hass as HomeAssistant, component.config);
+  if (component.config.selected_language === 'system') {
+    component.selectedLanguage = component._hass.language;
+  } else {
+    component.selectedLanguage = component.config.selected_language;
+  }
+}
+
 // Default configuration for the Vehicle Card.
 
 export const defaultConfig: Partial<VehicleCardConfig> = {
