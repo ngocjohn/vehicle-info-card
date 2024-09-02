@@ -7,6 +7,7 @@ import Sortable from 'sortablejs';
 
 // Custom card helpers
 import { fireEvent, LovelaceCardEditor } from 'custom-card-helpers';
+import { debounce, toMerged } from 'es-toolkit';
 
 // Local types
 import {
@@ -24,11 +25,22 @@ import { cardTypes } from './const/data-keys';
 import { editorShowOpts } from './const/data-keys';
 import { CARD_VERSION } from './const/const';
 import { languageOptions, localize } from './localize/localize';
-import { uploadImage, handleFirstUpdated, deepMerge, defaultConfig } from './utils/ha-helpers';
+import { uploadImage, handleFirstUpdated, defaultConfig, deepMerge } from './utils/ha-helpers';
 import { loadHaComponents } from './utils/loader';
 import { compareVersions } from './utils/helpers';
 
 import editorcss from './css/editor.css';
+
+const select = {
+  name: 'Select Multiple',
+  selector: {
+    select: {
+      multiple: true,
+      custom_value: true,
+      options: ['Option 1', 'Option 2', 'Option 3', 'Option 4', 'Option 5', 'Option 6'],
+    },
+  },
+};
 
 @customElement('vehicle-info-card-editor')
 export class VehicleCardEditor extends LitElement implements LovelaceCardEditor {
@@ -44,7 +56,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   @state() private _selectedLanguage: string = 'system';
 
   @state() private _latestRelease: string = '';
-  private _sortable: Sortable | null = null;
+  _sortable: Sortable | null = null;
   private _selectedItems: Set<string> = new Set();
 
   connectedCallback() {
@@ -72,6 +84,8 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       }
     }
   }
+
+  private _debouncedCustomBtnChanged = debounce(this.configChanged.bind(this), 700);
 
   private localize = (string: string, search = '', replace = ''): string => {
     return localize(string, this._selectedLanguage, search, replace);
@@ -283,7 +297,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           .configValue=${configValue}
           .configBtnType=${button}
           .readOnly=${!useDefault}
-          @value-changed=${(ev: any) => this._customBtnChanged(ev)}
+          @value-changed=${this._customBtnChanged}
           .linewrap=${false}
           .autofocus=${true}
           .autocompleteEntities=${true}
@@ -612,24 +626,27 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private _renderServicesConfig(): TemplateResult {
     const infoAlert = this.localize('editor.common.infoServices');
-    const servicesConfig = html`
-      <ha-alert alert-type="info"> ${infoAlert} </ha-alert>
 
-      <div class="switches">
-        ${Object.entries(servicesCtrl(this._selectedLanguage)).map(
-          ([key, { name }]) => html`
-            <ha-formfield .label=${name}>
-              <ha-checkbox
-                .checked=${this._getServicesConfigValue(key as keyof Services)}
-                .configValue="${key}"
-                @change=${this._servicesValueChanged}
-              ></ha-checkbox>
-            </ha-formfield>
-          `
-        )}
+    // Get the current selected services based on the config
+    const selectedServices = Object.entries(this._config.services)
+      .filter(([, value]) => value === true)
+      .map(([key]) => key);
+
+    const selectorItems = this.getServicesOptions();
+    const servicesSelector = html`
+      <ha-alert alert-type="info">${infoAlert}</ha-alert>
+      <div class="selector-row">
+        <ha-selector
+          .hass=${this.hass}
+          .label=${'Select Services'}
+          .selector=${selectorItems.selector}
+          .value=${selectedServices}
+          .configValue=${'selected_services'}
+          @value-changed=${this._servicesValueChanged}
+        ></ha-selector>
       </div>
     `;
-    return this.panelTemplate('servicesConfig', 'servicesConfig', 'mdi:car-cog', servicesConfig);
+    return this.panelTemplate('servicesConfig', 'servicesConfig', 'mdi:car-cog', servicesSelector);
   }
 
   private _renderToast(): TemplateResult {
@@ -705,6 +722,41 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   /* --------------------- ADDITIONAL HANDLERS AND METHODS -------------------- */
+
+  private _servicesValueChanged(ev: CustomEvent): void {
+    const selectedServices = ev.detail.value;
+    const updatedServices = { ...this._config.services };
+
+    // Set each service to true or false based on the selection
+    Object.keys(updatedServices).forEach((service) => {
+      updatedServices[service] = selectedServices.includes(service);
+    });
+
+    // Update the config with the new services state
+    this._config = {
+      ...this._config,
+      services: updatedServices,
+    };
+
+    this.configChanged();
+  }
+
+  private getServicesOptions() {
+    const serviceOptions = Object.entries(servicesCtrl(this._selectedLanguage)).map(([key, { name }]) => ({
+      value: key,
+      label: name,
+    }));
+
+    return {
+      selector: {
+        select: {
+          multiple: true,
+          custom_value: false,
+          options: serviceOptions,
+        },
+      },
+    };
+  }
 
   private _handleSortEnd(evt: any) {
     const oldIndex = evt.oldIndex;
@@ -897,15 +949,14 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       toast.classList.add('hidden');
     }
   }
-
   private _customBtnChanged(ev: any): void {
-    ev.stopPropagation();
+    console.time('btnchanged');
 
+    // Access the custom event's details
     const target = ev.target;
     const configValue = target.configValue;
     const details = target.configBtnType;
-
-    const value = target?.checked !== undefined ? target.checked : target.value;
+    const value = target.checked !== undefined ? target.checked : target.value;
 
     if (this._config.btn_preview && this._btnPreview) {
       this._config = {
@@ -915,7 +966,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           [configValue]: value,
         },
       };
-      this.configChanged();
+      this._debouncedCustomBtnChanged();
     }
 
     const updates: Partial<VehicleCardConfig> = {};
@@ -924,7 +975,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       ...this._config,
       ...updates,
     };
-    this.configChanged();
+    this._debouncedCustomBtnChanged();
   }
 
   private _customCardChange(ev: any): void {
@@ -936,7 +987,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     try {
       parsedYaml = YAML.parse(value); // Parse YAML content
     } catch (e) {
-      console.error(`Parsing error for ${configKey}:`, e);
       return;
     }
 
@@ -954,38 +1004,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       ...this._config,
       ...updates,
     };
-    this.configChanged();
-  }
-
-  private _servicesValueChanged(ev: any): void {
-    ev.stopPropagation();
-    if (!this._config || !this.hass) {
-      return;
-    }
-
-    const target = ev.target;
-    const configValue = target.configValue;
-
-    let newValue: any = target.checked;
-    const updates: Partial<VehicleCardConfig> = {};
-
-    if (this._config.services[configValue] === target.checked) {
-      return;
-    }
-
-    newValue = target.checked;
-    updates.services = {
-      ...this._config.services,
-      [configValue]: newValue,
-    };
-
-    this._config = {
-      ...this._config,
-      ...updates,
-    };
-
-    console.log('Services config changed:', configValue, newValue);
-
     this.configChanged();
   }
 
@@ -1063,6 +1081,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private configChanged() {
     fireEvent(this, 'config-changed', { config: this._config });
+    console.timeEnd('btnchanged');
   }
 
   private _setCardPreview(cardType: string): void {
