@@ -251,16 +251,21 @@ export class VehicleCard extends LitElement implements LovelaceCard {
         this.customNotify = customNotify;
       }
     }
-    if (this.config.btn_preview) {
-      const btn = this.config.btn_preview as ButtonConfigItem;
-      this._previewTemplateValues = {
-        primary: btn.primary,
-        icon: btn.icon,
-        secondary: await getTemplateValue(this._hass, btn.secondary),
-        notify: await getBooleanTemplate(this._hass, btn.notify),
-      };
-      this.isBtnPreview = true;
-      this.requestUpdate();
+    if (this.config.btn_preview !== undefined) {
+      const btn = this.config.btn_preview;
+      if (btn) {
+        this._previewTemplateValues = {
+          primary: btn.primary,
+          icon: btn.icon,
+          secondary: await getTemplateValue(this._hass, btn.secondary),
+          notify: await getBooleanTemplate(this._hass, btn.notify),
+        };
+        this.isBtnPreview = true;
+        this.requestUpdate();
+      }
+    } else {
+      this._previewTemplateValues = {};
+      this.isBtnPreview = false;
     }
   }
 

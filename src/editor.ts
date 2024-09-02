@@ -144,8 +144,8 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         <ha-icon
           icon="mdi:arrow-left"
           @click=${() => {
+            this._closePreview();
             this._activeSubcardType = null;
-            this._dispatchCardEvent('customClose');
           }}
           style="cursor: pointer"
         ></ha-icon>
@@ -206,7 +206,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const secondaryCfgValue = this._customBtns[button].secondary;
     const notifyCfgValue = this._customBtns[button].notify;
     const iconCfgValue = this._customBtns[button].icon;
-    const useDefault = this._customBtns[button].enabled;
+    const useDefault = this._config[button]?.enabled;
 
     const useDefaultRadioBtn = html`
       <div class="sub-card-header">
@@ -221,7 +221,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         <ha-button
           @click=${() => {
             this._dispatchCardEvent(`btn_${type}`);
-            this._btnPreview = false;
+            this._closePreview();
           }}
           >Show Button</ha-button
         >
@@ -1065,17 +1065,19 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     this._btnPreview = true;
     setTimeout(() => {
       this._dispatchCardEvent('toggle_preview');
-    }, 250);
+    }, 100);
   }
 
   private _closePreview(): void {
-    this._btnPreview = false;
     this._config = {
       ...this._config,
       btn_preview: null,
     };
     this.configChanged();
-    this._dispatchCardEvent('toggle_preview');
+    this._btnPreview = false;
+    setTimeout(() => {
+      this._dispatchCardEvent('close_preview');
+    }, 100);
   }
 
   private _dispatchCardEvent(cardType: string): void {
