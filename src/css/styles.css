@@ -150,7 +150,7 @@ header h1 {
   justify-content: space-evenly;
   max-height: 0;
   opacity: 0;
-  transition: all 0.5s ease-in-out;
+  transition: all 400ms cubic-bezier(0.3, 0.0, 0.8, 0.15);
 }
 
 .info-box.charge.active {
@@ -543,7 +543,7 @@ header h1 {
   opacity: 1;
   padding-top: var(--vic-gutter-gap);
   max-height: 1000px;
-  transition: all 0.3s ease-in-out;
+  transition: all 400ms cubic-bezier(0.3, 0.0, 0.8, 0.15);
 }
 
 .default-card .data-box.hidden {
@@ -621,7 +621,7 @@ header h1 {
   padding-top: 0px !important;
   max-height: 0;
   opacity: 0;
-  transition: all 0.5s ease-in-out;
+  transition: all 400ms cubic-bezier(0.3, 0.0, 0.8, 0.15);
 }
 
 .sub-attributes.active {
@@ -733,7 +733,7 @@ dialog::backdrop {
   justify-content: center;
   gap: 0.5rem;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
-  transition: all 0.5s ease-in-out;
+  transition: all 400ms cubic-bezier(0.3, 0.0, 0.8, 0.15);
 }
 
 .tyre-value {

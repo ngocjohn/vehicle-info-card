@@ -15,7 +15,6 @@ import {
   VehicleCardConfig,
   VehicleImage,
   ShowOptions,
-  Services,
   CardTypeConfig,
   ButtonConfigItem,
 } from './types';
@@ -28,7 +27,6 @@ import { languageOptions, localize } from './localize/localize';
 import { uploadImage, handleFirstUpdated, defaultConfig, deepMerge } from './utils/ha-helpers';
 import { loadHaComponents } from './utils/loader';
 import { compareVersions } from './utils/helpers';
-
 import editorcss from './css/editor.css';
 
 @customElement('vehicle-info-card-editor')
@@ -79,10 +77,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   private localize = (string: string, search = '', replace = ''): string => {
     return localize(string, this._selectedLanguage, search, replace);
   };
-
-  private _getServicesConfigValue<K extends keyof Services>(key: K): boolean {
-    return this._config?.services[key] || false;
-  }
 
   private _getConfigShowValue<K extends keyof ShowOptions>(key: K): boolean {
     return this._config?.[key] || false;
@@ -158,11 +152,20 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         </div>
       </div>
     `;
+    const subCardTab = html`
+      <mwc-tab-bar>
+        ${this.baseCardTypes.map(
+          (card) => html`
+            <mwc-tab .label=${card.name} @click=${() => (this._activeSubcardType = card.type)}></mwc-tab>
+          `
+        )}
+      </mwc-tab-bar>
+    `;
 
     const buttonTemplate = this._renderCustomButtonTemplate(card);
     const editorWrapper = this._renderCustomCardEditor(card);
 
-    return html` <div class="sub-card-config">${subCardHeader}${buttonTemplate} ${editorWrapper}</div> `;
+    return html` <div class="sub-card-config">${subCardHeader}${subCardTab}${buttonTemplate} ${editorWrapper}</div> `;
   }
 
   private _renderCustomCardEditor(card: CardTypeConfig): TemplateResult {
@@ -241,7 +244,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
               @click=${() => {
                 this._setBtnPreview(button);
               }}
-              >Preview</ha-button
+              >${this.hass.localize('ui.panel.config.integrations.config_flow.preview') || 'Preview'}</ha-button
             >`
           : html`<ha-button
               @click=${() => {
@@ -511,7 +514,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const urlInput = html`
       <div class="custom-background-wrapper">
         <ha-button @click=${() => this.shadowRoot?.getElementById('file-upload-new')?.click()}>
-          Upload Image
+          ${this.hass.localize('ui.components.selectors.image.upload')}
         </ha-button>
 
         <input
@@ -523,7 +526,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           multiple
         />
         <ha-textfield
-          .label=${'Add URL'}
+          .label=${this.hass.localize('ui.components.selectors.image.url')}
           .configValue=${'new_image_url'}
           .value=${this._newImageUrl}
           @input=${this.toggleAddButton}
@@ -1048,10 +1051,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       };
       console.log('Selected theme changed:', key, newValue);
     } else if (configValue === 'selected_language') {
-      if (this._config.selected_language === 'system' && newValue === 'system') {
-        return;
-      }
-
       newValue === 'system' ? (this._selectedLanguage = this.hass.language) : (this._selectedLanguage = newValue);
       updates.selected_language = newValue;
     } else {
@@ -1060,11 +1059,10 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     }
 
     if (Object.keys(updates).length > 0) {
-      this._config = {
+      this._configChanged({
         ...this._config,
         ...updates,
-      };
-      this.configChanged();
+      });
     }
   }
 
@@ -1166,6 +1164,13 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const ev = new CustomEvent('editor-event', { detail, bubbles: true, composed: true });
     this.dispatchEvent(ev);
     // console.log('Dispatched custom event:', cardType);
+  }
+
+  private _configChanged(config: VehicleCardConfig) {
+    const detail = { config: config };
+    const event = new CustomEvent('config-changed', { detail, bubbles: true, composed: true });
+    this.dispatchEvent(event);
+    console.log('Config changed:', config);
   }
 
   static get styles(): CSSResultGroup {
