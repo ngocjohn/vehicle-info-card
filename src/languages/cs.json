@@ -19,7 +19,8 @@
             "titleRemoteControl": "Vzdálené ovládání",
             "titleServices": "Služby",
             "toastCommandSent": "Příkaz odeslán úspěšně!",
-            "toastImageError": "Chyba při nahrávání obrázku. Jsou povoleny pouze soubory PNG a JPEG."
+            "toastImageError": "Chyba při nahrávání obrázku. Jsou povoleny pouze soubory PNG a JPEG.",
+            "toastCardAlreadyExists": ""
         },
         "cardType": {
             "ecoCards": "Ukazatel ECO",

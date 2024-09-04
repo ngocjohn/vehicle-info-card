@@ -77,6 +77,17 @@ export interface CustomButtons {
   [key: string]: ButtonConfigItem[]; // Updated to store arrays of button items
 }
 
+export interface AddedCustomButtonCard {
+  [key: string]: {
+    cards: LovelaceCardConfig[];
+    button: ButtonConfigItem;
+  };
+}
+
+export interface AddedCards extends VehicleCardConfig {
+  added_cards: AddedCustomButtonCard[];
+}
+
 export interface UseCustomCards {
   vehicle_card: boolean;
   trip_card: boolean;

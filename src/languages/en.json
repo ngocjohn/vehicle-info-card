@@ -19,7 +19,8 @@
             "titleRemoteControl": "Remote control",
             "titleServices": "Services",
             "toastCommandSent": "Command sent sucess!",
-            "toastImageError": "Error uploading image. Only PNG and JPEG files are allowed."
+            "toastImageError": "Error uploading image. Only PNG and JPEG files are allowed.",
+            "toastCardAlreadyExists": "Card already exists"
         },
         "cardType": {
             "ecoCards": "Eco display",

@@ -19,7 +19,8 @@
             "titleRemoteControl": "Télécommande",
             "titleServices": "Services",
             "toastCommandSent": "Commande envoyée avec succès !",
-            "toastImageError": "Erreur lors du téléchargement de l'image. Seuls les fichiers PNG et JPEG sont autorisés."
+            "toastImageError": "Erreur lors du téléchargement de l'image. Seuls les fichiers PNG et JPEG sont autorisés.",
+            "toastCardAlreadyExists": ""
         },
         "cardType": {
             "ecoCards": "Affichage éco",

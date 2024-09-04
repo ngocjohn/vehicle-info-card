@@ -19,7 +19,8 @@
             "titleRemoteControl": "Nuotolinis valdymas",
             "titleServices": "Paslaugos",
             "toastCommandSent": "Komanda išsiųsta sėkmingai!",
-            "toastImageError": "Klaida įkeliant vaizdą. Leidžiami tik PNG ir JPEG failai."
+            "toastImageError": "Klaida įkeliant vaizdą. Leidžiami tik PNG ir JPEG failai.",
+            "toastCardAlreadyExists": ""
         },
         "cardType": {
             "ecoCards": "Eco ekranas",

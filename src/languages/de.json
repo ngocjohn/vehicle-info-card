@@ -19,7 +19,8 @@
             "titleRemoteControl": "Fernbedienung",
             "titleServices": "Dienste",
             "toastCommandSent": "Befehl gesendet!",
-            "toastImageError": "Fehler beim Hochladen des Bildes. Es sind nur PNG- und JPEG-Dateien erlaubt."
+            "toastImageError": "Fehler beim Hochladen des Bildes. Es sind nur PNG- und JPEG-Dateien erlaubt.",
+            "toastCardAlreadyExists": ""
         },
         "cardType": {
             "ecoCards": "Ökoanzeige",

@@ -1,3 +1,11 @@
+:host {
+  --vic-gutter-gap: 8px;
+  --vic-card-padding: 12px;
+  --vic-icon-size: 36px;
+  --vic-icon-border-radius: 50%;
+  --vic-icon-shape-color: rgba(var(--rgb-primary-text-color), 0.05);
+}
+
 .card-config {
   width: 100%;
   margin-block: 0.5rem;
@@ -60,10 +68,111 @@ h3 {
   gap: 8px 0px;
 }
 
-ha-button.custom-btn {
+.card-type-item {
+  position: relative;
+  width: 100%;
+  display: flex;
+  height: 100%;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--divider-color);
+  padding-block: 8px;
+  align-items: center;
+}
+
+.card-type-icon {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--secondary-text-color);
+}
+
+.card-type-icon .icon-background {
+  position: relative;
+  width: var(--vic-icon-size);
+  height: var(--vic-icon-size);
+  font-size: var(--vic-icon-size);
+  border-radius: var(--vic-icon-border-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--vic-icon-shape-color);
+  transition-property: background-color, box-shadow;
+  transition-duration: 280ms;
+  transition-timing-function: ease-out;
+}
+
+.card-type-content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  width: 100%;
+  margin-inline: 8px;
+  flex: 1;
+
+  .primary {
+    font-weight: 500;
+    font-size: 1rem;
+    white-space: nowrap;
+    position: relative;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    text-transform: uppercase;
+  }
+
+  .secondary {
+    color: var(--secondary-text-color);
+    /* text-transform: capitalize; */
+    letter-spacing: 0.5px;
+    font-size: smaller;
+    text-wrap: nowrap;
+  }
+}
+
+.card-type-item .card-type-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.card-type-actions .action-icon {
+  cursor: pointer;
+  color: var(--secondary-text-color);
+  background-color: var(--vic-icon-shape-color);
+  border-radius: 50%;
+  padding: 4px;
+  display: inline-block;
+  --mdc-icon-size: 22px;
+  border: none;
+
+  &:hover {
+    color: var(--primary-color);
+    box-shadow: 0 0 8px 0 rgba(3, 11, 115, 0.3);
+  }
+}
+
+.custom-btn {
+  position: relative;
   display: inline-flex;
   width: 50%;
   height: 100%;
+}
+
+.custom-btn .habtn {
+  width: 100%;
+  position: relative;
+}
+
+.custom-btn .remove-card-icon {
+  position: absolute;
+  top: 0;
+  right: 0;
+  color: var(--secondary-text-color);
+  cursor: pointer;
 }
 
 .image-config {
@@ -131,6 +240,19 @@ ha-button.custom-btn {
   border-bottom: 1px solid var(--divider-color);
 }
 
+
+.toast {
+  visibility: hidden;
+  opacity: 0;
+  max-height: 0;
+}
+
+.toast.show {
+  visibility: visible;
+  opacity: 1;
+  max-height: 100px;
+  animation: fade-in 0.3s ease-in-out forwards;
+}
 
 #toast {
   visibility: hidden;

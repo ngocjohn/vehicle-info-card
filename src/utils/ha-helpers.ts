@@ -201,7 +201,7 @@ export async function uploadImage(hass: HomeAssistant, file: File): Promise<stri
 
   if (!response.ok) {
     console.error('Failed to upload image, response status:', response.status);
-    return null;
+    throw new Error('Failed to upload image');
   }
 
   const data = await response.json();

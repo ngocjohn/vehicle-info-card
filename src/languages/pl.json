@@ -19,7 +19,8 @@
             "titleRemoteControl": "Zdalne sterowanie",
             "titleServices": "Usługi",
             "toastCommandSent": "Polecenie wysłane pomyślnie!",
-            "toastImageError": "Błąd przesyłania obrazu. Dozwolone są tylko pliki PNG i JPEG."
+            "toastImageError": "Błąd przesyłania obrazu. Dozwolone są tylko pliki PNG i JPEG.",
+            "toastCardAlreadyExists": ""
         },
         "cardType": {
             "ecoCards": "Wskaźnik ECO",
