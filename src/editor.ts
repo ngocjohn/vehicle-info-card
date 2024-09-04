@@ -444,7 +444,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     if (primary) {
       const formattedCardType = primary.trim().replace(/ /g, '_').toLowerCase();
       if (
-        this._config.added_cards.hasOwnProperty(formattedCardType) ||
+        this._config.added_cards?.hasOwnProperty(formattedCardType) ||
         this._config.use_custom_cards?.hasOwnProperty(formattedCardType)
       ) {
         const toastId = 'buttonConfig';
