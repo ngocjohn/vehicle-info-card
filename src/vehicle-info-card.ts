@@ -370,6 +370,9 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   }
 
   private async _getSecondaryValue(secondary: string): Promise<string> {
+    if (!secondary) {
+      return '';
+    }
     if (secondary.includes('{{')) {
       return await getTemplateValue(this._hass, secondary);
     }
@@ -1524,8 +1527,10 @@ export class VehicleCard extends LitElement implements LovelaceCard {
         return this.getStateDisplay(odometer?.entity_id);
 
       case 'vehicleCards':
-        const state = this.getStateDisplay(lockSensor?.entity_id);
-        const realState = this.localize(`card.common.state` + { state }.state);
+        const lang = this.selectedLanguage;
+        const lockState = this.getEntityState(lockSensor?.entity_id);
+        const realState = StateMapping.lockStates(lang)[lockState] || StateMapping.lockStates['4'];
+
         return realState;
 
       case 'ecoCards':
