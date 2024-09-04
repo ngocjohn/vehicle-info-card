@@ -1089,8 +1089,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _customBtnChanged(ev: any): void {
-    console.time('btnchanged');
-
     // Access the custom event's details
     const target = ev.target;
     const configValue = target.configValue;
@@ -1134,7 +1132,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _customCardChange(ev: any): void {
-    console.time('cardchanged');
     ev.stopPropagation();
     const target = ev.target;
     const value = target.value;
@@ -1243,8 +1240,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private configChanged() {
     fireEvent(this, 'config-changed', { config: this._config });
-    console.timeEnd('btnchanged');
-    console.timeEnd('cardchanged');
   }
 
   private _setCardPreview(cardType: string): void {
@@ -1258,13 +1253,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       console.log(`No card config found for ${cardType}`);
       return;
     }
-    // let parsedYaml: any[];
-    // try {
-    //   parsedYaml = YAML.parse(cardConfig); // Parse YAML content
-    // } catch (e) {
-    //   console.error(`Parsing error for ${cardType}:`, e);
-    //   return;
-    // }
     if (this._config) {
       this._config = {
         ...this._config,
