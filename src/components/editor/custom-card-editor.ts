@@ -13,7 +13,7 @@ export class CustomCardEditor extends LitElement {
   @property({ type: Boolean }) isCardPreview: boolean = false;
   @property({ type: Boolean }) isCustomCard: boolean = false;
   @property({ type: Boolean }) isAddedCard: boolean = false;
-  @property({ type: Object }) yamlConfig: any;
+  @property({ type: String }) yamlConfig!: string;
 
   static get styles(): CSSResultGroup {
     return [editorcss];
@@ -30,6 +30,7 @@ export class CustomCardEditor extends LitElement {
           @change=${(ev: Event) => this._dispatchEvent(ev, 'use_custom_cards')}
         ></ha-checkbox>
       </ha-formfield>
+
       <ha-button @click=${(ev: Event) => this._dispatchEvent(ev, 'toggle-card-preview')}
         >${this.isCardPreview ? 'Close preview' : 'Preview'}</ha-button
       >
