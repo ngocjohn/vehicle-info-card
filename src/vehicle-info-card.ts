@@ -354,13 +354,14 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   }
 
   private async createCustomButtons(buttonConfigs: ButtonConfigItem, stateProperty: string) {
-    const { primary, icon, secondary, notify } = buttonConfigs;
+    const { primary, icon, secondary, notify, hide } = buttonConfigs;
     const btn = {
       primary,
       icon,
       secondary: await this._getSecondaryValue(secondary),
       notify: await this._getNotifyValue(notify),
       button: stateProperty,
+      hide: hide ?? false,
     };
     this.customButtons[stateProperty] = btn;
   }
@@ -688,7 +689,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   private _renderButtons(): TemplateResult {
     const showError = this.config.show_error_notify;
     if (!this.config.show_buttons) return html``;
-    const baseCardTypes = this.baseCardTypes;
+    const baseCardTypes = this.baseCardTypes.filter((cardType) => !this.customButtons[cardType.button]?.hide);
 
     return html`
       <div class="grid-container">
@@ -1631,15 +1632,10 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     const actionType = (e as CustomEvent).detail;
 
     switch (true) {
-      case actionType === 'customClose':
-        console.log('customClose');
-        this.isCardPreview = false;
-        this.isBtnPreview = false;
-        break;
-
       case actionType.startsWith('btn_'):
         const btnType = actionType.replace('btn_', '');
         this.isBtnPreview = false;
+        this.isCardPreview = false;
         this.updateComplete.then(() => {
           this.showCustomBtnEditor(btnType);
         });
@@ -1653,8 +1649,9 @@ export class VehicleCard extends LitElement implements LovelaceCard {
         });
         break;
 
-      case actionType === 'toggle_preview':
+      case actionType === 'show_button_preview':
         this.isBtnPreview = true;
+        this.requestUpdate();
         break;
 
       case actionType === 'close_preview':
@@ -1664,6 +1661,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
       case actionType === 'show_card_preview':
         this.isCardPreview = true;
+        this.requestUpdate();
         break;
 
       case actionType === 'close_card_preview':

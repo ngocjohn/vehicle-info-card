@@ -67,6 +67,7 @@ export interface MapPopupConfig {
 
 export type ButtonConfigItem = {
   enabled: boolean;
+  hide?: boolean;
   primary: string;
   secondary: string;
   icon: string;
@@ -79,8 +80,8 @@ export interface CustomButtons {
 
 export interface AddedCustomButtonCard {
   [key: string]: {
-    cards: LovelaceCardConfig[];
     button: ButtonConfigItem;
+    cards: LovelaceCardConfig[];
   };
 }
 

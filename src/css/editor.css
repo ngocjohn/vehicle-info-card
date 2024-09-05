@@ -79,6 +79,18 @@ h3 {
   align-items: center;
 }
 
+.card-type-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.card-type-row.disabled {
+  opacity: 0.5;
+}
+
 .card-type-icon {
   width: 36px;
   height: 36px;
@@ -133,10 +145,11 @@ h3 {
   }
 }
 
-.card-type-item .card-type-actions {
+.card-type-actions {
   display: flex;
   gap: 8px;
   align-items: center;
+  opacity: 1 !important;
 }
 
 .card-type-actions .action-icon {
