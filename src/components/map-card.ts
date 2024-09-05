@@ -151,7 +151,6 @@ export class VehicleMap extends LitElement {
   }
 
   firstUpdated(): void {
-    console.log('firstUpdated map');
     this.updateCSSVariables();
     this.setEntityAttribute();
   }
