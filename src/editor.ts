@@ -7,14 +7,13 @@ import Sortable from 'sortablejs';
 
 // Custom card helpers
 import { fireEvent, LovelaceCardConfig, LovelaceCardEditor } from 'custom-card-helpers';
-import { debounce, isString } from 'es-toolkit';
+import { debounce } from 'es-toolkit';
 
 // Local types
 import {
   HomeAssistantExtended as HomeAssistant,
   VehicleCardConfig,
   VehicleImage,
-  ShowOptions,
   CardTypeConfig,
   ButtonConfigItem,
 } from './types';
@@ -720,7 +719,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   /* ----------------------------- EVENT HANDLERS ----------------------------- */
   private _handleCustomCardEditorChange(ev: any): void {
-    const { type, config, card } = ev.detail;
+    const { type, config } = ev.detail;
 
     switch (type) {
       case 'use_custom_cards':
