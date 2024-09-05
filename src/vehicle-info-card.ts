@@ -124,10 +124,12 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     super.firstUpdated(_changedProperties);
     await handleCardFirstUpdated(this, _changedProperties);
     this.baseCardTypes = this.getBaseCardTypes();
+    this.createMapDialog();
     this.configureCustomButtonCards();
     this._configureButtonPreviews();
     this._configureCardPreviews();
   }
+
   protected updated(changedProps: PropertyValues): void {
     super.updated(changedProps);
     if (
@@ -226,6 +228,29 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       });
     }
     return baseCardTypes;
+  }
+
+  private createMapDialog(): void {
+    if (!this.config.show_map || !this.config.enable_map_popup || !this.config.device_tracker) {
+      return;
+    }
+    if (this.config.device_tracker && this.config.show_map && this.config.enable_map_popup) {
+      const { default_zoom, hours_to_show, theme_mode } = this.config.map_popup_config || {};
+      const haMapConfig = [
+        {
+          type: 'map',
+          default_zoom: default_zoom || 14,
+          hours_to_show: hours_to_show,
+          theme_mode: theme_mode,
+          entities: [
+            {
+              entity: this.config.device_tracker,
+            },
+          ],
+        },
+      ];
+      this.createCards(haMapConfig, 'mapDialog');
+    }
   }
 
   private async configureCustomButtonCards(): Promise<void> {
