@@ -181,41 +181,6 @@ export function setupCardListeners(
 }
 
 /**
- * Upload a file to the server
- * @param hass
- * @param file
- */
-
-export async function uploadImage(hass: HomeAssistant, file: File): Promise<string | null> {
-  console.log('Uploading image:', file.name);
-  const formData = new FormData();
-  formData.append('file', file);
-
-  const response = await fetch('/api/image/upload', {
-    method: 'POST',
-    body: formData,
-    headers: {
-      Authorization: `Bearer ${hass.auth.data.access_token}`,
-    },
-  });
-
-  if (!response.ok) {
-    console.error('Failed to upload image, response status:', response.status);
-    throw new Error('Failed to upload image');
-  }
-
-  const data = await response.json();
-  const imageId = data.id;
-
-  if (!imageId) {
-    console.error('Image ID is missing in the response');
-    return null;
-  }
-
-  return `/api/image/serve/${imageId}/original`;
-}
-
-/**
  * Update config with changed properties
  * @param config
  * @param changedProps
@@ -302,7 +267,7 @@ export async function handleCardFirstUpdated(
   _changedProperties: PropertyValues
 ): Promise<void> {
   component.vehicleEntities = await getVehicleEntities(component._hass as HomeAssistant, component.config);
-  if (component.config.selected_language === 'system') {
+  if (!component.config.selected_language || component.config.selected_language === 'system') {
     component.selectedLanguage = component._hass.language;
   } else {
     component.selectedLanguage = component.config.selected_language;
