@@ -165,6 +165,12 @@ export interface EcoData {
   constant: number;
   freeWheel: number;
 }
+export interface ServiceItem {
+  [key: string]: {
+    name: string;
+    icon: string;
+  };
+}
 
 export type CardTypeConfig = {
   type: string;
