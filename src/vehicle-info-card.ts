@@ -322,6 +322,10 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     return localize(string, this.selectedLanguage, search, replace);
   };
 
+  private isAddedCard(cardType: string): boolean {
+    return this.config.added_cards?.hasOwnProperty(cardType);
+  }
+
   private get isCharging(): boolean {
     const chargingActive = this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'chargingactive');
     return Boolean(chargingActive);
@@ -380,7 +384,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   }
 
   private async createCustomButtons(buttonConfigs: ButtonConfigItem, stateProperty: string) {
-    const { primary, icon, secondary, notify, hide } = buttonConfigs;
+    const { primary, icon, secondary, notify, hide, enabled } = buttonConfigs;
     const btn = {
       primary,
       icon,
@@ -388,6 +392,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       notify: await this._getNotifyValue(notify),
       button: stateProperty,
       hide: hide ?? false,
+      enabled: enabled ?? false,
     };
     this.customButtons[stateProperty] = btn;
   }
@@ -717,10 +722,34 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     return html`<eco-chart .ecoData=${ecoDataObj} .selectedLanguage=${lang}></eco-chart>`;
   }
 
+  private _getNotHiddenBtns(): CardTypeConfig[] {
+    return this.baseCardTypes
+      .filter((cardType) => {
+        const isAddedCard = this.isAddedCard(cardType.type);
+        if (isAddedCard) {
+          return !this.config.added_cards[cardType.type]?.button?.hide;
+        } else {
+          return !this.config[cardType.button]?.hide;
+        }
+      })
+      .map((cardType) => cardType);
+  }
+
   private _renderButtons(): TemplateResult {
     const showError = this.config.show_error_notify;
     if (!this.config.show_buttons) return html``;
-    const baseCardTypes = this.baseCardTypes.filter((cardType) => !this.customButtons[cardType.button]?.hide);
+
+    // Filter out the base card types that have `hide: true`
+    const baseCardTypes = this.baseCardTypes
+      .filter((cardType) => {
+        const isAddedCard = this.isAddedCard(cardType.type);
+        if (isAddedCard) {
+          return !this.config.added_cards[cardType.type]?.button?.hide;
+        } else {
+          return !this.config[cardType.button]?.hide;
+        }
+      })
+      .map((cardType) => cardType);
 
     return html`
       <div class="grid-container">

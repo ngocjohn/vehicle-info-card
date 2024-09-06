@@ -102,6 +102,7 @@ export interface CustomCards extends VehicleCardConfig {
   eco_card?: LovelaceCardConfig[];
   tyre_card?: LovelaceCardConfig[];
 }
+
 export interface CustomButtonsConfig extends VehicleCardConfig {
   eco_button?: ButtonConfigItem[];
   trip_button?: ButtonConfigItem[];
