@@ -85,6 +85,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
   @state() private isTyreHorizontal!: boolean;
   @state() private selectedLanguage: string = 'en';
+  @state() public _entityNotFound: boolean = false;
 
   @state() private _previewTemplateValues = {};
 
@@ -433,9 +434,13 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
   // https://lit.dev/docs/components/rendering/
   protected render(): TemplateResult | void {
-    if (!this.config || !this._hass) {
-      return html``;
+    if (!this.config || !this._hass || !this.config.entity) {
+      return this._showWarning('No entity provided');
     }
+    if (this._entityNotFound) {
+      return this._showWarning('Entity not found');
+    }
+
     if (this.loading) {
       return this._renderLoading();
     }
@@ -552,11 +557,12 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       : nothing;
 
     // Render service control if enabled
-    const serviceControl = this.config.enable_services_control
-      ? renderItem('mdi:car-cog', this.localize('card.common.titleServices'), () =>
-          this.toggleCardFromButtons('servicesCard')
-        )
-      : nothing;
+    const serviceControl =
+      this.config.enable_services_control !== false
+        ? renderItem('mdi:car-cog', this.localize('card.common.titleServices'), () =>
+            this.toggleCardFromButtons('servicesCard')
+          )
+        : nothing;
 
     // Combine all parts and render
     return html` <div class="info-box">${defaultIndicators} ${serviceControl} ${addedChargingInfo}</div> `;
