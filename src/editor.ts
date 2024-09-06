@@ -15,7 +15,7 @@ import { cardTypes, editorShowOpts } from './const/data-keys';
 import { CARD_VERSION } from './const/const';
 import { languageOptions, localize } from './localize/localize';
 import { handleFirstUpdated, defaultConfig, deepMerge } from './utils/ha-helpers';
-import { loadHaComponents } from './utils/loader';
+import { loadHaComponents, stickyPreview } from './utils/loader';
 import { compareVersions } from './utils/helpers';
 import editorcss from './css/editor.css';
 
@@ -51,6 +51,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     console.log('Connected callback');
     super.connectedCallback();
     void loadHaComponents();
+    void stickyPreview();
     if (process.env.ROLLUP_WATCH === 'true') {
       window.BenzEditor = this;
     }
@@ -73,7 +74,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     super.firstUpdated(changedProperties);
     await handleFirstUpdated(this, changedProperties);
 
-    this.baseCardTypes = this.getBaseCardTypes();
+    this.getBaseCardTypes();
     this._convertDefaultCardConfigs();
     this._convertAddedCardConfigs();
   }
@@ -112,6 +113,27 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     return { ...configBtn, useDefaultButton };
   }
 
+  private getBaseCardTypes() {
+    const baseCardTypes = cardTypes(this._selectedLanguage);
+    if (this.isAnyAddedCard) {
+      console.log('Added cards found');
+      Object.keys(this._config.added_cards).map((key) => {
+        const card = this._config.added_cards[key];
+        if (card.button) {
+          baseCardTypes.push({
+            type: key,
+            name: card.button.primary,
+            icon: card.button.icon,
+            config: key,
+            button: key,
+          });
+        }
+      });
+    }
+
+    return (this.baseCardTypes = baseCardTypes);
+  }
+
   private _convertDefaultCardConfigs(): void {
     for (const cardType of this.baseCardTypes) {
       if (this._config[cardType.config] && Array.isArray(this._config[cardType.config])) {
@@ -129,7 +151,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       console.log('No added cards to convert');
       return;
     } else {
-      console.log('Converting added card configs');
+      // console.log('Converting added card configs');
       Object.keys(this._config.added_cards).forEach((key) => {
         const yamlString = YAML.stringify(this._config.added_cards[key].cards);
         const button = this._config.added_cards[key].button;
@@ -145,41 +167,12 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     return localize(string, this._selectedLanguage, search, replace);
   };
 
-  private getBaseCardTypes() {
-    const baseCardTypes = cardTypes(this._selectedLanguage);
-    if (this._config.added_cards && Object.keys(this._config.added_cards).length > 0) {
-      Object.keys(this._config.added_cards).map((key) => {
-        const card = this._config.added_cards[key];
-        if (card.button) {
-          baseCardTypes.push({
-            type: key,
-            name: card.button.primary,
-            icon: card.button.icon,
-            config: key,
-            button: key,
-          });
-        }
-      });
-    }
-
-    return baseCardTypes;
-  }
-
   protected render(): TemplateResult | void {
     if (!this.hass || !this._config) {
       return html``;
     }
     // Get the selected card type
     const selectedCard = this.baseCardTypes.find((card) => card.type === this._activeSubcardType);
-
-    // Change the default preview element to be sticky
-    const root = document.querySelector('body > home-assistant')?.shadowRoot;
-    const dialog = root?.querySelector('hui-dialog-edit-card')?.shadowRoot;
-    const previewElement = dialog?.querySelector('ha-dialog > div.content > div.element-preview') as HTMLElement;
-    if (previewElement && previewElement.style.position !== 'sticky') {
-      previewElement.style.position = 'sticky';
-      previewElement.style.top = '0';
-    }
 
     return html`
       <div class="card-config">
@@ -213,8 +206,8 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     // The combo-box for entering a custom name or selecting the model name
     const nameComboBox = html`
       <ha-combo-box
-        item-value-path="value"
-        item-label-path="label"
+        .item-value-path=${'value'}
+        .item-label-path=${'label'}
         .hass=${this.hass}
         .label=${'Select or Enter Name'}
         .items=${options}
@@ -234,7 +227,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         .required=${true}
         .configValue=${'entity'}
         @value-changed=${this._valueChanged}
-        allow-custom-entity
+        .allow-custom-entity=${false}
         .includeEntities=${entities}
       ></ha-entity-picker>
     `;
@@ -422,17 +415,18 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
     const switches = html`
       <div class="switches">
-        ${showOptions.map(
-          (option) => html`
-            <ha-formfield .label=${option.label}>
+        ${showOptions.map((option) => {
+          const { label, configKey } = option;
+          return html`
+            <ha-formfield .label=${label}>
               <ha-checkbox
-                .checked=${this._config[option.configKey]}
-                .configValue=${option.configKey}
+                .checked=${this._config[configKey]}
+                .configValue=${configKey}
                 @change=${this._showValueChanged}
               ></ha-checkbox>
             </ha-formfield>
-          `
-        )}
+          `;
+        })}
       </div>
     `;
 
@@ -444,6 +438,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       { key: 'system', name: 'System', nativeName: 'System' },
       ...languageOptions.sort((a, b) => a.name.localeCompare(b.name)),
     ];
+
     const themeMode = [
       { key: 'auto', name: 'Auto' },
       { key: 'dark', name: 'Dark' },
@@ -461,13 +456,13 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         >
           ${langOpts.map(
             (lang) =>
-              html`<mwc-list-item value=${lang.key}>${lang.nativeName ? lang.nativeName : lang.name}</mwc-list-item> `
+              html`<ha-list-item value=${lang.key}>${lang.nativeName ? lang.nativeName : lang.name}</ha-list-item> `
           )}
         </ha-select>
 
         <ha-theme-picker
           .hass=${this.hass}
-          .value=${this._config.selected_theme.theme}
+          .value=${this._config.selected_theme.theme ?? 'default'}
           .configValue=${'theme'}
           .includeDefault=${true}
           @selected=${this._valueChanged}
@@ -725,7 +720,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       newAddedCards[cardType].button.hide = !newAddedCards[cardType].button.hide;
       this._config = { ...this._config, added_cards: newAddedCards };
       this.configChanged();
-      this.baseCardTypes = this.getBaseCardTypes();
+      this.getBaseCardTypes();
       this._convertAddedCardConfigs();
     };
   }
@@ -736,7 +731,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       delete newAddedCards[cardType];
       this._config = { ...this._config, added_cards: newAddedCards };
       this.configChanged();
-      this.baseCardTypes = this.getBaseCardTypes();
+      this.getBaseCardTypes();
       this._convertAddedCardConfigs();
     };
   }
@@ -777,7 +772,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         },
       };
       this.configChanged();
-      this.baseCardTypes = this.getBaseCardTypes();
+      this.getBaseCardTypes();
       this._convertAddedCardConfigs();
     }
     this._newCardTypeName = '';
@@ -1131,7 +1126,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   private _closeSubCardEditor(card: CardTypeConfig): void {
     const resetState = () => {
       this._activeSubcardType = null;
-      this.baseCardTypes = this.getBaseCardTypes();
+      this.getBaseCardTypes();
       this._cardPreview = false;
       this._btnPreview = false;
     };
