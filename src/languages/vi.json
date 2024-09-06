@@ -20,7 +20,7 @@
             "titleServices": "Dịch vụ",
             "toastCommandSent": "Lệnh đã được gửi thành công!",
             "toastImageError": "Lỗi khi tải ảnh lên. Chỉ cho phép tệp PNG và JPEG.",
-            "toastCardAlreadyExists": ""
+            "toastCardAlreadyExists": "Thẻ đã tồn tại, hãy chọn tên khác"
         },
         "cardType": {
             "ecoCards": "Điểm số ECO",

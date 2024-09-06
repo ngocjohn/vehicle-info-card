@@ -20,7 +20,7 @@
             "titleServices": "Services",
             "toastCommandSent": "Commande envoyée avec succès !",
             "toastImageError": "Erreur lors du téléchargement de l'image. Seuls les fichiers PNG et JPEG sont autorisés.",
-            "toastCardAlreadyExists": ""
+            "toastCardAlreadyExists": "La carte existe déjà, choisissez un autre nom"
         },
         "cardType": {
             "ecoCards": "Affichage éco",

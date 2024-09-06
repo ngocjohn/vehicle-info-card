@@ -20,7 +20,7 @@
             "titleServices": "Usługi",
             "toastCommandSent": "Polecenie wysłane pomyślnie!",
             "toastImageError": "Błąd przesyłania obrazu. Dozwolone są tylko pliki PNG i JPEG.",
-            "toastCardAlreadyExists": ""
+            "toastCardAlreadyExists": "Karta już istnieje, wybierz inną nazwę"
         },
         "cardType": {
             "ecoCards": "Wskaźnik ECO",

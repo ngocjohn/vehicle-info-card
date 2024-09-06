@@ -20,7 +20,7 @@
             "titleServices": "Služby",
             "toastCommandSent": "Príkaz úspešne odoslaný!",
             "toastImageError": "Chyba pri nahrávaní obrázka. Povolené sú iba súbory PNG a JPEG.",
-            "toastCardAlreadyExists": ""
+            "toastCardAlreadyExists": "Karta už existuje, zvoľte inú názov"
         },
         "cardType": {
             "ecoCards": "Ukazovateľ ECO",

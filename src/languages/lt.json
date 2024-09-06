@@ -20,7 +20,7 @@
             "titleServices": "Paslaugos",
             "toastCommandSent": "Komanda išsiųsta sėkmingai!",
             "toastImageError": "Klaida įkeliant vaizdą. Leidžiami tik PNG ir JPEG failai.",
-            "toastCardAlreadyExists": ""
+            "toastCardAlreadyExists": "Kortelė jau egzistuoja, pasirinkite kitą pavadinimą"
         },
         "cardType": {
             "ecoCards": "Eco ekranas",
