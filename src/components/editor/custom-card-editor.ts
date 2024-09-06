@@ -2,12 +2,13 @@ import { LitElement, html, TemplateResult, CSSResultGroup } from 'lit';
 import { customElement, property } from 'lit/decorators';
 
 import { HomeAssistantExtended as HomeAssistant, CardTypeConfig } from '../../types';
-
+import { LovelaceConfig } from 'custom-card-helpers';
 import editorcss from '../../css/editor.css';
 
 @customElement('custom-card-editor')
 export class CustomCardEditor extends LitElement {
-  @property() public hass!: HomeAssistant;
+  @property({ attribute: false }) public hass?: HomeAssistant;
+  @property({ attribute: false }) lovelace?: LovelaceConfig;
 
   @property() card!: CardTypeConfig;
   @property({ type: Boolean }) isCardPreview: boolean = false;

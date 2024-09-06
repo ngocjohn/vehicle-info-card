@@ -1,35 +1,27 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { LitElement, html, TemplateResult, CSSResultGroup, PropertyValues, nothing } from 'lit';
-import { customElement, property, state } from 'lit/decorators';
-import { repeat } from 'lit/directives/repeat';
+import { customElement, property, query, state } from 'lit/decorators';
 import YAML from 'yaml';
-import Sortable from 'sortablejs';
 
 // Custom card helpers
 import { fireEvent, LovelaceCardConfig, LovelaceCardEditor } from 'custom-card-helpers';
 import { debounce } from 'es-toolkit';
 
 // Local types
-import {
-  HomeAssistantExtended as HomeAssistant,
-  VehicleCardConfig,
-  VehicleImage,
-  CardTypeConfig,
-  ButtonConfigItem,
-} from './types';
+import { HomeAssistantExtended as HomeAssistant, VehicleCardConfig, CardTypeConfig, ButtonConfigItem } from './types';
 
 import { servicesCtrl } from './const/remote-control-keys';
 import { cardTypes, editorShowOpts } from './const/data-keys';
 import { CARD_VERSION } from './const/const';
 import { languageOptions, localize } from './localize/localize';
 import { handleFirstUpdated, defaultConfig, deepMerge } from './utils/ha-helpers';
-import { imageInputChange, handleFilePicked, addNewImageUrl } from './utils/editor-image-handler';
 import { loadHaComponents } from './utils/loader';
 import { compareVersions } from './utils/helpers';
 import editorcss from './css/editor.css';
 
 import './components/editor/custom-card-editor';
 import './components/editor/custom-button-template';
+import './components/editor/panel-images';
 
 @customElement('vehicle-info-card-editor')
 export class VehicleCardEditor extends LitElement implements LovelaceCardEditor {
@@ -44,15 +36,12 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   @state() private _confirmDeleteType: string | null = null;
   @state() private _yamlConfig: { [key: string]: any } = {};
   @state() private _customBtns: { [key: string]: ButtonConfigItem } = {};
-  @state() private _newImageUrl: string = '';
   @state() private _newCardTypeName: string = '';
   @state() private _newCardTypeIcon: string = '';
   @state() private _selectedLanguage: string = 'system';
   @state() private _latestRelease: string = '';
 
-  _sortable: Sortable | null = null;
-
-  private _selectedItems: Set<string> = new Set();
+  @query('panel-images') private _panelImages!: any;
 
   public async setConfig(config: VehicleCardConfig): Promise<void> {
     this._config = deepMerge(defaultConfig, config);
@@ -188,27 +177,42 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _renderCustomSubCardUI(): TemplateResult {
-    const selectedCard = this.baseCardTypes.filter((card) => card.type === this._activeSubcardType);
+    const selectedCard = this.baseCardTypes.filter((card) => card.type === this._activeSubcardType).map((card) => card);
 
-    return html`${selectedCard.map((card) => this._renderSubCardConfig(card))}`;
+    return this._renderSubCardConfig(selectedCard[0]);
   }
 
   private _renderSubCardConfig(card: CardTypeConfig): TemplateResult {
     const { name, icon } = card;
+    const baseCard = this.baseCardTypes;
+
+    const cardTabsRow = baseCard
+      .filter((c) => c.type !== card.type)
+      .map((c) => {
+        return html`
+          <div class="card-tab" title="${c.name}" @click=${() => (this._activeSubcardType = c.type)}>
+            <ha-icon title="${c.name}" icon=${c.icon}></ha-icon>
+          </div>
+        `;
+      });
 
     const subCardHeader = html`
       <div class="sub-card-header">
         <ha-icon icon="mdi:arrow-left" @click=${() => this._closeSubCardEditor(card)} style="cursor: pointer"></ha-icon>
-        <div class="sub-card-title">
-          <h3>${name}</h3>
+        <div class="card-tab active">
+          <ha-button>${name}</ha-button>
           <ha-icon icon=${icon}></ha-icon>
         </div>
+        ${cardTabsRow}
       </div>
     `;
+
     const buttonTemplate = this._renderCustomButtonTemplate(card);
     const editorWrapper = this._renderCustomCardEditor(card);
 
-    return html` <div class="sub-card-config">${subCardHeader}${buttonTemplate} ${editorWrapper}</div> `;
+    const content = html` <div class="sub-card-config">${subCardHeader} ${buttonTemplate} ${editorWrapper}</div> `;
+
+    return content;
   }
 
   private _renderCustomCardEditor(card: CardTypeConfig): TemplateResult {
@@ -238,8 +242,9 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const buttonConfig = this._customBtns[button];
     const useDefault = this._config[button]?.enabled
       ? this._config[button]?.enabled
-      : this._config.added_cards[card.type]?.button.enabled;
+      : this._config.added_cards[card.type]?.button?.hide;
     const isAddedCard = this._config.added_cards.hasOwnProperty(card.type);
+    const isHidden = this._config.added_cards?.[card.type]?.button.hide;
 
     const content = html`
       <custom-button-template
@@ -248,6 +253,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         .card=${card}
         .useDefault=${useDefault}
         .isAddedCard=${isAddedCard}
+        .isHidden=${isHidden}
         .isButtonPreview=${this._btnPreview}
         @custom-button-changed=${(ev: any) => this._customBtnHandler(ev)}
       ></custom-button-template>
@@ -455,96 +461,12 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _renderImageConfig(): TemplateResult {
-    const localize = this.localize;
-    const errorMsg = localize('card.common.toastImageError');
-    const configImages = this._config.images as VehicleImage[];
-    const imagesActions = {
-      selectAll: {
-        label: localize('editor.imagesConfig.selectAll'),
-        action: this._selectAll,
-      },
-      deselectAll: {
-        label: localize('editor.imagesConfig.deselectAll'),
-        action: this._deselectAll,
-      },
-      deleteSelected: {
-        label: localize('editor.imagesConfig.deleteSelected'),
-        action: this._deleteSelectedItems,
-      },
-    };
-
-    const imageList = html`<div class="images-list" id="images-list">
-      ${repeat(
-        configImages,
-        (image) => image.url,
-        (image, index) =>
-          html`<div class="custom-background-wrapper" data-url="${image.url}">
-            <div class="handle"><ha-icon icon="mdi:drag"></ha-icon></div>
-            <ha-textfield
-              class="image-input"
-              .label=${'IMAGE #' + (index + 1)}
-              .configValue=${'images'}
-              .value=${image.title}
-              @input=${(event: Event) => imageInputChange(this, event, index)}
-            ></ha-textfield>
-            <ha-checkbox
-              .checked=${false}
-              @change=${(event: Event) => this._toggleSelection(event, image.url)}
-            ></ha-checkbox>
-          </div>`
-      )}
-    </div>`;
-    const showIndexDeleteBtn =
-      this._config.images && this._config.images.length > 0
-        ? html`
-            <div class="custom-background-wrapper">
-              ${Object.keys(imagesActions).map(
-                (key) => html` <ha-button @click=${imagesActions[key].action}>${imagesActions[key].label}</ha-button> `
-              )}
-            </div>
-            <div class="custom-background-wrapper">
-              <ha-formfield .label=${'Show Image Index'}>
-                <ha-checkbox
-                  .checked=${this._config?.show_image_index !== false}
-                  .configValue=${'show_image_index'}
-                  @change=${this._valueChanged}
-                ></ha-checkbox>
-              </ha-formfield>
-            </div>
-          `
-        : '';
-
-    const urlInput = html`
-      <div class="custom-background-wrapper">
-        <ha-button @click=${() => this.shadowRoot?.getElementById('file-upload-new')?.click()}>
-          ${this.hass.localize('ui.components.selectors.image.upload')}
-        </ha-button>
-
-        <input
-          type="file"
-          id="file-upload-new"
-          class="file-input"
-          .errorMsg=${errorMsg}
-          .toastId="${`imagesConfig`}"
-          @change=${(ev: any) => handleFilePicked(this, ev)}
-          accept="image/*"
-          multiple
-        />
-        <ha-textfield
-          .label=${this.hass.localize('ui.components.selectors.image.url')}
-          .configValue=${'new_image_url'}
-          .value=${this._newImageUrl}
-          @input=${this.toggleAddButton}
-        ></ha-textfield>
-        <div class="new-url-btn">
-          <ha-icon icon="mdi:plus" @click=${() => addNewImageUrl(this)}></ha-icon>
-        </div>
-      </div>
-    `;
-
-    const content = html`${imageList}${showIndexDeleteBtn} ${urlInput}`;
-
-    return this.panelTemplate('imagesConfig', 'imagesConfig', 'mdi:image', content);
+    return this.panelTemplate(
+      'imagesConfig',
+      'imagesConfig',
+      'mdi:image',
+      html`<panel-images .editor=${this} .config=${this._config}></panel-images>`
+    );
   }
 
   private _renderMapPopupConfig(): TemplateResult {
@@ -861,8 +783,9 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   private _handlePanelExpandedChanged(e: Event, titleKey: string): void {
     const panel = e.target as HTMLElement;
     if (titleKey === 'imagesConfig' && (panel as any).expanded) {
-      this.initSortable();
+      this._panelImages.initSortable();
     }
+
     // if (titleKey === 'customCardConfig' && (panel as any).expanded) {
     //   this._dispatchCardEvent(this._activeSubcardType as string);
     //   console.log('Custom card panel expanded', this._activeSubcardType);
@@ -870,97 +793,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   /* ----------------------------- IMAGES HANDLERS ---------------------------- */
-  private initSortable() {
-    const el = this.shadowRoot?.getElementById('images-list');
-    if (el) {
-      this._sortable = new Sortable(el, {
-        handle: '.handle',
-        animation: 150,
-        ghostClass: 'ghost',
-        onEnd: (evt) => {
-          this._handleSortEnd(evt);
-        },
-      });
-    }
-  }
-
-  private _handleSortEnd(evt: any) {
-    const oldIndex = evt.oldIndex;
-    const newIndex = evt.newIndex;
-
-    // console.log('Images before reorder:', this._config.images);
-    // console.log(`Reordering images: moving from index ${oldIndex} to ${newIndex}`);
-
-    if (oldIndex !== newIndex) {
-      this._reorderImages(oldIndex, newIndex);
-    }
-  }
-
-  private _reorderImages(oldIndex: number, newIndex: number) {
-    const configImages = this._config.images!.concat();
-    const movedItem = configImages.splice(oldIndex, 1)[0];
-    configImages.splice(newIndex, 0, movedItem);
-    this._config = { ...this._config, images: configImages };
-    this.configChanged();
-  }
-
-  private _toggleSelection(event: Event, imageUrl: string): void {
-    const checkbox = event.target as HTMLInputElement;
-    if (checkbox.checked) {
-      this._selectedItems.add(imageUrl);
-    } else {
-      this._selectedItems.delete(imageUrl);
-    }
-    // console.log('Selected items:', this._selectedItems);
-  }
-
-  private _selectAll(): void {
-    const checkboxes = this.shadowRoot?.querySelectorAll('.images-list ha-checkbox') as NodeListOf<HTMLInputElement>;
-    checkboxes.forEach((checkbox) => {
-      checkbox.checked = true;
-    });
-
-    this._selectedItems.clear(); // Clear existing selections
-    this._config.images.forEach((image: { url: string }) => this._selectedItems.add(image.url));
-
-    // Optionally, update the UI or perform any additional actions
-    this.requestUpdate();
-  }
-
-  private _deselectAll(): void {
-    const checkboxes = this.shadowRoot?.querySelectorAll('.images-list ha-checkbox') as NodeListOf<HTMLInputElement>;
-    checkboxes.forEach((checkbox) => {
-      checkbox.checked = false;
-    });
-
-    this._selectedItems.clear(); // Clear all selections
-    this.requestUpdate();
-  }
-
-  private _deleteSelectedItems(): void {
-    if (this._selectedItems.size === 0) {
-      return;
-    }
-
-    const remainingImages = this._config.images.filter((image) => !this._selectedItems.has(image.url));
-
-    this._config = { ...this._config, images: remainingImages };
-    this._selectedItems.clear();
-    this.configChanged();
-  }
-
-  private toggleAddButton(ev: Event): void {
-    ev.stopPropagation();
-    const target = ev.target as HTMLInputElement;
-    const addButton = target.parentElement?.querySelector('.new-url-btn') as HTMLElement;
-    if (!addButton) return;
-    if (target.value && target.value.length > 0) {
-      this._newImageUrl = target.value;
-      addButton.classList.add('show');
-    } else {
-      addButton.classList.remove('show');
-    }
-  }
 
   private launchToast(id: string, msg: string = ''): void {
     const toast = this.shadowRoot?.getElementById(`toast_${id}`) as HTMLElement;

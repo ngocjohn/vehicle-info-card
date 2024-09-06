@@ -166,10 +166,10 @@ export interface EcoData {
   freeWheel: number;
 }
 
-export interface CardTypeConfig {
+export type CardTypeConfig = {
   type: string;
   name: string;
   icon: string;
   config: string;
   button: string;
-}
+};
