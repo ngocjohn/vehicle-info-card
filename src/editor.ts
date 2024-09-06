@@ -243,8 +243,8 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const useDefault = this._config[button]?.enabled
       ? this._config[button]?.enabled
       : this._config.added_cards?.[card.type]?.button?.hide;
-    const isAddedCard = this._config.added_cards?.hasOwnProperty(card.type) || false;
-    const isHidden = this._config.added_cards?.[card.type]?.button.hide;
+    const isAddedCard = this._config.added_cards?.hasOwnProperty(card.type);
+    const isHidden = this._config.added_cards[card.type]?.button.hide;
 
     const content = html`
       <custom-button-template
@@ -1087,32 +1087,29 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _closeSubCardEditor(card: CardTypeConfig): void {
-    if (this._cardPreview && !this._activeSubcardType) {
-      this._toggleCardPreview(card.type);
-      this.updateComplete.then(() => {
-        this._activeSubcardType = null;
-        console.log('getting base card types');
-        this.baseCardTypes = this.getBaseCardTypes();
-      });
+    const resetState = () => {
+      this._activeSubcardType = null;
+      this.baseCardTypes = this.getBaseCardTypes();
       this._cardPreview = false;
-    } else if (this._btnPreview && !this._activeSubcardType) {
-      this._toggleBtnPreview(card.button);
-      this.updateComplete.then(() => {
-        this._activeSubcardType = null;
-        this.baseCardTypes = this.getBaseCardTypes();
-      });
       this._btnPreview = false;
+    };
+
+    if (!this._activeSubcardType) {
+      if (this._cardPreview) {
+        this._toggleCardPreview(card.type);
+      } else if (this._btnPreview) {
+        this._toggleBtnPreview(card.button);
+      }
+      this.updateComplete.then(resetState);
     } else if (this._activeSubcardType === card.type && (!this._cardPreview || !this._btnPreview)) {
       this._activeSubcardType = null;
       this.updateComplete.then(() => {
-        console.log('getting base card types');
         this._convertAddedCardConfigs();
         this._convertDefaultCardConfigs();
-        this.baseCardTypes = this.getBaseCardTypes();
+        resetState();
       });
-      this._btnPreview = false;
-      this._cardPreview = false;
     }
+
     this.updateComplete.then(() => {
       this._toggleConfigPanel();
     });
