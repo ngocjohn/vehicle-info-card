@@ -207,6 +207,20 @@ h3 {
   flex-direction: column;
 }
 
+.images-list {
+  animation: fade-in 0.3s cubic-bezier(0.6, 0.04, 0.98, 0.335) forwards;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
 .custom-background-wrapper {
   display: inline-flex;
   align-items: center;
@@ -262,11 +276,30 @@ h3 {
   display: flex;
   width: 100%;
   justify-content: space-between;
-  padding: 0.5rem 0 1rem;
   align-items: center;
-  border-bottom: 1px solid var(--divider-color);
 }
 
+.card-tab {
+  display: inline-flex;
+  width: fit-content;
+  height: 100%;
+  align-items: center;
+  color: var(--secondary-text-color);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--primary-color);
+  }
+}
+
+.card-tab.active {
+  display: inline-flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--primary-color) !important;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--primary-color);
+}
 
 .toast {
   visibility: hidden;
@@ -340,13 +373,4 @@ ha-alert>.alert-icon {
   display: flex;
   gap: 8px;
   justify-content: space-between;
-}
-
-.sub-card-title {
-  display: inline-flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 8px;
-  color: var(--secondary-text-color);
-  text-transform: uppercase;
 }

@@ -14,6 +14,7 @@ export class CustomButtonTemplate extends LitElement {
   @property({ type: Boolean }) useDefault: boolean = false;
   @property({ type: Boolean }) isAddedCard: boolean = false;
   @property({ type: Boolean }) isButtonPreview: boolean = false;
+  @property({ type: Boolean }) isHidden?: boolean;
 
   static get styles(): CSSResultGroup {
     return [editorcss];
@@ -24,17 +25,26 @@ export class CustomButtonTemplate extends LitElement {
   }
 
   private _editorHeader(): TemplateResult {
+    const label = this.isAddedCard ? 'Hide on card' : 'Use custom button?';
+    const configValue = this.isAddedCard ? 'hide' : 'enabled';
+
     return html`<div class="sub-card-header">
-      <ha-formfield style="${this.isAddedCard ? 'display: none;' : ''}" .label=${'Use custom button?'}>
+      <ha-formfield id="button-${this.card.button} .label=${label}>
         <ha-checkbox
           .checked=${this.useDefault}
-          .disabled=${this.isAddedCard}
-          .configValue=${'enabled'}
+          .configValue=${configValue}
           .configBtnType=${this.card.button}
+          .disabled=${false}
           @change=${(ev: Event) => this._dispatchEvent(ev, 'btn-changed')}
         ></ha-checkbox>
       </ha-formfield>
-      <ha-button @click=${(ev: Event) => this._dispatchEvent(ev, 'toggle-show-button')}>Show Button</ha-button>
+      ${
+        !this.isHidden
+          ? html` <ha-button @click=${(ev: Event) => this._dispatchEvent(ev, 'toggle-show-button')}
+              >Show Button</ha-button
+            >`
+          : ''
+      }
       <ha-button @click=${(ev: Event) => this._dispatchEvent(ev, 'toggle-preview-button')}
         >${!this.isButtonPreview ? 'Preview' : 'Close Preview'}</ha-button
       >
@@ -44,11 +54,9 @@ export class CustomButtonTemplate extends LitElement {
   private _buttonTitleIconForms(): TemplateResult {
     const { primary, icon } = this.button;
     const button = this.card.button;
-    const useDefault = this.useDefault;
 
     const primaryInput = html`
       <ha-textfield
-        .disabled=${!useDefault}
         .label=${'Button Title'}
         .value=${primary}
         .configValue=${'primary'}
@@ -59,7 +67,6 @@ export class CustomButtonTemplate extends LitElement {
 
     const iconSelector = html`
       <ha-icon-picker
-        .disabled=${!useDefault}
         .hass=${this.hass}
         .label=${'Icon'}
         .value=${icon}
@@ -74,7 +81,6 @@ export class CustomButtonTemplate extends LitElement {
 
   private _templateUI(label: string, value: string, configValue: string, helper: string): TemplateResult {
     const button = this.card.button;
-    const useDefault = this.useDefault;
 
     return html`
       <div class="template-ui">
@@ -86,7 +92,6 @@ export class CustomButtonTemplate extends LitElement {
           .value=${value}
           .configValue=${configValue}
           .configBtnType=${button}
-          .readOnly=${!useDefault}
           @value-changed=${(ev: any) => this._dispatchEvent(ev, 'btn-changed')}
           .linewrap=${false}
           .autofocus=${true}
