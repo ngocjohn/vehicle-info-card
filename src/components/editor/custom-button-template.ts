@@ -29,7 +29,7 @@ export class CustomButtonTemplate extends LitElement {
     const configValue = this.isAddedCard ? 'hide' : 'enabled';
 
     return html`<div class="sub-card-header">
-      <ha-formfield id="button-${this.card.button} .label=${label}>
+      <ha-formfield id="button-${this.card.button}" .label=${label}>
         <ha-checkbox
           .checked=${this.useDefault}
           .configValue=${configValue}
@@ -38,13 +38,11 @@ export class CustomButtonTemplate extends LitElement {
           @change=${(ev: Event) => this._dispatchEvent(ev, 'btn-changed')}
         ></ha-checkbox>
       </ha-formfield>
-      ${
-        !this.isHidden
-          ? html` <ha-button @click=${(ev: Event) => this._dispatchEvent(ev, 'toggle-show-button')}
-              >Show Button</ha-button
-            >`
-          : ''
-      }
+      ${!this.isHidden
+        ? html` <ha-button @click=${(ev: Event) => this._dispatchEvent(ev, 'toggle-show-button')}
+            >Show Button</ha-button
+          >`
+        : ''}
       <ha-button @click=${(ev: Event) => this._dispatchEvent(ev, 'toggle-preview-button')}
         >${!this.isButtonPreview ? 'Preview' : 'Close Preview'}</ha-button
       >
