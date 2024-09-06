@@ -5,7 +5,7 @@ import { repeat } from 'lit/directives/repeat';
 import Sortable from 'sortablejs';
 
 import { VehicleImage, VehicleCardConfig } from '../../types';
-import { imageInputChange, handleFilePicked, addNewImageUrl } from '../../utils/editor-image-handler';
+import { imageInputChange, handleFilePicked } from '../../utils/editor-image-handler';
 import { fireEvent } from 'custom-card-helpers';
 import { debounce } from 'es-toolkit';
 import editorcss from '../../css/editor.css';
@@ -60,7 +60,7 @@ export class PanelImages extends LitElement {
           @input=${this.toggleAddButton}
         ></ha-textfield>
         <div class="new-url-btn">
-          <ha-icon icon="mdi:plus" @click=${() => addNewImageUrl(this.editor)}></ha-icon>
+          <ha-icon icon="mdi:plus" @click=${() => this.addNewImageUrl()}></ha-icon>
         </div>
       </div>
     `;
@@ -245,5 +245,13 @@ export class PanelImages extends LitElement {
     } else {
       addButton.classList.remove('show');
     }
+  }
+  private addNewImageUrl(): void {
+    if (!this._newImageUrl || !this.config) return;
+    const images = [...this.config.images];
+    images.push({ url: this._newImageUrl, title: this._newImageUrl });
+    this.config = { ...this.config, images };
+    this._newImageUrl = '';
+    this._debouncedConfigChanged();
   }
 }

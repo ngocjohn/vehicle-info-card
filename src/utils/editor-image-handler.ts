@@ -94,12 +94,3 @@ function _addImage(editor: any, url: string, title: string): void {
     editor.configChanged();
   }
 }
-
-export function addNewImageUrl(editor: any): void {
-  if (!editor._newImageUrl || !editor._config) return;
-  const images = [...editor._config.images];
-  images.push({ url: editor._newImageUrl, title: editor._newImageUrl });
-  editor._config = { ...editor._config, images };
-  editor._newImageUrl = '';
-  editor.configChanged();
-}

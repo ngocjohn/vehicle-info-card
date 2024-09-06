@@ -217,7 +217,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private _renderCustomCardEditor(card: CardTypeConfig): TemplateResult {
     const useCustomCard = this._config?.use_custom_cards?.[card.config];
-    const isAddedCard = this._config.added_cards.hasOwnProperty(card.type);
+    const isAddedCard = this._config?.added_cards?.hasOwnProperty(card.type);
 
     const cardCodeEditorWrapper = html`
       <div class="card-code-editor">
@@ -242,8 +242,8 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const buttonConfig = this._customBtns[button];
     const useDefault = this._config[button]?.enabled
       ? this._config[button]?.enabled
-      : this._config.added_cards[card.type]?.button?.hide;
-    const isAddedCard = this._config.added_cards.hasOwnProperty(card.type);
+      : this._config.added_cards?.[card.type]?.button?.hide;
+    const isAddedCard = this._config.added_cards?.hasOwnProperty(card.type) || false;
     const isHidden = this._config.added_cards?.[card.type]?.button.hide;
 
     const content = html`
@@ -830,7 +830,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       };
     }
 
-    if (this._config.added_cards.hasOwnProperty(configBtnType)) {
+    if (this._config.added_cards?.hasOwnProperty(configBtnType)) {
       this._config = {
         ...this._config,
         added_cards: {
@@ -870,7 +870,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         card_preview: parsedYaml,
       };
     }
-    if (this._config.added_cards.hasOwnProperty(configKey)) {
+    if (this._config.added_cards?.hasOwnProperty(configKey)) {
       this._config = {
         ...this._config,
         added_cards: {
@@ -981,7 +981,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       this._cardPreview = false;
       this.configChanged();
 
-      if (this._config.added_cards.hasOwnProperty(cardType)) {
+      if (this._config.added_cards?.hasOwnProperty(cardType)) {
         this._convertAddedCardConfigs();
       } else {
         this._convertDefaultCardConfigs();
@@ -994,7 +994,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       // console.log('Setting card preview:', cardType);
       // Set card preview logic
       let cardConfig: LovelaceCardConfig[];
-      if (this._config.added_cards.hasOwnProperty(cardType)) {
+      if (this._config.added_cards?.hasOwnProperty(cardType)) {
         cardConfig = this._config.added_cards[cardType].cards;
       } else {
         cardConfig = this._config[cardType];
@@ -1050,7 +1050,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
       this._btnPreview = false;
       this.configChanged();
-      if (this._config.added_cards.hasOwnProperty(button)) {
+      if (this._config.added_cards?.hasOwnProperty(button)) {
         this._convertAddedCardConfigs();
       } else {
         this._convertDefaultCardConfigs();
@@ -1062,7 +1062,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       // Set preview button config
       console.log('Setting button preview:', button);
       let btnConfig: ButtonConfigItem;
-      if (this._config.added_cards.hasOwnProperty(button)) {
+      if (this._config.added_cards?.hasOwnProperty(button)) {
         btnConfig = this._config.added_cards[button].button;
       } else {
         btnConfig = this._config[button];
