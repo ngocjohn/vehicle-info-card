@@ -213,7 +213,12 @@
             "secondaryInfoDesc": "To będzie wyświetlone pod tytułem karty.",
             "secondaryInfoHelper": "Użyj szablonu Jinja2 do wyświetlania dodatkowych informacji",
             "notifyInfo": "Konfiguracja powiadomień",
-            "notifyInfoHelper": "Wynik musi zwrócić wartość 'True', aby wyświetlić powiadomienie."
+            "notifyInfoHelper": "Wynik musi zwrócić wartość 'True', aby wyświetlić powiadomienie.",
+            "deleteConfirm": "Czy na pewno chcesz usunąć tę kartę?",
+            "toastNewCard": "Nowa karta dodana!",
+            "buttonGridSwipe": "Konfiguracja siatki przycisków",
+            "swipeRows": "Wiersze na slajd",
+            "useButtonSwipe": "Użyj przesunięcia dla przycisków"
         },
         "common": {
             "checkAll": "Zaznacz wszystko",

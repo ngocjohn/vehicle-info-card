@@ -213,7 +213,12 @@
             "secondaryInfoDesc": "Nó sẽ được hiển thị dưới tiêu đề của thẻ.",
             "secondaryInfoHelper": "Sử dụng mẫu Jinja2 để hiển thị thông tin phụ",
             "notifyInfo": "Cấu hình thông báo",
-            "notifyInfoHelper": "Kết quả phải trả về 'True' để hiển thị thông báo."
+            "notifyInfoHelper": "Kết quả phải trả về 'True' để hiển thị thông báo.",
+            "deleteConfirm": "Bạn có chắc chắn muốn xóa thẻ này không?",
+            "toastNewCard": "Thẻ mới đã được thêm!",
+            "buttonGridSwipe": "Cấu hình lưới nút",
+            "swipeRows": "Hàng mỗi slide",
+            "useButtonSwipe": "Sử dụng swipe cho các nút"
         },
         "common": {
             "checkAll": "Chọn tất cả",

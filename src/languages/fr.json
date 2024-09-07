@@ -213,7 +213,12 @@
             "secondaryInfoDesc": "Cela sera affiché sous le titre de la carte.",
             "secondaryInfoHelper": "Utilisez le modèle Jinja2 pour afficher des informations secondaires",
             "notifyInfo": "Configuration des notifications",
-            "notifyInfoHelper": "Le résultat doit renvoyer 'True' pour afficher la notification."
+            "notifyInfoHelper": "Le résultat doit renvoyer 'True' pour afficher la notification.",
+            "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette carte?",
+            "toastNewCard": "Nouvelle carte ajoutée!",
+            "buttonGridSwipe": "Configuration de la grille de boutons",
+            "swipeRows": "Lignes par diapositive",
+            "useButtonSwipe": "Utiliser le swipe pour les boutons"
         },
         "common": {
             "checkAll": "Tout cocher",

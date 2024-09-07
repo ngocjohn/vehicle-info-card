@@ -213,7 +213,12 @@
             "secondaryInfoDesc": "This will be shown below the title of the card.",
             "secondaryInfoHelper": "Use Jinja2 template to display secondary information",
             "notifyInfo": "Notify configuration",
-            "notifyInfoHelper": "The result must return 'True' boolean to show the notification."
+            "notifyInfoHelper": "The result must return 'True' boolean to show the notification.",
+            "deleteConfirm": "Are you sure you want to delete this card?",
+            "toastNewCard": "New card added!",
+            "buttonGridSwipe": "Buttons grid configuration",
+            "swipeRows": "Rows per slide",
+            "useButtonSwipe": "Use swipe for buttons"
         },
         "common": {
             "checkAll": "Check all",

@@ -213,7 +213,12 @@
             "secondaryInfoDesc": "Tai bus rodoma po kortelės pavadinimu.",
             "secondaryInfoHelper": "Naudokite Jinja2 šabloną antrinei informacijai rodyti",
             "notifyInfo": "Pranešimų konfigūracija",
-            "notifyInfoHelper": "Rezultatas turi grąžinti 'True', kad būtų parodytas pranešimas."
+            "notifyInfoHelper": "Rezultatas turi grąžinti 'True', kad būtų parodytas pranešimas.",
+            "deleteConfirm": "Ar tikrai norite ištrinti šią kortelę?",
+            "toastNewCard": "Pridėta nauja kortelė!",
+            "buttonGridSwipe": "Mygtukų tinklelio konfigūracija",
+            "swipeRows": "Eilutės per skaidrę",
+            "useButtonSwipe": "Naudoti braukimą mygtukams"
         },
         "common": {
             "checkAll": "Pažymėkite visus",

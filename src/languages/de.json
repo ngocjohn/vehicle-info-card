@@ -213,7 +213,12 @@
             "secondaryInfoDesc": "Dies wird unter dem Kartentitel angezeigt.",
             "secondaryInfoHelper": "Verwenden Sie die Jinja2-Vorlage, um sekundäre Informationen anzuzeigen",
             "notifyInfo": "Benachrichtigungskonfiguration",
-            "notifyInfoHelper": "Das Ergebnis muss 'True' zurückgeben, um die Benachrichtigung anzuzeigen."
+            "notifyInfoHelper": "Das Ergebnis muss 'True' zurückgeben, um die Benachrichtigung anzuzeigen.",
+            "deleteConfirm": "Sind Sie sicher, dass Sie diese Karte löschen möchten?",
+            "toastNewCard": "Neue Karte hinzugefügt!",
+            "buttonGridSwipe": "Konfiguration des Schaltflächengitters",
+            "swipeRows": "Zeilen pro Folie",
+            "useButtonSwipe": "Wischen für Schaltflächen verwenden"
         },
         "common": {
             "checkAll": "Alles auswählen",

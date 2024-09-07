@@ -213,7 +213,12 @@
             "secondaryInfoDesc": "To bude zobrazeno pod názvem karty.",
             "secondaryInfoHelper": "Použijte šablonu Jinja2 pro zobrazení sekundárních informací",
             "notifyInfo": "Konfigurace oznámení",
-            "notifyInfoHelper": "Výsledek musí vrátit hodnotu 'True' pro zobrazení oznámení."
+            "notifyInfoHelper": "Výsledek musí vrátit hodnotu 'True' pro zobrazení oznámení.",
+            "deleteConfirm": "Jste si jisti, že chcete tuto kartu smazat?",
+            "toastNewCard": "Přidána nová karta!",
+            "buttonGridSwipe": "Konfigurace mřížky tlačítek",
+            "swipeRows": "Řádky na slide",
+            "useButtonSwipe": "Použít swipe pro tlačítka"
         },
         "common": {
             "checkAll": "Vyrat vše",
