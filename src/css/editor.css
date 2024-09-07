@@ -78,7 +78,7 @@ h3 {
 }
 
 .header-sm {
-  color: var(--secondary-text-color);
+  /* color: var(--secondary-text-color); */
   width: 100%;
   display: inline-flex;
   justify-content: space-between;
@@ -87,8 +87,9 @@ h3 {
   box-sizing: border-box;
   text-transform: uppercase;
   height: 100%;
-  font-size: medium;
+  /* font-size: medium; */
   margin-top: 1rem;
+  font-weight: 400;
 }
 
 .subcard-icon {
