@@ -74,6 +74,12 @@ export type ButtonConfigItem = {
   notify: string;
 };
 
+export type ExtendedButtonConfigItem = ButtonConfigItem & {
+  isDefaultCard?: boolean;
+  isHidden?: boolean;
+  useCustomButton?: boolean;
+};
+
 export interface CustomButtons {
   [key: string]: ButtonConfigItem[]; // Updated to store arrays of button items
 }
@@ -104,10 +110,10 @@ export interface CustomCards extends VehicleCardConfig {
 }
 
 export interface CustomButtonsConfig extends VehicleCardConfig {
-  eco_button?: ButtonConfigItem[];
-  trip_button?: ButtonConfigItem[];
-  vehicle_button?: ButtonConfigItem[];
-  tyre_button?: ButtonConfigItem[];
+  eco_button?: ButtonConfigItem;
+  trip_button?: ButtonConfigItem;
+  vehicle_button?: ButtonConfigItem;
+  tyre_button?: ButtonConfigItem;
 }
 
 export interface VehicleCardConfig extends LovelaceCardConfig {

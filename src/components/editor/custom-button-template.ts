@@ -2,19 +2,16 @@ import { LitElement, html, TemplateResult, CSSResultGroup } from 'lit';
 import { customElement, property } from 'lit/decorators';
 import { isString } from 'es-toolkit';
 
-import { HomeAssistantExtended as HomeAssistant, ButtonConfigItem, CardTypeConfig } from '../../types';
+import { ExtendedButtonConfigItem, CardTypeConfig } from '../../types';
 
 import editorcss from '../../css/editor.css';
 
 @customElement('custom-button-template')
 export class CustomButtonTemplate extends LitElement {
-  @property() public hass!: HomeAssistant;
-  @property() button!: ButtonConfigItem;
+  @property({ type: Object }) editor!: any;
+  @property() button!: ExtendedButtonConfigItem;
   @property() card!: CardTypeConfig;
-  @property({ type: Boolean }) useDefault: boolean = false;
-  @property({ type: Boolean }) isAddedCard: boolean = false;
   @property({ type: Boolean }) isButtonPreview: boolean = false;
-  @property({ type: Boolean }) isHidden?: boolean;
 
   static get styles(): CSSResultGroup {
     return [editorcss];
@@ -24,27 +21,41 @@ export class CustomButtonTemplate extends LitElement {
     return this.card.button;
   }
 
+  private localizeKey = (label: string): string => {
+    return this.editor.localize(`editor.buttonConfig.${label}`);
+  };
+
   private _editorHeader(): TemplateResult {
-    const label = this.isAddedCard ? 'Hide on card' : 'Use custom button?';
-    const configValue = this.isAddedCard ? 'hide' : 'enabled';
+    const isDefaultCard = this.button.isDefaultCard;
+    const localizeKey = this.localizeKey;
+
+    const checkboxConfigs = [
+      ...(isDefaultCard
+        ? [{ label: localizeKey('useCustomButton'), value: this.button.enabled, configValue: 'enabled' }]
+        : []),
+      { label: localizeKey('hideButton'), value: this.button.hide, configValue: 'hide' },
+    ];
 
     return html`<div class="sub-card-header">
-      <ha-formfield id="button-${this.card.button}" .label=${label}>
-        <ha-checkbox
-          .checked=${this.useDefault}
-          .configValue=${configValue}
-          .configBtnType=${this.card.button}
-          .disabled=${false}
-          @change=${(ev: Event) => this._dispatchEvent(ev, 'btn-changed')}
-        ></ha-checkbox>
-      </ha-formfield>
-      ${!this.isHidden
-        ? html` <ha-button @click=${(ev: Event) => this._dispatchEvent(ev, 'toggle-show-button')}
-            >Show Button</ha-button
-          >`
+      ${checkboxConfigs.map(
+        (config) => html`
+          <ha-formfield .label=${config.label}>
+            <ha-checkbox
+              .checked=${config.value}
+              .configValue=${config.configValue}
+              .configBtnType=${this.card.button}
+              @change=${(ev: Event) => this._dispatchEvent(ev, 'btn-changed')}
+            ></ha-checkbox>
+          </ha-formfield>
+        `
+      )}
+      ${!this.button.isHidden
+        ? html`
+            <ha-button @click=${() => this.editor._toggleShowButton(this.card)}>${localizeKey('showButton')}</ha-button>
+          `
         : ''}
       <ha-button @click=${(ev: Event) => this._dispatchEvent(ev, 'toggle-preview-button')}
-        >${!this.isButtonPreview ? 'Preview' : 'Close Preview'}</ha-button
+        >${!this.isButtonPreview ? localizeKey('preview') : localizeKey('hidePreview')}</ha-button
       >
     </div>`;
   }
@@ -65,7 +76,6 @@ export class CustomButtonTemplate extends LitElement {
 
     const iconSelector = html`
       <ha-icon-picker
-        .hass=${this.hass}
         .label=${'Icon'}
         .value=${icon}
         .configValue=${'icon'}
@@ -85,7 +95,6 @@ export class CustomButtonTemplate extends LitElement {
         <p>${label}</p>
         <ha-code-editor
           .mode=${'jinja2'}
-          .hass=${this.hass}
           .dir=${'ltr'}
           .value=${value}
           .configValue=${configValue}
@@ -102,22 +111,17 @@ export class CustomButtonTemplate extends LitElement {
   }
 
   render(): TemplateResult {
+    const localizeKey = this.localizeKey;
     const { notify, secondary } = this.button;
-
     const editorHeader = this._editorHeader();
     const buttonTitleIconForms = this._buttonTitleIconForms();
     const secondaryUI = this._templateUI(
-      'Secondary information',
+      localizeKey('secondaryInfo'),
       secondary,
       'secondary',
-      'Use Jinja2 template to display secondary information'
+      localizeKey('secondaryInfoHelper')
     );
-    const notifyUI = this._templateUI(
-      'Notify config',
-      notify,
-      'notify',
-      `The result must return 'True' boolean to show the notification`
-    );
+    const notifyUI = this._templateUI(localizeKey('notifyInfo'), notify, 'notify', localizeKey('notifyInfoHelper'));
 
     return html`${editorHeader}
       <div class="card-button-cfg">${buttonTitleIconForms}</div>
