@@ -8,14 +8,21 @@ import { fireEvent, LovelaceCardConfig, LovelaceCardEditor } from 'custom-card-h
 import { debounce } from 'es-toolkit';
 
 // Local types
-import { HomeAssistantExtended as HomeAssistant, VehicleCardConfig, CardTypeConfig, ButtonConfigItem } from './types';
+import {
+  HomeAssistantExtended as HomeAssistant,
+  VehicleCardConfig,
+  CardTypeConfig,
+  ButtonConfigItem,
+  AddedCustomButtonCard,
+  ExtendedButtonConfigItem,
+} from './types';
 
 import { servicesCtrl } from './const/remote-control-keys';
 import { cardTypes, editorShowOpts } from './const/data-keys';
 import { CARD_VERSION } from './const/const';
 import { languageOptions, localize } from './localize/localize';
 import { handleFirstUpdated, defaultConfig, deepMerge } from './utils/ha-helpers';
-import { loadHaComponents } from './utils/loader';
+import { loadHaComponents, stickyPreview } from './utils/loader';
 import { compareVersions } from './utils/helpers';
 import editorcss from './css/editor.css';
 
@@ -36,10 +43,11 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   @state() private _confirmDeleteType: string | null = null;
   @state() private _yamlConfig: { [key: string]: any } = {};
   @state() private _customBtns: { [key: string]: ButtonConfigItem } = {};
-  @state() private _newCardTypeName: string = '';
-  @state() private _newCardTypeIcon: string = '';
   @state() private _selectedLanguage: string = 'system';
   @state() private _latestRelease: string = '';
+
+  @state() private _visiblePanel: Set<string> = new Set();
+  @state() private _newCardType: Map<string, string> = new Map();
 
   @query('panel-images') private _panelImages!: any;
 
@@ -51,6 +59,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     console.log('Connected callback');
     super.connectedCallback();
     void loadHaComponents();
+    void stickyPreview();
     if (process.env.ROLLUP_WATCH === 'true') {
       window.BenzEditor = this;
     }
@@ -72,8 +81,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   protected async firstUpdated(changedProperties: PropertyValues): Promise<void> {
     super.firstUpdated(changedProperties);
     await handleFirstUpdated(this, changedProperties);
-
-    this.baseCardTypes = this.getBaseCardTypes();
+    this.getBaseCardTypes();
     this._convertDefaultCardConfigs();
     this._convertAddedCardConfigs();
   }
@@ -83,6 +91,57 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     if (!this._btnPreview && !this._cardPreview) {
       this._cleanConfig();
     }
+  }
+  private get isAnyAddedCard(): boolean {
+    return this._config.added_cards && Object.keys(this._config.added_cards).length > 0;
+  }
+
+  private useCustomCard(cardType: string): boolean {
+    return this._config.use_custom_cards?.[cardType];
+  }
+
+  private isAddedCard(cardType: string): boolean {
+    return this._config.added_cards?.hasOwnProperty(cardType);
+  }
+
+  private useCustomButton(button: string): boolean {
+    return this._config[button]?.enabled;
+  }
+
+  private isButtonHidden(cardButton: string): boolean {
+    const addedCard = this.isAddedCard(cardButton);
+    return addedCard ? this._config.added_cards?.[cardButton]?.button.hide : this._config[cardButton]?.hide;
+  }
+
+  private _getButtonConfig(button: string): ExtendedButtonConfigItem {
+    const configBtn: ExtendedButtonConfigItem = {
+      ...(!this.isAddedCard(button) ? this._config[button] : this._config.added_cards[button].button),
+      isDefaultCard: !this.isAddedCard(button),
+      isHidden: this.isButtonHidden(button),
+      useCustomButton: this.useCustomButton(button),
+    };
+
+    return configBtn;
+  }
+
+  private getBaseCardTypes() {
+    const baseCardTypes = cardTypes(this._selectedLanguage);
+    if (this.isAnyAddedCard) {
+      Object.keys(this._config.added_cards).map((key) => {
+        const card = this._config.added_cards[key];
+        if (card.button) {
+          baseCardTypes.push({
+            type: key,
+            name: card.button.primary,
+            icon: card.button.icon,
+            config: key,
+            button: key,
+          });
+        }
+      });
+    }
+
+    return (this.baseCardTypes = baseCardTypes);
   }
 
   private _convertDefaultCardConfigs(): void {
@@ -98,7 +157,11 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _convertAddedCardConfigs(): void {
-    if (this._config.added_cards && Object.keys(this._config.added_cards).length > 0) {
+    if (!this.isAnyAddedCard) {
+      console.log('No added cards to convert');
+      return;
+    } else {
+      // console.log('Converting added card configs');
       Object.keys(this._config.added_cards).forEach((key) => {
         const yamlString = YAML.stringify(this._config.added_cards[key].cards);
         const button = this._config.added_cards[key].button;
@@ -114,41 +177,18 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     return localize(string, this._selectedLanguage, search, replace);
   };
 
-  private getBaseCardTypes() {
-    const baseCardTypes = cardTypes(this._selectedLanguage);
-    if (this._config.added_cards && Object.keys(this._config.added_cards).length > 0) {
-      Object.keys(this._config.added_cards).map((key) => {
-        const card = this._config.added_cards[key];
-        if (card.button) {
-          baseCardTypes.push({
-            type: key,
-            name: card.button.primary,
-            icon: card.button.icon,
-            config: key,
-            button: key,
-          });
-        }
-      });
-    }
-
-    return baseCardTypes;
-  }
-
   protected render(): TemplateResult | void {
     if (!this.hass || !this._config) {
       return html``;
     }
-    const root = document.querySelector('body > home-assistant')?.shadowRoot;
-    const dialog = root?.querySelector('hui-dialog-edit-card')?.shadowRoot;
-    const previewElement = dialog?.querySelector('ha-dialog > div.content > div.element-preview') as HTMLElement;
-    // Change the default preview element to be sticky
-    if (previewElement && previewElement.style.position !== 'sticky') {
-      previewElement.style.position = 'sticky';
-      previewElement.style.top = '0';
-    }
+    // Get the selected card type
+    const selectedCard = this.baseCardTypes.find((card) => card.type === this._activeSubcardType);
+
     return html`
       <div class="card-config">
-        ${!this._activeSubcardType ? this._renderBaseConfig() : this._renderCustomSubCardUI()}
+        ${!this._activeSubcardType
+          ? this._renderBaseConfig()
+          : this._renderSubCardConfig(selectedCard as CardTypeConfig)}
       </div>
     `;
   }
@@ -163,23 +203,186 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     `;
   }
 
-  private _renderVersionInfo(): TemplateResult {
+  private _renderNameEntityForm(): TemplateResult {
+    // Filter entities as per your requirement
+    const entities = Object.keys(this.hass.states).filter(
+      (entity) => entity.startsWith('sensor') && entity.endsWith('_car')
+    );
+    const modelName = this._config.model_name;
+
+    // Define options for the combo-box
+    const options = [{ value: modelName, label: modelName }];
+
+    // The combo-box for entering a custom name or selecting the model name
+    const nameComboBox = html`
+      <ha-combo-box
+        .item-value-path=${'value'}
+        .item-label-path=${'label'}
+        .hass=${this.hass}
+        .label=${'Select or Enter Name'}
+        .items=${options}
+        .allowCustomValue=${true}
+        .value=${this._config.name}
+        .configValue=${'name'}
+        @value-changed=${this._valueChanged}
+        @closed=${(ev: Event) => ev.stopPropagation()}
+      ></ha-combo-box>
+    `;
+
     return html`
-      <div class="version">
-        <span>
-          ${CARD_VERSION === this._latestRelease
-            ? html`version: ${CARD_VERSION}`
-            : html`version: ${CARD_VERSION} -> <span class="update">${this._latestRelease}</span>`}
-        </span>
-      </div>
-      ${this._renderUpdateToast()}
+      ${nameComboBox}
+      <ha-entity-picker
+        .hass=${this.hass}
+        .value=${this._config?.entity}
+        .required=${true}
+        .configValue=${'entity'}
+        @value-changed=${this._valueChanged}
+        .allow-custom-entity=${false}
+        .includeEntities=${entities}
+      ></ha-entity-picker>
     `;
   }
 
-  private _renderCustomSubCardUI(): TemplateResult {
-    const selectedCard = this.baseCardTypes.filter((card) => card.type === this._activeSubcardType).map((card) => card);
+  private _renderCardButtonPanel(): TemplateResult {
+    const translate = {
+      info: this.localize('editor.common.infoButton'),
+      defaultCards: this.localize('editor.buttonConfig.defaultCards'),
+      addedCards: this.localize('editor.buttonConfig.customCards'),
+      addNewCard: this.localize('editor.buttonConfig.addNewCard'),
+      buttonGridSwipe: this.localize('editor.buttonConfig.buttonGridSwipe'),
+      useButtonSwipe: this.localize('editor.buttonConfig.useButtonSwipe'),
+      swipeRows: this.localize('editor.buttonConfig.swipeRows'),
+    };
 
-    return this._renderSubCardConfig(selectedCard[0]);
+    // Split cards into default and added
+    const defaultCards = this.baseCardTypes.filter((card) => !this.isAddedCard(card.type));
+    const addedCards = this.baseCardTypes.filter((card) => this.isAddedCard(card.type));
+
+    // Function to render card items
+    const renderCardItems = (cards: CardTypeConfig[]) => {
+      return cards.map((card) => {
+        const hiddenClass = this.isButtonHidden(card.button) ? 'disabled' : '';
+        const addedCard = this.isAddedCard(card.type);
+        const eyeIcon = this.isButtonHidden(card.button) ? 'mdi:eye' : 'mdi:eye-off';
+        const { icon, name, type, config, button } = card;
+
+        return html`
+          <div class="card-type-item">
+            <div class="card-type-row ${hiddenClass}">
+              <div class="card-type-icon">
+                <div class="icon-background">
+                  <ha-icon icon=${icon} @click=${() => (this._activeSubcardType = type)}></ha-icon>
+                </div>
+              </div>
+              <div class="card-type-content">
+                <span class="secondary">Config name: ${config}</span>
+                <div class="primary">${name}</div>
+              </div>
+            </div>
+            <div class="card-type-actions">
+              <div class="action-icon" @click=${() => (this._activeSubcardType = type)}>
+                <ha-icon icon="mdi:pencil"></ha-icon>
+              </div>
+              <div class="action-icon" @click=${this._hideCustomButton(button)}>
+                <ha-icon icon=${eyeIcon}></ha-icon>
+              </div>
+              ${addedCard
+                ? html`
+                    <div class="action-icon" @click=${() => (this._confirmDeleteType = type)}>
+                      <ha-icon icon="mdi:close"></ha-icon>
+                    </div>
+                  `
+                : nothing}
+            </div>
+            ${this._confirmDeleteType === type
+              ? html` <div class="confirm-delete">
+                  <span>${this.localize('editor.buttonConfig.deleteConfirm')}</span>
+                  <ha-button @click=${this._removeCustomCard(type)}><ha-icon icon="mdi:check"></ha-button>
+                  <ha-button @click=${() => (this._confirmDeleteType = null)}><ha-icon icon="mdi:close"></button>
+                </div>`
+              : nothing}
+          </div>
+        `;
+      });
+    };
+
+    const addNewCardForm = html`
+      <div class="card-type-item">
+        <div class="card-type-content">
+          <ha-icon-picker
+            .hass=${this.hass}
+            .label=${'Icon'}
+            .value=${'mdi:car'}
+            .configValue=${'icon'}
+            @value-changed=${this._handleCardTypeInput}
+          ></ha-icon-picker>
+        </div>
+        <div class="card-type-content">
+          <ha-textfield
+            style="margin-bottom: 0;"
+            .label=${'Enter name for the card'}
+            .configValue=${'type'}
+            .value=${this._newCardType.get('type') || ''}
+            .toastId=${'buttonConfig'}
+            .errorMsg=${'Please enter a name for the card'}
+            @change=${this._handleCardTypeInput}
+          ></ha-textfield>
+        </div>
+        <div class="card-type-actions">
+          <div class="action-icon" @click=${this._addNewCard}>
+            <ha-icon icon="mdi:plus"></ha-icon>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const buttonGridSwipe = html`
+      <div class="card-type-item">
+        <div class="card-type-content">
+          <ha-textfield
+            .label=${translate.swipeRows}
+            .configValue=${'rows_size'}
+            .configBtnType=${'button_grid'}
+            .value=${this._config.button_grid?.rows_size || ''}
+            .min=${1}
+            @input=${this._valueChanged}
+          ></ha-textfield>
+        </div>
+        <div class="card-type-content">
+          <ha-formfield .label=${translate.useButtonSwipe}>
+            <ha-checkbox
+              .checked=${this._config.button_grid?.use_swiper}
+              .configValue=${'use_swiper'}
+              .configBtnType=${'button_grid'}
+              @change=${this._valueChanged}
+            ></ha-checkbox>
+          </ha-formfield>
+        </div>
+      </div>
+    `;
+
+    const sections = [
+      { key: 'buton-grid-swipe', title: translate.buttonGridSwipe, cards: [buttonGridSwipe], visible: true },
+      { key: 'add-new-card', title: translate.addNewCard, cards: [addNewCardForm], visible: true },
+      { key: 'default-cards', title: translate.defaultCards, cards: renderCardItems(defaultCards), visible: true },
+      {
+        key: 'added-cards',
+        title: translate.addedCards,
+        cards: renderCardItems(addedCards),
+        visible: this.isAnyAddedCard,
+      },
+    ].map((section) => ({
+      ...section,
+      isVisible: this._visiblePanel.has(section.key),
+      toggle: () => this._toggleSubButtonPanel(section.key),
+    }));
+
+    const buttonsConfigWrapper = sections
+      .filter((section) => section.visible)
+      .map((section) => this._renderSection(section));
+
+    const content = html`<ha-alert alert-type="info">${translate.info}</ha-alert>${buttonsConfigWrapper}`;
+    return this.panelTemplate('buttonConfig', 'buttonConfig', 'mdi:view-dashboard', content);
   }
 
   private _renderSubCardConfig(card: CardTypeConfig): TemplateResult {
@@ -206,27 +409,24 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         ${cardTabsRow}
       </div>
     `;
-
-    const buttonTemplate = this._renderCustomButtonTemplate(card);
-    const editorWrapper = this._renderCustomCardEditor(card);
-
-    const content = html` <div class="sub-card-config">${subCardHeader} ${buttonTemplate} ${editorWrapper}</div> `;
-
-    return content;
-  }
-
-  private _renderCustomCardEditor(card: CardTypeConfig): TemplateResult {
-    const useCustomCard = this._config?.use_custom_cards?.[card.config];
-    const isAddedCard = this._config?.added_cards?.hasOwnProperty(card.type);
+    const buttonTemplateWrapper = html`
+      <custom-button-template
+        .editor=${this}
+        .button=${this._getButtonConfig(card.button)}
+        .card=${card}
+        .isButtonPreview=${this._btnPreview}
+        @custom-button-changed=${(ev: any) => this._customBtnHandler(ev)}
+      ></custom-button-template>
+    `;
 
     const cardCodeEditorWrapper = html`
       <div class="card-code-editor">
         <custom-card-editor
+          .editor=${this}
           .card=${card}
-          .hass=${this.hass}
           .isCardPreview=${this._cardPreview}
-          .isCustomCard=${useCustomCard}
-          .isAddedCard=${isAddedCard}
+          .isCustomCard=${this.useCustomCard(card.config)}
+          .isAddedCard=${this.isAddedCard(card.type)}
           .yamlConfig=${this._yamlConfig[card.config] || ''}
           @custom-card-editor-changed=${(ev: any) => this._handleCustomCardEditorChange(ev)}
           @yaml-changed=${(ev: any) => this._customCardChange(ev)}
@@ -234,115 +434,23 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       </div>
     `;
 
-    return this.panelTemplate('customCardConfig', 'customCardConfig', 'mdi:code-json', cardCodeEditorWrapper);
-  }
+    const buttonTemplate = this.panelTemplate(
+      'customButtonConfig',
+      'customButtonConfig',
+      'mdi:button-cursor',
+      buttonTemplateWrapper,
+      false
+    );
+    const editorWrapper = this.panelTemplate(
+      'customCardConfig',
+      'customCardConfig',
+      'mdi:code-json',
+      cardCodeEditorWrapper
+    );
 
-  private _renderCustomButtonTemplate(card: CardTypeConfig): TemplateResult {
-    const button = card.button;
-    const buttonConfig = this._customBtns[button];
-    const useDefault = this._config[button]?.enabled
-      ? this._config[button]?.enabled
-      : this._config.added_cards?.[card.type]?.button?.hide;
-    const isAddedCard = this._config.added_cards?.hasOwnProperty(card.type) || false;
-    const isHidden = this._config.added_cards?.[card.type]?.button.hide;
+    const content = html` <div class="sub-card-config">${subCardHeader} ${buttonTemplate} ${editorWrapper}</div> `;
 
-    const content = html`
-      <custom-button-template
-        .hass=${this.hass}
-        .button=${buttonConfig}
-        .card=${card}
-        .useDefault=${useDefault}
-        .isAddedCard=${isAddedCard}
-        .isHidden=${isHidden}
-        .isButtonPreview=${this._btnPreview}
-        @custom-button-changed=${(ev: any) => this._customBtnHandler(ev)}
-      ></custom-button-template>
-    `;
-    return this.panelTemplate('customButtonConfig', 'customButtonConfig', 'mdi:button-cursor', content, false);
-  }
-
-  private _renderCardButtonPanel(): TemplateResult {
-    const localInfo = this.localize('editor.common.infoButton');
-
-    const isAddedCard = (cardType: string) => this._config.added_cards?.hasOwnProperty(cardType);
-    const isHidden = (cardType: string) => this._config.added_cards?.[cardType]?.button.hide;
-
-    const buttonItemRow = this.baseCardTypes.map((card) => {
-      const hiddenClass = isHidden(card.type) ? 'disabled' : '';
-      const addedCard = isAddedCard(card.type);
-      const eyeIcon = isHidden(card.type) ? 'mdi:eye' : 'mdi:eye-off';
-      const { icon, name, type, config } = card;
-      return html`
-        <div class="card-type-item">
-          <div class="card-type-row ${hiddenClass}">
-            <div class="card-type-icon">
-              <div class="icon-background">
-                <ha-icon icon=${icon} @click=${() => (this._activeSubcardType = type)}></ha-icon>
-              </div>
-            </div>
-            <div class="card-type-content">
-              <span class="secondary">Config name: ${config}</span>
-              <div class="primary">${name}</div>
-            </div>
-          </div>
-          <div class="card-type-actions">
-            <div class="action-icon" @click=${() => (this._activeSubcardType = type)}>
-              <ha-icon icon="mdi:pencil"></ha-icon>
-            </div>
-            ${addedCard
-              ? html`
-                  <div class="action-icon" @click=${this._hideCustomButton(type)}>
-                    <ha-icon icon=${eyeIcon}></ha-icon>
-                  </div>
-                  <div class="action-icon" @click=${() => (this._confirmDeleteType = type)}>
-                    <ha-icon icon="mdi:close"></ha-icon>
-                  </div>
-                `
-              : nothing}
-          </div>
-          ${this._confirmDeleteType === type
-            ? html` <div class="confirm-delete">
-                <span>Are you sure you want to delete this card?</span>
-                <ha-button @click=${this._removeCustomCard(type)}>Yes</ha-button>
-                <ha-button @click=${() => (this._confirmDeleteType = null)}>No</ha-button>
-              </div>`
-            : nothing}
-        </div>
-      `;
-    });
-
-    const addNewCardForm = html`
-      <div class="card-type-item">
-          <div class="card-type-content">
-            <ha-icon-picker
-              .hass=${this.hass}
-              .label=${'Icon'}
-              .value=${'mdi:emoticon'}
-              .configValue=${'newCardTypeIcon'}
-              @value-changed=${this._handleCardTypeInput}
-            ></ha-icon-picker>
-          </div>
-          <div class="card-type-content">
-            <ha-textfield style="margin-bottom: 0;"
-              .label=${'Enter name for the card'}
-              .configValue=${'newCardTypeName'}
-              .value=${this._newCardTypeName}
-              .toastId=${'buttonConfig'}
-              .errorMsg=${'Please enter a name for the card'}
-              @change=${this._handleCardTypeInput}
-            ></ha-textfield>
-          </div>
-          <div class="card-type-actions">
-            <div class="action-icon" @click=${this._addNewCard}>
-              <ha-icon icon="mdi:plus"></ha-icon>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-
-    const content = html`<ha-alert alert-type="info">${localInfo}</ha-alert>${buttonItemRow} ${addNewCardForm}`;
-    return this.panelTemplate('buttonConfig', 'buttonConfig', 'mdi:view-dashboard', content);
+    return content;
   }
 
   private _renderShowOptions(): TemplateResult {
@@ -353,61 +461,22 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
     const switches = html`
       <div class="switches">
-        ${showOptions.map(
-          (option) => html`
-            <ha-formfield .label=${option.label}>
+        ${showOptions.map((option) => {
+          const { label, configKey } = option;
+          return html`
+            <ha-formfield .label=${label}>
               <ha-checkbox
-                .checked=${this._config[option.configKey]}
-                .configValue=${option.configKey}
+                .checked=${this._config[configKey]}
+                .configValue=${configKey}
                 @change=${this._showValueChanged}
               ></ha-checkbox>
             </ha-formfield>
-          `
-        )}
+          `;
+        })}
       </div>
     `;
 
     return this.panelTemplate('showConfig', 'showConfig', 'mdi:toggle-switch', switches);
-  }
-
-  private _renderNameEntityForm(): TemplateResult {
-    // Filter entities as per your requirement
-    const entities = Object.keys(this.hass.states).filter(
-      (entity) => entity.startsWith('sensor') && entity.endsWith('_car')
-    );
-    const modelName = this._config.model_name;
-
-    // Define options for the combo-box
-    const options = [{ value: modelName, label: modelName }];
-
-    // The combo-box for entering a custom name or selecting the model name
-    const nameComboBox = html`
-      <ha-combo-box
-        item-value-path="value"
-        item-label-path="label"
-        .hass=${this.hass}
-        .label=${'Select or Enter Name'}
-        .items=${options}
-        .allowCustomValue=${true}
-        .value=${this._config.name}
-        .configValue=${'name'}
-        @value-changed=${this._valueChanged}
-        @closed=${(ev: Event) => ev.stopPropagation()}
-      ></ha-combo-box>
-    `;
-
-    return html`
-      ${nameComboBox}
-      <ha-entity-picker
-        .hass=${this.hass}
-        .value=${this._config?.entity}
-        .required=${true}
-        .configValue=${'entity'}
-        @value-changed=${this._valueChanged}
-        allow-custom-entity
-        .includeEntities=${entities}
-      ></ha-entity-picker>
-    `;
   }
 
   private _renderThemesConfig(): TemplateResult {
@@ -415,6 +484,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       { key: 'system', name: 'System', nativeName: 'System' },
       ...languageOptions.sort((a, b) => a.name.localeCompare(b.name)),
     ];
+
     const themeMode = [
       { key: 'auto', name: 'Auto' },
       { key: 'dark', name: 'Dark' },
@@ -432,13 +502,13 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         >
           ${langOpts.map(
             (lang) =>
-              html`<mwc-list-item value=${lang.key}>${lang.nativeName ? lang.nativeName : lang.name}</mwc-list-item> `
+              html`<ha-list-item value=${lang.key}>${lang.nativeName ? lang.nativeName : lang.name}</ha-list-item> `
           )}
         </ha-select>
 
         <ha-theme-picker
           .hass=${this.hass}
-          .value=${this._config.selected_theme.theme}
+          .value=${this._config.selected_theme.theme ?? 'default'}
           .configValue=${'theme'}
           .includeDefault=${true}
           @selected=${this._valueChanged}
@@ -566,6 +636,19 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     return this.panelTemplate('servicesConfig', 'servicesConfig', 'mdi:car-cog', servicesSelector);
   }
 
+  private _renderVersionInfo(): TemplateResult {
+    return html`
+      <div class="version">
+        <span>
+          ${CARD_VERSION === this._latestRelease
+            ? html`version: ${CARD_VERSION}`
+            : html`version: ${CARD_VERSION} -> <span class="update">${this._latestRelease}</span>`}
+        </span>
+      </div>
+      ${this._renderUpdateToast()}
+    `;
+  }
+
   private _renderToast(idToast: string): TemplateResult {
     const toastId = `toast_${idToast}`;
     return html`
@@ -573,6 +656,15 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         <ha-alert alert-type="warning" dismissable @alert-dismissed-clicked=${() => this._handleAlertDismissed(toastId)}
           >Default alert message
         </ha-alert>
+      </div>
+    `;
+  }
+
+  private _renderSuccesToast(idToast: string): TemplateResult {
+    const toastId = `toast_${idToast}_success`;
+    return html`
+      <div id="${toastId}" class="toast">
+        <ha-alert alert-type="success">Success alert message</ha-alert>
       </div>
     `;
   }
@@ -609,6 +701,43 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     `;
   }
 
+  /* ---------------------------- TEMPLATE HELPERS ---------------------------- */
+
+  private _renderSection({
+    key,
+    title,
+    isVisible,
+    toggle,
+    cards,
+  }: {
+    key: string;
+    title: string;
+    isVisible: boolean;
+    toggle: () => void;
+    cards: TemplateResult[];
+  }): TemplateResult {
+    return html`
+      <div class="card-types">
+        <div class="header-sm">
+          <span>${title}</span>
+          <div section-id="${key}" class="subcard-icon ${isVisible ? 'active' : ''}" @click="${() => toggle()}">
+            <ha-icon icon="mdi:chevron-down"></ha-icon>
+          </div>
+        </div>
+        <div class="sub-card-rows ${isVisible ? '' : 'hidden'}">${cards}</div>
+      </div>
+    `;
+  }
+
+  private _toggleSubButtonPanel(key: string): void {
+    if (this._visiblePanel.has(key)) {
+      this._visiblePanel.delete(key);
+    } else {
+      this._visiblePanel.add(key);
+    }
+    this.requestUpdate();
+  }
+
   private panelTemplate(
     titleKey: string,
     descKey: string,
@@ -633,7 +762,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
             <ha-icon icon=${icon}></ha-icon>
           </div>
           <div class="card-config">${content}</div>
-          ${this._renderToast(titleKey)}
+          ${this._renderToast(titleKey)} ${this._renderSuccesToast(titleKey)}
         </ha-expansion-panel>
       </div>
     `;
@@ -677,14 +806,21 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   /* ----------------------- CUSTOM BUTTON ITEMS ACTIONS ---------------------- */
 
-  private _hideCustomButton(cardType: string) {
+  private _hideCustomButton(cardButton: string) {
     return () => {
-      const newAddedCards = { ...this._config.added_cards };
-      newAddedCards[cardType].button.hide = !newAddedCards[cardType].button.hide;
-      this._config = { ...this._config, added_cards: newAddedCards };
+      const isAddedCard = this.isAddedCard(cardButton);
+      if (isAddedCard) {
+        const newAddedCards = { ...this._config.added_cards };
+        newAddedCards[cardButton].button.hide = !newAddedCards[cardButton].button.hide;
+        this._config = { ...this._config, added_cards: newAddedCards };
+      } else {
+        const button = this._config[cardButton];
+        button.hide = !button.hide;
+        this._config = { ...this._config, [cardButton]: button };
+        console.log('Hide button', cardButton, button.hide, 'Enabled:', button.enabled);
+      }
       this.configChanged();
-      this.baseCardTypes = this.getBaseCardTypes();
-      this._convertAddedCardConfigs();
+      this.getBaseCardTypes();
     };
   }
 
@@ -694,7 +830,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       delete newAddedCards[cardType];
       this._config = { ...this._config, added_cards: newAddedCards };
       this.configChanged();
-      this.baseCardTypes = this.getBaseCardTypes();
+      this.getBaseCardTypes();
       this._convertAddedCardConfigs();
     };
   }
@@ -704,12 +840,17 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const target = ev.target;
     const configValue = target.configValue;
     const value = target.value;
-    this[`_${configValue}`] = value;
+
+    const newCardType = new Map(this._newCardType);
+    newCardType.set(configValue, value);
+    this._newCardType = newCardType;
+
+    this.requestUpdate();
   }
 
   private _addNewCard(): void {
-    const primary = this._newCardTypeName;
-    const icon = this._newCardTypeIcon ? this._newCardTypeIcon : 'mdi:emoticon';
+    const primary = this._newCardType.get('type');
+    const icon = this._newCardType.get('icon') || 'mdi:car';
     if (primary) {
       const formattedCardType = primary.trim().replace(/ /g, '_').toLowerCase();
       if (
@@ -734,13 +875,20 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           },
         },
       };
+
+      const successMsg = this.localize('editor.buttonConfig.toastNewCard') + `: ${formattedCardType}`;
       this.configChanged();
-      this.baseCardTypes = this.getBaseCardTypes();
+      this.getBaseCardTypes();
       this._convertAddedCardConfigs();
+      this._newCardType.forEach((_, key) => this._newCardType.delete(key));
+      this.updateComplete.then(() => {
+        this.launchToast('buttonConfig', successMsg, true);
+        setTimeout(() => {
+          this._dispatchCardEvent(`btn_${formattedCardType}`);
+          console.log('Added new card', formattedCardType);
+        }, 500);
+      });
     }
-    this._newCardTypeName = '';
-    this._newCardTypeIcon = '';
-    this.requestUpdate();
   }
 
   /* --------------------- ADDITIONAL HANDLERS AND METHODS -------------------- */
@@ -794,12 +942,17 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   /* ----------------------------- IMAGES HANDLERS ---------------------------- */
 
-  private launchToast(id: string, msg: string = ''): void {
-    const toast = this.shadowRoot?.getElementById(`toast_${id}`) as HTMLElement;
+  private launchToast(id: string, msg: string = '', success: boolean = false): void {
+    const toast = this.shadowRoot?.getElementById(`toast_${id}${success ? '_success' : ''}`) as HTMLElement;
     const haAlert = toast?.querySelector('ha-alert') as HTMLElement;
     if (!toast) return;
     haAlert.innerHTML = msg || 'Default alert message';
     toast.classList.add('show');
+    if (success) {
+      setTimeout(() => {
+        this._handleAlertDismissed(`toast_${id}_success`);
+      }, 3000);
+    }
   }
 
   private _handleAlertDismissed(id: string): void {
@@ -917,7 +1070,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
     const target = ev.target;
     const configValue = target.configValue;
-
+    const configBtnType = target.configBtnType;
     let newValue: any = target.value;
 
     const updates: Partial<VehicleCardConfig> = {};
@@ -945,6 +1098,14 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     } else if (configValue === 'selected_language') {
       newValue === 'system' ? (this._selectedLanguage = this.hass.language) : (this._selectedLanguage = newValue);
       updates.selected_language = newValue;
+    } else if (configBtnType === 'button_grid') {
+      newValue = target.checked !== undefined ? target.checked : newValue;
+      const key = configValue as keyof VehicleCardConfig['button_grid'];
+      updates.button_grid = {
+        ...this._config.button_grid,
+        [key]: parseInt(newValue) || newValue,
+      };
+      console.log('Button grid config changed:', key, newValue);
     } else {
       newValue = target.checked !== undefined ? target.checked : ev.detail.value;
       updates[configValue] = newValue;
@@ -1023,14 +1184,15 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _toggleShowButton(card: CardTypeConfig): void {
+    console.log('Toggling show button from editor:', card.button);
     if (this._btnPreview) {
       this._toggleBtnPreview(card.button);
       this._btnPreview = false;
       setTimeout(() => {
-        this._dispatchCardEvent(`btn_${card.type}`);
+        this._dispatchCardEvent(`btn_${card.button}`);
       }, 50);
     } else {
-      this._dispatchCardEvent(`btn_${card.type}`);
+      this._dispatchCardEvent(`btn_${card.button}`);
     }
   }
 
@@ -1087,32 +1249,29 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _closeSubCardEditor(card: CardTypeConfig): void {
-    if (this._cardPreview && !this._activeSubcardType) {
-      this._toggleCardPreview(card.type);
-      this.updateComplete.then(() => {
-        this._activeSubcardType = null;
-        console.log('getting base card types');
-        this.baseCardTypes = this.getBaseCardTypes();
-      });
+    const resetState = () => {
+      this._activeSubcardType = null;
+      this.getBaseCardTypes();
       this._cardPreview = false;
-    } else if (this._btnPreview && !this._activeSubcardType) {
-      this._toggleBtnPreview(card.button);
-      this.updateComplete.then(() => {
-        this._activeSubcardType = null;
-        this.baseCardTypes = this.getBaseCardTypes();
-      });
       this._btnPreview = false;
+    };
+
+    if (!this._activeSubcardType) {
+      if (this._cardPreview) {
+        this._toggleCardPreview(card.type);
+      } else if (this._btnPreview) {
+        this._toggleBtnPreview(card.button);
+      }
+      this.updateComplete.then(resetState);
     } else if (this._activeSubcardType === card.type && (!this._cardPreview || !this._btnPreview)) {
       this._activeSubcardType = null;
       this.updateComplete.then(() => {
-        console.log('getting base card types');
         this._convertAddedCardConfigs();
         this._convertDefaultCardConfigs();
-        this.baseCardTypes = this.getBaseCardTypes();
+        resetState();
       });
-      this._btnPreview = false;
-      this._cardPreview = false;
     }
+
     this.updateComplete.then(() => {
       this._toggleConfigPanel();
     });

@@ -9,10 +9,21 @@ import { fetchLatestReleaseTag } from './loader';
  * @returns
  */
 
-export async function getVehicleEntities(hass: HomeAssistant, config: { entity?: string }): Promise<VehicleEntities> {
+export async function getVehicleEntities(
+  hass: HomeAssistant,
+  config: { entity?: string },
+  component: any
+): Promise<VehicleEntities | void> {
   if (!config.entity) {
-    return {};
+    console.log('Entity not provided', component._entityNotFound);
+    return;
   }
+  const entityState = hass.states[config.entity];
+  if (!entityState) {
+    component._entityNotFound = true;
+    console.log('Entity not found', component._entityNotFound);
+  }
+
   const allEntities = await hass.callWS<Required<VehicleEntity>[]>({
     type: 'config/entity_registry/list',
   });
@@ -266,7 +277,12 @@ export async function handleCardFirstUpdated(
   component: any, // Replace 'any' with the correct type for your component if available
   _changedProperties: PropertyValues
 ): Promise<void> {
-  component.vehicleEntities = await getVehicleEntities(component._hass as HomeAssistant, component.config);
+  component.vehicleEntities = await getVehicleEntities(component._hass as HomeAssistant, component.config, component);
+  if (!component.vehicleEntities) {
+    console.log('No vehicle entities found');
+    component._entityNotFound = true;
+  }
+
   if (!component.config.selected_language || component.config.selected_language === 'system') {
     component.selectedLanguage = component._hass.language;
   } else {

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { LitElement, html, TemplateResult, PropertyValues, CSSResultGroup, nothing } from 'lit';
-import { customElement, property, state } from 'lit/decorators';
+import { customElement, property, state, query } from 'lit/decorators';
 import { classMap } from 'lit/directives/class-map.js';
 
 // Custom Helpers
@@ -40,6 +40,8 @@ import './components/map-card';
 import './components/header-slide';
 import './components/eco-chart';
 import './components/remote-control';
+import './components/vehicle-buttons';
+
 // Functions
 import { localize } from './localize/localize';
 import { formatTimestamp, convertMinutes } from './utils/helpers';
@@ -85,8 +87,11 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
   @state() private isTyreHorizontal!: boolean;
   @state() private selectedLanguage: string = 'en';
+  @state() public _entityNotFound: boolean = false;
 
   @state() private _previewTemplateValues = {};
+
+  @query('vehicle-buttons') private vehicleButtons!: any;
 
   set hass(hass: HomeAssistant) {
     this._hass = hass;
@@ -321,6 +326,10 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     return localize(string, this.selectedLanguage, search, replace);
   };
 
+  private isAddedCard(cardType: string): boolean {
+    return this.config.added_cards?.hasOwnProperty(cardType);
+  }
+
   private get isCharging(): boolean {
     const chargingActive = this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'chargingactive');
     return Boolean(chargingActive);
@@ -379,7 +388,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   }
 
   private async createCustomButtons(buttonConfigs: ButtonConfigItem, stateProperty: string) {
-    const { primary, icon, secondary, notify, hide } = buttonConfigs;
+    const { primary, icon, secondary, notify, hide, enabled } = buttonConfigs;
     const btn = {
       primary,
       icon,
@@ -387,6 +396,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       notify: await this._getNotifyValue(notify),
       button: stateProperty,
       hide: hide ?? false,
+      enabled: enabled ?? false,
     };
     this.customButtons[stateProperty] = btn;
   }
@@ -433,9 +443,13 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
   // https://lit.dev/docs/components/rendering/
   protected render(): TemplateResult | void {
-    if (!this.config || !this._hass) {
-      return html``;
+    if (!this.config || !this._hass || !this.config.entity) {
+      return this._showWarning('No entity provided');
     }
+    if (this._entityNotFound) {
+      return this._showWarning('Entity not found');
+    }
+
     if (this.loading) {
       return this._renderLoading();
     }
@@ -552,11 +566,12 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       : nothing;
 
     // Render service control if enabled
-    const serviceControl = this.config.enable_services_control
-      ? renderItem('mdi:car-cog', this.localize('card.common.titleServices'), () =>
-          this.toggleCardFromButtons('servicesCard')
-        )
-      : nothing;
+    const serviceControl =
+      this.config.enable_services_control !== false
+        ? renderItem('mdi:car-cog', this.localize('card.common.titleServices'), () =>
+            this.toggleCardFromButtons('servicesCard')
+          )
+        : nothing;
 
     // Combine all parts and render
     return html` <div class="info-box">${defaultIndicators} ${serviceControl} ${addedChargingInfo}</div> `;
@@ -714,42 +729,71 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   private _renderButtons(): TemplateResult {
     const showError = this.config.show_error_notify;
     if (!this.config.show_buttons) return html``;
-    const baseCardTypes = this.baseCardTypes.filter((cardType) => !this.customButtons[cardType.button]?.hide);
 
-    return html`
-      <div class="grid-container">
-        ${baseCardTypes.map((cardType) => {
-          const customBtn = this.customButtons[cardType.button];
-          const buttonName = customBtn?.primary ?? cardType.name;
-          const buttonIcon = customBtn?.icon ?? cardType.icon;
-          const secondaryInfo = customBtn?.secondary ?? this.getSecondaryInfo(cardType.type);
-          const btnNotify = customBtn?.notify ?? this.getErrorNotify(cardType.type);
-          return html`
-            <div
-              id="${cardType.type}"
-              class="grid-item click-shrink"
-              @click=${() => this.toggleCardFromButtons(cardType.type)}
-            >
-              <div class="item-icon">
-                <div class="icon-background"><ha-icon .icon="${buttonIcon}"></ha-icon></div>
-                ${showError
-                  ? html`
-                      <div class="item-notify ${btnNotify ? '' : 'hidden'}">
-                        <ha-icon icon="mdi:alert-circle"></ha-icon>
-                      </div>
-                    `
-                  : nothing}
-              </div>
-              <div class="item-content">
-                <div class="primary"><span class="title">${buttonName}</span></div>
-                <span class="secondary">${secondaryInfo}</span>
-              </div>
-            </div>
-          `;
-        })}
-      </div>
-    `;
+    // Filter out the base card types that have `hide: true`
+    const baseCardTypes = this.baseCardTypes
+      .filter((cardType) => {
+        const isAddedCard = this.isAddedCard(cardType.type);
+        if (isAddedCard) {
+          return !this.config.added_cards[cardType.type]?.button?.hide;
+        } else {
+          return !this.config[cardType.button]?.hide;
+        }
+      })
+      .map((cardType) => cardType);
+
+    return html` <vehicle-buttons .component=${this} .buttons=${baseCardTypes}></vehicle-buttons> `;
   }
+  // private _renderButtons(): TemplateResult {
+  //   const showError = this.config.show_error_notify;
+  //   if (!this.config.show_buttons) return html``;
+
+  //   // Filter out the base card types that have `hide: true`
+  //   const baseCardTypes = this.baseCardTypes
+  //     .filter((cardType) => {
+  //       const isAddedCard = this.isAddedCard(cardType.type);
+  //       if (isAddedCard) {
+  //         return !this.config.added_cards[cardType.type]?.button?.hide;
+  //       } else {
+  //         return !this.config[cardType.button]?.hide;
+  //       }
+  //     })
+  //     .map((cardType) => cardType);
+
+  //   return html`
+  //     <div class="grid-container">
+  //       ${baseCardTypes.map((cardType) => {
+  //         const customBtn = this.customButtons[cardType.button];
+  //         const buttonName = customBtn?.primary ?? cardType.name;
+  //         const buttonIcon = customBtn?.icon ?? cardType.icon;
+  //         const secondaryInfo = customBtn?.secondary ?? this.getSecondaryInfo(cardType.type);
+  //         const btnNotify = customBtn?.notify ?? this.getErrorNotify(cardType.type);
+  //         return html`
+  //           <div
+  //             id="${cardType.type}"
+  //             class="grid-item click-shrink"
+  //             @click=${() => this.toggleCardFromButtons(cardType.type)}
+  //           >
+  //             <div class="item-icon">
+  //               <div class="icon-background"><ha-icon .icon="${buttonIcon}"></ha-icon></div>
+  //               ${showError
+  //                 ? html`
+  //                     <div class="item-notify ${btnNotify ? '' : 'hidden'}">
+  //                       <ha-icon icon="mdi:alert-circle"></ha-icon>
+  //                     </div>
+  //                   `
+  //                 : nothing}
+  //             </div>
+  //             <div class="item-content">
+  //               <div class="primary"><span class="title">${buttonName}</span></div>
+  //               <span class="secondary">${secondaryInfo}</span>
+  //             </div>
+  //           </div>
+  //         `;
+  //       })}
+  //     </div>
+  //   `;
+  // }
 
   private _renderCustomCard(): TemplateResult {
     if (!this.activeCardType) return html``;
@@ -1662,7 +1706,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
         this.isBtnPreview = false;
         this.isCardPreview = false;
         this.updateComplete.then(() => {
-          this.showCustomBtnEditor(btnType);
+          this.vehicleButtons?.showCustomBtnEditor(btnType);
         });
         break;
 
@@ -1697,25 +1741,6 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       default:
         break;
     }
-  }
-
-  private showCustomBtnEditor(btnType: string): void {
-    this.updateComplete.then(() => {
-      const gridBtns = this.shadowRoot?.querySelectorAll('.grid-item') as NodeListOf<HTMLElement>;
-      const btnElt = this.shadowRoot?.getElementById(btnType) as HTMLElement;
-      const filteredBtns = Array.from(gridBtns).filter((btn) => btn.id !== btnType);
-      if (!btnElt) return;
-      filteredBtns.forEach((btn) => {
-        btn.style.opacity = '0.2';
-      });
-      btnElt.classList.add('redGlows');
-      setTimeout(() => {
-        filteredBtns.forEach((btn) => {
-          btn.style.opacity = '';
-        });
-        btnElt.classList.remove('redGlows');
-      }, 3000);
-    });
   }
 
   private getGridRowSize(): number {

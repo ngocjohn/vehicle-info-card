@@ -65,6 +65,13 @@ export interface MapPopupConfig {
   theme_mode: 'dark' | 'light' | 'auto';
 }
 
+export interface ButtonGridConfig extends VehicleCardConfig {
+  button_grid: {
+    use_swiper: boolean;
+    rows_size: number;
+  };
+}
+
 export type ButtonConfigItem = {
   enabled: boolean;
   hide?: boolean;
@@ -72,6 +79,12 @@ export type ButtonConfigItem = {
   secondary: string;
   icon: string;
   notify: string;
+};
+
+export type ExtendedButtonConfigItem = ButtonConfigItem & {
+  isDefaultCard?: boolean;
+  isHidden?: boolean;
+  useCustomButton?: boolean;
 };
 
 export interface CustomButtons {
@@ -102,11 +115,12 @@ export interface CustomCards extends VehicleCardConfig {
   eco_card?: LovelaceCardConfig[];
   tyre_card?: LovelaceCardConfig[];
 }
+
 export interface CustomButtonsConfig extends VehicleCardConfig {
-  eco_button?: ButtonConfigItem[];
-  trip_button?: ButtonConfigItem[];
-  vehicle_button?: ButtonConfigItem[];
-  tyre_button?: ButtonConfigItem[];
+  eco_button?: ButtonConfigItem;
+  trip_button?: ButtonConfigItem;
+  vehicle_button?: ButtonConfigItem;
+  tyre_button?: ButtonConfigItem;
 }
 
 export interface VehicleCardConfig extends LovelaceCardConfig {
@@ -164,6 +178,12 @@ export interface EcoData {
   acceleration: number;
   constant: number;
   freeWheel: number;
+}
+export interface ServiceItem {
+  [key: string]: {
+    name: string;
+    icon: string;
+  };
 }
 
 export type CardTypeConfig = {

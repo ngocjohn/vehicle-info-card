@@ -1,7 +1,7 @@
 import { LitElement, html, TemplateResult, css, CSSResultGroup, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { HomeAssistant, fireEvent, forwardHaptic } from 'custom-card-helpers';
-import { Services } from '../types';
+import { Services, ServiceItem } from '../types';
 
 import { cloneDeep, convertToMinutes } from '../utils/helpers';
 import * as Srvc from '../const/remote-control-keys';
@@ -9,13 +9,6 @@ import * as Srvc from '../const/remote-control-keys';
 import styles from '../css/remote-control.css';
 import mainstyle from '../css/styles.css';
 import { localize } from '../localize/localize';
-
-interface ServiceItem {
-  [key: string]: {
-    name: string;
-    icon: string;
-  };
-}
 
 @customElement('remote-control')
 export class RemoteControl extends LitElement {
@@ -30,7 +23,7 @@ export class RemoteControl extends LitElement {
   @state() private activeServices: ServiceItem = {};
 
   protected firstUpdated(): void {
-    console.log('servicesConfig firstUpdated');
+    console.log('getiing servicesConfig');
     this.initializeServiceData();
     this.getActiveServices(); // Get active services from servicesConfig
   }
@@ -50,7 +43,6 @@ export class RemoteControl extends LitElement {
         };
       }
     });
-    console.log('activeServices:', this.activeServices);
   }
 
   connectedCallback(): void {

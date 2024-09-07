@@ -238,6 +238,7 @@ header h1 {
 .grid-container {
   display: grid;
   grid-template-columns: repeat(2, minmax(140px, 1fr));
+  grid-template-rows: auto;
   gap: var(--vic-gutter-gap);
   /* margin-top: 1rem; */
   position: relative;

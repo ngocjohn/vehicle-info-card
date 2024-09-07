@@ -199,7 +199,26 @@
     "editor": {
         "buttonConfig": {
             "desc": "Sukonfigūruokite atskirų mygtukų antrines korteles.",
-            "title": "Mygtukų konfigūracija"
+            "title": "Mygtukų konfigūracija",
+            "defaultCards": "Numatytosios kortelės",
+            "customCards": "Pasirinktinių kortelių",
+            "addNewCard": "Pridėti naują kortelę",
+            "hideButton": "Slėpti mygtuką kortelėje",
+            "useCustomButton": "Naudoti pasirinktinį mygtuką",
+            "useCustomCard": "Naudoti pasirinktinę kortelę",
+            "showButton": "Rodyti mygtuką",
+            "preview": "Peržiūra",
+            "hidePreview": "Slėpti peržiūrą",
+            "secondaryInfo": "Antrinė informacija",
+            "secondaryInfoDesc": "Tai bus rodoma po kortelės pavadinimu.",
+            "secondaryInfoHelper": "Naudokite Jinja2 šabloną antrinei informacijai rodyti",
+            "notifyInfo": "Pranešimų konfigūracija",
+            "notifyInfoHelper": "Rezultatas turi grąžinti 'True', kad būtų parodytas pranešimas.",
+            "deleteConfirm": "Ar tikrai norite ištrinti šią kortelę?",
+            "toastNewCard": "Pridėta nauja kortelė!",
+            "buttonGridSwipe": "Mygtukų tinklelio konfigūracija",
+            "swipeRows": "Eilutės per skaidrę",
+            "useButtonSwipe": "Naudoti braukimą mygtukams"
         },
         "common": {
             "checkAll": "Pažymėkite visus",

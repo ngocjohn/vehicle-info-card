@@ -1,14 +1,12 @@
 import { LitElement, html, TemplateResult, CSSResultGroup } from 'lit';
 import { customElement, property } from 'lit/decorators';
 
-import { HomeAssistantExtended as HomeAssistant, CardTypeConfig } from '../../types';
-import { LovelaceConfig } from 'custom-card-helpers';
+import { CardTypeConfig } from '../../types';
 import editorcss from '../../css/editor.css';
 
 @customElement('custom-card-editor')
 export class CustomCardEditor extends LitElement {
-  @property({ attribute: false }) public hass?: HomeAssistant;
-  @property({ attribute: false }) lovelace?: LovelaceConfig;
+  @property({ type: Object }) editor?: any;
 
   @property() card!: CardTypeConfig;
   @property({ type: Boolean }) isCardPreview: boolean = false;
@@ -21,8 +19,11 @@ export class CustomCardEditor extends LitElement {
   }
 
   private _editorHeader(): TemplateResult {
+    const localizeKey = (label: string): string => {
+      return this.editor.localize(`editor.buttonConfig.${label}`);
+    };
     return html`<div class="sub-card-header">
-      <ha-formfield style="${this.isAddedCard ? 'display: none;' : ''}" .label=${'Use custom card?'}>
+      <ha-formfield style="${this.isAddedCard ? 'display: none;' : ''}" .label=${localizeKey('useCustomCard')}>
         <ha-checkbox
           .checked=${this.isCustomCard}
           .disabled=${this.isAddedCard}
@@ -33,7 +34,7 @@ export class CustomCardEditor extends LitElement {
       </ha-formfield>
 
       <ha-button @click=${(ev: Event) => this._dispatchEvent(ev, 'toggle-card-preview')}
-        >${this.isCardPreview ? 'Close preview' : 'Preview'}</ha-button
+        >${this.isCardPreview ? localizeKey('hidePreview') : localizeKey('preview')}</ha-button
       >
     </div>`;
   }
@@ -46,7 +47,7 @@ export class CustomCardEditor extends LitElement {
         .autocompleteIcons=${true}
         .dir=${'ltr'}
         .mode=${'yaml'}
-        .hass=${this.hass}
+        .hass=${this.editor.hass}
         .linewrap=${false}
         .value=${this.yamlConfig}
         .configValue=${this.card.config}
