@@ -68,6 +68,54 @@ h3 {
   gap: 8px 0px;
 }
 
+.card-types {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  position: relative;
+  border-bottom: 1px solid var(--divider-color);
+  padding-bottom: 0.5rem;
+}
+
+.header-sm {
+  color: var(--secondary-text-color);
+  width: 100%;
+  display: inline-flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 4px;
+  box-sizing: border-box;
+  text-transform: uppercase;
+  height: 100%;
+  font-size: medium;
+  margin-top: 1rem;
+}
+
+.subcard-icon {
+  transition: transform 0.3s;
+  transform: rotate(0deg);
+  display: inline-block;
+  cursor: pointer;
+}
+
+.subcard-icon.active {
+  transform: rotate(180deg);
+}
+
+.sub-card-rows {
+  opacity: 1;
+  padding-top: var(--vic-gutter-gap);
+  max-height: 1000px;
+  transition: all 400ms ease-in-out;
+}
+
+.sub-card-rows.hidden {
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  padding: 0;
+}
+
 .card-type-item {
   position: relative;
   width: 100%;
@@ -77,6 +125,11 @@ h3 {
   border-bottom: 1px solid var(--divider-color);
   padding-block: 8px;
   align-items: center;
+}
+
+.card-types:last-child,
+.card-type-item:last-child {
+  border-bottom: none;
 }
 
 .confirm-delete {
@@ -169,7 +222,7 @@ h3 {
 .card-type-actions .action-icon {
   cursor: pointer;
   color: var(--secondary-text-color);
-  background-color: var(--vic-icon-shape-color);
+  /* background-color: var(--vic-icon-shape-color); */
   border-radius: 50%;
   padding: 4px;
   display: inline-block;
