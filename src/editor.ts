@@ -13,7 +13,6 @@ import {
   VehicleCardConfig,
   CardTypeConfig,
   ButtonConfigItem,
-  AddedCustomButtonCard,
   ExtendedButtonConfigItem,
 } from './types';
 

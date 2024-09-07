@@ -727,7 +727,6 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   }
 
   private _renderButtons(): TemplateResult {
-    const showError = this.config.show_error_notify;
     if (!this.config.show_buttons) return html``;
 
     // Filter out the base card types that have `hide: true`
@@ -744,56 +743,6 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
     return html` <vehicle-buttons .component=${this} .buttons=${baseCardTypes}></vehicle-buttons> `;
   }
-  // private _renderButtons(): TemplateResult {
-  //   const showError = this.config.show_error_notify;
-  //   if (!this.config.show_buttons) return html``;
-
-  //   // Filter out the base card types that have `hide: true`
-  //   const baseCardTypes = this.baseCardTypes
-  //     .filter((cardType) => {
-  //       const isAddedCard = this.isAddedCard(cardType.type);
-  //       if (isAddedCard) {
-  //         return !this.config.added_cards[cardType.type]?.button?.hide;
-  //       } else {
-  //         return !this.config[cardType.button]?.hide;
-  //       }
-  //     })
-  //     .map((cardType) => cardType);
-
-  //   return html`
-  //     <div class="grid-container">
-  //       ${baseCardTypes.map((cardType) => {
-  //         const customBtn = this.customButtons[cardType.button];
-  //         const buttonName = customBtn?.primary ?? cardType.name;
-  //         const buttonIcon = customBtn?.icon ?? cardType.icon;
-  //         const secondaryInfo = customBtn?.secondary ?? this.getSecondaryInfo(cardType.type);
-  //         const btnNotify = customBtn?.notify ?? this.getErrorNotify(cardType.type);
-  //         return html`
-  //           <div
-  //             id="${cardType.type}"
-  //             class="grid-item click-shrink"
-  //             @click=${() => this.toggleCardFromButtons(cardType.type)}
-  //           >
-  //             <div class="item-icon">
-  //               <div class="icon-background"><ha-icon .icon="${buttonIcon}"></ha-icon></div>
-  //               ${showError
-  //                 ? html`
-  //                     <div class="item-notify ${btnNotify ? '' : 'hidden'}">
-  //                       <ha-icon icon="mdi:alert-circle"></ha-icon>
-  //                     </div>
-  //                   `
-  //                 : nothing}
-  //             </div>
-  //             <div class="item-content">
-  //               <div class="primary"><span class="title">${buttonName}</span></div>
-  //               <span class="secondary">${secondaryInfo}</span>
-  //             </div>
-  //           </div>
-  //         `;
-  //       })}
-  //     </div>
-  //   `;
-  // }
 
   private _renderCustomCard(): TemplateResult {
     if (!this.activeCardType) return html``;
