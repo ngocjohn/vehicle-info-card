@@ -65,6 +65,13 @@ export interface MapPopupConfig {
   theme_mode: 'dark' | 'light' | 'auto';
 }
 
+export interface ButtonGridConfig extends VehicleCardConfig {
+  button_grid: {
+    use_swiper: boolean;
+    rows_size: number;
+  };
+}
+
 export type ButtonConfigItem = {
   enabled: boolean;
   hide?: boolean;
