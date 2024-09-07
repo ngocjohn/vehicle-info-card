@@ -199,7 +199,21 @@
     "editor": {
         "buttonConfig": {
             "desc": "Configure the subcards for individual buttons.",
-            "title": "Buttons configuration"
+            "title": "Buttons configuration",
+            "defaultCards": "Default cards",
+            "customCards": "Custom cards",
+            "addNewCard": "Add new card",
+            "hideButton": "Hide button on card",
+            "useCustomButton": "Use custom button",
+            "useCustomCard": "Use custom card",
+            "showButton": "Show button",
+            "preview": "Preview",
+            "hidePreview": "Hide preview",
+            "secondaryInfo": "Secondary info",
+            "secondaryInfoDesc": "This will be shown below the title of the card.",
+            "secondaryInfoHelper": "Use Jinja2 template to display secondary information",
+            "notifyInfo": "Notify configuration",
+            "notifyInfoHelper": "The result must return 'True' boolean to show the notification."
         },
         "common": {
             "checkAll": "Check all",

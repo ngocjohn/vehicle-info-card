@@ -199,7 +199,21 @@
     "editor": {
         "buttonConfig": {
             "desc": "Konfigurieren Sie die Unterkarten für einzelne Schaltflächen.",
-            "title": "Schaltflächenkonfiguration"
+            "title": "Schaltflächenkonfiguration",
+            "defaultCards": "Standardkarten",
+            "customCards": "Benutzerdefinierte Karten",
+            "addNewCard": "Neue Karte hinzufügen",
+            "hideButton": "Schaltfläche auf Karte ausblenden",
+            "useCustomButton": "Benutzerdefinierte Schaltfläche verwenden",
+            "useCustomCard": "Benutzerdefinierte Karte verwenden",
+            "showButton": "Schaltfläche anzeigen",
+            "preview": "Vorschau",
+            "hidePreview": "Vorschau ausblenden",
+            "secondaryInfo": "Sekundäre Informationen",
+            "secondaryInfoDesc": "Dies wird unter dem Kartentitel angezeigt.",
+            "secondaryInfoHelper": "Verwenden Sie die Jinja2-Vorlage, um sekundäre Informationen anzuzeigen",
+            "notifyInfo": "Benachrichtigungskonfiguration",
+            "notifyInfoHelper": "Das Ergebnis muss 'True' zurückgeben, um die Benachrichtigung anzuzeigen."
         },
         "common": {
             "checkAll": "Alles auswählen",

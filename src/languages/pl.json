@@ -199,7 +199,21 @@
     "editor": {
         "buttonConfig": {
             "desc": "Skonfiguruj podkarty dla poszczególnych przycisków.",
-            "title": "Konfiguracja przycisków"
+            "title": "Konfiguracja przycisków",
+            "defaultCards": "Domyślne karty",
+            "customCards": "Karty niestandardowe",
+            "addNewCard": "Dodaj nową kartę",
+            "hideButton": "Ukryj przycisk na karcie",
+            "useCustomButton": "Użyj przycisku niestandardowego",
+            "useCustomCard": "Użyj karty niestandardowej",
+            "showButton": "Pokaż przycisk",
+            "preview": "Podgląd",
+            "hidePreview": "Ukryj podgląd",
+            "secondaryInfo": "Informacje dodatkowe",
+            "secondaryInfoDesc": "To będzie wyświetlone pod tytułem karty.",
+            "secondaryInfoHelper": "Użyj szablonu Jinja2 do wyświetlania dodatkowych informacji",
+            "notifyInfo": "Konfiguracja powiadomień",
+            "notifyInfoHelper": "Wynik musi zwrócić wartość 'True', aby wyświetlić powiadomienie."
         },
         "common": {
             "checkAll": "Zaznacz wszystko",

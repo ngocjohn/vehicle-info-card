@@ -199,7 +199,21 @@
     "editor": {
         "buttonConfig": {
             "desc": "Cấu hình các thẻ con cho các nút riêng lẻ.",
-            "title": "Cấu hình nút"
+            "title": "Cấu hình nút",
+            "defaultCards": "Thẻ mặc định",
+            "customCards": "Thẻ tùy chỉnh",
+            "addNewCard": "Thêm thẻ mới",
+            "hideButton": "Ẩn nút trên thẻ",
+            "useCustomButton": "Sử dụng nút tùy chỉnh",
+            "useCustomCard": "Sử dụng thẻ tùy chỉnh",
+            "showButton": "Hiển thị nút",
+            "preview": "Xem trước",
+            "hidePreview": "Ẩn xem trước",
+            "secondaryInfo": "Thông tin phụ",
+            "secondaryInfoDesc": "Nó sẽ được hiển thị dưới tiêu đề của thẻ.",
+            "secondaryInfoHelper": "Sử dụng mẫu Jinja2 để hiển thị thông tin phụ",
+            "notifyInfo": "Cấu hình thông báo",
+            "notifyInfoHelper": "Kết quả phải trả về 'True' để hiển thị thông báo."
         },
         "common": {
             "checkAll": "Chọn tất cả",

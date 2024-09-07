@@ -199,7 +199,21 @@
     "editor": {
         "buttonConfig": {
             "desc": "Configurer les sous-cartes pour chaque bouton.",
-            "title": "Configuration des boutons"
+            "title": "Configuration des boutons",
+            "defaultCards": "Cartes par défaut",
+            "customCards": "Cartes personnalisées",
+            "addNewCard": "Ajouter une nouvelle carte",
+            "hideButton": "Masquer le bouton sur la carte",
+            "useCustomButton": "Utiliser un bouton personnalisé",
+            "useCustomCard": "Utiliser une carte personnalisée",
+            "showButton": "Afficher le bouton",
+            "preview": "Aperçu",
+            "hidePreview": "Masquer l'aperçu",
+            "secondaryInfo": "Informations secondaires",
+            "secondaryInfoDesc": "Cela sera affiché sous le titre de la carte.",
+            "secondaryInfoHelper": "Utilisez le modèle Jinja2 pour afficher des informations secondaires",
+            "notifyInfo": "Configuration des notifications",
+            "notifyInfoHelper": "Le résultat doit renvoyer 'True' pour afficher la notification."
         },
         "common": {
             "checkAll": "Tout cocher",

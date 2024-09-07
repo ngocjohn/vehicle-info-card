@@ -199,7 +199,21 @@
     "editor": {
         "buttonConfig": {
             "desc": "Nakonfigurujte podkarty pro jednotlivá tlačítka.",
-            "title": "Konfigurace tlačítek"
+            "title": "Konfigurace tlačítek",
+            "defaultCards": "Výchozí karty",
+            "customCards": "Vlastní karty",
+            "addNewCard": "Přidat novou kartu",
+            "hideButton": "Skrýt tlačítko na kartě",
+            "useCustomButton": "Použít vlastní tlačítko",
+            "useCustomCard": "Použít vlastní kartu",
+            "showButton": "Zobrazit tlačítko",
+            "preview": "Náhled",
+            "hidePreview": "Skrýt náhled",
+            "secondaryInfo": "Sekundární informace",
+            "secondaryInfoDesc": "To bude zobrazeno pod názvem karty.",
+            "secondaryInfoHelper": "Použijte šablonu Jinja2 pro zobrazení sekundárních informací",
+            "notifyInfo": "Konfigurace oznámení",
+            "notifyInfoHelper": "Výsledek musí vrátit hodnotu 'True' pro zobrazení oznámení."
         },
         "common": {
             "checkAll": "Vyrat vše",

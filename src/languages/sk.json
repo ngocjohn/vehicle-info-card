@@ -199,7 +199,21 @@
     "editor": {
         "buttonConfig": {
             "desc": "Nakonfigurujte podkarty pre jednotlivé tlačidlá.",
-            "title": "Konfigurácia tlačidiel"
+            "title": "Konfigurácia tlačidiel",
+            "defaultCards": "Predvolené karty",
+            "customCards": "Vlastné karty",
+            "addNewCard": "Pridať novú kartu",
+            "hideButton": "Skryť tlačidlo na karte",
+            "useCustomButton": "Použiť vlastné tlačidlo",
+            "useCustomCard": "Použiť vlastnú kartu",
+            "showButton": "Zobraziť tlačidlo",
+            "preview": "Náhľad",
+            "hidePreview": "Skryť náhľad",
+            "secondaryInfo": "Sekundárne informácie",
+            "secondaryInfoDesc": "To sa zobrazí pod názvom karty.",
+            "secondaryInfoHelper": "Použite šablónu Jinja2 na zobrazenie sekundárnych informácií",
+            "notifyInfo": "Konfigurácia oznámení",
+            "notifyInfoHelper": "Výsledok musí vrátiť hodnotu 'True', aby sa zobrazilo oznámenie."
         },
         "common": {
             "checkAll": "Zaškrtnúť všetko",
