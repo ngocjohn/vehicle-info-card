@@ -78,6 +78,6 @@
     "rollup": "rollup -c",
     "update-lang": "node scripts/update-languages",
     "import-lang": "node scripts/generate-lang-imports.js",
-    "local-copy": "cp dist/vehicle-info-card.js /Volumes/config/www/dashboard-resources/vehicle-info-card.js"
+    "start:hass": "docker run --rm -p8123:8123 -v ${HOME}/Documents/GitHub/custom-cards-project/.hass_dev:/config homeassistant/home-assistant:beta"
   }
 }
