@@ -17,7 +17,7 @@ import { logCardInfo } from './rollup.config.dev.mjs';
 
 dotenv.config();
 const dev = process.env.ROLLUP_WATCH;
-const port = process.env.PORT || 8235;
+const port = process.env.PORT || 4000;
 const currentVersion = dev ? 'DEVELOPMENT' : `v${version}`;
 const custombanner = logCardInfo(currentVersion);
 
