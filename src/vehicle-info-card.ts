@@ -1138,6 +1138,8 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       // Check if the attribute is the charge flap DC status
       if (attribute === 'chargeflapdcstatus' && this.vehicleEntities.chargeFlapDCStatus?.entity_id !== undefined) {
         attributeState = this.getEntityState(this.vehicleEntities.chargeFlapDCStatus.entity_id);
+      } else if (attribute === 'sunroofstatus' && this.vehicleEntities.sunroofStatus?.entity_id !== undefined) {
+        attributeState = this.getEntityState(this.vehicleEntities.sunroofStatus.entity_id);
       } else {
         attributeState = this.getEntityAttribute(entityID, attribute);
       }
@@ -1155,12 +1157,18 @@ export class VehicleCard extends LitElement implements LovelaceCard {
           // Check if the state is valid and the attribute mapping exists
           if (rawState !== undefined && rawState !== null && stateMapping[attribute]) {
             const readableState = stateMapping[attribute].state[rawState] || 'Unknown';
-            const classState = rawState === '2' || rawState === false || rawState === '1' ? '' : 'warning';
+            let classState;
+            if (attribute === 'sunroofstatus') {
+              classState = rawState === '0' ? false : true;
+            } else {
+              classState = rawState === '2' || rawState === '1' || rawState === false ? false : true;
+            }
+            const classStateString = classState ? 'warning' : '';
             return html`
               <div class="data-row">
                 <span>${stateMapping[attribute].name}</span>
                 <div class="data-value-unit">
-                  <span style="text-transform: capitalize" class="${classState}">${readableState}</span>
+                  <span style="text-transform: capitalize" class="${classStateString}">${readableState}</span>
                 </div>
               </div>
             `;
@@ -1438,33 +1446,45 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   };
 
   private getWindowsClosedInfo = (defaultInfo: EntityConfig, vehicleEntity: any): EntityConfig => {
-    let windowState: string;
+    let windowStateOverall: string;
     const lang = this.selectedLanguage;
-
+    const sunroofStatus = this.getEntityState(this.vehicleEntities.sunroofStatus?.entity_id);
     const windowsState = this.getBooleanState(vehicleEntity.entity_id);
-    if (windowsState) {
-      windowState = this.localize('card.common.stateClosed');
+    let closed = sunroofStatus === '0' && windowsState;
+
+    if (closed) {
+      windowStateOverall = this.localize('card.common.stateClosed');
     } else {
       const windowAttributeStates: Record<string, any> = {};
 
       Object.keys(StateMapping.windowAttributes(lang)).forEach((attribute) => {
-        const attributeState = this.getEntityAttribute(vehicleEntity.entity_id, attribute);
+        let attributeState: string | boolean | null | undefined;
+        if (attribute === 'sunroofstatus' && this.vehicleEntities.sunroofStatus?.entity_id !== undefined) {
+          attributeState = this.getEntityState(this.vehicleEntities.sunroofStatus.entity_id) === '1' ? true : false;
+        } else {
+          attributeState = this.getEntityAttribute(vehicleEntity.entity_id, attribute);
+        }
+
         if (attributeState !== undefined && attributeState !== null) {
           windowAttributeStates[attribute] = attributeState;
         }
       });
 
       const openWindows = Object.keys(windowAttributeStates).filter(
-        (attribute) => windowAttributeStates[attribute] === '0'
-      );
+        (attribute) => windowAttributeStates[attribute] === '0' || windowAttributeStates[attribute] === true
+      ).length;
 
-      const totalOpenWindows = openWindows.length;
-      windowState = `${totalOpenWindows} ${this.localize('card.common.stateOpen')}`;
+      if (openWindows === 0) {
+        closed = true;
+        windowStateOverall = this.localize('card.common.stateClosed');
+      } else {
+        windowStateOverall = `${openWindows} ${this.localize('card.common.stateOpen')}`;
+      }
     }
     return {
       ...defaultInfo,
-      state: windowState,
-      active: windowsState,
+      state: windowStateOverall,
+      active: closed,
     };
   };
 

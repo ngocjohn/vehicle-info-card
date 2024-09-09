@@ -58,6 +58,7 @@ const sensorDeviceFilters: {
   tirePressureFrontRight: { suffix: '_tirepressurefrontright' },
   tirePressureRearLeft: { suffix: '_tirepressurerearleft' },
   tirePressureRearRight: { suffix: '_tirepressurerearright' },
+  sunroofStatus: { suffix: '_sunroofstatus' },
 };
 
 export const combinedFilters = { ...binarySensorsFilters, ...sensorDeviceFilters };
