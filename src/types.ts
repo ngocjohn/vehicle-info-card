@@ -87,9 +87,14 @@ export type ExtendedButtonConfigItem = ButtonConfigItem & {
   useCustomButton?: boolean;
 };
 
-export interface CustomButtons {
-  [key: string]: ButtonConfigItem[]; // Updated to store arrays of button items
-}
+export type CustomButtonEntity = {
+  enabled: boolean;
+  hide: boolean;
+  primary: string;
+  secondary: string;
+  icon: string;
+  notify: boolean;
+};
 
 export interface AddedCustomButtonCard {
   [key: string]: {
