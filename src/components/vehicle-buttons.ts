@@ -20,7 +20,7 @@ export class VehicleButtons extends LitElement {
     return [
       swipercss,
       css`
-        #buton-swiper {
+        #button-swiper {
           --swiper-pagination-bottom: -8px;
           --swiper-theme-color: var(--primary-text-color);
           padding-bottom: 12px;
@@ -127,7 +127,7 @@ export class VehicleButtons extends LitElement {
     const showError = this.component.config.show_error_notify;
     const baseCardTypes = this.buttons;
     return html`
-      <section id="buton-swiper">
+      <section id="button-swiper">
         ${this._useButtonSwiper
           ? html`
               <!-- Swiper Layout -->

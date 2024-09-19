@@ -264,9 +264,10 @@ export class VehicleCard extends LitElement implements LovelaceCard {
         this.createCards(this.config[cardType.config], cardType.type);
         // console.log('Configuring custom cards', cardType.type);
       }
+
       if (this.config[cardType.button] && this.config[cardType.button].enabled) {
         await this.createCustomButtons(this.config[cardType.button], cardType.button);
-        // console.log('Configuring custom buttons', cardType.button);
+        console.log('Configuring custom buttons', cardType.button);
       }
 
       if (this.config.added_cards && this.config.added_cards[cardType.type]) {
@@ -319,6 +320,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
         })
       );
       this.additionalCards[stateProperty] = cards;
+      // console.log('Created cards', this.additionalCards);
     }
   }
 
@@ -804,7 +806,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       return html``;
     }
 
-    const isDefaultCard = !cardInfo.use_card || !cardInfo.config;
+    const isDefaultCard = !cardInfo.use_card;
     const cards = isDefaultCard ? cardInfo.defaultRender() : this.additionalCards[this.activeCardType];
 
     const lastCarUpdate = config.entity ? this._hass.states[config.entity].last_changed : '';
