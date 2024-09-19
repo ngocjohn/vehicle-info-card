@@ -23,6 +23,10 @@ ha-card {
 ha-card.preview-card {
   padding: 0;
   border: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--vic-card-padding);
+  background: none;
 }
 
 .fade-in {
@@ -443,6 +447,9 @@ header h1 {
 .card-element {
   transition: all 0.5s ease;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--vic-card-padding);
 }
 
 /* .card-element.swiping-left {
@@ -506,7 +513,7 @@ header h1 {
   border-style: solid;
   border-color: var(--ha-card-border-color, var(--divider-color, #e0e0e0));
   transition: all 0.3s ease-out;
-  margin-bottom: 1rem;
+  /* margin-bottom: 1rem; */
   position: relative;
 }
 
