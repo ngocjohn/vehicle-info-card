@@ -60,10 +60,11 @@ export function imageInputChange(editor: any, ev: Event, index?: number): void {
 
 export async function handleFilePicked(editor: any, ev: any): Promise<void> {
   console.log('File picked');
+  console.log(ev.target);
   const input = ev.target as HTMLInputElement;
-  const errorMsg = ev.target.errorMsg;
-  const toastId = ev.target.toastId;
-
+  const errorMsg = ev.target?.errorMsg;
+  const toastId = ev.target?.toastId;
+  console.log('Input:', ev.target);
   if (!input.files || input.files.length === 0) {
     console.log('No files selected.');
     return;
