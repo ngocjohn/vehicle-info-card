@@ -949,6 +949,9 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   }
 
   private _renderDefaultTyreCard(): TemplateResult {
+    const customTyreBg = this.config.extra_configs?.tire_background
+      ? this.config.extra_configs.tire_background
+      : tyreBg;
     const lang = this.selectedLanguage;
     const isPressureWarning = this.getBooleanState(this.vehicleEntities.tirePressureWarning?.entity_id);
 
@@ -971,7 +974,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
           <ha-icon icon="mdi:rotate-right-variant"></ha-icon>
         </div>
         <div class="data-box tyre-wrapper ${isHorizontal}">
-          <div class="background" style="background-image: url(${tyreBg})"></div>
+          <div class="background" style="background-image: url(${customTyreBg})"></div>
           ${DataKeys.tyrePressures(lang).map(
             (tyre) =>
               html` <div class="tyre-box ${isHorizontal} ${tyre.key.replace('tirePressure', '').toLowerCase()}">
