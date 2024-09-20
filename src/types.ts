@@ -128,6 +128,10 @@ export interface CustomButtonsConfig extends VehicleCardConfig {
   tyre_button?: ButtonConfigItem;
 }
 
+export interface ExtraConfigs {
+  tire_background: string;
+}
+
 export interface VehicleCardConfig extends LovelaceCardConfig {
   type: string;
   entity: string;
@@ -140,6 +144,7 @@ export interface VehicleCardConfig extends LovelaceCardConfig {
   selected_theme: ThemesConfig;
   use_custom_cards?: UseCustomCards;
   services: Services;
+  extra_configs: ExtraConfigs;
   tap_action?: ActionConfig;
   hold_action?: ActionConfig;
   double_tap_action?: ActionConfig;

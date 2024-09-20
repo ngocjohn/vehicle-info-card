@@ -267,6 +267,11 @@
         "customCardConfig": {
             "title": "Thẻ tùy chỉnh",
             "desc": "Cấu hình YAML cho thẻ lovelace"
+        },
+        "customTireBackground": {
+            "title": "Hình nền lốp xe tùy chỉnh",
+            "desc": "Tải lên một hình ảnh để thay thế hình nền mặc định.",
+            "info": "Hình ảnh nên là hình vuông với độ phân giải tối đa là 450x450 pixel. Khuyến nghị sử dụng hình nền trong suốt."
         }
     }
 }

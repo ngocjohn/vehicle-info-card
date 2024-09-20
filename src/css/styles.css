@@ -753,11 +753,11 @@ dialog::backdrop {
 
 .tyre-name {
   color: var(--secondary-text-color);
-  text-align: left;
+  text-align: center;
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  text-wrap: nowrap;
+  text-wrap: pretty;
 }
 
 .tyre-info {

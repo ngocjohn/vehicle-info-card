@@ -23,6 +23,8 @@ import { languageOptions, localize } from './localize/localize';
 import { handleFirstUpdated, defaultConfig, deepMerge } from './utils/ha-helpers';
 import { loadHaComponents, stickyPreview } from './utils/loader';
 import { compareVersions } from './utils/helpers';
+import { uploadImage } from './utils/editor-image-handler';
+
 import editorcss from './css/editor.css';
 
 import './components/editor/custom-card-editor';
@@ -447,7 +449,11 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       cardCodeEditorWrapper
     );
 
-    const content = html` <div class="sub-card-config">${subCardHeader} ${buttonTemplate} ${editorWrapper}</div> `;
+    const tireType = card.type === 'tyreCards' ? this._renderCustomTireBackground() : nothing;
+
+    const content = html`
+      <div class="sub-card-config">${subCardHeader} ${buttonTemplate} ${editorWrapper} ${tireType}</div>
+    `;
 
     return content;
   }
@@ -700,6 +706,37 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     `;
   }
 
+  private _renderCustomTireBackground(): TemplateResult {
+    const info = this.localize('editor.customTireBackground.info');
+    const urlInput = html`
+      <ha-alert alert-type="info">${info}</ha-alert>
+      <div class="custom-background-wrapper">
+        <ha-textfield
+          .label=${'Tire background url'}
+          .disabled=${true}
+          .value=${this._config.extra_configs?.tire_background || ''}
+        ></ha-textfield>
+      </div>
+
+      <div class="custom-background-wrapper">
+        ${this._config.extra_configs?.tire_background
+          ? html` <ha-button @click=${() => this._removeTireBackground()}> Remove image </ha-button> `
+          : html` <ha-button @click=${() => this.shadowRoot?.getElementById('file-upload-new')?.click()}>
+                Upload image
+              </ha-button>
+              <input
+                type="file"
+                id="file-upload-new"
+                class="file-input"
+                @change=${(ev: any) => this._handleTireBackgroundUpload(ev)}
+                accept="image/*"
+              />`}
+      </div>
+    `;
+
+    return this.panelTemplate('customTireBackground', 'customTireBackground', 'mdi:car-tire-alert', urlInput);
+  }
+
   /* ---------------------------- TEMPLATE HELPERS ---------------------------- */
 
   private _renderSection({
@@ -768,6 +805,27 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   /* ----------------------------- EVENT HANDLERS ----------------------------- */
+
+  private async _handleTireBackgroundUpload(ev: any): Promise<void> {
+    if (!ev.target.files || ev.target.files.length === 0) {
+      return;
+    }
+
+    const file = ev.target.files[0];
+    const url = await uploadImage(this.hass, file);
+    if (url) {
+      this._config = { ...this._config, extra_configs: { ...this._config.extra_configs, tire_background: url } };
+      this.configChanged();
+    } else {
+      return;
+    }
+  }
+
+  private _removeTireBackground(): void {
+    this._config = { ...this._config, extra_configs: { ...this._config.extra_configs, tire_background: '' } };
+    this.configChanged();
+  }
+
   private _handleCustomCardEditorChange(ev: any): void {
     const { type, config } = ev.detail;
 
