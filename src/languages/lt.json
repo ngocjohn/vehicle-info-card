@@ -267,6 +267,11 @@
         "customCardConfig": {
             "title": "Pasirinktinė kortelė",
             "desc": "Yaml konfigūracija lovelace kortelei"
+        },
+        "customTireBackground": {
+            "title": "Individualus padangų fonas",
+            "desc": "Įkelkite vaizdą, kad pakeistumėte numatytąjį foną.",
+            "info": "Vaizdas turi būti kvadratinis, didžiausia skiriamoji geba – 450x450 pikselių. Rekomenduojamas permatomas fonas."
         }
     }
 }

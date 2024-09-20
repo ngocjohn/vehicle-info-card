@@ -267,6 +267,11 @@
         "customCardConfig": {
             "title": "Niestandardowa karta",
             "desc": "Konfiguracja YAML dla karty lovelace"
+        },
+        "customTireBackground": {
+            "title": "Niestandardowe tło opony",
+            "desc": "Prześlij obraz, aby zmienić domyślne tło.",
+            "info": "Obraz powinien być kwadratowy i mieć maksymalną rozdzielczość 450x450 pikseli. Zaleca się przezroczyste tło."
         }
     }
 }

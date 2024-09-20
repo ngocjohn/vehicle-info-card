@@ -267,6 +267,11 @@
         "customCardConfig": {
             "title": "Benutzerdefinierte Karte",
             "desc": "Yaml-Konfiguration für Lovelace-Karte"
+        },
+        "customTireBackground": {
+            "title": "Benutzerdefinierter Reifenhintergrund",
+            "desc": "Laden Sie ein Bild hoch, um den Standardhintergrund zu ändern.",
+            "info": "Das Bild sollte quadratisch sein und eine maximale Auflösung von 450x450 Pixel haben. Ein transparentes Hintergrund wird empfohlen."
         }
     }
 }
