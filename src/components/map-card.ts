@@ -26,7 +26,7 @@ export class VehicleMap extends LitElement {
   @state() private zoom = 16;
   @state() private state = '';
   @state() private address: Partial<Address> = {};
-  @state() private enableAdress = false;
+  @state() private loadingAdress: boolean = false;
 
   static get styles(): CSSResultGroup {
     return [
@@ -146,6 +146,39 @@ export class VehicleMap extends LitElement {
             }
           }
         }
+        .loader {
+          width: 48px;
+          height: 48px;
+          display: inline-block;
+          position: relative;
+        }
+        .loader::after,
+        .loader::before {
+          content: '';
+          box-sizing: border-box;
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          border: 2px solid #fff;
+          position: absolute;
+          left: 0;
+          top: 0;
+          animation: animloader 2s linear infinite;
+        }
+        .loader::after {
+          animation-delay: 1s;
+        }
+
+        @keyframes animloader {
+          0% {
+            transform: scale(0);
+            opacity: 1;
+          }
+          100% {
+            transform: scale(1);
+            opacity: 0;
+          }
+        }
       `,
     ];
   }
@@ -186,6 +219,7 @@ export class VehicleMap extends LitElement {
   }
 
   async getAddress(lat: number, lon: number): Promise<void> {
+    this.loadingAdress = true;
     let address: Partial<Address> | null = null;
     if (this.apiKey) {
       address = await this.getAddressFromGoggle(lat, lon);
@@ -194,10 +228,10 @@ export class VehicleMap extends LitElement {
     }
     if (address) {
       this.address = address;
-      this.enableAdress = true;
+      this.loadingAdress = false;
       this.requestUpdate();
     } else {
-      this.enableAdress = false;
+      this.loadingAdress = true;
     }
   }
 
@@ -211,13 +245,8 @@ export class VehicleMap extends LitElement {
 
     this.map = L.map(this.shadowRoot?.getElementById('map') as HTMLElement, mapOptions).setView([lat, lon], this.zoom);
 
-    // const tileLayer = this.darkMode ? 'CartoDB.DarkMatter' : 'CartoDB.Positron'; Stadia.StamenTonerLite, CartoDB.PositronOnlyLabels
-    const provider = 'CartoDB.DarkMatterOnlyLabels';
-    const mapboxToken = process.env.MAPBOX_API;
+    const mapboxToken = `pk.eyJ1IjoiZW1rYXkyazkiLCJhIjoiY2xrcHo5NzJwMXJ3MDNlbzM1bWJhcGx6eiJ9.kyNZp2l02lfkNlD2svnDsg`;
     const tileUrl = `https://api.mapbox.com/styles/v1/emkay2k9/clyd2zi0o00mu01pgfm6f6cie/tiles/{z}/{x}/{y}@2x?access_token=${mapboxToken}`;
-    // monochrome mapbox://styles/emkay2k9/clyd2cfiv00na01qpf32h6ybz
-
-    // navigation mapbox://styles/emkay2k9/clyd2zi0o00mu01pgfm6f6cie
 
     L.tileLayer(tileUrl, {
       maxZoom: 18,
@@ -225,8 +254,6 @@ export class VehicleMap extends LitElement {
       zoomOffset: -1,
       className: 'map-tiles',
     }).addTo(this.map);
-
-    // L.tileLayer.provider(provider).addTo(this.map);
 
     // Define custom icon for marker
     const customIcon = L.divIcon({
@@ -300,7 +327,9 @@ export class VehicleMap extends LitElement {
   }
 
   private _renderAddress() {
-    if (!this.enableAdress) return html``;
+    if (this.loadingAdress) {
+      return html`<div class="address" style="left: 10%;"><span class="loader"></span></div>`;
+    }
     return html`
       <div class="address">
         <div class="address-line">
