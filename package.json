@@ -31,7 +31,7 @@
     "@babel/plugin-transform-class-properties": "^7.24.1",
     "@rollup/plugin-image": "^3.0.3",
     "@rollup/plugin-json": "^6.1.0",
-    "@rollup/plugin-replace": "^5.0.7",
+    "@rollup/plugin-replace": "^6.0.1",
     "@rollup/plugin-terser": "^0.4.4",
     "@types/leaflet": "^1.9.12",
     "@types/leaflet-providers": "^1.2.4",
