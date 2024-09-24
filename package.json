@@ -20,7 +20,7 @@
   "license": "MIT",
   "dependencies": {
     "@rollup/plugin-babel": "^6.0.4",
-    "@rollup/plugin-typescript": "^11.1.6",
+    "@rollup/plugin-typescript": "^12.1.0",
     "custom-card-helpers": "^1.7.2",
     "home-assistant-js-websocket": "^9.4.0",
     "lit": "^3.1.4"
