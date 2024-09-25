@@ -272,6 +272,10 @@
             "title": "Arrière-plan personnalisé des pneus",
             "desc": "Téléchargez une image pour remplacer l'arrière-plan par défaut.",
             "info": "L'image doit être carrée et avoir une résolution maximale de 450x450 pixels. Un arrière-plan transparent est recommandé."
+        },
+        "customActionConfig": {
+            "title": "",
+            "desc": ""
         }
     }
 }

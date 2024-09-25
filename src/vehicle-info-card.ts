@@ -140,6 +140,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     super.firstUpdated(_changedProperties);
     await handleCardFirstUpdated(this, _changedProperties);
     this.getBaseCardTypes();
+    this.configureCustomButtonCards();
     this._configureButtonPreviews();
     this._configureCardPreviews();
   }
@@ -161,10 +162,9 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     if ((!this.activeCardType && this.isCharging) || !this.isCharging) {
       this.toggleCharginAnimation();
     }
-
-    // if (changedProps.has('_hass') && this.config.added_cards) {
-    //   this.configureAddedCards();
-    // }
+    if (changedProps.has('_hass') && this.customButtons) {
+      this.configureCustomButtonCards();
+    }
 
     if (!this.editMode || !this.preview) {
       this.isBtnPreview = false;
@@ -245,8 +245,6 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     }
     this.baseCardTypes = baseCardTypes;
     this.createMapDialog();
-    await this.configureCustomButtonCards();
-    await this.configureAddedCards();
   }
 
   private createMapDialog(): void {
@@ -281,7 +279,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
       if (this.config[cardType.button] && this.config[cardType.button].enabled) {
         await this.createCustomButtons(this.config[cardType.button], cardType.button);
-        // console.log('Configuring custom buttons', cardType.button);
+        console.log('Configuring custom buttons', cardType.button);
       }
     }
   }
@@ -295,7 +293,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
           // console.log('Configuring added cards', cardType.type);
         }
         if (button) {
-          this.customButtons[cardType.type] = await this.createCustomButtons(button, cardType.type);
+          await this.createCustomButtons(button, cardType.type);
           // console.log('Configuring added buttons', cardType.type);
         }
       }
@@ -422,22 +420,32 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   }
 
   private async createCustomButtons(
-    buttonConfigs: ButtonConfigItem,
+    button: ButtonConfigItem,
     stateProperty?: string
-  ): Promise<CustomButtonEntity> {
-    const { primary, secondary, icon, notify } = buttonConfigs;
-    const [secondaryValue, notifyValue] = await Promise.all([
-      this._getSecondaryValue(secondary),
-      this._getNotifyValue(notify),
-    ]);
+  ): Promise<CustomButtonEntity | void> {
+    if (!button) {
+      return;
+    }
+
+    const secondaryValue = button.secondary
+      ? await getTemplateValue(this._hass, button.secondary)
+      : button.attribute
+        ? this.getFormattedAttributeState(button.entity, button.attribute)
+        : this.getStateDisplay(button.entity);
+
+    const notifyValue = button.notify ? await getBooleanTemplate(this._hass, button.notify) : false;
 
     const customButton: CustomButtonEntity = {
       enabled: true,
       hide: false,
-      primary: primary,
+      primary: button.primary,
       secondary: secondaryValue,
-      icon: icon,
+      icon: button.icon || '',
       notify: notifyValue,
+      button_type: button.button_type || 'default',
+      button_action: button.button_action,
+      entity: button.entity || '',
+      attribute: button.attribute || '',
     };
 
     if (stateProperty) {
@@ -445,20 +453,6 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     }
 
     return customButton;
-  }
-
-  private async _getNotifyValue(notify: string): Promise<boolean> {
-    return await getBooleanTemplate(this._hass, notify);
-  }
-
-  private async _getSecondaryValue(secondary: string): Promise<string> {
-    if (!secondary) {
-      return '';
-    }
-    if (secondary.includes('{{')) {
-      return await getTemplateValue(this._hass, secondary);
-    }
-    return secondary;
   }
 
   private toggleCharginAnimation(): void {
@@ -771,7 +765,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       })
       .map((cardType) => cardType);
 
-    return html` <vehicle-buttons .component=${this} .buttons=${baseCardTypes}></vehicle-buttons> `;
+    return html` <vehicle-buttons .hass=${this._hass} .component=${this} .buttons=${baseCardTypes}></vehicle-buttons> `;
   }
 
   private _renderCustomCard(): TemplateResult {
@@ -1628,6 +1622,11 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   private getEntityAttribute(entity: string | undefined, attribute: string): any {
     if (!entity || !this._hass.states[entity] || !this._hass.states[entity].attributes) return undefined;
     return this._hass.states[entity].attributes[attribute];
+  }
+
+  private getFormattedAttributeState(entity: string | undefined, attribute: string): string {
+    if (!entity || !this._hass.states[entity] || !this._hass.states[entity].attributes) return '';
+    return this._hass.formatEntityAttributeValue(this._hass.states[entity], attribute);
   }
 
   private toggleMoreInfo(entity: string): void {

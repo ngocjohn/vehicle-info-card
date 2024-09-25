@@ -272,6 +272,10 @@
             "title": "Sfondo pneumatico personalizzato",
             "desc": "Carica un'immagine per sostituire lo sfondo predefinito.",
             "info": "L'immagine deve essere quadrata con una risoluzione massima di 450x450 pixel. Si consiglia uno sfondo trasparente."
+        },
+        "customActionConfig": {
+            "title": "",
+            "desc": ""
         }
     }
 }

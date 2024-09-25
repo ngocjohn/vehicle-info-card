@@ -204,16 +204,22 @@ export function getCarEntity(hass: HomeAssistant): string {
 }
 
 export async function getTemplateValue(hass: HomeAssistant, templateConfig: string): Promise<string> {
+  if (!templateConfig) {
+    console.error('No template config provided');
+    return '';
+  }
+
   const response = await fetch('/api/template', {
-    method: 'POST',
     body: JSON.stringify({ template: templateConfig }),
     headers: {
       Authorization: `Bearer ${hass.auth.data.access_token}`,
       'Content-Type': 'application/json',
     },
+    method: 'POST',
   });
 
   if (!response.ok) {
+    console.error('Failed to fetch template', response.statusText);
     return '';
   }
 
@@ -222,16 +228,23 @@ export async function getTemplateValue(hass: HomeAssistant, templateConfig: stri
 }
 
 export async function getBooleanTemplate(hass: HomeAssistant, templateConfig: string): Promise<boolean> {
+  if (!templateConfig) {
+    console.error('No template config provided');
+    return true;
+  }
+  console.log('Fetching boolean template:', templateConfig);
+  console.log('json:', JSON.stringify({ template: templateConfig }));
   const response = await fetch('/api/template', {
-    method: 'POST',
     body: JSON.stringify({ template: templateConfig }),
     headers: {
       Authorization: `Bearer ${hass.auth.data.access_token}`,
       'Content-Type': 'application/json',
     },
+    method: 'POST',
   });
 
   if (!response.ok) {
+    console.error('Failed to fetch boolean template', response.statusText);
     return false;
   }
 

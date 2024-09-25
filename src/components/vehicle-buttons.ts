@@ -4,17 +4,24 @@ import { Pagination } from 'swiper/modules';
 
 import Swiper from 'swiper';
 
-import { CardTypeConfig } from '../types';
+import { CardTypeConfig, HomeAssistantExtended as HomeAssistant } from '../types';
+import { addActions } from '../utils/tap-action';
 
 import swipercss from '../css/swiper-bundle.css';
 import mainstyle from '../css/styles.css';
 
 @customElement('vehicle-buttons')
 export class VehicleButtons extends LitElement {
+  @property({ attribute: false }) public hass!: HomeAssistant;
   @property({ type: Object }) component?: any;
   @property({ type: Array }) buttons: CardTypeConfig[] = [];
 
   @property() swiper: Swiper | null = null;
+
+  constructor() {
+    super();
+    this._handleClick = this._handleClick.bind(this);
+  }
 
   static get styles(): CSSResultGroup {
     return [
@@ -40,8 +47,47 @@ export class VehicleButtons extends LitElement {
   protected firstUpdated(_changedProperties: PropertyValues): void {
     super.firstUpdated(_changedProperties);
     this.updateComplete.then(() => {
-      if (this._useButtonSwiper) this.initSwiper();
+      this.initSwiper();
     });
+  }
+
+  protected updated(changedProperties: PropertyValues): void {
+    super.updated(changedProperties);
+    if (changedProperties.has('hass') && this.buttons) {
+      this._setButtonActions();
+    }
+  }
+
+  private _setButtonActions(): void {
+    this.updateComplete.then(() => {
+      const baseButtons = this.buttons.map((button) => button.button);
+
+      baseButtons.forEach((cardType) => {
+        const btnId = cardType;
+        const btnElt = this.shadowRoot?.getElementById(btnId);
+
+        // Only add actions if button_type is not 'default'
+        if (btnElt && this.component?.customButtons[btnId]?.button_type === 'action') {
+          addActions(btnElt, this.component.customButtons[btnId].button_action);
+          // console.log('Button action added:', this.component.customButtons[btnId].button_action);
+        } else {
+          btnElt?.addEventListener('click', () => this._handleClick(btnId));
+          // console.log('Default button action added:', btnId);
+        }
+      });
+    });
+  }
+
+  private _handleClick(btnId: string): void {
+    const button = this.component?.baseCardTypes.find((cardType) => cardType.type === btnId);
+    if (!button) return;
+    const customBtn = this.component?.customButtons[button.button];
+    if (customBtn?.button_type !== 'action') {
+      this.component?.toggleCardFromButtons(button.type);
+    } else {
+      // const action = customBtn.button_action;
+      // console.log('button action', action);
+    }
   }
 
   private get _useButtonSwiper(): boolean {
@@ -51,6 +97,7 @@ export class VehicleButtons extends LitElement {
   private initSwiper(): void {
     const swiperCon = this.shadowRoot?.querySelector('.swiper-container');
     if (!swiperCon) return;
+    console.log('swiper init');
     const paginationEl = swiperCon.querySelector('.swiper-pagination') as HTMLElement;
     this.swiper = new Swiper(swiperCon as HTMLElement, {
       modules: [Pagination],
@@ -64,7 +111,7 @@ export class VehicleButtons extends LitElement {
         onlyInViewport: true,
       },
       loop: false,
-      slidesPerView: 1,
+      slidesPerView: 'auto',
       pagination: {
         el: paginationEl,
         clickable: true,
@@ -92,14 +139,18 @@ export class VehicleButtons extends LitElement {
             const buttonIcon = customBtn?.icon ?? cardType.icon;
             const secondaryInfo = customBtn?.secondary ?? this.component.getSecondaryInfo(cardType.type);
             const btnNotify = customBtn?.notify ?? this.component.getErrorNotify(cardType.type);
+            const btnEntity = customBtn?.entity ?? '';
             return html`
-              <div
-                id="${cardType.button}"
-                class="grid-item click-shrink"
-                @click=${() => this.component.toggleCardFromButtons(cardType.type)}
-              >
+              <div class="grid-item click-shrink" @click=${() => this._handleClick(cardType.type)}>
                 <div class="item-icon">
-                  <div class="icon-background"><ha-icon .icon="${buttonIcon}"></ha-icon></div>
+                  <div class="icon-background">
+                    <ha-state-icon
+                      .hass=${this.component._hass}
+                      .stateObj=${btnEntity ? this.component._hass.states[btnEntity] : undefined}
+                      .icon=${buttonIcon}
+                      id="${cardType.button}"
+                    ></ha-state-icon>
+                  </div>
                   ${showError
                     ? html`
                         <div class="item-notify ${btnNotify ? '' : 'hidden'}">
@@ -130,7 +181,6 @@ export class VehicleButtons extends LitElement {
       <section id="button-swiper">
         ${this._useButtonSwiper
           ? html`
-              <!-- Swiper Layout -->
               <div class="swiper-container">
                 <div class="swiper-wrapper">${this._buttonsGridGroup(baseCardTypes, showError)}</div>
                 <div class="swiper-pagination"></div>
@@ -144,15 +194,18 @@ export class VehicleButtons extends LitElement {
                   const buttonIcon = customBtn?.icon ?? cardType.icon;
                   const secondaryInfo = customBtn?.secondary ?? this.component.getSecondaryInfo(cardType.type);
                   const btnNotify = customBtn?.notify ?? this.component.getErrorNotify(cardType.type);
-
+                  const btnEntity = customBtn?.entity ?? '';
                   return html`
-                    <div
-                      id="${cardType.button}"
-                      class="grid-item click-shrink"
-                      @click=${() => this.component.toggleCardFromButtons(cardType.type)}
-                    >
+                    <div class="grid-item click-shrink" @click=${() => this._handleClick(cardType.type)}>
                       <div class="item-icon">
-                        <div class="icon-background"><ha-icon .icon="${buttonIcon}"></ha-icon></div>
+                        <div class="icon-background">
+                          <ha-state-icon
+                            .hass=${this.component._hass}
+                            .stateObj=${btnEntity ? this.component._hass.states[btnEntity] : undefined}
+                            .icon=${buttonIcon}
+                            id="${cardType.button}"
+                          ></ha-state-icon>
+                        </div>
                         ${showError
                           ? html`
                               <div class="item-notify ${btnNotify ? '' : 'hidden'}">

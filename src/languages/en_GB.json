@@ -272,6 +272,10 @@
             "title": "Custom Tire Background",
             "desc": "Upload an image to replace the default background.",
             "info": "The image should be square with a maximum resolution of 450x450 pixels. A transparent background is recommended."
+        },
+        "customActionConfig": {
+            "title": "",
+            "desc": ""
         }
     }
 }

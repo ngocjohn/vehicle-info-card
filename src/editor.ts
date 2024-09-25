@@ -30,6 +30,7 @@ import editorcss from './css/editor.css';
 import './components/editor/custom-card-editor';
 import './components/editor/custom-button-template';
 import './components/editor/panel-images';
+import './components/editor/custom-button-action';
 
 @customElement('vehicle-info-card-editor')
 export class VehicleCardEditor extends LitElement implements LovelaceCardEditor {
@@ -272,7 +273,10 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
             <div class="card-type-row ${hiddenClass}">
               <div class="card-type-icon">
                 <div class="icon-background">
-                  <ha-icon icon=${icon} @click=${() => (this._activeSubcardType = type)}></ha-icon>
+                  <ha-icon
+                    .icon=${icon ? icon : 'mdi:smile'}
+                    @click=${() => (this._activeSubcardType = type)}
+                  ></ha-icon>
                 </div>
               </div>
               <div class="card-type-content">
@@ -435,6 +439,25 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       </div>
     `;
 
+    const tapActionConfig = html`
+      <custom-button-action
+        .hass=${this.hass}
+        .config=${this._config}
+        .button=${this._getButtonConfig(card.button)}
+        .card=${card}
+        .isButtonPreview=${this._btnPreview}
+        @custom-action-changed=${(ev: any) => this._customBtnHandler(ev)}
+      ></custom-button-action>
+    `;
+
+    const actionConfig = this.panelTemplate(
+      'customActionConfig',
+      'customActionConfig',
+      'mdi:button-cursor',
+      tapActionConfig,
+      false
+    );
+
     const buttonTemplate = this.panelTemplate(
       'customButtonConfig',
       'customButtonConfig',
@@ -452,7 +475,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const tireType = card.type === 'tyreCards' ? this._renderCustomTireBackground() : nothing;
 
     const content = html`
-      <div class="sub-card-config">${subCardHeader} ${buttonTemplate} ${editorWrapper} ${tireType}</div>
+      <div class="sub-card-config">${subCardHeader} ${buttonTemplate} ${editorWrapper} ${actionConfig} ${tireType}</div>
     `;
 
     return content;
@@ -779,7 +802,8 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     descKey: string,
     icon: string,
     content: TemplateResult,
-    expanded: boolean = false
+    expanded: boolean = false,
+    leftChevron: boolean = false
   ): TemplateResult {
     const localTitle = this.localize(`editor.${titleKey}.title`);
     const localDesc = this.localize(`editor.${descKey}.desc`);
@@ -792,6 +816,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           .header=${localTitle}
           .secondary=${localDesc}
           .expanded=${expanded}
+          .leftChevron=${leftChevron}
           @expanded-changed=${(e: Event) => this._handlePanelExpandedChanged(e, titleKey)}
         >
           <div class="right-icon" slot="icons">

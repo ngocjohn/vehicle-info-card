@@ -272,6 +272,10 @@
             "title": "Vlastní pozadí pneumatik",
             "desc": "Nahrajte obrázek pro změnu výchozího pozadí.",
             "info": "Obrázek by měl být čtvercový s maximálním rozlišením 450x450 pixelů. Doporučuje se průhledné pozadí."
+        },
+        "customActionConfig": {
+            "title": "",
+            "desc": ""
         }
     }
 }
