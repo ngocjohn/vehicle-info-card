@@ -1,3 +1,5 @@
+const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
+import { LovelaceCardConfig } from 'custom-card-helpers';
 import { PropertyValues } from 'lit';
 import { HomeAssistant } from 'custom-card-helpers';
 import { VehicleEntities, VehicleEntity, VehicleCardConfig } from '../types';
@@ -203,55 +205,73 @@ export function getCarEntity(hass: HomeAssistant): string {
   return entities[0] || '';
 }
 
+export async function createCardElement(
+  hass: HomeAssistant,
+  cards: LovelaceCardConfig[]
+): Promise<LovelaceCardConfig[]> {
+  if (!cards) {
+    return [];
+  }
+
+  // Load the helpers and ensure they are available
+  let helpers;
+  if ((window as any).loadCardHelpers) {
+    helpers = await (window as any).loadCardHelpers();
+  } else if (HELPERS) {
+    helpers = HELPERS;
+  }
+
+  // Check if helpers were loaded and if createCardElement exists
+  if (!helpers || !helpers.createCardElement) {
+    console.error('Card helpers or createCardElement not available.');
+    return [];
+  }
+
+  const cardElements = await Promise.all(
+    cards.map(async (card) => {
+      try {
+        const element = await helpers.createCardElement(card);
+        element.hass = hass;
+        return element;
+      } catch (error) {
+        console.error('Error creating card element:', error);
+        return null;
+      }
+    })
+  );
+  return cardElements;
+}
+
 export async function getTemplateValue(hass: HomeAssistant, templateConfig: string): Promise<string> {
-  if (!templateConfig) {
-    console.error('No template config provided');
+  if (!hass || !templateConfig) {
     return '';
   }
 
-  const response = await fetch('/api/template', {
-    body: JSON.stringify({ template: templateConfig }),
-    headers: {
-      Authorization: `Bearer ${hass.auth.data.access_token}`,
-      'Content-Type': 'application/json',
-    },
-    method: 'POST',
-  });
-
-  if (!response.ok) {
-    console.error('Failed to fetch template', response.statusText);
-    return '';
+  try {
+    // Prepare the body with the template
+    const result = await hass.callApi<string>('POST', 'template', { template: templateConfig });
+    return result;
+  } catch (error) {
+    throw new Error(`Error evaluating template: ${error}`);
   }
-
-  const data = await response.text();
-  return data;
 }
 
 export async function getBooleanTemplate(hass: HomeAssistant, templateConfig: string): Promise<boolean> {
-  if (!templateConfig) {
-    console.error('No template config provided');
+  if (!hass || !templateConfig) {
     return true;
   }
-  console.log('Fetching boolean template:', templateConfig);
-  console.log('json:', JSON.stringify({ template: templateConfig }));
-  const response = await fetch('/api/template', {
-    body: JSON.stringify({ template: templateConfig }),
-    headers: {
-      Authorization: `Bearer ${hass.auth.data.access_token}`,
-      'Content-Type': 'application/json',
-    },
-    method: 'POST',
-  });
 
-  if (!response.ok) {
-    console.error('Failed to fetch boolean template', response.statusText);
+  try {
+    // Prepare the body with the template
+    const result = await hass.callApi<string>('POST', 'template', { template: templateConfig });
+    if (result.trim().toLowerCase() === 'true') {
+      return true;
+    }
     return false;
+  } catch (error) {
+    throw new Error(`Error evaluating template: ${error}`);
   }
-
-  const data = await response.text();
-  return data.trim().toLowerCase() === 'true';
 }
-
 export async function handleFirstUpdated(
   component: any, // Replace 'any' with the correct type for your component if available
   _changedProperties: PropertyValues

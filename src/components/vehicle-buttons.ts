@@ -1,10 +1,10 @@
 import { LitElement, css, html, TemplateResult, PropertyValues, nothing, CSSResultGroup } from 'lit';
-import { customElement, property } from 'lit/decorators';
+import { customElement, property, state } from 'lit/decorators';
 import { Pagination } from 'swiper/modules';
 
 import Swiper from 'swiper';
 
-import { CardTypeConfig, HomeAssistantExtended as HomeAssistant } from '../types';
+import { ButtonCardEntity, HomeAssistantExtended as HomeAssistant } from '../types';
 import { addActions } from '../utils/tap-action';
 
 import swipercss from '../css/swiper-bundle.css';
@@ -14,9 +14,8 @@ import mainstyle from '../css/styles.css';
 export class VehicleButtons extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
   @property({ type: Object }) component?: any;
-  @property({ type: Array }) buttons: CardTypeConfig[] = [];
-
   @property() swiper: Swiper | null = null;
+  @property({ type: Object }) _buttons!: ButtonCardEntity;
 
   constructor() {
     super();
@@ -53,22 +52,21 @@ export class VehicleButtons extends LitElement {
 
   protected updated(changedProperties: PropertyValues): void {
     super.updated(changedProperties);
-    if (changedProperties.has('hass') && this.buttons) {
+    if (changedProperties.has('_buttons') && this._buttons) {
       this._setButtonActions();
     }
   }
 
   private _setButtonActions(): void {
     this.updateComplete.then(() => {
-      const baseButtons = this.buttons.map((button) => button.button);
-
-      baseButtons.forEach((cardType) => {
-        const btnId = cardType;
+      const buttons = this._buttons;
+      Object.keys(buttons).forEach((btn) => {
+        const btnId = btn;
         const btnElt = this.shadowRoot?.getElementById(btnId);
 
         // Only add actions if button_type is not 'default'
-        if (btnElt && this.component?.customButtons[btnId]?.button_type === 'action') {
-          addActions(btnElt, this.component.customButtons[btnId].button_action);
+        if (btnElt && this._buttons[btnId]?.button_type === 'action') {
+          addActions(btnElt, this._buttons[btnId].button.button_action);
           // console.log('Button action added:', this.component.customButtons[btnId].button_action);
         } else {
           btnElt?.addEventListener('click', () => this._handleClick(btnId));
@@ -79,11 +77,10 @@ export class VehicleButtons extends LitElement {
   }
 
   private _handleClick(btnId: string): void {
-    const button = this.component?.baseCardTypes.find((cardType) => cardType.type === btnId);
+    const button = this._buttons[btnId];
     if (!button) return;
-    const customBtn = this.component?.customButtons[button.button];
-    if (customBtn?.button_type !== 'action') {
-      this.component?.toggleCardFromButtons(button.type);
+    if (button?.button_type !== 'action') {
+      this.component?.toggleCardFromButtons(btnId);
     } else {
       // const action = customBtn.button_action;
       // console.log('button action', action);
@@ -119,36 +116,42 @@ export class VehicleButtons extends LitElement {
     });
   }
 
-  private _chunkArray(arr: CardTypeConfig[], chunkSize: number): CardTypeConfig[][] {
-    const result: CardTypeConfig[][] = [];
-    for (let i = 0; i < arr.length; i += chunkSize) {
-      result.push(arr.slice(i, i + chunkSize));
+  private _chunkObject(obj: ButtonCardEntity, size: number): ButtonCardEntity {
+    const chunked = {} as ButtonCardEntity;
+    const keys = Object.keys(obj);
+    for (let i = 0; i < keys.length; i += size) {
+      const chunk = keys.slice(i, i + size).reduce((result, key) => {
+        result[key] = obj[key];
+        return result;
+      }, {} as ButtonCardEntity);
+      chunked[i] = chunk;
     }
-    return result;
+    return chunked;
   }
 
-  private _buttonsGridGroup(baseCardTypes: CardTypeConfig[], showError: boolean): TemplateResult {
+  private _buttonsGridGroup(BaseButton: ButtonCardEntity, showError: boolean): TemplateResult {
     const rowSize = this.component.config?.button_grid?.rows_size ? this.component.config.button_grid.rows_size * 2 : 4;
-    const chunkedCardTypes = this._chunkArray(baseCardTypes, rowSize); // Divide into groups of 4
-    const slides = chunkedCardTypes.map((cardGroup) => {
+    const chunkedCardTypes = this._chunkObject(BaseButton, rowSize); // Divide into groups of 4
+    const slides = Object.keys(chunkedCardTypes).map((key) => {
       const buttons = html`
         <div class="grid-container">
-          ${cardGroup.map((cardType) => {
-            const customBtn = this.component.customButtons[cardType.button];
-            const buttonName = customBtn?.primary ?? cardType.name;
-            const buttonIcon = customBtn?.icon ?? cardType.icon;
-            const secondaryInfo = customBtn?.secondary ?? this.component.getSecondaryInfo(cardType.type);
-            const btnNotify = customBtn?.notify ?? this.component.getErrorNotify(cardType.type);
-            const btnEntity = customBtn?.entity ?? '';
+          ${Object.keys(chunkedCardTypes[key]).map((key) => {
+            const button = this._buttons[key].button;
+            const customBtn = this._buttons[key].custom_button;
+            const buttonName = customBtn ? button?.primary : this._buttons[key].default_name;
+            const buttonIcon = customBtn ? button?.icon : this._buttons[key].default_icon;
+            const secondaryInfo = customBtn ? button?.secondary : this.component.getSecondaryInfo(key);
+            const btnNotify = customBtn ? button?.notify : this.component.getErrorNotify(key);
+            const btnEntity = customBtn ? button?.entity : '';
             return html`
-              <div class="grid-item click-shrink" @click=${() => this._handleClick(cardType.type)}>
+              <div class="grid-item click-shrink" @click=${() => this._handleClick(key)}>
                 <div class="item-icon">
                   <div class="icon-background">
                     <ha-state-icon
                       .hass=${this.component._hass}
                       .stateObj=${btnEntity ? this.component._hass.states[btnEntity] : undefined}
                       .icon=${buttonIcon}
-                      id="${cardType.button}"
+                      id="${key}"
                     ></ha-state-icon>
                   </div>
                   ${showError
@@ -176,34 +179,36 @@ export class VehicleButtons extends LitElement {
 
   protected render(): TemplateResult {
     const showError = this.component.config.show_error_notify;
-    const baseCardTypes = this.buttons;
+    const baseButtons = this._buttons;
+
     return html`
       <section id="button-swiper">
         ${this._useButtonSwiper
           ? html`
               <div class="swiper-container">
-                <div class="swiper-wrapper">${this._buttonsGridGroup(baseCardTypes, showError)}</div>
+                <div class="swiper-wrapper">${this._buttonsGridGroup(baseButtons, showError)}</div>
                 <div class="swiper-pagination"></div>
               </div>
             `
           : html`
               <div class="grid-container">
-                ${baseCardTypes.map((cardType) => {
-                  const customBtn = this.component.customButtons[cardType.button];
-                  const buttonName = customBtn?.primary ?? cardType.name;
-                  const buttonIcon = customBtn?.icon ?? cardType.icon;
-                  const secondaryInfo = customBtn?.secondary ?? this.component.getSecondaryInfo(cardType.type);
-                  const btnNotify = customBtn?.notify ?? this.component.getErrorNotify(cardType.type);
-                  const btnEntity = customBtn?.entity ?? '';
+                ${Object.keys(baseButtons).map((key) => {
+                  const button = baseButtons[key].button;
+                  const customBtn = baseButtons[key].custom_button;
+                  const buttonName = customBtn ? button?.primary : baseButtons[key].default_name;
+                  const buttonIcon = customBtn ? button?.icon : baseButtons[key].default_icon;
+                  const secondaryInfo = customBtn ? button?.secondary : this.component.getSecondaryInfo(key);
+                  const btnNotify = customBtn ? button?.notify : this.component.getErrorNotify(key);
+                  const btnEntity = customBtn ? button?.entity : '';
                   return html`
-                    <div class="grid-item click-shrink" @click=${() => this._handleClick(cardType.type)}>
+                    <div class="grid-item click-shrink" @click=${() => this._handleClick(key)}>
                       <div class="item-icon">
                         <div class="icon-background">
                           <ha-state-icon
                             .hass=${this.component._hass}
                             .stateObj=${btnEntity ? this.component._hass.states[btnEntity] : undefined}
                             .icon=${buttonIcon}
-                            id="${cardType.button}"
+                            id="${key}"
                           ></ha-state-icon>
                         </div>
                         ${showError
