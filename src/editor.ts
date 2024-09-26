@@ -8,6 +8,7 @@ import { fireEvent, LovelaceCardConfig, LovelaceCardEditor } from 'custom-card-h
 import { debounce } from 'es-toolkit';
 
 import { CARD_VERSION } from './const/const';
+import { defaultConfig } from './types/default-config';
 import { cardTypes, editorShowOpts } from './const/data-keys';
 import { servicesCtrl } from './const/remote-control-keys';
 import editorcss from './css/editor.css';
@@ -17,19 +18,17 @@ import {
   HomeAssistantExtended as HomeAssistant,
   VehicleCardConfig,
   CardTypeConfig,
-  ButtonConfigItem,
+  BaseButtonConfig,
   ExtendedButtonConfigItem,
 } from './types';
 import { uploadImage } from './utils/editor-image-handler';
-import { handleFirstUpdated, defaultConfig, deepMerge } from './utils/ha-helpers';
+import { handleFirstUpdated, deepMerge } from './utils/ha-helpers';
 import { compareVersions } from './utils/helpers';
 import { loadHaComponents, stickyPreview } from './utils/loader';
 
 // Import the custom card components
-import './components/editor/custom-card-editor';
-import './components/editor/custom-button-template';
-import './components/editor/panel-images';
-import './components/editor/custom-button-action';
+import './components/editor';
+import { PanelImages } from './components/editor';
 
 @customElement('vehicle-info-card-editor')
 export class VehicleCardEditor extends LitElement implements LovelaceCardEditor {
@@ -43,14 +42,14 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   @state() private _activeSubcardType: string | null = null;
   @state() private _confirmDeleteType: string | null = null;
   @state() private _yamlConfig: { [key: string]: any } = {};
-  @state() private _customBtns: { [key: string]: ButtonConfigItem } = {};
+  @state() private _customBtns: { [key: string]: BaseButtonConfig } = {};
   @state() private _selectedLanguage: string = 'system';
   @state() private _latestRelease: string = '';
 
   @state() private _visiblePanel: Set<string> = new Set();
   @state() private _newCardType: Map<string, string> = new Map();
 
-  @query('panel-images') private _panelImages!: any;
+  @query('panel-images') private _panelImages!: PanelImages;
 
   public async setConfig(config: VehicleCardConfig): Promise<void> {
     this._config = deepMerge(defaultConfig, config);
@@ -950,11 +949,23 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         [formattedCardType]: {
           cards: [],
           button: {
+            primary,
+            icon,
             enabled: true,
-            primary: primary,
-            secondary: '',
-            icon: icon,
-            notify: '',
+            hide: false,
+            button_type: 'default',
+            button_action: {
+              entity: '',
+              tap_action: {
+                action: 'more-info',
+              },
+              hold_action: {
+                action: 'none',
+              },
+              double_tap_action: {
+                action: 'none',
+              },
+            },
           },
         },
       };
@@ -1306,7 +1317,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     } else {
       // Set preview button config
       console.log('Setting button preview:', button);
-      let btnConfig: ButtonConfigItem;
+      let btnConfig: BaseButtonConfig;
       if (this._config.added_cards?.hasOwnProperty(button)) {
         btnConfig = this._config.added_cards[button].button;
       } else {

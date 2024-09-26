@@ -141,5 +141,3 @@ export const SubcardVisibilityProperties = [
   'tripFromStartVisible',
   'ecoScoresVisible',
 ];
-
-export type AttributeType = 'lock' | 'window' | 'door';

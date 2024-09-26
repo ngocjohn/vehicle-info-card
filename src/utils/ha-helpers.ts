@@ -1,10 +1,17 @@
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
 import { LovelaceCardConfig } from 'custom-card-helpers';
 import { PropertyValues } from 'lit';
-import { HomeAssistant } from 'custom-card-helpers';
-import { VehicleEntities, VehicleEntity, VehicleCardConfig } from '../types';
+import {
+  HomeAssistantExtended as HomeAssistant,
+  VehicleEntities,
+  VehicleEntity,
+  VehicleCardConfig,
+  BaseButtonConfig,
+  CustomButtonEntity,
+} from '../types';
 import { combinedFilters } from '../const/const';
 import { fetchLatestReleaseTag } from './loader';
+
 /**
  *
  * @param car
@@ -97,103 +104,6 @@ export async function getModelName(hass: HomeAssistant, entityCar: string): Prom
 }
 
 /**
- * Additional card listeners
- * @param cardElement
- * @param toggleCard
- */
-
-export function setupCardListeners(
-  cardElement: Element | null,
-  toggleCard: (direction: 'next' | 'prev') => void
-): void {
-  if (!cardElement) return;
-  // Variables to store touch/mouse coordinates
-  let xDown: number | null = null;
-  let yDown: number | null = null;
-  let xDiff: number | null = null;
-  let yDiff: number | null = null;
-  let isSwiping = false;
-
-  const presDown = (e: TouchEvent | MouseEvent) => {
-    e.stopImmediatePropagation();
-    if (e instanceof TouchEvent) {
-      xDown = e.touches[0].clientX;
-      yDown = e.touches[0].clientY;
-    } else if (e instanceof MouseEvent) {
-      xDown = e.clientX;
-      yDown = e.clientY;
-    }
-
-    ['touchmove', 'mousemove'].forEach((event) => {
-      cardElement.addEventListener(event, pressMove as EventListener);
-    });
-
-    ['touchend', 'mouseup'].forEach((event) => {
-      cardElement.addEventListener(event, pressRelease as EventListener);
-    });
-  };
-
-  const pressMove = (e: TouchEvent | MouseEvent) => {
-    if (xDown === null || yDown === null) return;
-
-    if (e instanceof TouchEvent) {
-      xDiff = xDown - e.touches[0].clientX;
-      yDiff = yDown - e.touches[0].clientY;
-    } else if (e instanceof MouseEvent) {
-      xDiff = xDown - e.clientX;
-      yDiff = yDown - e.clientY;
-    }
-
-    if (xDiff !== null && yDiff !== null) {
-      if (Math.abs(xDiff) > 1 && Math.abs(yDiff) > 1) {
-        isSwiping = true;
-      }
-    }
-  };
-
-  const pressRelease = (e: TouchEvent | MouseEvent) => {
-    e.stopImmediatePropagation();
-
-    ['touchmove', 'mousemove'].forEach((event) => {
-      cardElement.removeEventListener(event, pressMove as EventListener);
-    });
-
-    ['touchend', 'mouseup'].forEach((event) => {
-      cardElement.removeEventListener(event, pressRelease as EventListener);
-    });
-
-    const cardWidth = cardElement.clientWidth;
-
-    if (isSwiping && xDiff !== null && yDiff !== null) {
-      if (Math.abs(xDiff) > Math.abs(yDiff) && Math.abs(xDiff) > cardWidth / 3) {
-        if (xDiff > 0) {
-          // Next card - swipe left
-          cardElement.classList.add('swiping-left');
-          setTimeout(() => {
-            toggleCard('next');
-            cardElement.classList.remove('swiping-left');
-          }, 300);
-        } else {
-          // Previous card - swipe right
-          cardElement.classList.add('swiping-right');
-          setTimeout(() => {
-            toggleCard('prev');
-            cardElement.classList.remove('swiping-right');
-          }, 300);
-        }
-      }
-      xDiff = yDiff = xDown = yDown = null;
-      isSwiping = false;
-    }
-  };
-
-  // Attach the initial pressDown listeners
-  ['touchstart', 'mousedown'].forEach((event) => {
-    cardElement.addEventListener(event, presDown as EventListener, { passive: true });
-  });
-}
-
-/**
  * Update config with changed properties
  * @param config
  * @param changedProps
@@ -203,6 +113,40 @@ export function getCarEntity(hass: HomeAssistant): string {
   console.log('Getting car entity');
   const entities = Object.keys(hass.states).filter((entity) => entity.startsWith('sensor.') && entity.endsWith('_car'));
   return entities[0] || '';
+}
+
+export async function createCustomButtons(
+  hass: HomeAssistant,
+  button: BaseButtonConfig
+): Promise<CustomButtonEntity | void> {
+  if (!button) {
+    return;
+  }
+
+  const stateValue = button.secondary
+    ? await getTemplateValue(hass, button.secondary)
+    : button.attribute && button.entity
+      ? hass.formatEntityAttributeValue(hass.states[button.entity], button.attribute)
+      : button.entity
+        ? hass.formatEntityState(hass.states[button.entity])
+        : '';
+
+  const notify = button.notify ? await getBooleanTemplate(hass, button.notify) : false;
+
+  const customButton: CustomButtonEntity = {
+    enabled: true,
+    hide: false,
+    primary: button.primary,
+    secondary: stateValue,
+    icon: button.icon || '',
+    notify,
+    button_type: button.button_type || 'default',
+    button_action: button.button_action,
+    entity: button.entity || '',
+    attribute: button.attribute || '',
+  };
+
+  return customButton;
 }
 
 export async function createCardElement(
@@ -272,6 +216,7 @@ export async function getBooleanTemplate(hass: HomeAssistant, templateConfig: st
     throw new Error(`Error evaluating template: ${error}`);
   }
 }
+
 export async function handleFirstUpdated(
   component: any, // Replace 'any' with the correct type for your component if available
   _changedProperties: PropertyValues
@@ -323,70 +268,7 @@ export async function handleCardFirstUpdated(
   }
 }
 
-// Default configuration for the Vehicle Card.
-
-export const defaultConfig: Partial<VehicleCardConfig> = {
-  type: 'custom:vehicle-info-card',
-  name: 'Mercedes Vehicle Card',
-  entity: '',
-  model_name: '',
-  selected_language: 'system',
-  show_slides: false,
-  show_map: false,
-  show_buttons: true,
-  show_background: true,
-  enable_map_popup: false,
-  enable_services_control: false,
-  show_error_notify: false,
-  device_tracker: '',
-  map_popup_config: {
-    hours_to_show: 0,
-    default_zoom: 14,
-    theme_mode: 'auto',
-  },
-  selected_theme: {
-    theme: 'default',
-    mode: 'auto',
-  },
-  extra_configs: {
-    tire_background: '',
-  },
-  button_grid: {
-    use_swiper: false,
-    rows_size: 2,
-  },
-  services: {
-    auxheat: false,
-    charge: false,
-    doorsLock: false,
-    engine: false,
-    preheat: false,
-    sendRoute: false,
-    sigPos: false,
-    sunroof: false,
-    windows: false,
-  },
-  eco_button: {
-    enabled: false,
-  },
-  trip_button: {
-    enabled: false,
-  },
-  vehicle_button: {
-    enabled: false,
-  },
-  tyre_button: {
-    enabled: false,
-  },
-  use_custom_cards: {
-    vehicle_card: true,
-    trip_card: true,
-    eco_card: true,
-    tyre_card: true,
-  },
-};
-
-export function deepMerge(target: any, source: any): any {
+export function deepMerge(target: any, source: VehicleCardConfig): VehicleCardConfig {
   const output = { ...target };
 
   for (const key of Object.keys(source)) {

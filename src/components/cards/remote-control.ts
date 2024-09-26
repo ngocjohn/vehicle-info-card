@@ -1,14 +1,14 @@
 import { LitElement, html, TemplateResult, css, CSSResultGroup, PropertyValues } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, state } from 'lit/decorators.js';
 import { HomeAssistant, fireEvent, forwardHaptic } from 'custom-card-helpers';
-import { Services, ServiceItem } from '../types';
+import { Services } from '../../types';
 
-import { cloneDeep, convertToMinutes } from '../utils/helpers';
-import * as Srvc from '../const/remote-control-keys';
+import { cloneDeep, convertToMinutes } from '../../utils/helpers';
+import * as Srvc from '../../const/remote-control-keys';
 
-import styles from '../css/remote-control.css';
-import mainstyle from '../css/styles.css';
-import { localize } from '../localize/localize';
+import styles from '../../css/remote-control.css';
+import mainstyle from '../../css/styles.css';
+import { localize } from '../../localize/localize';
 
 @customElement('remote-control')
 export class RemoteControl extends LitElement {
@@ -20,7 +20,7 @@ export class RemoteControl extends LitElement {
 
   @state() private subcardType: string | null = null;
   @state() private serviceData: any = {};
-  @state() private activeServices: ServiceItem = {};
+  @state() private activeServices: { [key: string]: { name: string; icon: string } } = {};
 
   protected firstUpdated(): void {
     console.log('getiing servicesConfig');

@@ -4,14 +4,14 @@ import { Pagination } from 'swiper/modules';
 
 import Swiper from 'swiper';
 
-import { ButtonCardEntity, HomeAssistantExtended as HomeAssistant, VehicleCardConfig, CustomButton } from '../types';
-import { addActions } from '../utils/tap-action';
-import { getTemplateValue, getBooleanTemplate } from '../utils/ha-helpers';
+import { ButtonCardEntity, HomeAssistantExtended as HomeAssistant, VehicleCardConfig, CustomButton } from '../../types';
+import { addActions } from '../../utils/tap-action';
+import { getTemplateValue, getBooleanTemplate } from '../../utils/ha-helpers';
 
-import swipercss from '../css/swiper-bundle.css';
-import mainstyle from '../css/styles.css';
+import swipercss from '../../css/swiper-bundle.css';
+import mainstyle from '../../css/styles.css';
 
-import { VehicleCard } from '../vehicle-info-card';
+import { VehicleCard } from '../../vehicle-info-card';
 
 @customElement('vehicle-buttons')
 export class VehicleButtons extends LitElement {

@@ -173,11 +173,16 @@ export class CustomButtonTemplate extends LitElement {
     const buttonTitleIconForms = this._buttonTitleIconForms();
     const secondaryUI = this._templateUI(
       localizeKey('secondaryInfo'),
-      secondary,
+      secondary || '',
       'secondary',
       localizeKey('secondaryInfoHelper')
     );
-    const notifyUI = this._templateUI(localizeKey('notifyInfo'), notify, 'notify', localizeKey('notifyInfoHelper'));
+    const notifyUI = this._templateUI(
+      localizeKey('notifyInfo'),
+      notify || '',
+      'notify',
+      localizeKey('notifyInfoHelper')
+    );
 
     return html` <div class="card-button-cfg">${editorHeader}${buttonTitleIconForms}</div>
       ${secondaryUI}${notifyUI}`;

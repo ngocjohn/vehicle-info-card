@@ -4,7 +4,7 @@ import { repeat } from 'lit/directives/repeat.js';
 
 import Sortable from 'sortablejs';
 
-import { VehicleImage, VehicleCardConfig } from '../../types';
+import { ImageConfig, VehicleCardConfig } from '../../types';
 import { imageInputChange, handleFilePicked } from '../../utils/editor-image-handler';
 import { fireEvent } from 'custom-card-helpers';
 import { debounce } from 'es-toolkit';
@@ -14,7 +14,7 @@ import editorcss from '../../css/editor.css';
 export class PanelImages extends LitElement {
   @property({ type: Object }) editor!: any;
   @property({ type: Object }) config!: VehicleCardConfig;
-  @property({ type: Array }) _images!: VehicleImage[];
+  @property({ type: Array }) _images!: ImageConfig[];
   @state() _selectedItems: Set<string> = new Set();
   @state() _newImageUrl: string = '';
   @state() _sortable: Sortable | null = null;

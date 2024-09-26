@@ -3,7 +3,7 @@ import { customElement, state } from 'lit/decorators.js';
 
 import L from 'leaflet';
 import 'leaflet-providers/leaflet-providers.js';
-import mapstyle from '../css/leaflet.css';
+import mapstyle from '../../css/leaflet.css';
 
 interface Address {
   streetNumber: string;

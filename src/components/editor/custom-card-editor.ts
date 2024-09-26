@@ -96,5 +96,6 @@ export class CustomCardEditor extends LitElement {
       composed: true,
     };
     this.dispatchEvent(new CustomEvent('custom-card-editor-changed', eventDetail));
+    console.log('dispatched event', type, configValue, configBtnType, value, eventDetail);
   }
 }
