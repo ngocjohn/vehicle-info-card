@@ -274,8 +274,8 @@
             "info": "Obraz powinien być kwadratowy i mieć maksymalną rozdzielczość 450x450 pikseli. Zaleca się przezroczyste tło."
         },
         "customActionConfig": {
-            "title": "",
-            "desc": ""
+            "title": "Button interaction",
+            "desc": "Set the action for the custom button"
         }
     }
 }

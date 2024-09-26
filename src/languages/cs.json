@@ -274,8 +274,8 @@
             "info": "Obrázek by měl být čtvercový s maximálním rozlišením 450x450 pixelů. Doporučuje se průhledné pozadí."
         },
         "customActionConfig": {
-            "title": "",
-            "desc": ""
+            "title": "Button interaction",
+            "desc": "Set the action for the custom button"
         }
     }
 }

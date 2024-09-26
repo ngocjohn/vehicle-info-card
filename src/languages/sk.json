@@ -274,8 +274,8 @@
             "info": "Obrázok by mal byť štvorcový s maximálnym rozlíšením 450x450 pixelov. Odporúča sa priesvitné pozadie."
         },
         "customActionConfig": {
-            "title": "",
-            "desc": ""
+            "title": "Button interaction",
+            "desc": "Set the action for the custom button"
         }
     }
 }

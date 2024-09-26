@@ -274,8 +274,8 @@
             "info": "Hình ảnh nên là hình vuông với độ phân giải tối đa là 450x450 pixel. Khuyến nghị sử dụng hình nền trong suốt."
         },
         "customActionConfig": {
-            "title": "",
-            "desc": ""
+            "title": "Button interaction",
+            "desc": "Set the action for the custom button"
         }
     }
 }

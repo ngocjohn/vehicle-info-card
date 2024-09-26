@@ -274,8 +274,8 @@
             "info": "Vaizdas turi būti kvadratinis, didžiausia skiriamoji geba – 450x450 pikselių. Rekomenduojamas permatomas fonas."
         },
         "customActionConfig": {
-            "title": "",
-            "desc": ""
+            "title": "Button interaction",
+            "desc": "Set the action for the custom button"
         }
     }
 }

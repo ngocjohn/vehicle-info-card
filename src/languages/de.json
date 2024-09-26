@@ -274,8 +274,8 @@
             "info": "Das Bild sollte quadratisch sein und eine maximale Auflösung von 450x450 Pixel haben. Ein transparentes Hintergrund wird empfohlen."
         },
         "customActionConfig": {
-            "title": "",
-            "desc": ""
+            "title": "Button interaction",
+            "desc": "Set the action for the custom button"
         }
     }
 }

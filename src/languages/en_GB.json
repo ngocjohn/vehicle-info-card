@@ -274,8 +274,8 @@
             "info": "The image should be square with a maximum resolution of 450x450 pixels. A transparent background is recommended."
         },
         "customActionConfig": {
-            "title": "",
-            "desc": ""
+            "title": "Button interaction",
+            "desc": "Set the action for the custom button"
         }
     }
 }
