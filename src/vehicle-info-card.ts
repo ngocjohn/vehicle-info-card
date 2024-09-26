@@ -16,6 +16,9 @@ import {
   LovelaceCard,
 } from 'custom-card-helpers';
 
+import * as DataKeys from './const/data-keys';
+import { AttributeType, SubcardVisibilityProperties, cardTypes } from './const/data-keys';
+import * as StateMapping from './const/state-mapping';
 // Custom Types and Constants
 import {
   HomeAssistantExtended as HomeAssistant,
@@ -29,27 +32,20 @@ import {
   ButtonCardEntity,
   ButtonCardItems,
 } from './types';
-
-import * as StateMapping from './const/state-mapping';
-import * as DataKeys from './const/data-keys';
-
-import { AttributeType, SubcardVisibilityProperties, cardTypes } from './const/data-keys';
 // Styles and Assets
 import { amgBlack, amgWhite, tyreBg, logoLoading } from './const/imgconst';
 import styles from './css/styles.css';
 
 // Components
-import './components/map-card';
-import './components/header-slide';
 import './components/eco-chart';
+import './components/header-slide';
+import './components/map-card';
 import './components/remote-control';
 import './components/vehicle-buttons';
-
 import { VehicleButtons } from './components/vehicle-buttons';
 
 // Functions
 import { localize } from './localize/localize';
-import { formatTimestamp, convertMinutes, isEmpty } from './utils/helpers';
 import {
   setupCardListeners,
   handleCardFirstUpdated,
@@ -59,6 +55,7 @@ import {
   getCarEntity,
   createCardElement,
 } from './utils/ha-helpers';
+import { formatTimestamp, convertMinutes, isEmpty } from './utils/helpers';
 
 @customElement('vehicle-info-card')
 export class VehicleCard extends LitElement implements LovelaceCard {

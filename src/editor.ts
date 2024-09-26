@@ -7,6 +7,11 @@ import YAML from 'yaml';
 import { fireEvent, LovelaceCardConfig, LovelaceCardEditor } from 'custom-card-helpers';
 import { debounce } from 'es-toolkit';
 
+import { CARD_VERSION } from './const/const';
+import { cardTypes, editorShowOpts } from './const/data-keys';
+import { servicesCtrl } from './const/remote-control-keys';
+import editorcss from './css/editor.css';
+import { languageOptions, localize } from './localize/localize';
 // Local types
 import {
   HomeAssistantExtended as HomeAssistant,
@@ -15,18 +20,12 @@ import {
   ButtonConfigItem,
   ExtendedButtonConfigItem,
 } from './types';
-
-import { servicesCtrl } from './const/remote-control-keys';
-import { cardTypes, editorShowOpts } from './const/data-keys';
-import { CARD_VERSION } from './const/const';
-import { languageOptions, localize } from './localize/localize';
-import { handleFirstUpdated, defaultConfig, deepMerge } from './utils/ha-helpers';
-import { loadHaComponents, stickyPreview } from './utils/loader';
-import { compareVersions } from './utils/helpers';
 import { uploadImage } from './utils/editor-image-handler';
+import { handleFirstUpdated, defaultConfig, deepMerge } from './utils/ha-helpers';
+import { compareVersions } from './utils/helpers';
+import { loadHaComponents, stickyPreview } from './utils/loader';
 
-import editorcss from './css/editor.css';
-
+// Import the custom card components
 import './components/editor/custom-card-editor';
 import './components/editor/custom-button-template';
 import './components/editor/panel-images';
