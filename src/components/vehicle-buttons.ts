@@ -1,10 +1,10 @@
 import { LitElement, css, html, TemplateResult, PropertyValues, nothing, CSSResultGroup } from 'lit';
-import { customElement, property, state } from 'lit/decorators';
+import { customElement, property, state } from 'lit/decorators.js';
 import { Pagination } from 'swiper/modules';
 
 import Swiper from 'swiper';
 
-import { ButtonCardEntity, HomeAssistantExtended as HomeAssistant, VehicleCardConfig } from '../types';
+import { ButtonCardEntity, HomeAssistantExtended as HomeAssistant, VehicleCardConfig, CustomButton } from '../types';
 import { addActions } from '../utils/tap-action';
 import { getTemplateValue, getBooleanTemplate } from '../utils/ha-helpers';
 
@@ -13,11 +13,6 @@ import mainstyle from '../css/styles.css';
 
 import { VehicleCard } from '../vehicle-info-card';
 
-interface customButton {
-  notify: boolean;
-  state: string;
-}
-
 @customElement('vehicle-buttons')
 export class VehicleButtons extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
@@ -25,11 +20,11 @@ export class VehicleButtons extends LitElement {
   @property({ type: Object }) _config!: VehicleCardConfig;
   @property({ type: Object }) _buttons!: ButtonCardEntity;
 
-  @state() _secondaryInfo: { [key: string]: customButton } = {};
-  private swiper: Swiper | null = null;
+  @state() private _customButtonReady = false;
+  @state() _secondaryInfo: { [key: string]: CustomButton } = {};
 
+  private swiper: Swiper | null = null;
   private activeSlideIndex: number = 0;
-  @property() private _customButtonReady = false;
 
   static get styles(): CSSResultGroup {
     return [
@@ -54,6 +49,7 @@ export class VehicleButtons extends LitElement {
 
   protected async firstUpdated(_changedProperties: PropertyValues): Promise<void> {
     super.firstUpdated(_changedProperties);
+
     this._fetchSecondaryInfo();
   }
 
@@ -75,7 +71,7 @@ export class VehicleButtons extends LitElement {
       const { state, notify } = await this._getSecondaryInfo(key);
       if (oldState !== state || oldNotify !== notify) {
         // this._fetchSecondaryInfo();
-        console.log('change detected');
+        // console.log('change detected');
         changedKeys.push(key);
         changed = true;
       } else {
@@ -88,7 +84,7 @@ export class VehicleButtons extends LitElement {
       await Promise.all(
         changedKeys.map(async (key) => {
           newSecondaryInfo[key] = await this._getSecondaryInfo(key);
-          console.log('secondary info', newSecondaryInfo[key]);
+          // console.log('secondary info', newSecondaryInfo[key]);
         })
       );
 
@@ -123,18 +119,15 @@ export class VehicleButtons extends LitElement {
     }
   }
 
-  private async _getSecondaryInfo(key: string): Promise<customButton> {
-    let state = '';
-    let notify = false;
-
+  private async _getSecondaryInfo(key: string): Promise<CustomButton> {
     const button = this._buttons[key].button;
 
-    state = button.secondary
+    const state = button.secondary
       ? await getTemplateValue(this.hass, button.secondary)
       : button.attribute
         ? this.component.getFormattedAttributeState(button.entity, button.attribute)
         : this.component.getStateDisplay(button.entity);
-    notify = button.notify ? await getBooleanTemplate(this.hass, button.notify) : false;
+    const notify = button.notify ? await getBooleanTemplate(this.hass, button.notify) : false;
 
     return { state, notify };
   }
@@ -220,6 +213,7 @@ export class VehicleButtons extends LitElement {
   private _buttonsGridGroup(BaseButton: ButtonCardEntity, showError: boolean): TemplateResult {
     const rowSize = this.component.config?.button_grid?.rows_size ? this.component.config.button_grid.rows_size * 2 : 4;
     const chunkedCardTypes = this._chunkObject(BaseButton, rowSize); // Divide into groups of 4
+    // console.log('chunked', chunkedCardTypes);
     const slides = Object.keys(chunkedCardTypes).map((key) => {
       const buttons = html`
         <div class="grid-container">
@@ -230,7 +224,6 @@ export class VehicleButtons extends LitElement {
       `;
       return html`<div class="swiper-slide">${buttons}</div>`;
     });
-
     return html`${slides}`;
   }
 
@@ -283,7 +276,7 @@ export class VehicleButtons extends LitElement {
 
       chunked[chunkIndex][key] = obj[key];
 
-      // console.log('chunked', chunked);
+      // console.log('chunked', obj[key]);
       return chunked;
     }, {} as ButtonCardEntity);
   };
@@ -297,13 +290,13 @@ export class VehicleButtons extends LitElement {
       // Only add actions if button_type is not 'default'
       if (btnElt && this._buttons[btnId]?.button_type === 'action') {
         addActions(btnElt, this._buttons[btnId].button.button_action);
-        // console.log('Button action added:', this.component.customButtons[btnId].button_action);
+        console.log('Button action added:', this._buttons[btnId].button.button_action);
       } else {
         btnElt?.addEventListener('click', () => this._handleClick(btnId));
         // console.log('Default button action added:', btnId);
       }
     });
-    console.log('Button actions set');
+    // console.log('Button actions set');
   };
 
   private _handleClick = (btnId: string): void => {

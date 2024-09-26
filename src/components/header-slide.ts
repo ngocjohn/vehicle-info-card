@@ -1,5 +1,5 @@
 import { LitElement, css, html, TemplateResult, PropertyValues } from 'lit';
-import { customElement, state } from 'lit/decorators';
+import { customElement, state } from 'lit/decorators.js';
 import Swiper from 'swiper';
 import { Pagination } from 'swiper/modules';
 import swipercss from '../css/swiper-bundle.css';

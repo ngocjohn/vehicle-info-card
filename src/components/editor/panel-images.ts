@@ -1,6 +1,6 @@
 import { LitElement, html, TemplateResult, CSSResultGroup, PropertyValues, css } from 'lit';
-import { customElement, property, state } from 'lit/decorators';
-import { repeat } from 'lit/directives/repeat';
+import { customElement, property, state } from 'lit/decorators.js';
+import { repeat } from 'lit/directives/repeat.js';
 
 import Sortable from 'sortablejs';
 

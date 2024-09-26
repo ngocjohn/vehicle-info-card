@@ -214,7 +214,11 @@ export type CardTypeConfig = {
   button: string;
 };
 
-export interface ButtonCardEntity {
+export interface CustomButton {
+  notify: boolean;
+  state: string;
+}
+export type ButtonCardEntity = {
   key: string;
   default_name?: string;
   default_icon?: string;
@@ -232,8 +236,4 @@ export interface ButtonCardEntity {
   card_type: 'default' | 'custom';
   custom_card: LovelaceCardConfig[];
   custom_button: boolean;
-}
-
-export interface ButtonCardItems {
-  [key: string]: ButtonCardEntity;
-}
+};

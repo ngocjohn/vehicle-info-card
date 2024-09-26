@@ -1,5 +1,5 @@
 import { LitElement, html, TemplateResult, CSSResultGroup } from 'lit';
-import { customElement, property } from 'lit/decorators';
+import { customElement, property } from 'lit/decorators.js';
 import { isString } from 'es-toolkit';
 
 import { ExtendedButtonConfigItem, CardTypeConfig } from '../../types';

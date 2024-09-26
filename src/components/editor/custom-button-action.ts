@@ -1,5 +1,5 @@
 import { LitElement, html, TemplateResult, CSSResultGroup, nothing, PropertyValues } from 'lit';
-import { customElement, property, state } from 'lit/decorators';
+import { customElement, property, state } from 'lit/decorators.js';
 
 import {
   ExtendedButtonConfigItem,

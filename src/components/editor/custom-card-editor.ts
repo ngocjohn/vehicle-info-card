@@ -1,6 +1,5 @@
 import { LitElement, html, TemplateResult, CSSResultGroup } from 'lit';
-import { customElement, property } from 'lit/decorators';
-
+import { customElement, property } from 'lit/decorators.js';
 import { CardTypeConfig } from '../../types';
 import editorcss from '../../css/editor.css';
 
