@@ -246,19 +246,21 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _renderCardButtonPanel(): TemplateResult {
+    const localize = (key: string): string => this.localize(`editor.buttonConfig.${key}`);
+
     const translate = {
       info: this.localize('editor.common.infoButton'),
-      defaultCards: this.localize('editor.buttonConfig.defaultCards'),
-      addedCards: this.localize('editor.buttonConfig.customCards'),
-      addNewCard: this.localize('editor.buttonConfig.addNewCard'),
-      buttonGridSwipe: this.localize('editor.buttonConfig.buttonGridSwipe'),
-      useButtonSwipe: this.localize('editor.buttonConfig.useButtonSwipe'),
-      swipeRows: this.localize('editor.buttonConfig.swipeRows'),
+      defaultCards: localize('defaultCards'),
+      customCards: localize('customCards'),
+      addNewCard: localize('addNewCard'),
+      buttonGridSwipe: localize('buttonGridSwipe'),
+      useButtonSwipe: localize('useButtonSwipe'),
+      swipeRows: localize('swipeRows'),
     };
 
     // Split cards into default and added
     const defaultCards = this.baseCardTypes.filter((card) => !this.isAddedCard(card.type));
-    const addedCards = this.baseCardTypes.filter((card) => this.isAddedCard(card.type));
+    const customCards = this.baseCardTypes.filter((card) => this.isAddedCard(card.type));
 
     // Function to render card items
     const renderCardItems = (cards: CardTypeConfig[]) => {
@@ -274,7 +276,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
               <div class="card-type-icon">
                 <div class="icon-background">
                   <ha-icon
-                    .icon=${icon ? icon : 'mdi:smile'}
+                    icon=${icon ? icon : 'mdi:emoticon'}
                     @click=${() => (this._activeSubcardType = type)}
                   ></ha-icon>
                 </div>
@@ -372,8 +374,8 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       { key: 'default-cards', title: translate.defaultCards, cards: renderCardItems(defaultCards), visible: true },
       {
         key: 'added-cards',
-        title: translate.addedCards,
-        cards: renderCardItems(addedCards),
+        title: translate.customCards,
+        cards: renderCardItems(customCards),
         visible: this.isAnyAddedCard,
       },
     ].map((section) => ({
@@ -1266,15 +1268,15 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _toggleShowButton(card: CardTypeConfig): void {
-    console.log('Toggling show button from editor:', card.button);
+    console.log('Toggling show button from editor:', card.type);
     if (this._btnPreview) {
       this._toggleBtnPreview(card.button);
       this._btnPreview = false;
       setTimeout(() => {
-        this._dispatchCardEvent(`btn_${card.button}`);
+        this._dispatchCardEvent(`btn_${card.type}`);
       }, 50);
     } else {
-      this._dispatchCardEvent(`btn_${card.button}`);
+      this._dispatchCardEvent(`btn_${card.type}`);
     }
   }
 

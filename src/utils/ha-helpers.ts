@@ -348,6 +348,13 @@ export const defaultConfig: Partial<VehicleCardConfig> = {
     theme: 'default',
     mode: 'auto',
   },
+  extra_configs: {
+    tire_background: '',
+  },
+  button_grid: {
+    use_swiper: false,
+    rows_size: 2,
+  },
   services: {
     auxheat: false,
     charge: false,

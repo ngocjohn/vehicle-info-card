@@ -220,15 +220,20 @@ export interface ButtonCardEntity {
   default_icon?: string;
   button: {
     button_action: ButtonActionConfig;
-    entity: string;
     icon: string;
     primary: string;
     secondary: string;
-    notify: boolean;
+    attribute: string;
+    entity: string;
+    notify: string;
     hidden: boolean;
   };
   button_type: 'default' | 'action';
   card_type: 'default' | 'custom';
   custom_card: LovelaceCardConfig[];
   custom_button: boolean;
+}
+
+export interface ButtonCardItems {
+  [key: string]: ButtonCardEntity;
 }
