@@ -36,55 +36,111 @@ export class CustomButtonTemplate extends LitElement {
       { label: localizeKey('hideButton'), value: this.button.hide, configValue: 'hide' },
     ];
 
-    return html`<div class="sub-card-header">
-      ${checkboxConfigs.map(
-        (config) => html`
-          <ha-formfield .label=${config.label}>
-            <ha-checkbox
-              .checked=${config.value}
-              .configValue=${config.configValue}
-              .configBtnType=${this.card.button}
-              @change=${(ev: Event) => this._dispatchEvent(ev, 'btn-changed')}
-            ></ha-checkbox>
-          </ha-formfield>
-        `
-      )}
+    return html`
       ${!this.button.isHidden
-        ? html`
+        ? html`<div class="item-content">
             <ha-button @click=${() => this.editor._toggleShowButton(this.card)}>${localizeKey('showButton')}</ha-button>
-          `
+          </div> `
         : ''}
-      <ha-button @click=${(ev: Event) => this._dispatchEvent(ev, 'toggle-preview-button')}
-        >${!this.isButtonPreview ? localizeKey('preview') : localizeKey('hidePreview')}</ha-button
-      >
-    </div>`;
+      <div class="item-content">
+        <ha-button @click=${(ev: Event) => this._dispatchEvent(ev, 'toggle-preview-button')}
+          >${!this.isButtonPreview ? localizeKey('preview') : localizeKey('hidePreview')}</ha-button
+        >
+      </div>
+      <div class="item-content">
+        ${checkboxConfigs.map(
+          (config) => html`
+            <ha-formfield .label=${config.label}>
+              <ha-checkbox
+                .checked=${config.value}
+                .configValue=${config.configValue}
+                .configBtnType=${this.card.button}
+                @change=${(ev: Event) => this._dispatchEvent(ev, 'btn-changed')}
+              ></ha-checkbox>
+            </ha-formfield>
+          `
+        )}
+      </div>
+      <div class="item-content">
+        <ha-combo-box
+          .item-value-path=${'value'}
+          .item-label-path=${'label'}
+          .label=${'Button Type'}
+          .value=${this.button.button_type || 'default'}
+          .configValue=${'button_type'}
+          .configBtnType=${this.card.button}
+          .items=${[
+            { value: 'default', label: 'Default' },
+            { value: 'action', label: 'Action' },
+          ]}
+          @value-changed=${(ev: any) => this._dispatchEvent(ev, 'btn-changed')}
+        ></ha-combo-box>
+      </div>
+    `;
   }
 
   private _buttonTitleIconForms(): TemplateResult {
-    const { primary, icon } = this.button;
+    const { primary, icon, entity } = this.button;
     const button = this.card.button;
 
+    const attributes = entity ? Object.keys(this.editor.hass.states[entity].attributes) : [];
+    const attrOpts = [...attributes.map((attr) => ({ value: attr, label: attr }))];
+
+    const entitySelector = html`
+      <div class="item-content">
+        <ha-entity-picker
+          .hass=${this.editor.hass}
+          .label=${'Entity'}
+          .value=${this.button.entity || ''}
+          .configValue=${'entity'}
+          .configBtnType=${button}
+          @change=${(ev: Event) => this._dispatchEvent(ev, 'btn-changed')}
+          .allow-custom-entity
+        ></ha-entity-picker>
+      </div>
+    `;
+
+    const attributeSelector = html`
+      <div class="item-content">
+        <ha-combo-box
+          .item-value-path=${'value'}
+          .item-label-path=${'label'}
+          .label=${'Attribute'}
+          .hass=${this.editor.hass}
+          .value=${this.button.attribute || ''}
+          .configValue=${'attribute'}
+          .configBtnType=${button}
+          .items=${attrOpts}
+          @value-changed=${(ev: any) => this._dispatchEvent(ev, 'btn-changed')}
+        ></ha-combo-box>
+      </div>
+    `;
+
     const primaryInput = html`
-      <ha-textfield
-        .label=${'Button Title'}
-        .value=${primary}
-        .configValue=${'primary'}
-        .configBtnType=${button}
-        @change=${(ev: Event) => this._dispatchEvent(ev, 'btn-changed')}
-      ></ha-textfield>
+      <div class="item-content">
+        <ha-textfield
+          .label=${'Button Title'}
+          .value=${primary}
+          .configValue=${'primary'}
+          .configBtnType=${button}
+          @change=${(ev: Event) => this._dispatchEvent(ev, 'btn-changed')}
+        ></ha-textfield>
+      </div>
     `;
 
     const iconSelector = html`
-      <ha-icon-picker
-        .label=${'Icon'}
-        .value=${icon}
-        .configValue=${'icon'}
-        .configBtnType=${button}
-        @value-changed=${(ev: any) => this._dispatchEvent(ev, 'btn-changed')}
-      ></ha-icon-picker>
+      <div class="item-content">
+        <ha-icon-picker
+          .label=${'Icon'}
+          .value=${icon}
+          .configValue=${'icon'}
+          .configBtnType=${button}
+          @value-changed=${(ev: any) => this._dispatchEvent(ev, 'btn-changed')}
+        ></ha-icon-picker>
+      </div>
     `;
 
-    return html`${primaryInput}${iconSelector}`;
+    return html` ${primaryInput}${iconSelector} ${entitySelector}${attributeSelector}`;
   }
 
   private _templateUI(label: string, value: string, configValue: string, helper: string): TemplateResult {
@@ -123,8 +179,7 @@ export class CustomButtonTemplate extends LitElement {
     );
     const notifyUI = this._templateUI(localizeKey('notifyInfo'), notify, 'notify', localizeKey('notifyInfoHelper'));
 
-    return html`${editorHeader}
-      <div class="card-button-cfg">${buttonTitleIconForms}</div>
+    return html` <div class="card-button-cfg">${editorHeader}${buttonTitleIconForms}</div>
       ${secondaryUI}${notifyUI}`;
   }
 
@@ -132,7 +187,12 @@ export class CustomButtonTemplate extends LitElement {
     const target = ev.target;
     const configValue = target?.configValue;
     const configBtnType = target?.configBtnType;
-    const newValue = target.checked !== undefined ? target.checked : target.value;
+    const newValue =
+      target.checked !== undefined
+        ? target.checked
+        : configValue === 'attribute' || configValue === 'button_type'
+          ? ev.detail.value
+          : target.value;
     const value = isString(newValue) ? newValue.trim() : newValue;
     const eventDetail = {
       detail: {
@@ -148,5 +208,6 @@ export class CustomButtonTemplate extends LitElement {
       composed: true,
     };
     this.dispatchEvent(new CustomEvent('custom-button-changed', eventDetail));
+    console.log('dispatched event', type, configValue, configBtnType, value);
   }
 }

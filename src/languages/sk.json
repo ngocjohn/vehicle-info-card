@@ -272,6 +272,10 @@
             "title": "Vlastné pozadie pneumatík",
             "desc": "Nahrajte obrázok pre zmenu predvoleného pozadia.",
             "info": "Obrázok by mal byť štvorcový s maximálnym rozlíšením 450x450 pixelov. Odporúča sa priesvitné pozadie."
+        },
+        "customActionConfig": {
+            "title": "Button interaction",
+            "desc": "Set the action for the custom button"
         }
     }
 }

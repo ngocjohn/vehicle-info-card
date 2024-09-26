@@ -272,6 +272,10 @@
             "title": "Individualus padangų fonas",
             "desc": "Įkelkite vaizdą, kad pakeistumėte numatytąjį foną.",
             "info": "Vaizdas turi būti kvadratinis, didžiausia skiriamoji geba – 450x450 pikselių. Rekomenduojamas permatomas fonas."
+        },
+        "customActionConfig": {
+            "title": "Button interaction",
+            "desc": "Set the action for the custom button"
         }
     }
 }

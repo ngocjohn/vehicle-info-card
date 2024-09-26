@@ -29,7 +29,7 @@ const createCard = (
   icon: string,
   config: string,
   button: string,
-  lang: string,
+  lang: string
 ): CardType => ({
   type: key,
   name: localize(`card.${nameKey}`, lang),
@@ -142,4 +142,4 @@ export const SubcardVisibilityProperties = [
   'ecoScoresVisible',
 ];
 
-export type AttributeType = 'lock' | 'window' | 'door' | 'fromStart' | 'fromReset';
+export type AttributeType = 'lock' | 'window' | 'door';

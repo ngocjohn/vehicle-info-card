@@ -26,9 +26,8 @@ export type HomeAssistantExtended = HomeAssistant & {
   themes: ExtendedThemes;
   formatEntityState: (stateObj: HassEntity) => string;
   formatAttributeName: (entityId: string, attribute: string) => string;
-  formatEntityAttributeValue: (entityId: string, attribute: string) => string;
+  formatEntityAttributeValue: (entityId: HassEntity, attribute: string) => string;
 };
-
 /**
  * Configuration interface for the Vehicle Card.
  */
@@ -79,6 +78,10 @@ export type ButtonConfigItem = {
   secondary: string;
   icon: string;
   notify: string;
+  button_type: 'default' | 'action';
+  button_action: ButtonActionConfig;
+  entity: string;
+  attribute: string;
 };
 
 export type ExtendedButtonConfigItem = ButtonConfigItem & {
@@ -94,6 +97,10 @@ export type CustomButtonEntity = {
   secondary: string;
   icon: string;
   notify: boolean;
+  button_type: 'default' | 'action';
+  button_action: ButtonActionConfig;
+  entity: string;
+  attribute: string;
 };
 
 export interface AddedCustomButtonCard {
@@ -131,6 +138,12 @@ export interface CustomButtonsConfig extends VehicleCardConfig {
 export interface ExtraConfigs {
   tire_background: string;
 }
+export interface ButtonActionConfig {
+  entity: string;
+  tap_action: ActionConfig;
+  hold_action: ActionConfig;
+  double_tap_action: ActionConfig;
+}
 
 export interface VehicleCardConfig extends LovelaceCardConfig {
   type: string;
@@ -145,9 +158,6 @@ export interface VehicleCardConfig extends LovelaceCardConfig {
   use_custom_cards?: UseCustomCards;
   services: Services;
   extra_configs: ExtraConfigs;
-  tap_action?: ActionConfig;
-  hold_action?: ActionConfig;
-  double_tap_action?: ActionConfig;
 }
 
 export interface ShowOptions extends VehicleCardConfig {
@@ -203,3 +213,27 @@ export type CardTypeConfig = {
   config: string;
   button: string;
 };
+
+export interface ButtonCardEntity {
+  key: string;
+  default_name?: string;
+  default_icon?: string;
+  button: {
+    button_action: ButtonActionConfig;
+    icon: string;
+    primary: string;
+    secondary: string;
+    attribute: string;
+    entity: string;
+    notify: string;
+    hidden: boolean;
+  };
+  button_type: 'default' | 'action';
+  card_type: 'default' | 'custom';
+  custom_card: LovelaceCardConfig[];
+  custom_button: boolean;
+}
+
+export interface ButtonCardItems {
+  [key: string]: ButtonCardEntity;
+}

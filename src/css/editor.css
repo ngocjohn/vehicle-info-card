@@ -18,9 +18,38 @@
 .switches,
 .card-button-cfg {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 8px;
-  margin-block: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(49%, 1fr));
+  gap: var(--vic-gutter-gap);
+  margin-block: var(--vic-gutter-gap);
+}
+
+.card-button-cfg>.item-content:nth-last-child(1):nth-child(odd) {
+  grid-column: span 2;
+}
+
+.switches>*:nth-last-child(1):nth-child(odd) {
+  grid-column: span 2;
+}
+
+.item-content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  width: 100%;
+  flex: 1;
+}
+
+.action-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-block: 0.5rem;
+}
+
+.select-action {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vic-card-padding);
 }
 
 /* .switches {
