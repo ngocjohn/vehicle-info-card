@@ -39,8 +39,8 @@ export function convertMinutes(totalMinutes: number) {
   return result;
 }
 
-export function convertToMinutes(hour: string, minute: string): any {
-  return Number(hour) * 60 + minute;
+export function convertToMinutes(hour: string, minute: string): number {
+  return Number(hour) * 60 + Number(minute);
 }
 
 export function compareVersions(version1, version2) {
@@ -76,6 +76,7 @@ export function compareVersions(version1, version2) {
   return 0; // Versions are equal
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isEmpty(input: any): boolean {
   if (Array.isArray(input)) {
     // Check if array is empty

@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { LitElement, html, TemplateResult, PropertyValues, CSSResultGroup, nothing } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
@@ -17,21 +18,21 @@ import {
 } from 'custom-card-helpers';
 
 // Custom Types and Constants
-import { defaultConfig } from './const/const';
 import * as DataKeys from './const/data-keys';
 import * as StateMapping from './const/state-mapping';
-
 import {
   HomeAssistantExtended as HomeAssistant,
   VehicleCardConfig,
   EntityConfig,
   VehicleEntities,
+  VehicleEntity,
   EcoData,
   ButtonCardEntity,
   CardTypeConfig,
   CustomButtonEntity,
+  defaultConfig,
+  BaseButtonConfig,
 } from './types';
-
 import { HEADER_ACTION } from './types/card-types';
 // Styles and Assets
 import * as IMG from './const/imgconst';
@@ -43,11 +44,8 @@ import { VehicleButtons, EcoChart } from './components/cards';
 
 // Functions
 import { localize } from './localize/localize';
-import { handleCardFirstUpdated, getCarEntity, createCardElement, createCustomButtons } from './utils/ha-helpers';
-
-import { setupCardDirectionHandler } from './utils/card-helpers';
-
-import { formatTimestamp, convertMinutes, isEmpty } from './utils/helpers';
+import { handleCardFirstUpdated, getCarEntity, handleCardSwipe, convertMinutes, isEmpty } from './utils';
+import { getAddedButton, getDefaultButton, createCardElement, createCustomButtons } from './utils/ha-helpers';
 
 @customElement('vehicle-info-card')
 export class VehicleCard extends LitElement implements LovelaceCard {
@@ -55,43 +53,43 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     await import('./editor');
     return document.createElement('vehicle-info-card-editor');
   }
-
+  // Properties
   @property({ attribute: false }) public _hass!: HomeAssistant;
   @property({ type: Object }) public config!: VehicleCardConfig;
   @property({ type: Boolean }) public editMode = false;
   @property({ type: Boolean }) public preview = false;
-  @property({ type: Boolean }) isBtnPreview: boolean = false;
-  @property({ type: Boolean }) isCardPreview: boolean = false;
 
+  // Vehicle entities and attributes
   @state() private vehicleEntities: VehicleEntities = {};
-  @state() public ButtonCards: Record<string, ButtonCardEntity> = {};
-
-  @state() private _currentCardType: string | null = null;
-  @state() private _cardPreviewElement: LovelaceCardConfig[] = [];
-  @state() private _mapPopupLovelace: LovelaceCardConfig[] = [];
-
-  @state() private chargingInfoVisible!: boolean;
-
-  @state() private isTyreHorizontal!: boolean;
-  @state() private selectedLanguage: string = 'en';
+  @state() public buttonCards: Record<string, ButtonCardEntity> = {};
   @state() public _entityNotFound: boolean = false;
 
-  @state() private _cardPreview: LovelaceCardConfig[] = [];
-  @state() private _previewTemplateValues: Partial<CustomButtonEntity> = {};
+  // Active card type
+  @state() private _currentCardType: string | null = null;
+  @state() private _activeSubCard: Set<string> = new Set();
+  @state() private _mapPopupLovelace: LovelaceCardConfig[] = [];
+  @state() private chargingInfoVisible!: boolean;
+  @state() private isTyreHorizontal!: boolean;
 
-  @state() private _activeSubCard = new Set<string>();
+  // Preview states
+  @state() private _currentPreviewType: 'button' | 'card' | null = null;
+  @state() private _cardPreviewElement: LovelaceCardConfig[] = [];
+  @state() private _buttonEntityPreview: Partial<CustomButtonEntity> = {};
+
+  // Loading state
   @state() private _loading = true;
   @state() private _buttonReady = false;
 
+  // Components
   @query('vehicle-buttons') vehicleButtons!: VehicleButtons;
   @query('eco-chart') ecoChart!: EcoChart;
 
   set hass(hass: HomeAssistant) {
     this._hass = hass;
-    if (this._buttonReady && this.ButtonCards) {
-      Object.keys(this.ButtonCards).forEach((key) => {
-        const customCard = this.ButtonCards[key].custom_card;
-        const useCustom = this.ButtonCards[key].card_type === 'custom';
+    if (this._buttonReady && this.buttonCards) {
+      Object.keys(this.buttonCards).forEach((key) => {
+        const customCard = this.buttonCards[key].custom_card;
+        const useCustom = this.buttonCards[key].card_type === 'custom';
         if (useCustom && !isEmpty(customCard)) {
           customCard.forEach((card) => {
             card.hass = hass;
@@ -128,10 +126,9 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
   protected async firstUpdated(_changedProperties: PropertyValues): Promise<void> {
     super.firstUpdated(_changedProperties);
-    await handleCardFirstUpdated(this, _changedProperties);
+    await handleCardFirstUpdated(this);
+    this._setUpPreview();
     this.setUpButtonCards();
-    this._configureButtonPreviews();
-    this._configureCardPreviews();
   }
 
   protected updated(changedProps: PropertyValues): void {
@@ -147,21 +144,15 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     ) {
       const cardElement = this.shadowRoot?.querySelector('.card-element');
       if (cardElement) {
-        setupCardDirectionHandler(cardElement, this.toggleCard.bind(this));
+        handleCardSwipe(cardElement, this.toggleCard.bind(this));
       }
     }
 
     if ((!this._currentCardType && this.isCharging) || !this.isCharging) {
       this.toggleCharginAnimation();
     }
-
-    if (!this.editMode || !this.preview) {
-      this.isBtnPreview = false;
-      this.isCardPreview = false;
-    }
   }
 
-  // https://lit.dev/docs/components/lifecycle/#reactive-update-cycle-performing
   protected shouldUpdate(_changedProps: PropertyValues): boolean {
     if (!this.config || !this._hass) {
       console.log('config or hass is null');
@@ -174,14 +165,6 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
     if (_changedProps.has('config') && this.config.selected_theme?.theme !== 'default') {
       this.applyTheme(this.config.selected_theme.theme);
-    }
-
-    if (_changedProps.has('config') && this.isBtnPreview) {
-      this._configureButtonPreviews();
-    }
-
-    if (_changedProps.has('config') && this.isCardPreview) {
-      this._configureCardPreviews();
     }
 
     if (
@@ -224,44 +207,28 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     super.disconnectedCallback();
   }
 
+  private get userLang(): string {
+    if (!this.config.selected_language || this.config.selected_language === 'system') {
+      return this._hass.language;
+    }
+    return this.config.selected_language;
+  }
+
   private get baseCardTypes(): CardTypeConfig[] {
-    return DataKeys.cardTypes(this.selectedLanguage);
+    return DataKeys.cardTypes(this.userLang);
   }
 
   private async setUpButtonCards(): Promise<void> {
+    if (this._currentPreviewType !== null) return;
     this._buttonReady = false;
 
     const buttonCards: { [key: string]: ButtonCardEntity } = {};
     const logging: string[] = [];
     for (const baseCard of this.baseCardTypes) {
-      if (this.config) {
-        const button = this.config[baseCard.button];
-        const useCustom = this.config.use_custom_cards?.[baseCard.config] ?? false;
-        const customCard = this.config[baseCard.config] !== undefined && this.config[baseCard.config].length > 0;
-
-        // Add buttonCard configuration for each baseCard
-        buttonCards[baseCard.type] = {
-          key: baseCard.type,
-          default_name: baseCard.name,
-          default_icon: baseCard.icon,
-          button: {
-            hidden: button?.hide || false,
-            button_action: button?.button_action || {},
-            entity: button?.entity || '',
-            icon: button?.icon || '',
-            primary: button?.primary || '',
-            secondary: button?.secondary || '',
-            attribute: button?.attribute || '',
-            notify: button?.notify || '',
-          },
-          button_type: button?.button_type || 'default',
-          card_type: useCustom ? 'custom' : 'default',
-          custom_button: button?.enabled || false,
-          custom_card: customCard ? await createCardElement(this._hass, this.config[baseCard.config]) : [],
-        };
-        this.ButtonCards = buttonCards;
-        logging.push(baseCard.type);
-      }
+      buttonCards[baseCard.type] = await getDefaultButton(this._hass, this.config, baseCard);
+      logging.push(baseCard.type);
+      this.buttonCards = buttonCards;
+      // console.log('Button Cards ready:', logging);
     }
 
     // Use Promise.all for added_cards processing
@@ -270,36 +237,10 @@ export class VehicleCard extends LitElement implements LovelaceCard {
         Object.keys(this.config.added_cards).map(async (key) => {
           const card = this.config.added_cards[key];
           if (card) {
-            const button = card.button;
-            const customCard = card.cards && card.cards.length > 0;
-
-            // Add buttonCard configuration for each added_card
-            buttonCards[key] = {
-              key: key,
-              custom_button: button.enabled ?? false,
-              button: {
-                hidden: button.hide ?? false,
-                button_action: button.button_action || {
-                  entity: '',
-                  tap_action: { action: 'more-info' },
-                  hold_action: { action: 'none' },
-                  double_tap_action: { action: 'none' },
-                },
-
-                entity: button.entity || '',
-                icon: button.icon || '',
-                primary: button.primary || '',
-                secondary: button.secondary || '',
-                attribute: button.attribute || '',
-                notify: button.notify || '',
-              },
-              button_type: button.button_type || 'default',
-              card_type: 'custom',
-              custom_card: customCard ? await createCardElement(this._hass, card.cards) : [],
-            };
-            this.ButtonCards = buttonCards;
-            logging.push(key);
+            buttonCards[key] = await getAddedButton(this._hass, card, key);
           }
+          this.buttonCards = buttonCards;
+          logging.push(key);
         })
       );
     }
@@ -333,51 +274,61 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     }
   }
 
-  private async _configureButtonPreviews(): Promise<void> {
-    if (
-      this.config.btn_preview !== undefined &&
-      this.config.btn_preview !== null &&
-      this.config.btn_preview &&
-      this.isEditorPreview
-    ) {
-      const buttonConfig = this.config?.btn_preview;
-      if (!buttonConfig) return;
-      const btnPreview = await createCustomButtons(this._hass, buttonConfig);
-      if (!btnPreview) return;
-      this._previewTemplateValues = btnPreview;
-      this.isBtnPreview = true;
-      this.requestUpdate();
-    } else {
-      this._previewTemplateValues = {};
-      this.isBtnPreview = false;
+  private async _setUpPreview(): Promise<void> {
+    if (!this._currentPreviewType && this.config?.card_preview) {
+      this._currentPreviewType = 'card';
+    } else if (!this._currentPreviewType && this.config?.btn_preview) {
+      this._currentPreviewType = 'button';
     }
 
-    return;
+    if (this._currentPreviewType !== null) {
+      await this._configurePreview(this._currentPreviewType);
+    } else {
+      this._currentPreviewType = null;
+    }
   }
 
-  private async _configureCardPreviews(): Promise<void> {
-    if (
-      this.config.card_preview !== undefined &&
-      this.config.card_preview !== null &&
-      this.config.card_preview &&
-      this.isEditorPreview
-    ) {
-      const cardConfig = this.config?.card_preview;
-      if (!cardConfig) return;
-      const cardElement = await createCardElement(this._hass, cardConfig);
-      if (!cardElement) return;
-      this._cardPreview = cardElement;
-      this.isCardPreview = true;
-      this.requestUpdate();
-    } else {
-      this._cardPreview = [];
-      this.isCardPreview = false;
+  private async _configurePreview(cardType: 'button' | 'card' | null): Promise<void> {
+    if (!cardType && !this.isEditorPreview) return;
+
+    let cardConfig: LovelaceCardConfig[] | BaseButtonConfig = [];
+    let cardElement: any;
+
+    switch (cardType) {
+      case 'button':
+        cardConfig = this.config?.btn_preview;
+        if (!cardConfig) return;
+        cardElement = await createCustomButtons(this._hass, cardConfig as BaseButtonConfig);
+        this._buttonEntityPreview = cardElement;
+        break;
+      case 'card':
+        cardConfig = this.config?.card_preview;
+        if (!cardConfig) return;
+        cardElement = await createCardElement(this._hass, cardConfig as LovelaceCardConfig[]);
+        this._cardPreviewElement = cardElement;
+        break;
+      default:
+        return;
     }
-    return;
+
+    if (!cardElement) {
+      this._resetCardPreview(); // Reset preview
+      return;
+    }
+
+    this._currentPreviewType = cardType;
+    this.requestUpdate();
+  }
+
+  private _resetCardPreview(): void {
+    this._cardPreviewElement = [];
+    this._buttonEntityPreview = {};
+    this._currentPreviewType = null;
+    this.requestUpdate();
   }
 
   private localize = (string: string, search = '', replace = ''): string => {
-    return localize(string, this.selectedLanguage, search, replace);
+    return localize(string, this.userLang, search, replace);
   };
 
   private get isCharging(): boolean {
@@ -404,39 +355,9 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     return parentElementClassPreview || false;
   }
 
-  // https://lit.dev/docs/components/styles/
   public static get styles(): CSSResultGroup {
     return styles;
   }
-
-  // private async createCustomButtons(button: ButtonConfigItem): Promise<CustomButtonEntity | void> {
-  //   if (!button) {
-  //     return;
-  //   }
-
-  //   const secondaryValue = button.secondary
-  //     ? await getTemplateValue(this._hass, button.secondary)
-  //     : button.attribute
-  //       ? this.getFormattedAttributeState(button.entity, button.attribute)
-  //       : this.getStateDisplay(button.entity);
-
-  //   const notifyValue = button.notify ? await getBooleanTemplate(this._hass, button.notify) : false;
-
-  //   const customButton: CustomButtonEntity = {
-  //     enabled: true,
-  //     hide: false,
-  //     primary: button.primary,
-  //     secondary: secondaryValue,
-  //     icon: button.icon || '',
-  //     notify: notifyValue,
-  //     button_type: button.button_type || 'default',
-  //     button_action: button.button_action,
-  //     entity: button.entity || '',
-  //     attribute: button.attribute || '',
-  //   };
-
-  //   return customButton;
-  // }
 
   private toggleCharginAnimation(): void {
     const eletricBar = this.shadowRoot?.querySelector('.fuel-level-bar.electric') as HTMLElement;
@@ -465,12 +386,8 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       return this._renderLoading();
     }
 
-    if (this.isBtnPreview) {
-      return this._renderBtnPreview(this._previewTemplateValues as CustomButtonEntity);
-    }
-
-    if (this.isCardPreview) {
-      return html`<ha-card class="preview-card">${this._cardPreview}</ha-card>`;
+    if (this._currentPreviewType !== null && this.isEditorPreview) {
+      return this._renderCardPreview();
     }
 
     const name = this.config.name || '';
@@ -483,6 +400,17 @@ export class VehicleCard extends LitElement implements LovelaceCard {
         ${this._currentCardType ? this._renderCustomCard() : this._renderMainCard()}
       </ha-card>
     `;
+  }
+
+  private _renderCardPreview(): TemplateResult {
+    if (!this._currentPreviewType) return html``;
+    const type = this._currentPreviewType;
+    const typeMap = {
+      button: this._renderBtnPreview(this._buttonEntityPreview as CustomButtonEntity),
+      card: html`<ha-card class="preview-card">${this._cardPreviewElement}</ha-card>`,
+    };
+
+    return typeMap[type];
   }
 
   // Render loading template
@@ -498,12 +426,18 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   }
 
   private _renderBtnPreview(btn: CustomButtonEntity): TemplateResult {
-    const { primary, icon, secondary, notify } = btn;
+    const { primary, icon, secondary, notify, entity } = btn;
     return html`
       <ha-card class="preview-card">
         <div class="grid-item">
           <div class="item-icon">
-            <div class="icon-background"><ha-icon .icon="${icon}"></ha-icon></div>
+            <div class="icon-background">
+              <ha-state-icon
+                .hass=${this._hass}
+                .stateObj=${entity ? this._hass.states[entity] : undefined}
+                .icon=${icon}
+              ></ha-state-icon>
+            </div>
             <div class="item-notify ${notify ? '' : 'hidden'}">
               <ha-icon icon="mdi:alert-circle"></ha-icon>
             </div>
@@ -585,7 +519,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   }
 
   private _renderChargingInfo(): TemplateResult | void {
-    const chargingOverviewData = DataKeys.chargingOverview(this.selectedLanguage);
+    const chargingOverviewData = DataKeys.chargingOverview(this.userLang);
     const chargingData = this.createDataArray(chargingOverviewData);
     const chargingClass = this.chargingInfoVisible ? 'info-box charge active' : 'info-box charge';
 
@@ -719,12 +653,16 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
   private _renderEcoChart(): TemplateResult {
     if (this._currentCardType !== 'ecoCards') return html``;
-    const lang = this.selectedLanguage;
-    const getEcoScore = (entity: any): number => parseFloat(this.getEntityState(entity?.entity_id)) || 0;
+    const lang = this.userLang;
+    const getEcoScore = (entity: string | undefined): number => {
+      if (!entity) return 0;
+      const state = this.getEntityState(entity);
+      return state === 'unavailable' ? 0 : parseFloat(state);
+    };
 
     const ecoDataObj = DataKeys.ecoScores(lang).reduce((acc, score) => {
       if (score.apexProp) {
-        acc[score.apexProp] = getEcoScore(this.vehicleEntities[score.key]);
+        acc[score.apexProp] = getEcoScore(this.vehicleEntities[score.key].entity_id);
       }
 
       return acc;
@@ -736,7 +674,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   private _renderButtons(): TemplateResult {
     if (!this.config.show_buttons) return html``;
     if (!this._buttonReady) return html``;
-    const buttonCards = this.ButtonCards;
+    const buttonCards = this.buttonCards;
     const config = this.config;
     return html`
       <vehicle-buttons
@@ -766,7 +704,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     if (key === 'mapDialog' || key === 'servicesCard') {
       renderCard = cardConfigMap[key];
     } else {
-      const selectedCard = this.ButtonCards[key];
+      const selectedCard = this.buttonCards[key];
       const cardType = selectedCard.card_type ?? 'default';
       const customCard = !isEmpty(selectedCard.custom_card)
         ? selectedCard.custom_card.map((card: LovelaceCardConfig) => card)
@@ -777,11 +715,9 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
     const lastCarUpdate = this.config.entity ? this._hass.states[this.config.entity].last_changed : '';
     const hassLocale = this._hass.locale;
-    hassLocale.language = this.selectedLanguage;
+    hassLocale.language = this.userLang;
 
-    const formattedDate = hassLocale
-      ? formatDateTime(new Date(lastCarUpdate), hassLocale)
-      : formatTimestamp(lastCarUpdate);
+    const formattedDate = formatDateTime(new Date(lastCarUpdate), hassLocale);
 
     const cardHeaderBox = html` <div class="added-card-header">
       <div class="headder-btn click-shrink" @click="${() => this.toggleCard('close')}">
@@ -809,7 +745,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   }
 
   private _renderDefaultTripCard(): TemplateResult | void {
-    const lang = this.selectedLanguage;
+    const lang = this.userLang;
     const sections = [
       {
         title: this.localize('card.tripCard.overview'),
@@ -831,7 +767,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   }
 
   private _renderDefaultVehicleCard(): TemplateResult | void {
-    const lang = this.selectedLanguage;
+    const lang = this.userLang;
     const warningsData = this.createDataArray(DataKeys.vehicleWarnings(lang));
 
     const isSubCardVisible = this.isOverviewDataActive() || !this._activeSubCard.has('warnings');
@@ -875,7 +811,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   }
 
   private _renderDefaultEcoCard(): TemplateResult | void {
-    const lang = this.selectedLanguage;
+    const lang = this.userLang;
     const ecoData = this.createDataArray(DataKeys.ecoScores(lang));
 
     return html`<div class="default-card">
@@ -889,7 +825,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     const customTyreBg = this.config.extra_configs?.tire_background
       ? this.config.extra_configs.tire_background
       : IMG.tyreBg;
-    const lang = this.selectedLanguage;
+    const lang = this.userLang;
     const isPressureWarning = this.getBooleanState(this.vehicleEntities.tirePressureWarning?.entity_id);
 
     const tireCardTitle = this.localize('card.tyreCard.tyrePressure');
@@ -932,7 +868,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     const serviceControl = this.config.services;
     const carVin = this.carVinNumber;
     const carLockEntity = this.vehicleEntities.lock?.entity_id;
-    const selectedLanguage = this.selectedLanguage;
+    const selectedLanguage = this.userLang;
     return html`
       <div class="default-card remote-tab">
         <div class="data-header">${this.localize('card.common.titleRemoteControl')}</div>
@@ -997,7 +933,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     forwardHaptic('light');
     const cardElement = this.shadowRoot?.querySelector('.card-element') as HTMLElement;
     if (!this._currentCardType || !cardElement) return;
-    const baseCardTypes = Object.values(this.ButtonCards);
+    const baseCardTypes = Object.values(this.buttonCards);
 
     if (action === 'next' || action === 'prev') {
       const currentIndex = baseCardTypes.findIndex((card) => card.key === this._currentCardType);
@@ -1027,7 +963,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   /* --------------------- SUBCARDS METHODS AND RENDERING --------------------- */
 
   private _renderOverviewDataWithSubCard(): TemplateResult {
-    const overViewData = this.createDataArray(DataKeys.vehicleOverview(this.selectedLanguage));
+    const overViewData = this.createDataArray(DataKeys.vehicleOverview(this.userLang));
 
     // Map to handle the visibility and rendering of subcards
     const subCardMapping = {
@@ -1095,8 +1031,8 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   }
 
   private _renderSubCard(attributeType: 'lock' | 'window' | 'door'): TemplateResult {
-    const lang = this.selectedLanguage;
-    const state: Record<string, any> = {};
+    const lang = this.userLang;
+    const state: Record<string, string | boolean> = {};
     const entityID = this.getEntityTypeId(attributeType);
     const stateMapping = this.getAttrStateMap(attributeType, lang);
     const attributesVisible = this.isSubCardActive(attributeType);
@@ -1127,7 +1063,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
           // Check if the state is valid and the attribute mapping exists
           if (rawState !== undefined && rawState !== null && stateMapping[attribute]) {
             const readableState = stateMapping[attribute].state[rawState] || 'Unknown';
-            let classState;
+            let classState: boolean;
             if (attribute === 'sunroofstatus') {
               classState = rawState === '0' ? false : true;
             } else {
@@ -1162,13 +1098,13 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   private getAttrStateMap(
     attributeType: 'lock' | 'window' | 'door',
     lang: string
-  ): Record<'lock' | 'window' | 'door', any> {
+  ): Record<'lock' | 'window' | 'door', string> {
     const stateMapping: Record<string, any> = {
       lock: StateMapping.lockAttributes(lang),
       window: StateMapping.windowAttributes(lang),
       door: StateMapping.doorAttributes(lang),
     };
-    return stateMapping[attributeType] ?? {};
+    return stateMapping[attributeType] || {};
   }
 
   /* -------------------------------------------------------------------------- */
@@ -1281,7 +1217,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   /* --------------------------- ENTITY INFO BY KEYS -------------------------- */
 
   private getFallbackEntityInfo = ({ key, name, icon, state, unit }: EntityConfig): EntityConfig => {
-    const lang = this.selectedLanguage;
+    const lang = this.userLang;
 
     let newState = state;
     let activeState: boolean = false;
@@ -1318,7 +1254,10 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     return { key, name, icon, state: newState, active: activeState, unit };
   };
 
-  private getDefaultEntityInfo = ({ key, name, icon, state, unit }: EntityConfig, vehicleEntity: any): EntityConfig => {
+  private getDefaultEntityInfo = (
+    { key, name, icon, state, unit }: EntityConfig,
+    vehicleEntity: VehicleEntity
+  ): EntityConfig => {
     return {
       key,
       name: name ?? vehicleEntity.original_name,
@@ -1328,7 +1267,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     };
   };
 
-  private getSocInfo = (defaultInfo: EntityConfig, vehicleEntity: any): EntityConfig => {
+  private getSocInfo = (defaultInfo: EntityConfig, vehicleEntity: VehicleEntity): EntityConfig => {
     const currentState = this.getEntityState(vehicleEntity.entity_id);
     const stateValue = currentState ? parseFloat(currentState) : 0;
     let socIcon: string;
@@ -1342,7 +1281,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     return { ...defaultInfo, icon: socIcon };
   };
 
-  private getMaxSocInfo = (defaultInfo: EntityConfig, vehicleEntity: any): EntityConfig => {
+  private getMaxSocInfo = (defaultInfo: EntityConfig, vehicleEntity: VehicleEntity): EntityConfig => {
     const maxSocState = this.getEntityState(vehicleEntity.entity_id);
     const maxSocStateValue = maxSocState ? parseFloat(maxSocState) : 0;
     const iconValue = Math.round(maxSocStateValue / 10) * 10;
@@ -1351,7 +1290,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     return { ...defaultInfo, icon: maxSocIcon };
   };
 
-  private getChargingPowerInfo = (defaultInfo: EntityConfig, vehicleEntity: any): EntityConfig => {
+  private getChargingPowerInfo = (defaultInfo: EntityConfig, vehicleEntity: VehicleEntity): EntityConfig => {
     const powerState = this.getEntityState(vehicleEntity.entity_id);
     const powerStateValue = powerState ? parseFloat(powerState) : 0;
     const powerStateUnit = this.getEntityAttribute(vehicleEntity.entity_id, 'unit_of_measurement') || 'kW';
@@ -1362,7 +1301,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     return { ...defaultInfo, state: powerStateDislay };
   };
 
-  private getParkBrakeInfo = (defaultInfo: EntityConfig, vehicleEntity: any): EntityConfig => {
+  private getParkBrakeInfo = (defaultInfo: EntityConfig, vehicleEntity: VehicleEntity): EntityConfig => {
     const parkBrakeState = this.getBooleanState(vehicleEntity.entity_id);
     const entityState = parkBrakeState
       ? this.localize('card.common.stateParkBrakeOn')
@@ -1376,7 +1315,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
   private getDoorStatusInfo = (): { state: string; active: boolean } => {
     let doorStatusOverall: string;
-    const lang = this.selectedLanguage;
+    const lang = this.userLang;
     const doorState = this.getEntityAttribute(this.vehicleEntities.lockSensor?.entity_id, 'doorStatusOverall');
     const chargeFlapDCStatus = this.getEntityState(this.vehicleEntities.chargeFlapDCStatus?.entity_id);
 
@@ -1413,9 +1352,9 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     };
   };
 
-  private getWindowsClosedInfo = (defaultInfo: EntityConfig, vehicleEntity: any): EntityConfig => {
+  private getWindowsClosedInfo = (defaultInfo: EntityConfig, vehicleEntity: VehicleEntity): EntityConfig => {
     let windowStateOverall: string;
-    const lang = this.selectedLanguage;
+    const lang = this.userLang;
     const sunroofStatus = this.getEntityState(this.vehicleEntities.sunroofStatus?.entity_id);
     const windowsState = this.getBooleanState(vehicleEntity.entity_id);
     let closed = sunroofStatus === '0' && windowsState;
@@ -1456,10 +1395,9 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     };
   };
 
-  private getIgnitionStateInfo = (defaultInfo: EntityConfig, vehicleEntity: any): EntityConfig => {
+  private getIgnitionStateInfo = (defaultInfo: EntityConfig, vehicleEntity: VehicleEntity): EntityConfig => {
     const realState = this.getEntityState(vehicleEntity.entity_id);
-    const stateStr =
-      StateMapping.ignitionState(this.selectedLanguage)[realState] || this.localize('card.common.stateUnknown');
+    const stateStr = StateMapping.ignitionState(this.userLang)[realState] || this.localize('card.common.stateUnknown');
     const activeState = realState === '0' || realState === '1' ? true : false;
     return {
       ...defaultInfo,
@@ -1468,8 +1406,8 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     };
   };
 
-  private getLockSensorInfo = (defaultInfo: EntityConfig, vehicleEntity: any): EntityConfig => {
-    const lang = this.selectedLanguage;
+  private getLockSensorInfo = (defaultInfo: EntityConfig, vehicleEntity: VehicleEntity): EntityConfig => {
+    const lang = this.userLang;
     const lockState = this.getEntityState(vehicleEntity.entity_id);
     const lockStateFormatted = StateMapping.lockStates(lang)[lockState] || StateMapping.lockStates['4'];
     const lockIcon = lockState === '2' || lockState === '1' ? 'mdi:lock' : 'mdi:lock-open';
@@ -1482,8 +1420,8 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     };
   };
 
-  private getStarterBatteryInfo = (defaultInfo: EntityConfig, vehicleEntity: any): EntityConfig => {
-    const lang = this.selectedLanguage;
+  private getStarterBatteryInfo = (defaultInfo: EntityConfig, vehicleEntity: VehicleEntity): EntityConfig => {
+    const lang = this.userLang;
     const stateValue = this.getEntityState(vehicleEntity.entity_id);
     const stateFormated = StateMapping.starterBattery(lang)[stateValue] || 'Unknown';
 
@@ -1493,9 +1431,13 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     };
   };
 
-  private getWarningOrDefaultInfo = (defaultInfo: EntityConfig, key: string, vehicleEntity: any): EntityConfig => {
+  private getWarningOrDefaultInfo = (
+    defaultInfo: EntityConfig,
+    key: string,
+    vehicleEntity: VehicleEntity
+  ): EntityConfig => {
     if (
-      DataKeys.vehicleWarnings(this.selectedLanguage)
+      DataKeys.vehicleWarnings(this.userLang)
         .map((key) => key.key)
         .includes(key)
     ) {
@@ -1534,7 +1476,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
         return this.getStateDisplay(odometer?.entity_id);
 
       case 'vehicleCards':
-        const lang = this.selectedLanguage;
+        const lang = this.userLang;
         const lockState = this.getEntityState(lockSensor?.entity_id);
         const realState = StateMapping.lockStates(lang)[lockState] || StateMapping.lockStates['4'];
 
@@ -1562,7 +1504,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     return this._hass.states[entity].state;
   }
 
-  private getEntityAttribute(entity: string | undefined, attribute: string): any {
+  private getEntityAttribute(entity: string | undefined, attribute: string) {
     if (!entity || !this._hass.states[entity] || !this._hass.states[entity].attributes) return undefined;
     return this._hass.states[entity].attributes[attribute];
   }
@@ -1577,9 +1519,9 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   }
 
   private getMinMaxTyrePressure = (): string => {
-    const pressuresWithUnits = DataKeys.tyreAttributes.map((key) => ({
-      pressure: this.getEntityState(this.vehicleEntities[key]?.entity_id) || '',
-      unit: this.getEntityAttribute(this.vehicleEntities[key]?.entity_id, 'unit_of_measurement'),
+    const pressuresWithUnits = DataKeys.tyrePressures(this.userLang).map((key) => ({
+      pressure: this.getEntityState(this.vehicleEntities[key.key]?.entity_id) || '',
+      unit: this.getEntityAttribute(this.vehicleEntities[key.key]?.entity_id, 'unit_of_measurement'),
     }));
 
     // Find the minimum and maximum pressures
@@ -1594,7 +1536,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   };
 
   public getErrorNotify(cardType: string): boolean {
-    const lang = this.selectedLanguage;
+    const lang = this.userLang;
     const { vehicleEntities } = this;
     switch (cardType) {
       case 'vehicleCards':
@@ -1644,39 +1586,18 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     switch (true) {
       case actionType.startsWith('btn_'):
         const btnType = actionType.replace('btn_', '');
-        this.isBtnPreview = false;
-        this.isCardPreview = false;
         this.updateComplete.then(() => {
           this.vehicleButtons?.showCustomBtnEditor(btnType);
         });
         break;
 
-      case actionType.startsWith('toggle_card_'):
-        const card = actionType.replace('toggle_card_', '');
-        this.isCardPreview = false;
+      case actionType.startsWith('toggle_preview_'):
+        console.log('toggle_preview_', actionType);
+        const preview = actionType.replace('toggle_preview_', '');
+        this._currentPreviewType = preview;
         this.updateComplete.then(() => {
-          this._currentCardType = card;
+          this._configurePreview(preview);
         });
-        break;
-
-      case actionType === 'show_button_preview':
-        this.isBtnPreview = true;
-        this.requestUpdate();
-        break;
-
-      case actionType === 'close_preview':
-        this.isBtnPreview = false;
-        this.requestUpdate();
-        break;
-
-      case actionType === 'show_card_preview':
-        this.isCardPreview = true;
-        this.requestUpdate();
-        break;
-
-      case actionType === 'close_card_preview':
-        this.isCardPreview = false;
-        this.requestUpdate();
         break;
 
       default:

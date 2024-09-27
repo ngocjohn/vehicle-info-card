@@ -1,4 +1,6 @@
 import { LitElement, css, html, TemplateResult, PropertyValues, nothing, CSSResultGroup } from 'lit';
+import { when } from 'lit/directives/when.js';
+
 import { customElement, property, state } from 'lit/decorators.js';
 import { Pagination } from 'swiper/modules';
 
@@ -6,7 +8,7 @@ import Swiper from 'swiper';
 
 import { ButtonCardEntity, HomeAssistantExtended as HomeAssistant, VehicleCardConfig, CustomButton } from '../../types';
 import { addActions } from '../../utils/tap-action';
-import { getTemplateValue, getBooleanTemplate } from '../../utils/ha-helpers';
+import { getTemplateValue, getBooleanTemplate } from '../../utils';
 
 import swipercss from '../../css/swiper-bundle.css';
 import mainstyle from '../../css/styles.css';
@@ -20,7 +22,7 @@ export class VehicleButtons extends LitElement {
   @property({ type: Object }) _config!: VehicleCardConfig;
   @property({ type: Object }) _buttons!: ButtonCardEntity;
 
-  @state() private _customButtonReady = false;
+  @state() private _isButtonReady = false;
   @state() _secondaryInfo: { [key: string]: CustomButton } = {};
 
   private swiper: Swiper | null = null;
@@ -47,9 +49,12 @@ export class VehicleButtons extends LitElement {
     ];
   }
 
+  private get useSwiper(): boolean {
+    return this._config.button_grid?.use_swiper || false;
+  }
+
   protected async firstUpdated(_changedProperties: PropertyValues): Promise<void> {
     super.firstUpdated(_changedProperties);
-
     this._fetchSecondaryInfo();
   }
 
@@ -97,9 +102,9 @@ export class VehicleButtons extends LitElement {
   }
 
   private async _fetchSecondaryInfo(): Promise<void> {
-    this._customButtonReady = false;
+    this._isButtonReady = false;
 
-    console.log('prepare custom button:', this._customButtonReady);
+    // console.log('prepare custom button:', this._customButtonReady);
     const filteredBtns = Object.keys(this._buttons).filter((key) => this._buttons[key].custom_button);
     await Promise.all(
       filteredBtns.map(async (key) => {
@@ -107,9 +112,9 @@ export class VehicleButtons extends LitElement {
       })
     );
 
-    this._customButtonReady = true;
-    console.log('custom button ready:', this._customButtonReady);
-    if (this._useButtonSwiper) {
+    this._isButtonReady = true;
+    // console.log('custom button ready:', this._customButtonReady);
+    if (this.useSwiper) {
       this.updateComplete.then(() => {
         this.initSwiper();
         this._setButtonActions();
@@ -132,7 +137,7 @@ export class VehicleButtons extends LitElement {
     return { state, notify };
   }
 
-  private initSwiper = (): void => {
+  private initSwiper(): void {
     const swiperCon = this.shadowRoot?.querySelector('.swiper-container');
     if (!swiperCon) return;
     console.log('swiper init');
@@ -165,15 +170,11 @@ export class VehicleButtons extends LitElement {
       this.swiper.slideTo(this.activeSlideIndex, 0, false);
     }
 
-    console.log('swiper init done');
-  };
-
-  private get _useButtonSwiper(): boolean {
-    return this._config.button_grid?.use_swiper || false;
+    // console.log('swiper init done');
   }
 
   private _renderSwiper(): TemplateResult {
-    if (!this._useButtonSwiper) return html``;
+    // if (!this.useSwiper) return html``;
     // console.log('render swiper');
     const baseButtons = this._buttons;
     const showError = this._config.show_error_notify;
@@ -188,7 +189,7 @@ export class VehicleButtons extends LitElement {
   }
 
   private _renderGrid(): TemplateResult {
-    if (this._useButtonSwiper) return html``;
+    // if (this.useSwiper) return html``;
     console.log('render grid');
     const baseButtons = this._buttons;
     const showError = this._config.show_error_notify;
@@ -204,9 +205,12 @@ export class VehicleButtons extends LitElement {
   }
 
   protected render(): TemplateResult {
-    if (!this._customButtonReady) return html``;
-    const selectedType = this._useButtonSwiper ? this._renderSwiper() : this._renderGrid();
-    return selectedType;
+    if (!this._isButtonReady) return html``;
+    return html`${when(
+      this.useSwiper,
+      () => this._renderSwiper(),
+      () => this._renderGrid()
+    )}`;
   }
 
   // Chunked buttons into groups of 4 for slides in swiper
@@ -299,16 +303,16 @@ export class VehicleButtons extends LitElement {
     // console.log('Button actions set');
   };
 
-  private _handleClick = (btnId: string): void => {
+  private _handleClick(btnId: string): void {
     const button = this._buttons[btnId];
     if (!button) return;
-    if (button?.button_type !== 'action') {
+    if (button.button_type === 'default') {
       this.component.toggleCardFromButtons(btnId);
     } else {
       // const action = customBtn.button_action;
       // console.log('button action', action);
     }
-  };
+  }
 
   public showCustomBtnEditor(btnId: string): void {
     this.updateComplete.then(() => {

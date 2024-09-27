@@ -43,7 +43,7 @@ export class CustomButtonTemplate extends LitElement {
           </div> `
         : ''}
       <div class="item-content">
-        <ha-button @click=${(ev: Event) => this._dispatchEvent(ev, 'toggle-preview-button')}
+        <ha-button @click=${(ev: Event) => this._dispatchEvent(ev, 'toggle_preview_button')}
           >${!this.isButtonPreview ? localizeKey('preview') : localizeKey('hidePreview')}</ha-button
         >
       </div>
@@ -213,6 +213,6 @@ export class CustomButtonTemplate extends LitElement {
       composed: true,
     };
     this.dispatchEvent(new CustomEvent('custom-button-changed', eventDetail));
-    console.log('dispatched event', type, configValue, configBtnType, value);
+    console.log('dispatched event', type, configValue, configBtnType, eventDetail);
   }
 }

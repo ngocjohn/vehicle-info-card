@@ -1,6 +1,9 @@
+// eslint-disable-next-line
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
 import { LovelaceCardConfig } from 'custom-card-helpers';
-import { PropertyValues } from 'lit';
+
+import { combinedFilters } from '../const/const';
+import { VehicleCardEditor } from '../editor';
 import {
   HomeAssistantExtended as HomeAssistant,
   VehicleEntities,
@@ -8,10 +11,12 @@ import {
   VehicleCardConfig,
   BaseButtonConfig,
   CustomButtonEntity,
+  CardTypeConfig,
+  ButtonCardEntity,
+  AddedCards,
 } from '../types';
-import { combinedFilters } from '../const/const';
+import { VehicleCard } from '../vehicle-info-card';
 import { fetchLatestReleaseTag } from './loader';
-
 /**
  *
  * @param car
@@ -21,7 +26,7 @@ import { fetchLatestReleaseTag } from './loader';
 export async function getVehicleEntities(
   hass: HomeAssistant,
   config: { entity?: string },
-  component: any
+  component: VehicleCard
 ): Promise<VehicleEntities | void> {
   if (!config.entity) {
     console.log('Entity not provided', component._entityNotFound);
@@ -159,8 +164,10 @@ export async function createCardElement(
 
   // Load the helpers and ensure they are available
   let helpers;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if ((window as any).loadCardHelpers) {
-    helpers = await (window as any).loadCardHelpers();
+    helpers = await (window as any).loadCardHelpers(); // eslint-disable-line
   } else if (HELPERS) {
     helpers = HELPERS;
   }
@@ -217,10 +224,66 @@ export async function getBooleanTemplate(hass: HomeAssistant, templateConfig: st
   }
 }
 
-export async function handleFirstUpdated(
-  component: any, // Replace 'any' with the correct type for your component if available
-  _changedProperties: PropertyValues
-): Promise<void> {
+export async function getDefaultButton(
+  hass: HomeAssistant,
+  config: VehicleCardConfig,
+  baseCard: CardTypeConfig
+): Promise<ButtonCardEntity> {
+  const button = config[baseCard.button];
+  const useCustom = config.use_custom_cards?.[baseCard.config] || false;
+  const customCard = config[baseCard.config] !== undefined && config[baseCard.config].length > 0;
+
+  const buttonCard = {
+    key: baseCard.type,
+    default_name: baseCard.name,
+    default_icon: baseCard.icon,
+    button: {
+      hidden: button?.hide || false,
+      button_action: button?.button_action || {},
+      entity: button?.entity || '',
+      icon: button?.icon || '',
+      primary: button?.primary || '',
+      secondary: button?.secondary || '',
+      attribute: button?.attribute || '',
+      notify: button?.notify || '',
+    },
+    button_type: button?.button_type || 'default',
+    card_type: useCustom ? ('custom' as const) : ('default' as const),
+    custom_button: button?.enabled || false,
+    custom_card: customCard ? await createCardElement(hass, config[baseCard.config]) : [],
+  };
+  return buttonCard;
+}
+
+export async function getAddedButton(
+  hass: HomeAssistant,
+  addedCard: AddedCards[keyof AddedCards],
+  key: string
+): Promise<ButtonCardEntity> {
+  const button = addedCard.button;
+  const customCard = addedCard.cards && addedCard.cards.length > 0;
+
+  const buttonCard = {
+    key: key,
+    custom_button: button.enabled ?? false,
+    button: {
+      hidden: button.hide ?? false,
+      button_action: button?.button_action || {},
+      entity: button.entity || '',
+      icon: button.icon || '',
+      primary: button.primary || '',
+      secondary: button.secondary || '',
+      attribute: button.attribute || '',
+      notify: button.notify || '',
+    },
+    button_type: button.button_type || 'default',
+    card_type: 'custom' as const,
+    custom_card: customCard ? await createCardElement(hass, addedCard.cards) : [],
+  };
+  return buttonCard;
+}
+
+export async function handleFirstUpdated(component: VehicleCardEditor): Promise<void> {
   fetchLatestReleaseTag().then((latestRelease) => {
     component._latestRelease = latestRelease;
   });
@@ -251,23 +314,19 @@ export async function handleFirstUpdated(
   }
 }
 
-export async function handleCardFirstUpdated(
-  component: any, // Replace 'any' with the correct type for your component if available
-  _changedProperties: PropertyValues
-): Promise<void> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function handleCardFirstUpdated(component: any): Promise<void> {
   component.vehicleEntities = await getVehicleEntities(component._hass as HomeAssistant, component.config, component);
+
   if (!component.vehicleEntities) {
+    console.log('Vehicle entities not found, fetching...');
+
     console.log('No vehicle entities found');
     component._entityNotFound = true;
   }
-
-  if (!component.config.selected_language || component.config.selected_language === 'system') {
-    component.selectedLanguage = component._hass.language;
-  } else {
-    component.selectedLanguage = component.config.selected_language;
-  }
 }
 
+// eslint-disable-next-line
 export function deepMerge(target: any, source: VehicleCardConfig): VehicleCardConfig {
   const output = { ...target };
 

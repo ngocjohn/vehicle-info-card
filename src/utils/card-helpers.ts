@@ -1,7 +1,4 @@
-export function setupCardDirectionHandler(
-  cardElement: Element | null,
-  toggleCard: (direction: 'next' | 'prev') => void
-): void {
+export function handleCardSwipe(cardElement: Element | null, toggleCard: (direction: 'next' | 'prev') => void): void {
   if (!cardElement) return;
   // Variables to store touch/mouse coordinates
   let xDown: number | null = null;

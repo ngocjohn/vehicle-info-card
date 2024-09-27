@@ -4,18 +4,15 @@ import { nodeResolve } from '@rollup/plugin-node-resolve';
 import { babel } from '@rollup/plugin-babel';
 import terser from '@rollup/plugin-terser';
 import serve from 'rollup-plugin-serve';
-import json from '@rollup/plugin-json';
-import image from '@rollup/plugin-image';
 import postcss from 'rollup-plugin-postcss';
 import postcssPresetEnv from 'postcss-preset-env';
 import postcssLit from 'rollup-plugin-postcss-lit';
 import filesize from 'rollup-plugin-filesize';
 import replace from '@rollup/plugin-replace';
-import dotenv from 'dotenv';
+import json from '@rollup/plugin-json';
 import { version } from './package.json';
 import { logCardInfo } from './rollup.config.dev.mjs';
 
-dotenv.config();
 const dev = process.env.ROLLUP_WATCH;
 const port = process.env.PORT || 4000;
 const currentVersion = dev ? 'DEVELOPMENT' : `v${version}`;
@@ -23,7 +20,6 @@ const custombanner = logCardInfo(currentVersion);
 
 const replaceOpts = {
   'process.env.ROLLUP_WATCH': JSON.stringify(dev),
-  'process.env.MAPBOX_API': JSON.stringify(process.env.MAPBOX_API),
   preventAssignment: true,
 };
 
@@ -48,12 +44,11 @@ const plugins = [
   nodeResolve({}),
   commonjs(),
   typescript(),
-  json(),
-  image(),
   babel({
     babelHelpers: 'bundled',
     exclude: 'node_modules/**',
   }),
+  json(),
   postcss({
     plugins: [
       postcssPresetEnv({

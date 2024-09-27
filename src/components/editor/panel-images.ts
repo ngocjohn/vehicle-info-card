@@ -215,17 +215,26 @@ export class PanelImages extends LitElement {
   private _handleDragLeave() {
     this.isDragging = false;
   }
-  private _handleDrop(event: DragEvent | any) {
+  private _handleDrop(event: DragEvent): void {
     event.preventDefault();
     this.isDragging = false;
+
+    // Define error message and toastId
     const errorMsg = this.editor.localize('card.common.toastImageError');
     const toastId = 'imagesConfig';
 
+    // Access the files from the drag event
     const files = event.dataTransfer?.files;
     if (files && files.length > 0) {
-      handleFilePicked(this.editor, { target: { files, toastId, errorMsg } });
+      // Pass the necessary target object without needing to pass an Event object
+      handleFilePicked(this.editor, {
+        files: files, // FileList from the DragEvent
+        toastId: toastId,
+        errorMsg: errorMsg,
+      });
     }
   }
+
   public initSortable() {
     this.updateComplete.then(() => {
       const el = this.shadowRoot?.getElementById('images-list');

@@ -125,19 +125,3 @@ export const chargingOverview = (lang: string): CardItem[] => [
   createItem('maxSoc', 'chargingOverview.maxSoc', lang),
   createItem('selectedProgram', 'chargingOverview.selectedProgram', lang, 'mdi:ev-station'),
 ];
-
-export const tyreAttributes = [
-  'tirePressureFrontRight',
-  'tirePressureFrontRight',
-  'tirePressureRearLeft',
-  'tirePressureRearRight',
-];
-
-export const SubcardVisibilityProperties = [
-  'lockAttributesVisible',
-  'windowAttributesVisible',
-  'doorsAttributesVisible',
-  'tripFromResetVisible',
-  'tripFromStartVisible',
-  'ecoScoresVisible',
-];

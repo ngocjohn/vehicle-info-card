@@ -8,11 +8,11 @@ import { fireEvent, LovelaceCardConfig, LovelaceCardEditor } from 'custom-card-h
 import { debounce } from 'es-toolkit';
 
 import { CARD_VERSION } from './const/const';
-import { defaultConfig } from './types/default-config';
 import { cardTypes, editorShowOpts } from './const/data-keys';
 import { servicesCtrl } from './const/remote-control-keys';
 import editorcss from './css/editor.css';
 import { languageOptions, localize } from './localize/localize';
+
 // Local types
 import {
   HomeAssistantExtended as HomeAssistant,
@@ -20,6 +20,7 @@ import {
   CardTypeConfig,
   BaseButtonConfig,
   ExtendedButtonConfigItem,
+  defaultConfig,
 } from './types';
 import { uploadImage } from './utils/editor-image-handler';
 import { handleFirstUpdated, deepMerge } from './utils/ha-helpers';
@@ -34,7 +35,7 @@ import { PanelImages } from './components/editor';
 export class VehicleCardEditor extends LitElement implements LovelaceCardEditor {
   @property({ attribute: false }) public hass!: HomeAssistant;
 
-  @property() private _config!: VehicleCardConfig;
+  @property() public _config!: VehicleCardConfig;
   @property() private _btnPreview: boolean = false;
   @property() private _cardPreview: boolean = false;
   @property() private baseCardTypes: CardTypeConfig[] = [];
@@ -44,7 +45,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   @state() private _yamlConfig: { [key: string]: any } = {};
   @state() private _customBtns: { [key: string]: BaseButtonConfig } = {};
   @state() private _selectedLanguage: string = 'system';
-  @state() private _latestRelease: string = '';
+  @state() _latestRelease: string = '';
 
   @state() private _visiblePanel: Set<string> = new Set();
   @state() private _newCardType: Map<string, string> = new Map();
@@ -80,7 +81,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   protected async firstUpdated(changedProperties: PropertyValues): Promise<void> {
     super.firstUpdated(changedProperties);
-    await handleFirstUpdated(this, changedProperties);
+    await handleFirstUpdated(this);
     this.getBaseCardTypes();
     this._convertDefaultCardConfigs();
     this._convertAddedCardConfigs();
@@ -858,7 +859,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       case 'use_custom_cards':
         this._customBtnChanged(ev);
         break;
-      case 'toggle-card-preview':
+      case 'toggle_preview_card':
         this._toggleCardPreview(config);
         break;
 
@@ -873,7 +874,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const { type, button, card } = details;
 
     switch (type) {
-      case 'toggle-preview-button':
+      case 'toggle_preview_button':
         this._toggleBtnPreview(button);
         break;
       case 'toggle-show-button':
@@ -1036,7 +1037,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   /* ----------------------------- IMAGES HANDLERS ---------------------------- */
 
-  private launchToast(id: string, msg: string = '', success: boolean = false): void {
+  public launchToast(id: string, msg: string = '', success: boolean = false): void {
     const toast = this.shadowRoot?.getElementById(`toast_${id}${success ? '_success' : ''}`) as HTMLElement;
     const haAlert = toast?.querySelector('ha-alert') as HTMLElement;
     if (!toast) return;

@@ -32,7 +32,7 @@ export class CustomCardEditor extends LitElement {
         ></ha-checkbox>
       </ha-formfield>
 
-      <ha-button @click=${(ev: Event) => this._dispatchEvent(ev, 'toggle-card-preview')}
+      <ha-button @click=${(ev: Event) => this._dispatchEvent(ev, 'toggle_preview_card')}
         >${this.isCardPreview ? localizeKey('hidePreview') : localizeKey('preview')}</ha-button
       >
     </div>`;

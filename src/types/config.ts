@@ -32,7 +32,11 @@ export type HomeAssistantExtended = HomeAssistant & {
  * Configuration interface for the Vehicle Card.
  */
 
-export type THEME_MODE = 'auto' | 'light' | 'dark';
+export enum THEME_MODE {
+  Auto = 'auto',
+  Light = 'light',
+  Dark = 'dark',
+}
 
 export type Services = {
   auxheat: boolean;
@@ -147,6 +151,45 @@ export interface VehicleCardConfig extends LovelaceCardConfig {
   extra_configs: ExtraConfigs;
 }
 
+export type ButtonCardEntity = {
+  key: string;
+  default_name?: string;
+  default_icon?: string;
+  button: {
+    button_action: ButtonActionConfig;
+    icon: string;
+    primary: string;
+    secondary: string;
+    attribute: string;
+    entity: string;
+    notify: string;
+    hidden: boolean;
+  };
+  button_type: 'default' | 'action';
+  card_type: 'default' | 'custom';
+  custom_card: LovelaceCardConfig[];
+  custom_button: boolean;
+};
+
+export type CustomButtonEntity = {
+  enabled: boolean;
+  hide?: boolean;
+  primary: string;
+  secondary?: string;
+  icon: string;
+  notify?: boolean;
+  button_type: 'default' | 'action';
+  button_action: ButtonActionConfig;
+  entity: string;
+  attribute?: string;
+};
+
+export type ExtendedButtonConfigItem = BaseButtonConfig & {
+  isDefaultCard?: boolean;
+  isHidden?: boolean;
+  useCustomButton?: boolean;
+};
+
 // Default configuration for the Vehicle Card.
 
 export const defaultConfig: Partial<VehicleCardConfig> = {
@@ -166,11 +209,11 @@ export const defaultConfig: Partial<VehicleCardConfig> = {
   map_popup_config: {
     hours_to_show: 0,
     default_zoom: 14,
-    theme_mode: 'auto',
+    theme_mode: THEME_MODE.Auto,
   },
   selected_theme: {
     theme: 'default',
-    mode: 'auto',
+    mode: THEME_MODE.Auto,
   },
   extra_configs: {
     tire_background: '',
@@ -203,48 +246,9 @@ export const defaultConfig: Partial<VehicleCardConfig> = {
     enabled: false,
   },
   use_custom_cards: {
-    vehicle_card: true,
-    trip_card: true,
-    eco_card: true,
-    tyre_card: true,
+    vehicle_card: false,
+    trip_card: false,
+    eco_card: false,
+    tyre_card: false,
   },
-};
-
-export type ButtonCardEntity = {
-  key: string;
-  default_name?: string;
-  default_icon?: string;
-  button: {
-    button_action: ButtonActionConfig;
-    icon: string;
-    primary: string;
-    secondary: string;
-    attribute: string;
-    entity: string;
-    notify: string;
-    hidden: boolean;
-  };
-  button_type: 'default' | 'action';
-  card_type: 'default' | 'custom';
-  custom_card: LovelaceCardConfig[];
-  custom_button: boolean;
-};
-
-export type CustomButtonEntity = {
-  enabled: boolean;
-  hide: boolean;
-  primary: string;
-  secondary: string;
-  icon: string;
-  notify: boolean;
-  button_type: 'default' | 'action';
-  button_action: ButtonActionConfig;
-  entity: string;
-  attribute: string;
-};
-
-export type ExtendedButtonConfigItem = BaseButtonConfig & {
-  isDefaultCard?: boolean;
-  isHidden?: boolean;
-  useCustomButton?: boolean;
 };

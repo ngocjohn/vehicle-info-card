@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { REPOSITORY } from '../const/const';
 // Hack to load ha-components needed for editor
 export const loadHaComponents = () => {
@@ -17,7 +18,7 @@ export const loadHaComponents = () => {
 };
 
 export const loadCustomElement = async <T = any>(name: string) => {
-  let Component = customElements.get(name) as T;
+  const Component = customElements.get(name) as T;
   if (Component) {
     return Component;
   }
