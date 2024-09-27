@@ -140,7 +140,7 @@ export class VehicleButtons extends LitElement {
   private initSwiper(): void {
     const swiperCon = this.shadowRoot?.querySelector('.swiper-container');
     if (!swiperCon) return;
-    console.log('swiper init');
+    // console.log('swiper init');
 
     const paginationEl = swiperCon.querySelector('.swiper-pagination') as HTMLElement;
     this.swiper = new Swiper(swiperCon as HTMLElement, {
