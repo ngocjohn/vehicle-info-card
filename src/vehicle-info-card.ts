@@ -1,10 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
-import { LitElement, html, TemplateResult, PropertyValues, CSSResultGroup, nothing } from 'lit';
-import { customElement, property, state, query } from 'lit/decorators.js';
-import { classMap } from 'lit/directives/class-map.js';
-
-// Custom Helpers
 import {
   fireEvent,
   formatDateTime,
@@ -16,16 +10,20 @@ import {
   applyThemesOnElement,
   LovelaceCard,
 } from 'custom-card-helpers';
+import { LitElement, html, TemplateResult, PropertyValues, CSSResultGroup, nothing } from 'lit';
+import { customElement, property, state, query } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
 
-// Custom Types and Constants
+import './components/cards';
+import { VehicleButtons } from './components/cards';
 import * as DataKeys from './const/data-keys';
+import * as IMG from './const/imgconst';
 import * as StateMapping from './const/state-mapping';
-
+import { localize } from './localize/localize';
 import {
-  HomeAssistantExtended as HomeAssistant,
+  HA as HomeAssistant,
   VehicleCardConfig,
   EntityConfig,
-  VehicleEntities,
   VehicleEntity,
   EcoData,
   ButtonCardEntity,
@@ -35,18 +33,10 @@ import {
   BaseButtonConfig,
 } from './types';
 import { HEADER_ACTION } from './types/card-types';
-// Styles and Assets
-import * as IMG from './const/imgconst';
-import styles from './css/styles.css';
-
-// Components
-import './components/cards';
-import { VehicleButtons, EcoChart } from './components/cards';
-
-// Functions
-import { localize } from './localize/localize';
 import { handleCardFirstUpdated, getCarEntity, handleCardSwipe, convertMinutes, isEmpty } from './utils';
 import { getAddedButton, getDefaultButton, createCardElement, createCustomButtons } from './utils/ha-helpers';
+
+import styles from './css/styles.css';
 
 @customElement('vehicle-info-card')
 export class VehicleCard extends LitElement implements LovelaceCard {
@@ -58,10 +48,9 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   @property({ attribute: false }) public _hass!: HomeAssistant;
   @property({ type: Object }) public config!: VehicleCardConfig;
   @property({ type: Boolean }) public editMode = false;
-  @property({ type: Boolean }) public preview = false;
 
   // Vehicle entities and attributes
-  @state() private vehicleEntities: VehicleEntities = {};
+  @state() private vehicleEntities: Record<string, VehicleEntity> = {};
   @state() public buttonCards: Record<string, ButtonCardEntity> = {};
   @state() public _entityNotFound: boolean = false;
 
@@ -83,7 +72,11 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
   // Components
   @query('vehicle-buttons') vehicleButtons!: VehicleButtons;
-  @query('eco-chart') ecoChart!: EcoChart;
+
+  constructor() {
+    super();
+    this.handleEditorEvents = this.handleEditorEvents.bind(this);
+  }
 
   set hass(hass: HomeAssistant) {
     this._hass = hass;
@@ -100,9 +93,43 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     }
   }
 
-  constructor() {
-    super();
-    this.handleEditorEvents = this.handleEditorEvents.bind(this);
+  private get userLang(): string {
+    if (!this.config.selected_language || this.config.selected_language === 'system') {
+      return this._hass.language;
+    }
+    return this.config.selected_language;
+  }
+
+  private get baseCardTypes(): CardTypeConfig[] {
+    return DataKeys.cardTypes(this.userLang);
+  }
+
+  private get isCharging(): boolean {
+    const chargingActive = this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'chargingactive');
+    return Boolean(chargingActive);
+  }
+
+  private get carVinNumber(): string {
+    if (!this.config.entity) return '';
+    return this.getEntityAttribute(this.config.entity, 'vin');
+  }
+
+  private get isDark(): boolean {
+    if (this.config?.selected_theme?.mode === 'dark') {
+      return true;
+    } else if (this.config?.selected_theme?.mode === 'light') {
+      return false;
+    }
+    return this._hass.themes.darkMode;
+  }
+
+  private get isEditorPreview(): boolean {
+    const parentElementClassPreview = this.offsetParent?.classList.contains('element-preview');
+    return parentElementClassPreview || false;
+  }
+
+  public static get styles(): CSSResultGroup {
+    return styles;
   }
 
   public static getStubConfig = (hass: HomeAssistant): Record<string, unknown> => {
@@ -201,22 +228,8 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   }
 
   disconnectedCallback(): void {
-    if (process.env.ROLLUP_WATCH === 'true' && window.BenzCard === this) {
-      window.BenzCard = undefined;
-    }
     window.removeEventListener('editor-event', this.handleEditorEvents);
     super.disconnectedCallback();
-  }
-
-  private get userLang(): string {
-    if (!this.config.selected_language || this.config.selected_language === 'system') {
-      return this._hass.language;
-    }
-    return this.config.selected_language;
-  }
-
-  private get baseCardTypes(): CardTypeConfig[] {
-    return DataKeys.cardTypes(this.userLang);
   }
 
   private async setUpButtonCards(): Promise<void> {
@@ -331,34 +344,6 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   private localize = (string: string, search = '', replace = ''): string => {
     return localize(string, this.userLang, search, replace);
   };
-
-  private get isCharging(): boolean {
-    const chargingActive = this.getEntityAttribute(this.vehicleEntities.rangeElectric?.entity_id, 'chargingactive');
-    return Boolean(chargingActive);
-  }
-
-  private get carVinNumber(): string {
-    if (!this.config.entity) return '';
-    return this.getEntityAttribute(this.config.entity, 'vin');
-  }
-
-  private get isDark(): boolean {
-    if (this.config?.selected_theme?.mode === 'dark') {
-      return true;
-    } else if (this.config?.selected_theme?.mode === 'light') {
-      return false;
-    }
-    return this._hass.themes.darkMode;
-  }
-
-  private get isEditorPreview(): boolean {
-    const parentElementClassPreview = this.offsetParent?.classList.contains('element-preview');
-    return parentElementClassPreview || false;
-  }
-
-  public static get styles(): CSSResultGroup {
-    return styles;
-  }
 
   private toggleCharginAnimation(): void {
     const eletricBar = this.shadowRoot?.querySelector('.fuel-level-bar.electric') as HTMLElement;
@@ -890,13 +875,13 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
   /* --------------------------- ADDITIONAL METHODS --------------------------- */
 
-  private computeClasses() {
+  private computeClasses = () => {
     return classMap({
       '--dark': this.isDark && this.config.selected_theme?.theme === 'Default',
     });
-  }
+  };
 
-  private applyTheme(theme: string): void {
+  private applyTheme = (theme: string): void => {
     const themeData = this._hass.themes.themes[theme];
     if (themeData) {
       // Filter out only top-level properties for CSS variables and the modes property
@@ -924,7 +909,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
         false
       );
     }
-  }
+  };
 
   /* -------------------------------------------------------------------------- */
   /* ADDED CARD FUNCTIONALITY                                                   */
@@ -1169,13 +1154,13 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     }
   }
 
-  private isSubCardActive(key: string): boolean {
+  private isSubCardActive = (key: string): boolean => {
     if (key === '') {
       return true;
     } else {
       return this._activeSubCard.has(key);
     }
-  }
+  };
 
   private isOverviewDataActive(): boolean {
     const key = ['lock', 'window', 'door'];
@@ -1642,7 +1627,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
 declare global {
   interface Window {
-    BenzCard: VehicleCard | undefined;
+    BenzCard: VehicleCard;
   }
   interface HTMLElementTagNameMap {
     'vehicle-info-card': VehicleCard;

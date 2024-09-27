@@ -1,19 +1,16 @@
 import { LitElement, css, html, TemplateResult, PropertyValues, nothing, CSSResultGroup } from 'lit';
-import { when } from 'lit/directives/when.js';
-
 import { customElement, property, state } from 'lit/decorators.js';
+import { when } from 'lit/directives/when.js';
+import Swiper from 'swiper';
 import { Pagination } from 'swiper/modules';
 
-import Swiper from 'swiper';
-
-import { ButtonCardEntity, HomeAssistantExtended as HomeAssistant, VehicleCardConfig, CustomButton } from '../../types';
-import { addActions } from '../../utils/tap-action';
+import { ButtonCardEntity, HA as HomeAssistant, VehicleCardConfig, CustomButton } from '../../types';
 import { getTemplateValue, getBooleanTemplate } from '../../utils';
-
-import swipercss from '../../css/swiper-bundle.css';
-import mainstyle from '../../css/styles.css';
-
+import { addActions } from '../../utils/tap-action';
 import { VehicleCard } from '../../vehicle-info-card';
+
+import mainstyle from '../../css/styles.css';
+import swipercss from '../../css/swiper-bundle.css';
 
 @customElement('vehicle-buttons')
 export class VehicleButtons extends LitElement {
@@ -68,7 +65,7 @@ export class VehicleButtons extends LitElement {
   private async checkCustomChanged(): Promise<void> {
     // console.log('check custom changed');
     let changed = false;
-    let changedKeys: string[] = [];
+    const changedKeys: string[] = [];
     for (const key in this._secondaryInfo) {
       const oldState = this._secondaryInfo[key].state;
       const oldNotify = this._secondaryInfo[key].notify;

@@ -1,3 +1,10 @@
+import { CARD_VERSION } from './const/const';
+import { cardTypes, editorShowOpts } from './const/data-keys';
+import { servicesCtrl } from './const/remote-control-keys';
+import { languageOptions, localize } from './localize/localize';
+
+import editorcss from './css/editor.css';
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { LitElement, html, TemplateResult, CSSResultGroup, PropertyValues, nothing } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
@@ -7,15 +14,9 @@ import YAML from 'yaml';
 import { fireEvent, LovelaceCardConfig, LovelaceCardEditor } from 'custom-card-helpers';
 import { debounce } from 'es-toolkit';
 
-import { CARD_VERSION } from './const/const';
-import { cardTypes, editorShowOpts } from './const/data-keys';
-import { servicesCtrl } from './const/remote-control-keys';
-import editorcss from './css/editor.css';
-import { languageOptions, localize } from './localize/localize';
-
 // Local types
 import {
-  HomeAssistantExtended as HomeAssistant,
+  HA as HomeAssistant,
   VehicleCardConfig,
   CardTypeConfig,
   BaseButtonConfig,
@@ -93,28 +94,29 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       this._cleanConfig();
     }
   }
+
   private get isAnyAddedCard(): boolean {
     return this._config.added_cards && Object.keys(this._config.added_cards).length > 0;
   }
 
-  private useCustomCard(cardType: string): boolean {
+  private useCustomCard = (cardType: string): boolean => {
     return this._config.use_custom_cards?.[cardType];
-  }
+  };
 
-  private isAddedCard(cardType: string): boolean {
+  private isAddedCard = (cardType: string): boolean => {
     return this._config.added_cards?.hasOwnProperty(cardType);
-  }
+  };
 
-  private useCustomButton(button: string): boolean {
+  private useCustomButton = (button: string): boolean => {
     return this._config[button]?.enabled;
-  }
+  };
 
-  private isButtonHidden(cardButton: string): boolean {
+  private isButtonHidden = (cardButton: string): boolean => {
     const addedCard = this.isAddedCard(cardButton);
     return addedCard ? this._config.added_cards?.[cardButton]?.button.hide : this._config[cardButton]?.hide;
-  }
+  };
 
-  private _getButtonConfig(button: string): ExtendedButtonConfigItem {
+  private _getButtonConfig = (button: string): ExtendedButtonConfigItem => {
     const configBtn: ExtendedButtonConfigItem = {
       ...(!this.isAddedCard(button) ? this._config[button] : this._config.added_cards[button].button),
       isDefaultCard: !this.isAddedCard(button),
@@ -123,7 +125,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     };
 
     return configBtn;
-  }
+  };
 
   private getBaseCardTypes() {
     const baseCardTypes = cardTypes(this._selectedLanguage);
@@ -174,7 +176,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private _debouncedCustomBtnChanged = debounce(this.configChanged.bind(this), 500);
 
-  private localize = (string: string, search = '', replace = ''): string => {
+  public localize = (string: string, search = '', replace = ''): string => {
     return localize(string, this._selectedLanguage, search, replace);
   };
 
@@ -577,6 +579,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       { key: 'dark', name: 'Dark' },
       { key: 'light', name: 'Light' },
     ];
+
     const mapPopupConfig = html`
       <ha-alert alert-type="info">${infoAlert}</ha-alert>
       <div class="switches">
@@ -1158,7 +1161,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     this.configChanged();
   }
 
-  private _valueChanged(ev: any): void {
+  public _valueChanged(ev: any): void {
     if (!this._config || !this.hass) {
       return;
     }
@@ -1278,7 +1281,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     }
   }
 
-  private _toggleShowButton(card: CardTypeConfig): void {
+  public _toggleShowButton(card: CardTypeConfig): void {
     console.log('Toggling show button from editor:', card.type);
     if (this._btnPreview) {
       this._toggleBtnPreview(card.button);
@@ -1291,7 +1294,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     }
   }
 
-  private _toggleBtnPreview(button: string): void {
+  public _toggleBtnPreview(button: string): void {
     if (this._cardPreview) {
       this._dispatchCardEvent('close_card_preview');
       this._cardPreview = false;

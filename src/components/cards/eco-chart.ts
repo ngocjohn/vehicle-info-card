@@ -1,8 +1,8 @@
 import { LitElement, html, TemplateResult, css, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
-import { EcoData } from '../../types';
 import { localize } from '../../localize/localize';
+import { EcoData } from '../../types';
 // Third-party Libraries
 import ApexCharts from 'apexcharts';
 
@@ -60,6 +60,7 @@ export class EcoChart extends LitElement {
             useSeriesColors: true,
             margin: 8,
             fontSize: '16px',
+            /* eslint-disable-next-line */
             formatter: (seriesName: string, opts: any) => {
               return `${seriesName}:  ${opts.w.globals.series[opts.seriesIndex]}`;
             },

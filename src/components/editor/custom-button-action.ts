@@ -1,14 +1,9 @@
-import { LitElement, html, TemplateResult, CSSResultGroup, nothing, PropertyValues } from 'lit';
+import { fireEvent } from 'custom-card-helpers';
+import { LitElement, html, TemplateResult, CSSResultGroup, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
-import {
-  ExtendedButtonConfigItem,
-  CardTypeConfig,
-  HomeAssistantExtended as HomeAssistant,
-  VehicleCardConfig,
-} from '../../types';
+import { ExtendedButtonConfigItem, CardTypeConfig, HA as HomeAssistant, VehicleCardConfig } from '../../types';
 
-import { fireEvent } from 'custom-card-helpers';
 import editorcss from '../../css/editor.css';
 
 const ACTIONSELECTOR = [
@@ -95,7 +90,7 @@ export class CustomButtonAction extends LitElement {
         .allow-custom-entity
         .configValue=${'entity'}
         .configBtnType=${'button_action'}
-        @change=${(ev: any) => this._handleActionTypeChange(ev, 'entity', this.cardButton)}
+        @change=${(ev: CustomEvent) => this._handleActionTypeChange(ev, 'entity', this.cardButton)}
       ></ha-entity-picker>
     </div>`;
 
@@ -119,9 +114,9 @@ export class CustomButtonAction extends LitElement {
     alert.style.display = 'none';
   }
 
-  private _handleActionTypeChange(ev: any, actionName: string, buttonName: string): void {
+  private _handleActionTypeChange(ev: CustomEvent, actionName: string, buttonName: string): void {
     ev.stopPropagation();
-    const actionValue = ev.detail.value || ev.target.value;
+    const actionValue = ev.detail.value;
     this._selectedAction = actionValue;
 
     this._customButtonAction(actionName, actionValue, buttonName);
@@ -133,8 +128,8 @@ export class CustomButtonAction extends LitElement {
     const updates: Partial<VehicleCardConfig> = {};
 
     if (this.config.added_cards.hasOwnProperty(buttonName)) {
-      let button = { ...(this.config.added_cards[buttonName].button || {}) };
-      let buttonActionConfig = { ...(button.button_action || {}) };
+      const button = { ...(this.config.added_cards[buttonName].button || {}) };
+      const buttonActionConfig = { ...(button.button_action || {}) };
       buttonActionConfig[configValue] = newValue;
       button.button_action = buttonActionConfig;
 
@@ -144,8 +139,8 @@ export class CustomButtonAction extends LitElement {
       };
       // console.log('update added_cards', updates.added_cards[buttonName]);
     } else {
-      let button = { ...(this.config[buttonName] || {}) };
-      let buttonActionConfig = { ...(button.button_action || {}) };
+      const button = { ...(this.config[buttonName] || {}) };
+      const buttonActionConfig = { ...(button.button_action || {}) };
       buttonActionConfig[configValue] = newValue;
       button.button_action = buttonActionConfig;
 

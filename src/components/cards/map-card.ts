@@ -1,8 +1,10 @@
 import { LitElement, html, css, TemplateResult, PropertyValues, CSSResultGroup } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 
+// Leaflet imports
 import L from 'leaflet';
 import 'leaflet-providers/leaflet-providers.js';
+
 import mapstyle from '../../css/leaflet.css';
 
 interface Address {

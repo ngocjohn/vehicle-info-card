@@ -1,14 +1,17 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { isString } from 'es-toolkit';
 import { LitElement, html, TemplateResult, CSSResultGroup } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { isString } from 'es-toolkit';
 
+import { VehicleCardEditor } from '../../editor';
 import { ExtendedButtonConfigItem, CardTypeConfig } from '../../types';
 
 import editorcss from '../../css/editor.css';
 
 @customElement('custom-button-template')
 export class CustomButtonTemplate extends LitElement {
-  @property({ type: Object }) editor!: any;
+  @property({ type: Object }) editor!: VehicleCardEditor;
   @property() button!: ExtendedButtonConfigItem;
   @property() card!: CardTypeConfig;
   @property({ type: Boolean }) isButtonPreview: boolean = false;

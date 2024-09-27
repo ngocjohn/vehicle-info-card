@@ -1,14 +1,15 @@
-import { LitElement, html, TemplateResult, css, CSSResultGroup, PropertyValues } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { HomeAssistant, fireEvent, forwardHaptic } from 'custom-card-helpers';
-import { Services } from '../../types';
+import { LitElement, html, TemplateResult, CSSResultGroup } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 
-import { cloneDeep, convertToMinutes } from '../../utils/helpers';
 import * as Srvc from '../../const/remote-control-keys';
+import { localize } from '../../localize/localize';
+import { Services } from '../../types';
+import { cloneDeep, convertToMinutes } from '../../utils/helpers';
 
 import styles from '../../css/remote-control.css';
 import mainstyle from '../../css/styles.css';
-import { localize } from '../../localize/localize';
 
 @customElement('remote-control')
 export class RemoteControl extends LitElement {

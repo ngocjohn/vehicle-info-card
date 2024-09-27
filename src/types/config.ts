@@ -22,7 +22,7 @@ export interface ExtendedThemes extends Themes {
  * HomeAssistantExtended extends the existing HomeAssistant interface with additional properties.
  */
 
-export type HomeAssistantExtended = HomeAssistant & {
+export type HA = HomeAssistant & {
   themes: ExtendedThemes;
   formatEntityState: (stateObj: HassEntity) => string;
   formatAttributeName: (entityId: string, attribute: string) => string;

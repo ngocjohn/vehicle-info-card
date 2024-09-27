@@ -1,11 +1,16 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { LitElement, html, TemplateResult, CSSResultGroup } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+
+import { VehicleCardEditor } from '../../editor';
 import { CardTypeConfig } from '../../types';
+
 import editorcss from '../../css/editor.css';
 
 @customElement('custom-card-editor')
 export class CustomCardEditor extends LitElement {
-  @property({ type: Object }) editor?: any;
+  @property({ type: Object }) editor!: VehicleCardEditor;
 
   @property() card!: CardTypeConfig;
   @property({ type: Boolean }) isCardPreview: boolean = false;

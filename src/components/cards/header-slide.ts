@@ -2,8 +2,10 @@ import { LitElement, css, html, TemplateResult, PropertyValues } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import Swiper from 'swiper';
 import { Pagination } from 'swiper/modules';
-import swipercss from '../../css/swiper-bundle.css';
+
 import { VehicleCardConfig } from '../../types';
+
+import swipercss from '../../css/swiper-bundle.css';
 
 @customElement('header-slide')
 export class HeaderSlide extends LitElement {

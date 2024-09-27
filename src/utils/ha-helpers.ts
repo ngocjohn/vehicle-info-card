@@ -5,7 +5,7 @@ import { LovelaceCardConfig } from 'custom-card-helpers';
 import { combinedFilters } from '../const/const';
 import { VehicleCardEditor } from '../editor';
 import {
-  HomeAssistantExtended as HomeAssistant,
+  HA as HomeAssistant,
   VehicleEntities,
   VehicleEntity,
   VehicleCardConfig,
