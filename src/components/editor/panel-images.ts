@@ -10,6 +10,7 @@ import Sortable from 'sortablejs';
 import { VehicleCardEditor } from '../../editor';
 import { ImageConfig, VehicleCardConfig } from '../../types';
 import { imageInputChange, handleFilePicked } from '../../utils/editor-image-handler';
+import { Picker } from '../../utils/create';
 
 import editorcss from '../../css/editor.css';
 
@@ -76,9 +77,96 @@ export class PanelImages extends LitElement {
         <ha-button @click=${() => this.toggleUpload()} class="upload-btn">
           ${this.editor.hass.localize('ui.components.selectors.image.upload')}
         </ha-button>
+        <ha-button @click=${() => this.toggleSwiperConfig()} class="swiper-btn"> Swiper Config </ha-button>
       </div>
     `;
     return urlInput;
+  }
+
+  private _renderSwiperConfig(): TemplateResult {
+    const image = this.config?.extra_configs?.images_swipe || {};
+    const sharedConfig = {
+      component: this,
+      configType: 'images_swipe',
+    };
+
+    const swiperConfig = [
+      {
+        value: image.max_height || 150,
+        configValue: 'max_height',
+        label: 'Max Height (px)',
+        options: { selector: { number: { min: 100, max: 500, mode: 'slider', step: 1 } } },
+        pickerType: 'number' as 'number',
+      },
+      {
+        value: image.max_width || 450,
+        configValue: 'max_width',
+        label: 'Max Width (px)',
+        options: { selector: { number: { min: 100, max: 500, mode: 'slider', step: 1 } } },
+        pickerType: 'number' as 'number',
+      },
+
+      {
+        value: image.delay || 3000,
+        configValue: 'delay',
+        label: 'Delay (ms)',
+        options: { selector: { number: { min: 500, max: 10000, mode: 'slider', step: 50 } } },
+        pickerType: 'number' as 'number',
+      },
+      {
+        value: image.speed || 500,
+        configValue: 'speed',
+        label: 'Speed (ms)',
+        options: { selector: { number: { min: 100, max: 5000, mode: 'slider', step: 50 } } },
+        pickerType: 'number' as 'number',
+      },
+      {
+        value: image.effect || 'slide',
+        configValue: 'effect',
+        label: 'Effect',
+        items: [
+          {
+            value: 'slide',
+            label: 'Slide',
+          },
+          {
+            value: 'fade',
+            label: 'Fade',
+          },
+          {
+            value: 'coverflow',
+            label: 'Coverflow',
+          },
+        ],
+        pickerType: 'attribute' as 'attribute',
+      },
+    ];
+    const swiperBooleanConfig = [
+      {
+        value: image.autoplay || false,
+        configValue: 'autoplay',
+        label: 'Autoplay',
+        pickerType: 'selectorBoolean' as 'selectorBoolean',
+      },
+      {
+        value: image.loop || true,
+        configValue: 'loop',
+        label: 'Loop',
+        pickerType: 'selectorBoolean' as 'selectorBoolean',
+      },
+    ];
+
+    return html` <div class="sub-panel-config image-swiper-config" style="display: none;">
+      <div class="sub-header">
+        <div class="sub-header-title">Slide layout configuration</div>
+      </div>
+      <div class="sub-panel">
+        <div>${swiperConfig.map((config) => this.generateItemPicker({ ...config, ...sharedConfig }))}</div>
+      </div>
+      <div class="sub-content">
+        ${swiperBooleanConfig.map((config) => this.generateItemPicker({ ...config, ...sharedConfig }), 'sub-content')}
+      </div>
+    </div>`;
   }
 
   private _imageList(): TemplateResult {
@@ -141,6 +229,7 @@ export class PanelImages extends LitElement {
 
     return html`${dropArea}${imageList}`;
   }
+
   private _renderDropArea(): TemplateResult {
     const errorMsg = this.editor.localize('card.common.toastImageError');
 
@@ -185,14 +274,34 @@ export class PanelImages extends LitElement {
   protected render(): TemplateResult {
     const imageList = this._imageList();
     const addNewImage = this._renderUploadAddNewImage();
+    const swiperConfig = this._renderSwiperConfig();
 
-    const content = html`${imageList}${addNewImage}`;
+    const content = html`${imageList}${addNewImage} ${swiperConfig}`;
 
     return content;
   }
 
   private _configChanged(): void {
     fireEvent(this.editor, 'config-changed', { config: this.config });
+  }
+
+  private toggleSwiperConfig(): void {
+    const swiperConfig = this.shadowRoot?.querySelector('.image-swiper-config') as HTMLElement;
+    const imageList = this.shadowRoot?.getElementById('images-list') as HTMLElement;
+    const swiperBtn = this.shadowRoot?.querySelector('.swiper-btn') as HTMLElement;
+    const uploadBtn = this.shadowRoot?.querySelector('.upload-btn') as HTMLElement;
+    const isHidden = swiperConfig?.style.display === 'none';
+    if (isHidden) {
+      swiperConfig.style.display = 'block';
+      imageList.style.display = 'none';
+      uploadBtn.style.visibility = 'hidden';
+      swiperBtn.innerHTML = 'Cancel';
+    } else {
+      swiperConfig.style.display = 'none';
+      uploadBtn.style.visibility = 'visible';
+      imageList.style.display = 'block';
+      swiperBtn.innerHTML = 'Swiper Config';
+    }
   }
 
   private toggleUpload(): void {
@@ -210,6 +319,17 @@ export class PanelImages extends LitElement {
       addImageBtn.innerHTML = 'Add Image';
     }
   }
+
+  private generateItemPicker(config: any, wrapperClass = 'item-content'): TemplateResult {
+    return html`
+      <div class="${wrapperClass}">
+        ${Picker({
+          ...config,
+        })}
+      </div>
+    `;
+  }
+
   private _handleDragOver(event: DragEvent) {
     event.preventDefault();
     this.isDragging = true;
@@ -218,6 +338,7 @@ export class PanelImages extends LitElement {
   private _handleDragLeave() {
     this.isDragging = false;
   }
+
   private _handleDrop(event: DragEvent): void {
     event.preventDefault();
     this.isDragging = false;
@@ -352,5 +473,29 @@ export class PanelImages extends LitElement {
     this.config = { ...this.config, images };
     this._newImageUrl = '';
     this._debouncedConfigChanged();
+  }
+
+  _valueChanged(ev: any): void {
+    ev.stopPropagation();
+    if (!this.config) return;
+
+    const target = ev.target;
+    const configValue = target.configValue;
+    const configType = target.configType;
+    let newValue: any = ev.detail.value;
+
+    const updates: Partial<VehicleCardConfig> = {};
+
+    if (configType === 'images_swipe') {
+      let imagesSwipe = this.config.extra_configs?.images_swipe || {};
+      imagesSwipe = { ...imagesSwipe, [configValue]: newValue };
+      updates.extra_configs = { ...this.config.extra_configs, images_swipe: imagesSwipe };
+      this.config = { ...this.config, ...updates };
+      this._debouncedConfigChanged();
+    } else {
+      updates[configValue] = newValue;
+      this.config = { ...this.config, ...updates };
+      this._debouncedConfigChanged();
+    }
   }
 }

@@ -130,7 +130,23 @@ export interface ShowOptionsConfig extends VehicleCardConfig {
 }
 
 export type ExtraConfigs = {
-  tire_background: string;
+  tire_card_custom: {
+    background: string;
+    horizontal: boolean;
+    image_size: number;
+    value_size: number;
+    top: number;
+    left: number;
+  };
+  images_swipe: {
+    max_height: number;
+    max_width: number;
+    autoplay: boolean;
+    loop: boolean;
+    delay: number;
+    speed: number;
+    effect: 'slide' | 'fade' | 'coverflow';
+  };
 };
 
 export interface VehicleCardConfig extends LovelaceCardConfig {
@@ -216,7 +232,23 @@ export const defaultConfig: Partial<VehicleCardConfig> = {
     mode: THEME_MODE.Auto,
   },
   extra_configs: {
-    tire_background: '',
+    tire_card_custom: {
+      background: '',
+      horizontal: false,
+      image_size: 100,
+      value_size: 100,
+      top: 50,
+      left: 50,
+    },
+    images_swipe: {
+      max_height: 150,
+      max_width: 450,
+      autoplay: false,
+      loop: true,
+      delay: 5000,
+      speed: 500,
+      effect: 'slide',
+    },
   },
   button_grid: {
     use_swiper: false,
