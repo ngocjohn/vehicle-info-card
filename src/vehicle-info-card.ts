@@ -13,6 +13,7 @@ import {
 import { LitElement, html, TemplateResult, PropertyValues, CSSResultGroup, nothing } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { styleMap } from 'lit-html/directives/style-map.js';
 
 import './components/cards';
 import { VehicleButtons } from './components/cards';
@@ -55,14 +56,14 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   @state() public _entityNotFound: boolean = false;
 
   // Active card type
-  @state() private _currentCardType: string | null = null;
+  @state() public _currentCardType: string | null = null;
   @state() private _activeSubCard: Set<string> = new Set();
   @state() private _mapPopupLovelace: LovelaceCardConfig[] = [];
   @state() private chargingInfoVisible!: boolean;
   @state() private isTyreHorizontal!: boolean;
 
   // Preview states
-  @state() private _currentPreviewType: 'button' | 'card' | null = null;
+  @state() private _currentPreviewType: 'button' | 'card' | 'tire' | null = null;
   @state() private _cardPreviewElement: LovelaceCardConfig[] = [];
   @state() private _buttonEntityPreview: Partial<CustomButtonEntity> = {};
 
@@ -161,9 +162,6 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
   protected updated(changedProps: PropertyValues): void {
     super.updated(changedProps);
-    if (changedProps.has('_buttonReady')) {
-      console.log('Button ready:', this._buttonReady);
-    }
     if (
       changedProps.has('activeCardType') &&
       this._currentCardType !== 'mapDialog' &&
@@ -293,6 +291,8 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       this._currentPreviewType = 'card';
     } else if (!this._currentPreviewType && this.config?.btn_preview) {
       this._currentPreviewType = 'button';
+    } else if (!this._currentPreviewType && this.config?.tire_preview) {
+      this._currentPreviewType = 'tire';
     }
 
     if (this._currentPreviewType !== null) {
@@ -302,7 +302,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     }
   }
 
-  private async _configurePreview(cardType: 'button' | 'card' | null): Promise<void> {
+  private async _configurePreview(cardType: 'button' | 'card' | 'tire' | null): Promise<void> {
     if (!cardType && !this.isEditorPreview) return;
 
     let cardConfig: LovelaceCardConfig[] | BaseButtonConfig = [];
@@ -321,11 +321,14 @@ export class VehicleCard extends LitElement implements LovelaceCard {
         cardElement = await createCardElement(this._hass, cardConfig as LovelaceCardConfig[]);
         this._cardPreviewElement = cardElement;
         break;
+      case 'tire':
+        this._currentPreviewType = 'tire';
+        break;
       default:
         return;
     }
 
-    if (!cardElement) {
+    if (cardType === null) {
       this._resetCardPreview(); // Reset preview
       return;
     }
@@ -394,6 +397,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     const typeMap = {
       button: this._renderBtnPreview(this._buttonEntityPreview as CustomButtonEntity),
       card: html`<ha-card class="preview-card">${this._cardPreviewElement}</ha-card>`,
+      tire: this._renderDefaultTyreCard(),
     };
 
     return typeMap[type];
@@ -808,9 +812,22 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   }
 
   private _renderDefaultTyreCard(): TemplateResult {
-    const customTyreBg = this.config.extra_configs?.tire_background
-      ? this.config.extra_configs.tire_background
-      : IMG.tyreBg;
+    const tireConfig = this.config.extra_configs.tire_card_custom;
+    const customTyreBg = tireConfig?.background || IMG.tyreBg;
+    const isHorizontal = tireConfig?.horizontal ?? false;
+    const tireImageSize = tireConfig?.image_size ?? 100;
+    const tireValueSize = tireConfig?.value_size ?? 100;
+    const tireTop = tireConfig?.top ?? 50;
+    const tireLeft = tireConfig?.left ?? 50;
+
+    const sizeStyle = {
+      '--vic-tire-top': `${tireTop}%`,
+      '--vic-tire-left': `${tireLeft}%`,
+      '--vic-tire-size': `${tireImageSize}%`,
+      '--vic-tire-value-size': tireValueSize / 100,
+    };
+    const directionClass = isHorizontal ? 'rotated' : '';
+
     const lang = this.userLang;
     const isPressureWarning = this.getBooleanState(this.vehicleEntities.tirePressureWarning?.entity_id);
 
@@ -821,22 +838,17 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     const tyreInfo = isPressureWarning ? tireWarningProblem : tireWarningOk;
     const infoClass = isPressureWarning ? 'warning' : '';
 
-    const isHorizontal = this.isTyreHorizontal ? 'rotated' : '';
-    const toggleHorizontal = () => {
-      this.isTyreHorizontal = !this.isTyreHorizontal;
-    };
-
     return html`
       <div class="default-card">
         <div class="data-header">${tireCardTitle}</div>
-        <div class="tyre-toggle-btn click-shrink" @click=${toggleHorizontal}>
+        <div class="tyre-toggle-btn click-shrink" @click=${(ev: Event) => this.toggleTireDirection(ev)}>
           <ha-icon icon="mdi:rotate-right-variant"></ha-icon>
         </div>
-        <div class="data-box tyre-wrapper ${isHorizontal}">
+        <div class="data-box tyre-wrapper ${directionClass}" style=${styleMap(sizeStyle)}>
           <div class="background" style="background-image: url(${customTyreBg})"></div>
           ${DataKeys.tyrePressures(lang).map(
             (tyre) =>
-              html` <div class="tyre-box ${isHorizontal} ${tyre.key.replace('tirePressure', '').toLowerCase()}">
+              html` <div class="tyre-box ${directionClass} ${tyre.key.replace('tirePressure', '').toLowerCase()}">
                 <span class="tyre-value">${this.getStateDisplay(this.vehicleEntities[tyre.key]?.entity_id)}</span>
                 <span class="tyre-name">${tyre.name}</span>
               </div>`
@@ -847,6 +859,21 @@ export class VehicleCard extends LitElement implements LovelaceCard {
         </div>
       </div>
     `;
+  }
+
+  private toggleTireDirection(ev: Event): void {
+    ev.stopPropagation();
+    const target = ev.target as HTMLElement;
+    const tyreWrapper = target.closest('.default-card')?.querySelector('.tyre-wrapper');
+    const tyreBoxex = tyreWrapper?.querySelectorAll('.tyre-box');
+    if (!tyreWrapper || !tyreBoxex) return;
+
+    const isHorizontal = tyreWrapper.classList.contains('rotated');
+
+    tyreWrapper.classList.toggle('rotated', !isHorizontal);
+    tyreBoxex.forEach((el) => {
+      el.classList.toggle('rotated', !isHorizontal);
+    });
   }
 
   private _renderServiceControl(): TemplateResult | void {

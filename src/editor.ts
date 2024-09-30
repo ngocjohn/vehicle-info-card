@@ -27,6 +27,7 @@ import { uploadImage } from './utils/editor-image-handler';
 import { handleFirstUpdated, deepMerge } from './utils/ha-helpers';
 import { compareVersions } from './utils/helpers';
 import { loadHaComponents, stickyPreview } from './utils/loader';
+import { Create } from './utils';
 
 // Import the custom card components
 import './components/editor';
@@ -42,14 +43,15 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   @property() private baseCardTypes: CardTypeConfig[] = [];
 
   @state() private _activeSubcardType: string | null = null;
-  @state() private _confirmDeleteType: string | null = null;
   @state() private _yamlConfig: { [key: string]: any } = {};
+  @state() private _confirmDeleteType: string | null = null;
   @state() private _customBtns: { [key: string]: BaseButtonConfig } = {};
   @state() private _selectedLanguage: string = 'system';
   @state() _latestRelease: string = '';
 
   @state() private _visiblePanel: Set<string> = new Set();
   @state() private _newCardType: Map<string, string> = new Map();
+  @state() private _isTirePreview: boolean = false;
 
   @query('panel-images') private _panelImages!: PanelImages;
 
@@ -73,9 +75,9 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _cleanConfig(): void {
-    if (['btn_preview', 'card_preview'].some((key) => this._config[key])) {
+    if (['btn_preview', 'card_preview', 'tire_preview'].some((key) => this._config[key])) {
       console.log('Cleaning config of preview keys');
-      this._config = { ...this._config, btn_preview: null, card_preview: null };
+      this._config = { ...this._config, btn_preview: null, card_preview: null, tire_preview: null };
       this.configChanged();
     }
   }
@@ -90,7 +92,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   protected updated(changedProperties: PropertyValues): void {
     super.updated(changedProperties);
-    if (!this._btnPreview && !this._cardPreview) {
+    if (!this._btnPreview && !this._cardPreview && !this._isTirePreview) {
       this._cleanConfig();
     }
   }
@@ -741,13 +743,13 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         <ha-textfield
           .label=${'Tire background url'}
           .disabled=${true}
-          .value=${this._config.extra_configs?.tire_background || ''}
+          .value=${this._config.extra_configs?.tire_card_custom.background}
         ></ha-textfield>
       </div>
 
       <div class="custom-background-wrapper">
-        ${this._config.extra_configs?.tire_background
-          ? html` <ha-button @click=${() => this._removeTireBackground()}> Remove image </ha-button> `
+        ${this._config.extra_configs?.tire_card_custom.background
+          ? html` <ha-button @click=${() => this._removeTireBackground()}> Use Defaut image </ha-button> `
           : html` <ha-button @click=${() => this.shadowRoot?.getElementById('file-upload-new')?.click()}>
                 Upload image
               </ha-button>
@@ -758,10 +760,63 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
                 @change=${(ev: any) => this._handleTireBackgroundUpload(ev)}
                 accept="image/*"
               />`}
+        <ha-button @click=${() => this._toggleTirePreview()}>
+          ${this._isTirePreview ? 'Close preview' : 'Preview'}</ha-button
+        >
       </div>
     `;
 
-    return this.panelTemplate('customTireBackground', 'customTireBackground', 'mdi:car-tire-alert', urlInput);
+    const tireCard = this._config.extra_configs?.tire_card_custom || {};
+
+    const imageSizeDirection = [
+      {
+        value: tireCard.image_size || 100,
+        label: 'Base image size',
+        configValue: 'image_size',
+        pickerType: 'number' as 'number',
+        options: { selector: { number: { max: 200, min: 0, mode: 'slider', step: 1 } } },
+      },
+      {
+        value: tireCard.value_size || 100,
+        label: 'Name & Value size',
+        configValue: 'value_size',
+        pickerType: 'number' as 'number',
+        options: { selector: { number: { max: 150, min: 50, mode: 'slider', step: 1 } } },
+      },
+      {
+        value: tireCard.top || 50,
+        label: `${tireCard.horizontal ? 'Horizontal' : 'Vertical'} position`,
+        configValue: 'top',
+        pickerType: 'number' as 'number',
+        options: { selector: { number: { max: 100, min: 0, mode: 'slider', step: 1 } } },
+      },
+      {
+        value: tireCard.left || 50,
+        label: `${tireCard.horizontal ? 'Vertical' : 'Horizontal'} position`,
+        configValue: 'left',
+        pickerType: 'number' as 'number',
+        options: { selector: { number: { max: 100, min: 0, mode: 'slider', step: 1 } } },
+      },
+      {
+        value: tireCard.horizontal || false,
+        label: 'Horizontal layout',
+        configValue: 'horizontal',
+        pickerType: 'selectorBoolean' as 'selectorBoolean',
+      },
+    ];
+
+    const imageSizeWrapper = html` <div class="card-button-cfg">
+      ${imageSizeDirection.map((config) =>
+        this.generateItemPicker({ ...config, configIndex: 'extra_configs', configType: 'tire_card_custom' })
+      )}
+      <ha-button class="item-content" @click=${() => this.resetTireImageSizes()}
+        >Reset <ha-icon icon="mdi:restore"></ha-icon
+      ></ha-button>
+    </div>`;
+
+    const content = html`<div class="card-config">${urlInput} ${imageSizeWrapper}</div>`;
+
+    return this.panelTemplate('customTireBackground', 'customTireBackground', 'mdi:car-tire-alert', content);
   }
 
   /* ---------------------------- TEMPLATE HELPERS ---------------------------- */
@@ -833,7 +888,36 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     `;
   }
 
+  private generateItemPicker(config: any, wrapperClass = 'item-content'): TemplateResult {
+    return html`
+      <div class="${wrapperClass}">
+        ${Create.Picker({
+          ...config,
+          component: this,
+        })}
+      </div>
+    `;
+  }
+
   /* ----------------------------- EVENT HANDLERS ----------------------------- */
+
+  private resetTireImageSizes(): void {
+    this._config = {
+      ...this._config,
+      extra_configs: {
+        ...this._config.extra_configs,
+        tire_card_custom: {
+          ...this._config.extra_configs?.tire_card_custom,
+          image_size: 100,
+          value_size: 100,
+          top: 50,
+          left: 50,
+          horizontal: false,
+        },
+      },
+    };
+    this.configChanged();
+  }
 
   private async _handleTireBackgroundUpload(ev: any): Promise<void> {
     if (!ev.target.files || ev.target.files.length === 0) {
@@ -843,7 +927,13 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const file = ev.target.files[0];
     const url = await uploadImage(this.hass, file);
     if (url) {
-      this._config = { ...this._config, extra_configs: { ...this._config.extra_configs, tire_background: url } };
+      this._config = {
+        ...this._config,
+        extra_configs: {
+          ...this._config.extra_configs,
+          tire_card_custom: { ...this._config.extra_configs?.tire_card_custom, background: url },
+        },
+      };
       this.configChanged();
     } else {
       return;
@@ -851,7 +941,13 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _removeTireBackground(): void {
-    this._config = { ...this._config, extra_configs: { ...this._config.extra_configs, tire_background: '' } };
+    this._config = {
+      ...this._config,
+      extra_configs: {
+        ...this._config.extra_configs,
+        tire_card_custom: { ...this._config.extra_configs?.tire_card_custom, background: '' },
+      },
+    };
     this.configChanged();
   }
 
@@ -1169,6 +1265,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const target = ev.target;
     const configValue = target.configValue;
     const configBtnType = target.configBtnType;
+    const configIndex = target.configIndex;
     let newValue: any = target.value;
 
     const updates: Partial<VehicleCardConfig> = {};
@@ -1204,6 +1301,16 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         [key]: parseInt(newValue) || newValue,
       };
       console.log('Button grid config changed:', key, newValue);
+    } else if (configIndex === 'extra_configs') {
+      newValue = ev.detail.value;
+      const key = configValue as keyof VehicleCardConfig['extra_configs']['tire_card_custom'];
+      updates.extra_configs = {
+        ...this._config.extra_configs,
+        tire_card_custom: {
+          ...this._config.extra_configs?.tire_card_custom,
+          [key]: parseInt(newValue) || newValue,
+        },
+      };
     } else {
       newValue = target.checked !== undefined ? target.checked : ev.detail.value;
       updates[configValue] = newValue;
@@ -1342,6 +1449,46 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
       setTimeout(() => {
         this._dispatchCardEvent('show_button_preview');
+      }, 50);
+    }
+  }
+
+  public _toggleTirePreview(): void {
+    if (this._cardPreview) {
+      this._dispatchCardEvent('close_card_preview');
+      this._cardPreview = false;
+    }
+
+    if (this._isTirePreview) {
+      console.log('Closing tire preview');
+      if (this._config) {
+        this._config = {
+          ...this._config,
+          tire_preview: null,
+        };
+      }
+
+      this._isTirePreview = false;
+      this.configChanged();
+      setTimeout(() => {
+        this._dispatchCardEvent('close_preview');
+      }, 50);
+    } else {
+      let tireConfig = this._config.extra_configs?.tire_card_custom;
+      console.log('Setting tire preview');
+      if (this._config) {
+        this._config = {
+          ...this._config,
+          tire_preview: {
+            ...tireConfig,
+          },
+        };
+      }
+
+      this._isTirePreview = true;
+      this.configChanged();
+      setTimeout(() => {
+        this._dispatchCardEvent('toggle_preview_tire');
       }, 50);
     }
   }
