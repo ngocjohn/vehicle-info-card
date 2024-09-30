@@ -1,8 +1,10 @@
 import { LitElement, css, html, TemplateResult, PropertyValues } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
-import Swiper from 'swiper';
-import { Pagination } from 'swiper/modules';
+import { styleMap } from 'lit-html/directives/style-map.js';
 
+import Swiper from 'swiper';
+import { Autoplay, Pagination, EffectFade, EffectCoverflow } from 'swiper/modules';
+import { SwiperOptions } from 'swiper/types';
 import { VehicleCardConfig } from '../../types';
 
 import swipercss from '../../css/swiper-bundle.css';
@@ -33,37 +35,77 @@ export class HeaderSlide extends LitElement {
   }
 
   private initSwiper(): void {
-    // Destroy the existing Swiper instance if it exists
-    const swiperCon = this.shadowRoot?.querySelector('.swiper-container');
+    const config = this.config?.extra_configs?.images_swipe || {};
+
+    const swiperCon = this.shadowRoot?.querySelector('.swiper-container') as HTMLElement;
     if (!swiperCon) return;
     const paginationEl = swiperCon.querySelector('.swiper-pagination') as HTMLElement;
-    this.swiper = new Swiper(swiperCon as HTMLElement, {
-      modules: [Pagination],
-      centeredSlides: true,
-      grabCursor: true,
-      speed: 500,
-      roundLengths: true,
-      keyboard: {
-        enabled: true,
-        onlyInViewport: true,
-      },
-      loop: true,
-      slidesPerView: 1,
-      pagination: {
-        el: paginationEl,
-        clickable: true,
-      },
-    });
+
+    const swiperConfig = () => {
+      const defaultConfig: SwiperOptions = {
+        modules: [Pagination, Autoplay, EffectFade, EffectCoverflow],
+        centeredSlides: true,
+        grabCursor: true,
+        keyboard: {
+          enabled: true,
+          onlyInViewport: true,
+        },
+        loop: config.loop || true,
+        speed: config.speed || 500,
+        pagination: {
+          clickable: true,
+          el: paginationEl,
+        },
+        roundLengths: true,
+        slidesPerView: 'auto',
+        spaceBetween: 12,
+      };
+      const effeConfig: Partial<Record<string, Partial<SwiperOptions>>> = {
+        slide: {},
+        fade: {
+          effect: 'fade',
+          fadeEffect: { crossFade: true },
+        },
+        coverflow: {
+          effect: 'coverflow',
+          coverflowEffect: {
+            rotate: 50,
+            stretch: 0,
+            depth: 100,
+            modifier: 1,
+            slideShadows: false,
+          },
+        },
+      };
+
+      if (config.autoplay === true) {
+        Object.assign(defaultConfig, { autoplay: { delay: config.delay || 5000, disableOnInteraction: false } });
+      }
+
+      if (config.effect) {
+        Object.assign(defaultConfig, effeConfig[config.effect || 'slide']);
+      }
+      return defaultConfig;
+    };
+
+    this.swiper = new Swiper(swiperCon, swiperConfig());
   }
 
   render(): TemplateResult {
+    const imageConfig = this.config?.extra_configs?.images_swipe;
+    const { max_height, max_width } = imageConfig ?? { max_height: 150, max_width: 450 };
+    const styleImages = {
+      '--vic-images-slide-height': `${max_height}px`,
+      '--vic-images-slide-width': `${max_width}px`,
+    };
     const images = this.images;
+    const imagesLength = images.length;
     if (!images || images.length === 0) {
       return html``;
     }
-    const imagesLength = images.length;
+
     return html`
-      <section id="swiper">
+      <section id="swiper" style=${styleMap(styleImages)}>
         <div class="swiper-container">
           <div class="swiper-wrapper">
             ${images.map(
@@ -104,7 +146,7 @@ export class HeaderSlide extends LitElement {
         justify-content: center;
         align-items: center;
         width: 100%;
-        max-height: 125px;
+        height: 100%;
       }
       .swiper-slide:active {
         scale: 1.02;
@@ -114,6 +156,8 @@ export class HeaderSlide extends LitElement {
         height: 100%;
         max-height: 150px;
         object-fit: scale-down;
+        max-height: var(--vic-images-slide-height, 150px);
+        max-width: var(--vic-images-slide-width, 450px);
       }
       .swiper-slide .image-index {
         position: absolute;

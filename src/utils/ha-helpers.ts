@@ -209,7 +209,7 @@ export async function getTemplateValue(hass: HomeAssistant, templateConfig: stri
 
 export async function getBooleanTemplate(hass: HomeAssistant, templateConfig: string): Promise<boolean> {
   if (!hass || !templateConfig) {
-    return true;
+    return false;
   }
 
   try {
@@ -220,7 +220,7 @@ export async function getBooleanTemplate(hass: HomeAssistant, templateConfig: st
     }
     return false;
   } catch (error) {
-    throw new Error(`Error evaluating template: ${error}`);
+    return false;
   }
 }
 

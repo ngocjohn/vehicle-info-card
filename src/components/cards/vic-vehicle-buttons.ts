@@ -25,6 +25,11 @@ export class VehicleButtons extends LitElement {
   private swiper: Swiper | null = null;
   private activeSlideIndex: number = 0;
 
+  constructor() {
+    super();
+    this._handleClick = this._handleClick.bind(this);
+  }
+
   static get styles(): CSSResultGroup {
     return [
       swipercss,
@@ -57,7 +62,7 @@ export class VehicleButtons extends LitElement {
 
   protected updated(changedProperties: PropertyValues): void {
     super.updated(changedProperties);
-    if (changedProperties.has('hass')) {
+    if (changedProperties.has('hass') && this._isButtonReady) {
       this.checkCustomChanged();
     }
   }
@@ -129,7 +134,7 @@ export class VehicleButtons extends LitElement {
       : button.attribute
         ? this.component.getFormattedAttributeState(button.entity, button.attribute)
         : this.component.getStateDisplay(button.entity);
-    const notify = button.notify ? await getBooleanTemplate(this.hass, button.notify) : false;
+    const notify = (await getBooleanTemplate(this.hass, button.notify)) ?? false;
 
     return { state, notify };
   }
@@ -239,27 +244,30 @@ export class VehicleButtons extends LitElement {
     const btnEntity = customBtn ? button?.entity : '';
 
     return html`
-      <div class="grid-item click-shrink" @click=${() => this._handleClick(key)} id="${`button-${key}`}">
-        <div class="item-icon">
-          <div class="icon-background">
-            <ha-state-icon
-              .hass=${this.hass}
-              .stateObj=${btnEntity ? this.hass.states[btnEntity] : undefined}
-              .icon=${buttonIcon}
-              id="${key}"
-            ></ha-state-icon>
+      <div id="${`button-${key}`}" class="grid-item click-shrink" @click=${() => this._handleClick(key)}>
+        <div class="click-container" id="${`button-action-${key}`}">
+          <div class="item-icon">
+            <div class="icon-background">
+              <ha-state-icon
+                .hass=${this.hass}
+                .stateObj=${btnEntity ? this.hass.states[btnEntity] : undefined}
+                .icon=${buttonIcon}
+              ></ha-state-icon>
+            </div>
+            ${showError
+              ? html`
+                  <div class="item-notify ${btnNotify ? '' : 'hidden'}">
+                    <ha-icon icon="mdi:alert-circle"></ha-icon>
+                  </div>
+                `
+              : nothing}
           </div>
-          ${showError
-            ? html`
-                <div class="item-notify ${btnNotify ? '' : 'hidden'}">
-                  <ha-icon icon="mdi:alert-circle"></ha-icon>
-                </div>
-              `
-            : nothing}
-        </div>
-        <div class="item-content">
-          <div class="primary"><span class="title">${buttonName}</span></div>
-          <span class="secondary">${secondaryInfo}</span>
+          <div class="item-content">
+            <div class="primary">
+              <span class="title">${buttonName}</span>
+            </div>
+            <span class="secondary">${secondaryInfo}</span>
+          </div>
         </div>
       </div>
     `;
@@ -286,12 +294,13 @@ export class VehicleButtons extends LitElement {
     const buttons = this._buttons;
     Object.keys(buttons).forEach((btn) => {
       const btnId = btn;
-      const btnElt = this.shadowRoot?.getElementById(btnId);
-
+      const btnEltId = `button-action-${btn}`;
+      const btnType = this._buttons[btnId].button_type;
+      const btnAction = this._buttons[btnId].button.button_action;
+      const btnElt = this.shadowRoot?.getElementById(btnEltId);
       // Only add actions if button_type is not 'default'
-      if (btnElt && this._buttons[btnId]?.button_type === 'action') {
-        addActions(btnElt, this._buttons[btnId].button.button_action);
-        console.log('Button action added:', this._buttons[btnId].button.button_action);
+      if (btnElt && btnType !== undefined && btnType === 'action' && btnAction) {
+        addActions(btnElt, btnAction);
       } else {
         btnElt?.addEventListener('click', () => this._handleClick(btnId));
         // console.log('Default button action added:', btnId);
@@ -300,16 +309,13 @@ export class VehicleButtons extends LitElement {
     // console.log('Button actions set');
   };
 
-  private _handleClick(btnId: string): void {
+  private _handleClick = (btnId: string): void => {
     const button = this._buttons[btnId];
-    if (!button) return;
-    if (button.button_type === 'default') {
-      this.component.toggleCardFromButtons(btnId);
-    } else {
-      // const action = customBtn.button_action;
-      // console.log('button action', action);
+    const btnType = button?.button_type;
+    if (btnType === 'default') {
+      this.component._currentCardType = btnId;
     }
-  }
+  };
 
   public showCustomBtnEditor(btnId: string): void {
     this.updateComplete.then(() => {

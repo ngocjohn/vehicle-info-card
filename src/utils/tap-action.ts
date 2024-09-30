@@ -12,8 +12,6 @@ export function addActions(element: HTMLElement, config: ButtonActionConfig) {
 }
 
 export function sendActionEvent(element: HTMLElement, config: ButtonActionConfig, action: ActionType) {
-  console.log('Sending action event:', action, config);
-
   const tapAction = config?.tap_action || { action: 'more-info' };
   const doubleTapAction = config?.double_tap_action || { action: 'toggle' };
   const holdAction = config?.hold_action || { action: 'toggle' };

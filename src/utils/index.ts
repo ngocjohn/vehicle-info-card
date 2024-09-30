@@ -4,3 +4,4 @@ export * from './helpers';
 export * from './tap-action';
 export * from './loader';
 export * from './editor-image-handler';
+export * as Create from './create';

@@ -29,9 +29,9 @@
     "@babel/core": "^7.17.8",
     "@babel/plugin-proposal-decorators": "^7.17.8",
     "@babel/plugin-transform-class-properties": "^7.24.1",
-    "@rollup/plugin-commonjs": "^28.0.0",
+    "rollup-plugin-commonjs": "^10.1.0",
     "@rollup/plugin-json": "^6.1.0",
-    "@rollup/plugin-node-resolve": "^15.3.0",
+    "rollup-plugin-node-resolve": "^5.2.0",
     "@rollup/plugin-replace": "^6.0.1",
     "@rollup/plugin-terser": "^0.4.4",
     "@types/leaflet": "^1.9.12",
@@ -71,9 +71,9 @@
     "@lit/reactive-element": "1.2.1"
   },
   "scripts": {
-    "dev": "npm run update-lang && npm run import-lang && rollup -c --watch",
+    "dev": "rollup -c --watch",
     "build": "npm run import-lang && npm run lint && npm run rollup",
-    "lint": "eslint src/**/**/**.ts --fix --quiet",
+    "lint": "eslint src/*.ts --fix",
     "rollup": "rollup -c",
     "update-lang": "node scripts/update-languages",
     "import-lang": "node scripts/generate-lang-imports.js",
