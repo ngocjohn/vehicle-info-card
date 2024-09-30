@@ -95,6 +95,16 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     if (!this._btnPreview && !this._cardPreview && !this._isTirePreview) {
       this._cleanConfig();
     }
+    if (
+      changedProperties.has('_activeSubcardType') &&
+      !this._activeSubcardType &&
+      (this._btnPreview || this._cardPreview || this._isTirePreview)
+    ) {
+      this._btnPreview = false;
+      this._cardPreview = false;
+      this._isTirePreview = false;
+      this._cleanConfig();
+    }
   }
 
   private get isAnyAddedCard(): boolean {
