@@ -127,7 +127,7 @@ export class CustomButtonAction extends LitElement {
 
     const updates: Partial<VehicleCardConfig> = {};
 
-    if (this.config.added_cards.hasOwnProperty(buttonName)) {
+    if (this.config.added_cards && this.config.added_cards[buttonName]) {
       const button = { ...(this.config.added_cards[buttonName].button || {}) };
       const buttonActionConfig = { ...(button.button_action || {}) };
       buttonActionConfig[configValue] = newValue;

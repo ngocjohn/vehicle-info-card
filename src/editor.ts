@@ -23,11 +23,11 @@ import {
   ExtendedButtonConfigItem,
   defaultConfig,
 } from './types';
+import { Create } from './utils';
 import { uploadImage } from './utils/editor-image-handler';
 import { handleFirstUpdated, deepMerge } from './utils/ha-helpers';
 import { compareVersions } from './utils/helpers';
 import { loadHaComponents, stickyPreview } from './utils/loader';
-import { Create } from './utils';
 
 // Import the custom card components
 import './components/editor';
@@ -773,35 +773,35 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         value: tireCard.image_size || 100,
         label: 'Base image size',
         configValue: 'image_size',
-        pickerType: 'number' as 'number',
+        pickerType: 'number' as const,
         options: { selector: { number: { max: 200, min: 0, mode: 'slider', step: 1 } } },
       },
       {
         value: tireCard.value_size || 100,
         label: 'Name & Value size',
         configValue: 'value_size',
-        pickerType: 'number' as 'number',
+        pickerType: 'number' as const,
         options: { selector: { number: { max: 150, min: 50, mode: 'slider', step: 1 } } },
       },
       {
         value: tireCard.top || 50,
         label: `${tireCard.horizontal ? 'Horizontal' : 'Vertical'} position`,
         configValue: 'top',
-        pickerType: 'number' as 'number',
+        pickerType: 'number' as const,
         options: { selector: { number: { max: 100, min: 0, mode: 'slider', step: 1 } } },
       },
       {
         value: tireCard.left || 50,
         label: `${tireCard.horizontal ? 'Vertical' : 'Horizontal'} position`,
         configValue: 'left',
-        pickerType: 'number' as 'number',
+        pickerType: 'number' as const,
         options: { selector: { number: { max: 100, min: 0, mode: 'slider', step: 1 } } },
       },
       {
         value: tireCard.horizontal || false,
         label: 'Horizontal layout',
         configValue: 'horizontal',
-        pickerType: 'selectorBoolean' as 'selectorBoolean',
+        pickerType: 'selectorBoolean' as const,
       },
     ];
 
@@ -1474,7 +1474,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         this._dispatchCardEvent('close_preview');
       }, 50);
     } else {
-      let tireConfig = this._config.extra_configs?.tire_card_custom;
+      const tireConfig = this._config.extra_configs?.tire_card_custom;
       console.log('Setting tire preview');
       if (this._config) {
         this._config = {

@@ -19,7 +19,7 @@ export class VehicleButtons extends LitElement {
   @property({ type: Object }) _config!: VehicleCardConfig;
   @property({ type: Object }) _buttons!: ButtonCardEntity;
 
-  @state() private _isButtonReady = false;
+  @state() private _isButtonReady: boolean = false;
   @state() _secondaryInfo: { [key: string]: CustomButton } = {};
 
   private swiper: Swiper | null = null;
@@ -55,7 +55,7 @@ export class VehicleButtons extends LitElement {
     return this._config.button_grid?.use_swiper || false;
   }
 
-  protected async firstUpdated(_changedProperties: PropertyValues): Promise<void> {
+  protected firstUpdated(_changedProperties: PropertyValues): void {
     super.firstUpdated(_changedProperties);
     this._fetchSecondaryInfo();
   }
@@ -68,21 +68,15 @@ export class VehicleButtons extends LitElement {
   }
 
   private async checkCustomChanged(): Promise<void> {
-    // console.log('check custom changed');
     let changed = false;
     const changedKeys: string[] = [];
     for (const key in this._secondaryInfo) {
       const oldState = this._secondaryInfo[key].state;
       const oldNotify = this._secondaryInfo[key].notify;
-      // check if the state or notify has changed
       const { state, notify } = await this._getSecondaryInfo(key);
       if (oldState !== state || oldNotify !== notify) {
-        // this._fetchSecondaryInfo();
-        // console.log('change detected');
         changedKeys.push(key);
         changed = true;
-      } else {
-        // console.log('no change detected');
       }
     }
 
@@ -91,7 +85,6 @@ export class VehicleButtons extends LitElement {
       await Promise.all(
         changedKeys.map(async (key) => {
           newSecondaryInfo[key] = await this._getSecondaryInfo(key);
-          // console.log('secondary info', newSecondaryInfo[key]);
         })
       );
 

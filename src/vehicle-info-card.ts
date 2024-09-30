@@ -11,9 +11,9 @@ import {
   LovelaceCard,
 } from 'custom-card-helpers';
 import { LitElement, html, TemplateResult, PropertyValues, CSSResultGroup, nothing } from 'lit';
+import { styleMap } from 'lit-html/directives/style-map.js';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
-import { styleMap } from 'lit-html/directives/style-map.js';
 
 import './components/cards';
 import { VehicleButtons } from './components/cards';
@@ -60,7 +60,6 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   @state() private _activeSubCard: Set<string> = new Set();
   @state() private _mapPopupLovelace: LovelaceCardConfig[] = [];
   @state() private chargingInfoVisible!: boolean;
-  @state() private isTyreHorizontal!: boolean;
 
   // Preview states
   @state() private _currentPreviewType: 'button' | 'card' | 'tire' | null = null;
@@ -156,8 +155,8 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   protected async firstUpdated(_changedProperties: PropertyValues): Promise<void> {
     super.firstUpdated(_changedProperties);
     await handleCardFirstUpdated(this);
-    this._setUpPreview();
     this.setUpButtonCards();
+    this._setUpPreview();
   }
 
   protected updated(changedProps: PropertyValues): void {
