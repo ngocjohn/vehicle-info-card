@@ -49,8 +49,8 @@ export const serviceData = (lang: string) => ({
 
   windowsConfig: {
     service: {
-      OPEN: createService('windows_open', 'mdi:arrow-up-bold', 'serviceData.labelOpen', lang),
-      CLOSE: createService('windows_close', 'mdi:arrow-down-bold', 'serviceData.labelClose', lang),
+      OPEN: createService('windows_open', 'mdi:arrow-down-bold', 'serviceData.labelOpen', lang),
+      CLOSE: createService('windows_close', 'mdi:arrow-up-bold', 'serviceData.labelClose', lang),
       DATA_MOVE: createService('windows_move', 'mdi:swap-vertical-bold', 'serviceData.labelMove', lang),
     },
     data: {
