@@ -35,6 +35,7 @@ export class HeaderSlide extends LitElement {
   }
 
   private initSwiper(): void {
+    if (this.config.images.length === 0 || !this.config.images) return;
     const config = this.config?.extra_configs?.images_swipe || {};
 
     const swiperCon = this.shadowRoot?.querySelector('.swiper-container') as HTMLElement;
