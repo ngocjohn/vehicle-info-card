@@ -43,8 +43,11 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   @property({ attribute: false }) public hass!: HomeAssistant;
 
   @property() public _config!: VehicleCardConfig;
-  @property() private _btnPreview: boolean = false;
-  @property() private _cardPreview: boolean = false;
+
+  @state() private _btnPreview: boolean = false;
+  @state() private _cardPreview: boolean = false;
+  @state() private _isTirePreview: boolean = false;
+
   @property() private baseCardTypes: CardTypeConfig[] = [];
 
   @state() private _activeSubcardType: string | null = null;
@@ -57,7 +60,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   @state() private _visiblePanel: Set<string> = new Set();
   @state() private _newCardType: Map<string, string> = new Map();
-  @state() private _isTirePreview: boolean = false;
 
   @query('panel-images') private _panelImages!: PanelImages;
 
@@ -85,8 +87,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       return;
     }
 
-    // Check if any preview key is not null
-    if (PREVIEW_CONFIG_TYPES.some((key) => this._config[key] !== null)) {
+    if (PREVIEW_CONFIG_TYPES.some((key) => this._config.hasOwnProperty(key) && this._config[key] !== null)) {
       console.log('Cleaning config of preview keys');
       this._config = {
         ...this._config,
@@ -96,6 +97,8 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         }, {}),
       };
       fireEvent(this, 'config-changed', { config: this._config });
+    } else {
+      return;
     }
   }
 
@@ -109,11 +112,14 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   protected updated(changedProperties: PropertyValues): void {
     super.updated(changedProperties);
+  }
+
+  protected shouldUpdate(_changedProperties: PropertyValues): boolean {
     if (!this._btnPreview && !this._cardPreview && !this._isTirePreview) {
       this._cleanConfig();
     }
     if (
-      changedProperties.has('_activeSubcardType') &&
+      _changedProperties.has('_activeSubcardType') &&
       !this._activeSubcardType &&
       (this._btnPreview || this._cardPreview || this._isTirePreview)
     ) {
@@ -122,6 +128,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       this._isTirePreview = false;
       this._cleanConfig();
     }
+    return true;
   }
 
   private get isAnyAddedCard(): boolean {
@@ -865,7 +872,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   // Function to render card items
   private renderCardItems = (cards: CardTypeConfig[]) => {
-    return cards.map((card) => {
+    return cards.map((card, index) => {
       const hiddenClass = this.isButtonHidden(card.button) ? 'disabled' : '';
       const addedCard = this.isAddedCard(card.type);
       const hideShowText = this.isButtonHidden(card.button) ? 'showButton' : 'hideButton';
@@ -878,7 +885,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
             <div class="card-type-icon">
               <div class="icon-background">
                 <ha-icon
-                  icon=${icon ? icon : 'mdi:emoticon'}
+                  icon=${icon ? icon : `mdi:numeric-${index}-circle`}
                   @click=${() => (this._activeSubcardType = type)}
                 ></ha-icon>
               </div>

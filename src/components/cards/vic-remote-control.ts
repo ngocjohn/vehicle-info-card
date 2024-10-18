@@ -647,14 +647,17 @@ export class RemoteControl extends LitElement {
     });
   }
 
-  private callService(service: string, data?: any): void {
+  async callService(service: string, data?: any): Promise<void> {
     forwardHaptic('success');
-    this.hass.callService('mbapi2020', service, {
-      vin: this.carVin,
-      ...data,
-    });
-    console.log('call-service:', service, data);
-    this.launchToast();
+    try {
+      await this.hass.callService('mbapi2020', service, {
+        vin: this.carVin,
+        ...data,
+      });
+    } finally {
+      console.log('call-service:', service, data);
+      this.launchToast();
+    }
   }
 
   private launchToast(): void {
