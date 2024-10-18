@@ -262,7 +262,8 @@
         },
         "customButtonConfig": {
             "title": "Nút tùy chỉnh",
-            "desc": "Đặt giá trị cho nút tùy chỉnh"
+            "desc": "Đặt giá trị cho nút tùy chỉnh",
+            "info": "Thêm nút mới hoặc chỉnh sửa nút tùy chỉnh hiện có"
         },
         "customCardConfig": {
             "title": "Thẻ tùy chỉnh",

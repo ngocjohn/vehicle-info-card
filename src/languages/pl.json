@@ -262,7 +262,8 @@
         },
         "customButtonConfig": {
             "title": "Niestandardowy przycisk",
-            "desc": "Ustaw wartość dla niestandardowego przycisku"
+            "desc": "Ustaw wartość dla niestandardowego przycisku",
+            "info": "Dodaj nowy lub edytuj istniejący niestandardowy przycisk"
         },
         "customCardConfig": {
             "title": "Niestandardowa karta",

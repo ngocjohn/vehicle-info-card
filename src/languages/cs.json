@@ -262,7 +262,8 @@
         },
         "customButtonConfig": {
             "title": "Vlastní tlačítko",
-            "desc": "Nastavte hodnotu pro vlastní tlačítko"
+            "desc": "Nastavte hodnotu pro vlastní tlačítko",
+            "info": "Přidat nový nebo upravit existující vlastní tlačítko"
         },
         "customCardConfig": {
             "title": "Vlastní karta",

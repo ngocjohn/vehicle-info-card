@@ -21,11 +21,10 @@ import {
   CardTypeConfig,
   BaseButtonConfig,
   ExtendedButtonConfigItem,
-  defaultConfig,
 } from './types';
 import { Create } from './utils';
 import { uploadImage } from './utils/editor-image-handler';
-import { handleFirstUpdated, deepMerge } from './utils/ha-helpers';
+import { handleFirstUpdated } from './utils/ha-helpers';
 import { compareVersions } from './utils/helpers';
 import { loadHaComponents, stickyPreview } from './utils/loader';
 
@@ -227,11 +226,20 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _renderBaseConfig(): TemplateResult {
+    const nameEntityForm = this._renderNameEntityForm();
+    const cardButtonPanel = this._renderCardButtonPanel();
+    const customButtonPanel = this._renderCustomButtonPanel();
+    const mapPopupConfig = this._renderMapPopupConfig();
+    const imageConfig = this._renderImageConfig();
+    const servicesConfig = this._renderServicesConfig();
+    const themesConfig = this._renderThemesConfig();
+    const showOptions = this._renderShowOptions();
+    const versionInfo = this._renderVersionInfo();
+
     return html`
       <div class="base-config">
-        ${this._renderNameEntityForm()} ${this._renderCardButtonPanel()} ${this._renderMapPopupConfig()}
-        ${this._renderImageConfig()} ${this._renderServicesConfig()} ${this._renderThemesConfig()}
-        ${this._renderShowOptions()} ${this._renderVersionInfo()}
+        ${nameEntityForm} ${cardButtonPanel} ${customButtonPanel} ${mapPopupConfig} ${imageConfig} ${servicesConfig}
+        ${themesConfig} ${showOptions} ${versionInfo}
       </div>
     `;
   }
@@ -282,8 +290,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const translate = {
       info: this.localize('editor.common.infoButton'),
       defaultCards: localize('defaultCards'),
-      customCards: localize('customCards'),
-      addNewCard: localize('addNewCard'),
       buttonGridSwipe: localize('buttonGridSwipe'),
       useButtonSwipe: localize('useButtonSwipe'),
       swipeRows: localize('swipeRows'),
@@ -291,76 +297,56 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
     // Split cards into default and added
     const defaultCards = this.baseCardTypes.filter((card) => !this.isAddedCard(card.type));
-    const customCards = this.baseCardTypes.filter((card) => this.isAddedCard(card.type));
 
-    // Function to render card items
-    const renderCardItems = (cards: CardTypeConfig[]) => {
-      return cards.map((card) => {
-        const hiddenClass = this.isButtonHidden(card.button) ? 'disabled' : '';
-        const addedCard = this.isAddedCard(card.type);
-        const hideShowText = this.isButtonHidden(card.button) ? 'showButton' : 'hideButton';
-        const eyeIcon = this.isButtonHidden(card.button) ? 'mdi:eye' : 'mdi:eye-off';
-        const { icon, name, type, config, button } = card;
+    const buttonGridSwipe = html`
+      <div class="card-type-item">
+        <div class="card-type-content">
+          <ha-textfield
+            .label=${translate.swipeRows}
+            .configValue=${'rows_size'}
+            .configBtnType=${'button_grid'}
+            .value=${this._config.button_grid?.rows_size || ''}
+            .min=${1}
+            @input=${this._valueChanged}
+          ></ha-textfield>
+        </div>
+        <div class="card-type-content">
+          <ha-formfield .label=${translate.useButtonSwipe}>
+            <ha-checkbox
+              .checked=${this._config.button_grid?.use_swiper}
+              .configValue=${'use_swiper'}
+              .configBtnType=${'button_grid'}
+              @change=${this._valueChanged}
+            ></ha-checkbox>
+          </ha-formfield>
+        </div>
+      </div>
+    `;
 
-        return html`
-          <div class="card-type-item">
-            <div class="card-type-row ${hiddenClass}">
-              <div class="card-type-icon">
-                <div class="icon-background">
-                  <ha-icon
-                    icon=${icon ? icon : 'mdi:emoticon'}
-                    @click=${() => (this._activeSubcardType = type)}
-                  ></ha-icon>
-                </div>
-              </div>
-              <div class="card-type-content">
-                <span class="secondary">Config name: ${config}</span>
-                <div class="primary">${name}</div>
-              </div>
-            </div>
-            <div class="card-type-actions">
-              <ha-button-menu
-                .corner=${'BOTTOM_START'}
-                .fixed=${true}
-                .menuCorner=${'START'}
-                .activatable=${true}
-                .naturalMenuWidth=${true}
-                @closed=${(ev: Event) => ev.stopPropagation()}
-              >
-                <div class="action-icon" slot="trigger"><ha-icon icon="mdi:dots-vertical"></ha-icon></div>
-                <mwc-list-item @click=${() => (this._activeSubcardType = type)} .graphic=${'icon'}>
-                  <ha-icon icon="mdi:pencil" slot="graphic"></ha-icon>
-                  Edit
-                </mwc-list-item>
-                <mwc-list-item @click=${this._hideCustomButton(button)} .graphic=${'icon'}>
-                  <ha-icon icon=${eyeIcon} slot="graphic"></ha-icon>
-                  ${this.localize(`editor.buttonConfig.${hideShowText}`)}
-                </mwc-list-item>
+    const sections = [
+      { key: 'buton-grid-swipe', title: translate.buttonGridSwipe, cards: [buttonGridSwipe], visible: true },
+      { key: 'default-cards', title: translate.defaultCards, cards: this.renderCardItems(defaultCards), visible: true },
+    ].map((section) => ({
+      ...section,
+      isVisible: this._visiblePanel.has(section.key),
+      toggle: () => this._toggleSubButtonPanel(section.key),
+    }));
 
-                ${addedCard
-                  ? html`
-                      <mwc-list-item
-                        @click=${() => (this._confirmDeleteType = type)}
-                        .graphic=${'icon'}
-                        style="color: var(--error-color)"
-                      >
-                        <ha-icon icon="mdi:delete" slot="graphic" style="color: var(--error-color)"></ha-icon>
-                        Delete
-                      </mwc-list-item>
-                    `
-                  : nothing}
-              </ha-button-menu>
-              ${this._confirmDeleteType === type
-                ? html` <div class="confirm-delete">
-                  <span>${this.localize('editor.buttonConfig.deleteConfirm')}</span>
-                  <ha-button @click=${this._removeCustomCard(type)}><ha-icon icon="mdi:check"></ha-button>
-                  <ha-button @click=${() => (this._confirmDeleteType = null)}><ha-icon icon="mdi:close"></button>
-                </div>`
-                : nothing}
-            </div>
-          </div>
-        `;
-      });
+    const buttonsConfigWrapper = sections
+      .filter((section) => section.visible)
+      .map((section) => this._renderSection(section));
+
+    const content = html`<ha-alert alert-type="info">${translate.info}</ha-alert>${buttonsConfigWrapper}`;
+    return this.panelTemplate('buttonConfig', 'buttonConfig', 'mdi:view-dashboard', content);
+  }
+
+  private _renderCustomButtonPanel(): TemplateResult {
+    const localize = (key: string): string => this.localize(`editor.buttonConfig.${key}`);
+
+    const translate = {
+      info: this.localize('editor.customButtonConfig.info'),
+      customCards: localize('customCards'),
+      addNewCard: localize('addNewCard'),
     };
 
     const addNewCardForm = html`
@@ -393,39 +379,14 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       </div>
     `;
 
-    const buttonGridSwipe = html`
-      <div class="card-type-item">
-        <div class="card-type-content">
-          <ha-textfield
-            .label=${translate.swipeRows}
-            .configValue=${'rows_size'}
-            .configBtnType=${'button_grid'}
-            .value=${this._config.button_grid?.rows_size || ''}
-            .min=${1}
-            @input=${this._valueChanged}
-          ></ha-textfield>
-        </div>
-        <div class="card-type-content">
-          <ha-formfield .label=${translate.useButtonSwipe}>
-            <ha-checkbox
-              .checked=${this._config.button_grid?.use_swiper}
-              .configValue=${'use_swiper'}
-              .configBtnType=${'button_grid'}
-              @change=${this._valueChanged}
-            ></ha-checkbox>
-          </ha-formfield>
-        </div>
-      </div>
-    `;
+    const customCards = this.baseCardTypes.filter((card) => this.isAddedCard(card.type));
 
     const sections = [
-      { key: 'buton-grid-swipe', title: translate.buttonGridSwipe, cards: [buttonGridSwipe], visible: true },
       { key: 'add-new-card', title: translate.addNewCard, cards: [addNewCardForm], visible: true },
-      { key: 'default-cards', title: translate.defaultCards, cards: renderCardItems(defaultCards), visible: true },
       {
         key: 'added-cards',
         title: translate.customCards,
-        cards: renderCardItems(customCards),
+        cards: this.renderCardItems(customCards),
         visible: this.isAnyAddedCard,
       },
     ].map((section) => ({
@@ -433,13 +394,11 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       isVisible: this._visiblePanel.has(section.key),
       toggle: () => this._toggleSubButtonPanel(section.key),
     }));
-
     const buttonsConfigWrapper = sections
       .filter((section) => section.visible)
       .map((section) => this._renderSection(section));
-
     const content = html`<ha-alert alert-type="info">${translate.info}</ha-alert>${buttonsConfigWrapper}`;
-    return this.panelTemplate('buttonConfig', 'buttonConfig', 'mdi:view-dashboard', content);
+    return this.panelTemplate('customButtonConfig', 'buttonConfig', 'mdi:view-dashboard', content);
   }
 
   private _renderSubCardConfig(card: CardTypeConfig): TemplateResult {
@@ -903,6 +862,76 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     }
     this.requestUpdate();
   }
+
+  // Function to render card items
+  private renderCardItems = (cards: CardTypeConfig[]) => {
+    return cards.map((card) => {
+      const hiddenClass = this.isButtonHidden(card.button) ? 'disabled' : '';
+      const addedCard = this.isAddedCard(card.type);
+      const hideShowText = this.isButtonHidden(card.button) ? 'showButton' : 'hideButton';
+      const eyeIcon = this.isButtonHidden(card.button) ? 'mdi:eye' : 'mdi:eye-off';
+      const { icon, name, type, config, button } = card;
+
+      return html`
+        <div class="card-type-item">
+          <div class="card-type-row ${hiddenClass}">
+            <div class="card-type-icon">
+              <div class="icon-background">
+                <ha-icon
+                  icon=${icon ? icon : 'mdi:emoticon'}
+                  @click=${() => (this._activeSubcardType = type)}
+                ></ha-icon>
+              </div>
+            </div>
+            <div class="card-type-content">
+              <span class="secondary">Config name: ${config}</span>
+              <div class="primary">${name}</div>
+            </div>
+          </div>
+          <div class="card-type-actions">
+            <ha-button-menu
+              .corner=${'BOTTOM_START'}
+              .fixed=${true}
+              .menuCorner=${'START'}
+              .activatable=${true}
+              .naturalMenuWidth=${true}
+              @closed=${(ev: Event) => ev.stopPropagation()}
+            >
+              <div class="action-icon" slot="trigger"><ha-icon icon="mdi:dots-vertical"></ha-icon></div>
+              <mwc-list-item @click=${() => (this._activeSubcardType = type)} .graphic=${'icon'}>
+                <ha-icon icon="mdi:pencil" slot="graphic"></ha-icon>
+                Edit
+              </mwc-list-item>
+              <mwc-list-item @click=${this._hideCustomButton(button)} .graphic=${'icon'}>
+                <ha-icon icon=${eyeIcon} slot="graphic"></ha-icon>
+                ${this.localize(`editor.buttonConfig.${hideShowText}`)}
+              </mwc-list-item>
+
+              ${addedCard
+                ? html`
+                    <mwc-list-item
+                      @click=${() => (this._confirmDeleteType = type)}
+                      .graphic=${'icon'}
+                      style="color: var(--error-color)"
+                    >
+                      <ha-icon icon="mdi:delete" slot="graphic" style="color: var(--error-color)"></ha-icon>
+                      Delete
+                    </mwc-list-item>
+                  `
+                : nothing}
+            </ha-button-menu>
+            ${this._confirmDeleteType === type
+              ? html` <div class="confirm-delete">
+                  <span>${this.localize('editor.buttonConfig.deleteConfirm')}</span>
+                  <ha-button @click=${this._removeCustomCard(type)}><ha-icon icon="mdi:check"></ha-button>
+                  <ha-button @click=${() => (this._confirmDeleteType = null)}><ha-icon icon="mdi:close"></button>
+                </div>`
+              : nothing}
+          </div>
+        </div>
+      `;
+    });
+  };
 
   private panelTemplate(
     titleKey: string,
