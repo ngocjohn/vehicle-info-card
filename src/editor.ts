@@ -1,4 +1,4 @@
-import { CARD_VERSION } from './const/const';
+import { CARD_VERSION, CARD_UPADE_SENSOR, PREVIEW_CONFIG_TYPES } from './const/const';
 import { cardTypes, editorShowOpts } from './const/data-keys';
 import { servicesCtrl } from './const/remote-control-keys';
 import { languageOptions, localize } from './localize/localize';
@@ -33,6 +33,12 @@ import { loadHaComponents, stickyPreview } from './utils/loader';
 import './components/editor';
 import { PanelImages } from './components/editor';
 
+const latestRelease: { version: string; hacs: boolean; updated: boolean } = {
+  version: '',
+  hacs: false,
+  updated: false,
+};
+
 @customElement('vehicle-info-card-editor')
 export class VehicleCardEditor extends LitElement implements LovelaceCardEditor {
   @property({ attribute: false }) public hass!: HomeAssistant;
@@ -47,7 +53,8 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   @state() private _confirmDeleteType: string | null = null;
   @state() private _customBtns: { [key: string]: BaseButtonConfig } = {};
   @state() private _selectedLanguage: string = 'system';
-  @state() _latestRelease: string = '';
+  @state() _latestRelease = latestRelease;
+  private _toastDissmissed: boolean = false;
 
   @state() private _visiblePanel: Set<string> = new Set();
   @state() private _newCardType: Map<string, string> = new Map();
@@ -74,11 +81,25 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     super.disconnectedCallback();
   }
 
-  private _cleanConfig(): void {
-    if (['btn_preview', 'card_preview', 'tire_preview'].some((key) => this._config[key])) {
+  public _cleanConfig(): void {
+    // Check if _config exists and is an object
+    if (!this._config || typeof this._config !== 'object') {
+      return;
+    }
+
+    // Check if any preview key is not null
+    if (PREVIEW_CONFIG_TYPES.some((key) => this._config[key] !== null)) {
       console.log('Cleaning config of preview keys');
-      this._config = { ...this._config, btn_preview: null, card_preview: null, tire_preview: null };
-      this.configChanged();
+      this._config = {
+        ...this._config,
+        ...PREVIEW_CONFIG_TYPES.reduce((acc: any, key: string) => {
+          acc[key] = null;
+          return acc;
+        }, {}),
+      };
+      fireEvent(this, 'config-changed', { config: this._config });
+    } else {
+      console.log('No preview keys found');
     }
   }
 
@@ -681,41 +702,22 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _renderVersionInfo(): TemplateResult {
+    const { version, hacs, updated } = this._latestRelease;
     return html`
       <div class="version">
         <span>
-          ${CARD_VERSION === this._latestRelease
+          ${updated
             ? html`version: ${CARD_VERSION}`
-            : html`version: ${CARD_VERSION} -> <span class="update">${this._latestRelease}</span>`}
+            : html`version: ${CARD_VERSION} -> <span class="update">${version}</span>`}
         </span>
       </div>
       ${this._renderUpdateToast()}
     `;
   }
 
-  private _renderToast(idToast: string): TemplateResult {
-    const toastId = `toast_${idToast}`;
-    return html`
-      <div id="${toastId}" class="toast">
-        <ha-alert alert-type="warning" dismissable @alert-dismissed-clicked=${() => this._handleAlertDismissed(toastId)}
-          >Default alert message
-        </ha-alert>
-      </div>
-    `;
-  }
-
-  private _renderSuccesToast(idToast: string): TemplateResult {
-    const toastId = `toast_${idToast}_success`;
-    return html`
-      <div id="${toastId}" class="toast">
-        <ha-alert alert-type="success">Success alert message</ha-alert>
-      </div>
-    `;
-  }
-
   private _renderUpdateToast(): TemplateResult {
-    const versionResult = compareVersions(CARD_VERSION, this._latestRelease);
-    if (versionResult === 0) {
+    const versionResult = compareVersions(CARD_VERSION, this._latestRelease.version);
+    if (versionResult === 0 || this._toastDissmissed) {
       return html``;
     }
 
@@ -739,8 +741,28 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           @alert-dismissed-clicked=${() => this._handleToastUpdateDismissed()}
         >
           <span class="alert-icon" slot="icon">${content[versionResult].icon}</span>
-          <span class="content">Latest: ${this._latestRelease}</span>
+          <span class="content">Latest: ${this._latestRelease.version}</span>
         </ha-alert>
+      </div>
+    `;
+  }
+
+  private _renderToast(idToast: string): TemplateResult {
+    const toastId = `toast_${idToast}`;
+    return html`
+      <div id="${toastId}" class="toast">
+        <ha-alert alert-type="warning" dismissable @alert-dismissed-clicked=${() => this._handleAlertDismissed(toastId)}
+          >Default alert message
+        </ha-alert>
+      </div>
+    `;
+  }
+
+  private _renderSuccesToast(idToast: string): TemplateResult {
+    const toastId = `toast_${idToast}_success`;
+    return html`
+      <div id="${toastId}" class="toast">
+        <ha-alert alert-type="success">Success alert message</ha-alert>
       </div>
     `;
   }
@@ -1170,6 +1192,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const toast = this.shadowRoot?.getElementById('toast-update') as HTMLElement;
     if (toast) {
       toast.classList.add('hidden');
+      this._toastDissmissed = true;
     }
   }
 

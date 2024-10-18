@@ -2,7 +2,7 @@
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
 import { LovelaceCardConfig } from 'custom-card-helpers';
 
-import { combinedFilters } from '../const/const';
+import { combinedFilters, CARD_UPADE_SENSOR, CARD_VERSION } from '../const/const';
 import { VehicleCardEditor } from '../editor';
 import {
   HA as HomeAssistant,
@@ -284,9 +284,23 @@ export async function getAddedButton(
 }
 
 export async function handleFirstUpdated(component: VehicleCardEditor): Promise<void> {
-  fetchLatestReleaseTag().then((latestRelease) => {
-    component._latestRelease = latestRelease;
-  });
+  if (!component._latestRelease.version) {
+    console.log('Fetching latest release');
+
+    // Use Promise.all to run both async operations in parallel
+    const [latestVersion, installed] = await Promise.all([
+      fetchLatestReleaseTag(),
+      installedByHACS(component.hass as HomeAssistant),
+    ]);
+
+    // Update component data after both promises resolve
+    component._latestRelease.version = latestVersion;
+    component._latestRelease.hacs = !!installed;
+    component._latestRelease.updated = latestVersion === CARD_VERSION;
+  } else {
+    console.log('Latest release already fetched');
+    return;
+  }
 
   const updates: Partial<VehicleCardConfig> = {};
 
@@ -312,6 +326,17 @@ export async function handleFirstUpdated(component: VehicleCardEditor): Promise<
     console.log('New config:', component._config);
     component.configChanged();
   }
+}
+
+export async function installedByHACS(hass: HomeAssistant): Promise<boolean> {
+  const hacs = hass?.config?.components?.includes('hacs');
+  if (!hacs) return false;
+  const hacsEntities = await hass.callWS<{ entity_id: string }[]>({
+    type: 'config/entity_registry/list',
+  });
+
+  const hacsEntity = hacsEntities.find((entity) => entity.entity_id === CARD_UPADE_SENSOR);
+  return !!hacsEntity;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -1,7 +1,11 @@
 import { version, repository } from '../../package.json';
 
 export const CARD_VERSION = `v${version}`;
+export const CARD_UPADE_SENSOR = 'update.vehicle_info_card_update';
 export const REPOSITORY = repository.repo;
+
+export const PREVIEW_CONFIG_TYPES = ['btn_preview', 'card_preview', 'tire_preview'];
+
 /**
  * Filters for binary sensors.
  */
