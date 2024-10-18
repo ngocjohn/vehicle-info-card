@@ -98,10 +98,9 @@ header h1 {
 }
 
 .info-box {
-  --mdc-icon-size: 17px;
+  --mdc-icon-size: 20px;
   display: flex;
   justify-content: center;
-  align-items: center;
   position: relative;
   width: 100%;
   height: fit-content;
@@ -109,16 +108,23 @@ header h1 {
   flex-wrap: wrap;
 }
 
+@media screen and (max-width: 768px) {
+  .info-box {
+    --mdc-icon-size: 17px;
+  }
+}
+
 .info-box.range {
   flex-wrap: nowrap !important;
   justify-content: center;
   text-wrap: nowrap;
+  align-items: center;
+}
 
-  .item {
-    display: flex;
-    align-items: center;
-    gap: 4px !important;
-  }
+.info-box.range .item {
+  display: flex;
+  align-items: center;
+  gap: 4px !important;
 }
 
 .info-box .item {
@@ -136,9 +142,10 @@ header h1 {
     padding: 0.5rem;
   }
 
+  /*
   .info-box .item .base-menu {
     font-size: 0.8rem;
-  }
+  } */
 }
 
 .added-item-arrow {

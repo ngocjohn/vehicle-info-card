@@ -811,7 +811,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   }
 
   private _renderDefaultTyreCard(): TemplateResult {
-    const tireConfig = this.config.extra_configs.tire_card_custom;
+    const tireConfig = this.config?.extra_configs?.tire_card_custom || {};
     const customTyreBg = tireConfig?.background || IMG.tyreBg;
     const isHorizontal = tireConfig?.horizontal ?? false;
     const tireImageSize = tireConfig?.image_size ?? 100;
@@ -945,7 +945,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     forwardHaptic('light');
     const cardElement = this.shadowRoot?.querySelector('.card-element') as HTMLElement;
     if (!this._currentCardType || !cardElement) return;
-    const baseCardTypes = Object.values(this.buttonCards);
+    const baseCardTypes = Object.values(this.buttonCards).filter((card) => card.button_type !== 'action');
 
     if (action === 'next' || action === 'prev') {
       const currentIndex = baseCardTypes.findIndex((card) => card.key === this._currentCardType);
