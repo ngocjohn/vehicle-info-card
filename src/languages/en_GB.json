@@ -262,7 +262,8 @@
         },
         "customButtonConfig": {
             "title": "Custom Button",
-            "desc": "Set the value for the custom button"
+            "desc": "Set the value for the custom button",
+            "info": "Add new or edit existing custom button"
         },
         "customCardConfig": {
             "title": "Custom Card",

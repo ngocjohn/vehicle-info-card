@@ -262,7 +262,8 @@
         },
         "customButtonConfig": {
             "title": "Pasirinktinis mygtukas",
-            "desc": "Nustatykite pasirinktinio mygtuko reikšmę"
+            "desc": "Nustatykite pasirinktinio mygtuko reikšmę",
+            "info": "Pridėti naują arba redaguoti esamą pasirinktą mygtuką"
         },
         "customCardConfig": {
             "title": "Pasirinktinė kortelė",

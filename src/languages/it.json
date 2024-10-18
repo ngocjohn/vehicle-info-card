@@ -262,7 +262,8 @@
         },
         "customButtonConfig": {
             "title": "Pulsanti personalizzati",
-            "desc": "Imposta il valore per il pulsante personalizzato"
+            "desc": "Imposta il valore per il pulsante personalizzato",
+            "info": "Aggiungi un nuovo pulsante personalizzato o modifica quello esistente"
         },
         "customCardConfig": {
             "title": "Card personalizzata",

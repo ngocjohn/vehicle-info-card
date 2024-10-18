@@ -262,7 +262,8 @@
         },
         "customButtonConfig": {
             "title": "Vlastné tlačidlo",
-            "desc": "Nastavte hodnotu pre vlastné tlačidlo"
+            "desc": "Nastavte hodnotu pre vlastné tlačidlo",
+            "info": "Pridať nové alebo upraviť existujúce vlastné tlačidlo"
         },
         "customCardConfig": {
             "title": "Vlastná karta",

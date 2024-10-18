@@ -262,7 +262,8 @@
         },
         "customButtonConfig": {
             "title": "Benutzerdefinierte Schaltfläche",
-            "desc": "Legen Sie den Wert für die benutzerdefinierte Schaltfläche fest"
+            "desc": "Legen Sie den Wert für die benutzerdefinierte Schaltfläche fest",
+            "info": "Fügen Sie eine neue oder bearbeiten Sie eine bestehende benutzerdefinierte Schaltfläche"
         },
         "customCardConfig": {
             "title": "Benutzerdefinierte Karte",

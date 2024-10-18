@@ -262,7 +262,8 @@
         },
         "customButtonConfig": {
             "title": "Bouton personnalisé",
-            "desc": "Définir la valeur du bouton personnalisé"
+            "desc": "Définir la valeur du bouton personnalisé",
+            "info": "Ajouter un nouveau ou modifier un bouton personnalisé existant"
         },
         "customCardConfig": {
             "title": "Carte personnalisée",
