@@ -1,11 +1,14 @@
 import { LitElement, html, css, TemplateResult, PropertyValues, CSSResultGroup } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement, state, property } from 'lit/decorators.js';
+
+import { HA as HomeAssistant, VehicleCardConfig } from '../../types';
 
 // Leaflet imports
 import L from 'leaflet';
 import 'leaflet-providers/leaflet-providers.js';
 
 import mapstyle from '../../css/leaflet.css';
+import { VehicleCard } from '../../vehicle-info-card';
 
 interface Address {
   streetNumber: string;
@@ -19,16 +22,19 @@ interface Address {
 
 @customElement('vehicle-map')
 export class VehicleMap extends LitElement {
+  @property({ attribute: false }) private hass!: HomeAssistant;
+  @property({ type: Object }) private config!: VehicleCardConfig;
+  @property() card!: VehicleCard;
+
+  @state() private address: Partial<Address> = {};
   @state() private deviceTracker: { lat: number; lon: number } = { lat: 0, lon: 0 };
-  @state() private darkMode!: boolean;
-  @state() private apiKey?: string;
-  @state() private mapPopup!: boolean;
+
+  @state() private adressLoaded: boolean = false;
+  @state() private locationLoaded: boolean = false;
+
   @state() private map: L.Map | null = null;
   @state() private marker: L.Marker | null = null;
   @state() private zoom = 16;
-  @state() private state = '';
-  @state() private address: Partial<Address> = {};
-  @state() private loadingAdress: boolean = false;
 
   static get styles(): CSSResultGroup {
     return [
@@ -185,9 +191,22 @@ export class VehicleMap extends LitElement {
     ];
   }
 
-  firstUpdated(): void {
+  private get apiKey(): string | undefined {
+    return this.config.google_api_key;
+  }
+
+  private get darkMode(): boolean {
+    return this.card.isDark;
+  }
+
+  private get mapPopup(): boolean {
+    return this.config.enable_map_popup;
+  }
+
+  protected firstUpdated(changedProperties: PropertyValues): void {
+    super.firstUpdated(changedProperties);
     this.updateCSSVariables();
-    this.setEntityAttribute();
+    this._getDeviceTracker();
   }
 
   updated(changedProperties: PropertyValues): void {
@@ -197,15 +216,41 @@ export class VehicleMap extends LitElement {
     }
   }
 
-  setEntityAttribute(): void {
-    const { lat, lon } = this.deviceTracker;
-    if (lat && lon) {
-      this.getAddress(lat, lon);
-    }
+  private _getDeviceTracker(): void {
+    if (!this.config.device_tracker) return;
 
-    setTimeout(() => {
+    this.locationLoaded = false;
+
+    const deviceTracker = this.config.device_tracker;
+    const stateObj = this.hass.states[deviceTracker];
+
+    if (!stateObj) return;
+    const { latitude, longitude } = stateObj.attributes;
+    this.deviceTracker = { lat: latitude, lon: longitude };
+
+    console.log('deviceTracker', this.deviceTracker);
+
+    this.locationLoaded = true;
+
+    this.getAddress(latitude, longitude);
+
+    this.updateComplete.then(() => {
       this.initMap();
-    }, 200);
+    });
+  }
+
+  async getAddress(lat: number, lon: number): Promise<void> {
+    this.adressLoaded = false;
+    const address = this.apiKey
+      ? await this.getAddressFromGoggle(lat, lon)
+      : await this.getAddressFromOpenStreet(lat, lon);
+
+    if (address) {
+      this.address = address;
+      this.adressLoaded = true;
+      this.requestUpdate();
+    }
+    // console.log('address', this.address);
   }
 
   private updateCSSVariables(): void {
@@ -217,23 +262,6 @@ export class VehicleMap extends LitElement {
       this.style.setProperty('--vic-map-marker-color', 'var(--primary-color)');
       this.style.setProperty('--vic-marker-filter', 'var(--vic-marker-light-filter)');
       this.style.setProperty('--vic-map-tiles-filter', 'var(--vic-map-tiles-light-filter)');
-    }
-  }
-
-  async getAddress(lat: number, lon: number): Promise<void> {
-    this.loadingAdress = true;
-    let address: Partial<Address> | null = null;
-    if (this.apiKey) {
-      address = await this.getAddressFromGoggle(lat, lon);
-    } else {
-      address = await this.getAddressFromOpenStreet(lat, lon);
-    }
-    if (address) {
-      this.address = address;
-      this.loadingAdress = false;
-      this.requestUpdate();
-    } else {
-      this.loadingAdress = true;
     }
   }
 
@@ -277,7 +305,6 @@ export class VehicleMap extends LitElement {
       });
     }
 
-    this.marker.bindTooltip(this.state);
     this.updateMap();
     this.updateCSSVariables();
   }
@@ -316,6 +343,7 @@ export class VehicleMap extends LitElement {
   }
 
   render(): TemplateResult {
+    if (!this.locationLoaded) return html``;
     return html`
       <div class="map-wrapper">
         <div id="map"></div>
@@ -329,7 +357,7 @@ export class VehicleMap extends LitElement {
   }
 
   private _renderAddress() {
-    if (this.loadingAdress) {
+    if (!this.adressLoaded) {
       return html`<div class="address" style="left: 10%;"><span class="loader"></span></div>`;
     }
     return html`
@@ -347,7 +375,7 @@ export class VehicleMap extends LitElement {
     `;
   }
 
-  private async getAddressFromOpenStreet(lat: number, lon: number): Promise<Partial<Address> | null> {
+  private async getAddressFromOpenStreet(lat: number, lon: number): Promise<null | Partial<Address>> {
     const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=jsonv2`;
     try {
       const response = await fetch(url);
@@ -375,7 +403,7 @@ export class VehicleMap extends LitElement {
     }
   }
 
-  private async getAddressFromGoggle(lat: number, lon: number): Promise<Partial<Address> | null> {
+  private async getAddressFromGoggle(lat: number, lon: number): Promise<null | Partial<Address>> {
     const apiKey = this.apiKey; // Replace with your API key
     const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${apiKey}`;
 
