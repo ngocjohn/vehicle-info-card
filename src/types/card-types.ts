@@ -36,6 +36,7 @@ export interface EcoData {
   acceleration: number;
   constant: number;
   freeWheel: number;
+  unit: string;
 }
 
 export type CustomButton = {

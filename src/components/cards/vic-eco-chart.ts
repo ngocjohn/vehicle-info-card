@@ -21,8 +21,7 @@ export class EcoChart extends LitElement {
     return {
       series: [0, 0, 0], // Dummy data to initialize the chart
       chart: {
-        height: 350,
-        width: 350,
+        height: 390,
         type: 'radialBar',
       },
       plotOptions: {
@@ -31,9 +30,9 @@ export class EcoChart extends LitElement {
           startAngle: 0,
           endAngle: 270,
           hollow: {
-            margin: 5,
-            size: '40%',
-            background: '#ffffff',
+            margin: 15,
+            size: '30%',
+            background: 'transparent',
             image: undefined,
           },
           dataLabels: {
@@ -44,21 +43,21 @@ export class EcoChart extends LitElement {
             },
             value: {
               show: true,
-              fontSize: '24px',
+              fontSize: '20px',
               fontWeight: 'bold',
             },
             total: {
               show: true,
               label: this.localize('card.ecoCard.ecoScoreBonusRange'),
               formatter: () => {
-                return `${this.ecoData.bonusRange || 0} km`;
+                return `${this.ecoData.bonusRange || 0} ${this.ecoData.unit}`;
               },
             },
           },
           barLabels: {
             enabled: true,
             useSeriesColors: true,
-            margin: 8,
+            offsetX: -20,
             fontSize: '16px',
             /* eslint-disable-next-line */
             formatter: (seriesName: string, opts: any) => {
@@ -66,6 +65,11 @@ export class EcoChart extends LitElement {
             },
           },
         },
+      },
+      stroke: {
+        lineCap: 'round',
+        curve: 'smooth',
+        width: 1,
       },
       colors: ['#1ab7ea', '#0084ff', '#39539E'],
       labels: [
@@ -107,7 +111,7 @@ export class EcoChart extends LitElement {
             dataLabels: {
               total: {
                 formatter: () => {
-                  return `${this.ecoData.bonusRange || 0} km`;
+                  return `${this.ecoData.bonusRange || 0} ${this.ecoData.unit}`;
                 },
               },
             },
@@ -127,23 +131,11 @@ export class EcoChart extends LitElement {
   }
 
   static styles = css`
-    #chart {
-      display: flex;
-      justify-content: center;
-      position: relative;
-      width: 100%;
-      height: 100%;
-      margin: 0;
-    }
     .apexcharts-datalabels-group .apexcharts-text {
-      font-size: 1.2rem;
       fill: var(--primary-text-color);
     }
     .apexcharts-radialbar-track > path {
       stroke: var(--divider-color);
-    }
-    .apexcharts-radialbar-hollow {
-      fill: var(--ha-card-background, var(--card-background-color, #fff));
     }
   `;
 }
