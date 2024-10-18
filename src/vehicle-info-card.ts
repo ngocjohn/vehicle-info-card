@@ -72,7 +72,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
   // Components
   @query('vehicle-buttons') vehicleButtons!: VehicleButtons;
-
+  @query('eco-chart') ecoChart!: Element;
   constructor() {
     super();
     this.handleEditorEvents = this.handleEditorEvents.bind(this);
@@ -642,6 +642,8 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   private _renderEcoChart(): TemplateResult {
     if (this._currentCardType !== 'ecoCards') return html``;
     const lang = this.userLang;
+    const ecoUnit = this.getEntityAttribute(this.vehicleEntities.ecoScoreBonusRange?.entity_id, 'unit_of_measurement');
+
     const getEcoScore = (entity: string | undefined): number => {
       if (!entity) return 0;
       const state = this.getEntityState(entity);
@@ -655,6 +657,8 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
       return acc;
     }, {} as EcoData);
+
+    ecoDataObj.unit = ecoUnit;
 
     return html`<eco-chart .ecoData=${ecoDataObj} .selectedLanguage=${lang}></eco-chart>`;
   }
@@ -1006,6 +1010,14 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
     const subCardVisible = (key: string) => this.isSubCardActive(key);
 
+    const toggleSubCard = (key: string) => {
+      if (['doorStatusOverall', 'lockSensor', 'windowsClosed'].includes(key)) {
+        this.toggleSubCard(subCardMapping[key].key);
+      } else {
+        toggleMoreInfo(key);
+      }
+    };
+
     return html`
       ${overViewData.map(({ key, name, icon, state, active }) => {
         if (state) {
@@ -1020,7 +1032,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
                 ></ha-icon>
                 <span class="data-label">${name}</span>
               </div>
-              <div class="data-value-unit" @click=${() => this.toggleSubCard(subCard.key)}>
+              <div class="data-value-unit" @click=${() => toggleSubCard(key)}>
                 <span class=${!active ? 'warning' : ''} style="text-transform: capitalize;">${state}</span>
                 ${subCard
                   ? html`
@@ -1167,6 +1179,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   }
 
   private toggleSubCard(key: string): void {
+    if (key === undefined) return;
     const subCard = this._activeSubCard;
     if (key === 'warnings' && this.isOverviewDataActive()) {
       subCard.forEach((key) => subCard.delete(key));

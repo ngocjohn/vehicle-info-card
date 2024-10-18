@@ -550,7 +550,6 @@ header h1 {
   align-items: center;
   cursor: auto;
   /* padding: 8px 0; */
-  padding: var(--vic-gutter-gap);
 }
 
 .default-card .data-box {
@@ -571,6 +570,10 @@ header h1 {
   border: none !important;
   background: none !important;
   padding: 0px;
+}
+
+.default-card.remote-tab>.data-header {
+  padding: var(--vic-gutter-gap);
 }
 
 .data-row {
