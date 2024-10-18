@@ -298,6 +298,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       return cards.map((card) => {
         const hiddenClass = this.isButtonHidden(card.button) ? 'disabled' : '';
         const addedCard = this.isAddedCard(card.type);
+        const hideShowText = this.isButtonHidden(card.button) ? 'showButton' : 'hideButton';
         const eyeIcon = this.isButtonHidden(card.button) ? 'mdi:eye' : 'mdi:eye-off';
         const { icon, name, type, config, button } = card;
 
@@ -318,27 +319,45 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
               </div>
             </div>
             <div class="card-type-actions">
-              <div class="action-icon" @click=${() => (this._activeSubcardType = type)}>
-                <ha-icon icon="mdi:pencil"></ha-icon>
-              </div>
-              <div class="action-icon" @click=${this._hideCustomButton(button)}>
-                <ha-icon icon=${eyeIcon}></ha-icon>
-              </div>
-              ${addedCard
-                ? html`
-                    <div class="action-icon" @click=${() => (this._confirmDeleteType = type)}>
-                      <ha-icon icon="mdi:close"></ha-icon>
-                    </div>
-                  `
-                : nothing}
-            </div>
-            ${this._confirmDeleteType === type
-              ? html` <div class="confirm-delete">
+              <ha-button-menu
+                .corner=${'BOTTOM_START'}
+                .fixed=${true}
+                .menuCorner=${'START'}
+                .activatable=${true}
+                .naturalMenuWidth=${true}
+                @closed=${(ev: Event) => ev.stopPropagation()}
+              >
+                <div class="action-icon" slot="trigger"><ha-icon icon="mdi:dots-vertical"></ha-icon></div>
+                <mwc-list-item @click=${() => (this._activeSubcardType = type)} .graphic=${'icon'}>
+                  <ha-icon icon="mdi:pencil" slot="graphic"></ha-icon>
+                  Edit
+                </mwc-list-item>
+                <mwc-list-item @click=${this._hideCustomButton(button)} .graphic=${'icon'}>
+                  <ha-icon icon=${eyeIcon} slot="graphic"></ha-icon>
+                  ${this.localize(`editor.buttonConfig.${hideShowText}`)}
+                </mwc-list-item>
+
+                ${addedCard
+                  ? html`
+                      <mwc-list-item
+                        @click=${() => (this._confirmDeleteType = type)}
+                        .graphic=${'icon'}
+                        style="color: var(--error-color)"
+                      >
+                        <ha-icon icon="mdi:delete" slot="graphic" style="color: var(--error-color)"></ha-icon>
+                        Delete
+                      </mwc-list-item>
+                    `
+                  : nothing}
+              </ha-button-menu>
+              ${this._confirmDeleteType === type
+                ? html` <div class="confirm-delete">
                   <span>${this.localize('editor.buttonConfig.deleteConfirm')}</span>
                   <ha-button @click=${this._removeCustomCard(type)}><ha-icon icon="mdi:check"></ha-button>
                   <ha-button @click=${() => (this._confirmDeleteType = null)}><ha-icon icon="mdi:close"></button>
                 </div>`
-              : nothing}
+                : nothing}
+            </div>
           </div>
         `;
       });
