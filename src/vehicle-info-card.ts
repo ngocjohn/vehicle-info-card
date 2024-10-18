@@ -114,7 +114,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     return this.getEntityAttribute(this.config.entity, 'vin');
   }
 
-  private get isDark(): boolean {
+  get isDark(): boolean {
     if (this.config?.selected_theme?.mode === 'dark') {
       return true;
     } else if (this.config?.selected_theme?.mode === 'light') {
@@ -627,17 +627,12 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     if (!config.device_tracker && config.show_map) {
       return this._showWarning('No device_tracker entity provided.');
     }
-    const deviceTracker = this.getDeviceTrackerLatLong();
-    const google_api_key = config.google_api_key;
-    const darkMode = this.isDark;
-    const mapPopup = config.enable_map_popup;
     return html`
       <div id="map-box">
         <vehicle-map
-          .deviceTracker=${deviceTracker}
-          .darkMode=${darkMode}
-          .apiKey=${google_api_key || ''}
-          .mapPopup=${mapPopup}
+          .hass=${this._hass}
+          .config=${config}
+          .card=${this}
           @toggle-map-popup=${() => (this._currentCardType = 'mapDialog')}
         ></vehicle-map>
       </div>
