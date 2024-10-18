@@ -231,7 +231,7 @@ export async function getDefaultButton(
 ): Promise<ButtonCardEntity> {
   const button = config[baseCard.button];
   const useCustom = config.use_custom_cards?.[baseCard.config] || false;
-  const customCard = config[baseCard.config] !== undefined && config[baseCard.config].length > 0;
+  const customCard = config[baseCard.config] !== undefined;
 
   const buttonCard = {
     key: baseCard.type,

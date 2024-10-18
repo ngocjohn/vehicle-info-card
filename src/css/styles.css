@@ -86,6 +86,7 @@ header h1 {
   flex-wrap: wrap;
   transition: all 0.5s ease;
   margin-bottom: var(--vic-gutter-gap);
+
 }
 
 .combined-info-box {
@@ -106,6 +107,7 @@ header h1 {
   height: fit-content;
   gap: var(--vic-gutter-gap);
   flex-wrap: wrap;
+  letter-spacing: 0.5px;
 }
 
 @media screen and (max-width: 768px) {
@@ -141,11 +143,6 @@ header h1 {
   ha-card {
     padding: 0.5rem;
   }
-
-  /*
-  .info-box .item .base-menu {
-    font-size: 0.8rem;
-  } */
 }
 
 .added-item-arrow {
@@ -162,6 +159,13 @@ header h1 {
   max-height: 0;
   opacity: 0;
   transition: all 400ms cubic-bezier(0.3, 0.0, 0.8, 0.15);
+}
+
+.info-box.charge .icon-state {
+  display: flex;
+  height: auto;
+  align-items: center;
+  gap: var(--vic-gutter-gap);
 }
 
 .info-box.charge.active {
@@ -546,6 +550,7 @@ header h1 {
   align-items: center;
   cursor: auto;
   /* padding: 8px 0; */
+  padding: var(--vic-gutter-gap);
 }
 
 .default-card .data-box {

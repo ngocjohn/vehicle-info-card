@@ -238,7 +238,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     for (const baseCard of this.baseCardTypes) {
       buttonCards[baseCard.type] = await getDefaultButton(this._hass, this.config, baseCard);
       logging.push(baseCard.type);
-      this.buttonCards = buttonCards;
+      // this.buttonCards = buttonCards;
       // console.log('Button Cards ready:', logging);
     }
 
@@ -250,10 +250,14 @@ export class VehicleCard extends LitElement implements LovelaceCard {
           if (card) {
             buttonCards[key] = await getAddedButton(this._hass, card, key);
           }
-          this.buttonCards = buttonCards;
+          // this.buttonCards = buttonCards;
           logging.push(key);
         })
       );
+    }
+
+    if (buttonCards) {
+      this.buttonCards = buttonCards;
     }
 
     this._buttonReady = true;
@@ -518,7 +522,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
           if (state) {
             return html`
               <div class="item charge">
-                <div>
+                <div class="icon-state">
                   <ha-icon .icon=${icon}></ha-icon>
                   <span>${state}</span>
                 </div>
@@ -663,7 +667,8 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   private _renderButtons(): TemplateResult {
     if (!this.config.show_buttons) return html``;
     if (!this._buttonReady) return html``;
-    const buttonCards = this.buttonCards;
+    const notHidden = Object.entries(this.buttonCards).filter(([_, value]) => !value.button.hidden);
+    const buttonCards = Object.fromEntries(notHidden);
     const config = this.config;
     return html`
       <vehicle-buttons

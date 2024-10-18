@@ -172,6 +172,7 @@ export class VehicleButtons extends LitElement {
     // if (!this.useSwiper) return html``;
     // console.log('render swiper');
     const baseButtons = this._buttons;
+
     const showError = this._config.show_error_notify;
     return html`
       <section id="button-swiper">
@@ -235,9 +236,15 @@ export class VehicleButtons extends LitElement {
     const secondaryInfo = customBtn ? this._secondaryInfo[key].state : this.component.getSecondaryInfo(key);
     const btnNotify = customBtn ? this._secondaryInfo[key].notify : this.component.getErrorNotify(key);
     const btnEntity = customBtn ? button?.entity : '';
+    const hidden = button?.hidden;
 
     return html`
-      <div id="${`button-${key}`}" class="grid-item click-shrink" @click=${() => this._handleClick(key)}>
+      <div
+        id="${`button-${key}`}"
+        ?hide=${hidden}
+        class="grid-item click-shrink"
+        @click=${() => this._handleClick(key)}
+      >
         <div class="click-container" id="${`button-action-${key}`}">
           <div class="item-icon">
             <div class="icon-background">
