@@ -1,4 +1,4 @@
-import { CARD_VERSION, CARD_UPADE_SENSOR, PREVIEW_CONFIG_TYPES } from './const/const';
+import { CARD_VERSION, PREVIEW_CONFIG_TYPES } from './const/const';
 import { cardTypes, editorShowOpts } from './const/data-keys';
 import { servicesCtrl } from './const/remote-control-keys';
 import { languageOptions, localize } from './localize/localize';
@@ -63,11 +63,10 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   @query('panel-images') private _panelImages!: PanelImages;
 
   public async setConfig(config: VehicleCardConfig): Promise<void> {
-    this._config = deepMerge(defaultConfig, config);
+    this._config = config;
   }
 
   connectedCallback() {
-    console.log('Connected callback');
     super.connectedCallback();
     void loadHaComponents();
     void stickyPreview();
@@ -98,8 +97,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         }, {}),
       };
       fireEvent(this, 'config-changed', { config: this._config });
-    } else {
-      console.log('No preview keys found');
     }
   }
 

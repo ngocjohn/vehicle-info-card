@@ -44,7 +44,6 @@ export async function fetchLatestReleaseTag() {
 }
 
 export const stickyPreview = () => {
-  console.log('stickyPreview called');
   // Change the default preview element to be sticky
   const root = document.querySelector('body > home-assistant')?.shadowRoot;
   const dialog = root?.querySelector('hui-dialog-edit-card')?.shadowRoot;
