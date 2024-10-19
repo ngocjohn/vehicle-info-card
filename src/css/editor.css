@@ -360,6 +360,7 @@ h3 {
   width: 100%;
   justify-content: space-between;
   align-items: center;
+  border-bottom: 1px solid var(--divider-color);
 }
 
 .card-tab {
@@ -381,7 +382,12 @@ h3 {
   gap: 8px;
   color: var(--primary-color) !important;
   text-transform: uppercase;
-  border-bottom: 1px solid var(--primary-color);
+}
+
+.tab-content {
+  display: block;
+  border: 1px solid var(--divider-color);
+  padding: 4px;
 }
 
 .toast {

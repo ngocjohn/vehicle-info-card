@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { LitElement, html, TemplateResult, CSSResultGroup } from 'lit';
+import { LitElement, html, TemplateResult, CSSResultGroup, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
 import { VehicleCardEditor } from '../../editor';
@@ -17,6 +17,7 @@ export class CustomCardEditor extends LitElement {
   @property({ type: Boolean }) isCustomCard: boolean = false;
   @property({ type: Boolean }) isAddedCard: boolean = false;
   @property({ type: String }) yamlConfig!: string;
+  @property({ type: Object }) cardConfig!: any;
 
   static get styles(): CSSResultGroup {
     return [editorcss];
@@ -36,27 +37,30 @@ export class CustomCardEditor extends LitElement {
           @change=${(ev: Event) => this._dispatchEvent(ev, 'use_custom_cards')}
         ></ha-checkbox>
       </ha-formfield>
-
-      <ha-button @click=${(ev: Event) => this._dispatchEvent(ev, 'toggle_preview_card')}
-        >${this.isCardPreview ? localizeKey('hidePreview') : localizeKey('preview')}</ha-button
-      >
     </div>`;
   }
 
   private _cardEditor(): TemplateResult {
     return html`
-      <ha-code-editor
-        .autofocus=${true}
-        .autocompleteEntities=${true}
-        .autocompleteIcons=${true}
-        .dir=${'ltr'}
-        .mode=${'yaml'}
+      <ha-yaml-editor
+        class="card-editor"
         .hass=${this.editor.hass}
-        .linewrap=${false}
-        .value=${this.yamlConfig}
-        .configValue=${this.card.config}
-        @value-changed=${(ev: any) => this._cardEditorValueChanged(ev)}
-      ></ha-code-editor>
+        .defaultValue=${this.cardConfig}
+        .readOnly=${false}
+        .copyClipboard=${true}
+        .hasExtraActions=${true}
+        @value-changed=${(ev: CustomEvent) => this._cardEditorValueChanged(ev)}
+      >
+        <ha-button
+          slot="extra-actions"
+          style="display: inline-block; float: inline-end;"
+          @click=${(ev: Event) => this._dispatchEvent(ev, 'toggle_preview_card')}
+        >
+          ${this.isCardPreview
+            ? this.editor.localize('editor.buttonConfig.hidePreview')
+            : this.editor.localize('editor.buttonConfig.preview')}
+        </ha-button>
+      </ha-yaml-editor>
     `;
   }
 
@@ -67,14 +71,17 @@ export class CustomCardEditor extends LitElement {
     return html` ${editorHeader} ${cardEditor} `;
   }
 
-  private _cardEditorValueChanged(ev: any) {
-    const target = ev.target;
-    const value = target.value;
+  private _cardEditorValueChanged(ev: CustomEvent) {
+    ev.stopPropagation();
+    const { value, isValid } = ev.detail;
+    if (!isValid) {
+      return;
+    }
+
     const event = new CustomEvent('yaml-changed', {
       detail: {
         configKey: this.card.config,
-        target: target,
-        value: value,
+        value,
       },
       bubbles: true,
       composed: true,

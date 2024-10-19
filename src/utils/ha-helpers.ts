@@ -15,6 +15,8 @@ import {
   ButtonCardEntity,
   AddedCards,
 } from '../types';
+
+import { baseDataKeys } from '../const/data-keys';
 import { VehicleCard } from '../vehicle-info-card';
 import { fetchLatestReleaseTag } from './loader';
 /**
@@ -342,7 +344,7 @@ export async function installedByHACS(hass: HomeAssistant): Promise<boolean> {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function handleCardFirstUpdated(component: any): Promise<void> {
   component.vehicleEntities = await getVehicleEntities(component._hass as HomeAssistant, component.config, component);
-
+  component.DataKeys = baseDataKeys(component.userLang);
   if (!component.vehicleEntities) {
     console.log('Vehicle entities not found, fetching...');
 
