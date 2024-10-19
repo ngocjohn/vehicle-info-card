@@ -59,7 +59,7 @@ const createItem = (key: string, nameKey: string, lang: string, icon?: string, a
   ...(apexProp ? { apexProp } : {}),
 });
 
-export const tripOverview = (lang: string) => [
+const tripOverview = (lang: string) => [
   createItem('odometer', 'tripCard.odometer', lang, 'mdi:counter'),
   createItem('fuelLevel', 'tripCard.fuelLevel', lang),
   createItem('adBlueLevel', 'tripCard.adBlueLevel', lang, 'mdi:fuel'),
@@ -69,7 +69,7 @@ export const tripOverview = (lang: string) => [
   createItem('maxSoc', 'tripCard.maxSoc', lang),
 ];
 
-export const tripFromReset = (lang: string): CardItem[] => [
+const tripFromReset = (lang: string): CardItem[] => [
   createItem('distanceReset', 'tripCard.distanceReset', lang),
   createItem('drivenTimeReset', 'tripCard.drivenTimeReset', lang, 'mdi:clock'),
   createItem('distanceZEReset', 'tripCard.distanceZEReset', lang),
@@ -79,7 +79,7 @@ export const tripFromReset = (lang: string): CardItem[] => [
   createItem('electricConsumptionReset', 'tripCard.electricConsumptionReset', lang),
 ];
 
-export const tripFromStart = (lang: string): CardItem[] => [
+const tripFromStart = (lang: string): CardItem[] => [
   createItem('distanceStart', 'tripCard.distanceStart', lang),
   createItem('drivenTimeStart', 'tripCard.drivenTimeStart', lang, 'mdi:clock'),
   createItem('distanceZEStart', 'tripCard.distanceZEStart', lang),
@@ -89,7 +89,7 @@ export const tripFromStart = (lang: string): CardItem[] => [
   createItem('electricConsumptionStart', 'tripCard.electricConsumptionStart', lang),
 ];
 
-export const vehicleOverview = (lang: string): CardItem[] => [
+const vehicleOverview = (lang: string): CardItem[] => [
   createItem('lockSensor', 'vehicleCard.lockSensor', lang),
   createItem('windowsClosed', 'vehicleCard.windowsClosed', lang),
   createItem('doorStatusOverall', 'vehicleCard.doorStatusOverall', lang, 'mdi:car-door-lock'),
@@ -97,7 +97,7 @@ export const vehicleOverview = (lang: string): CardItem[] => [
   createItem('ignitionState', 'vehicleCard.ignitionState', lang),
 ];
 
-export const vehicleWarnings = (lang: string): CardItem[] => [
+const vehicleWarnings = (lang: string): CardItem[] => [
   createItem('starterBatteryState', 'vehicleCard.starterBatteryState', lang),
   createItem('lowCoolantLevel', 'vehicleCard.lowCoolantLevel', lang, 'mdi:car-coolant-level'),
   createItem('lowBrakeFluid', 'vehicleCard.lowBrakeFluid', lang, 'mdi:car-brake-fluid-level'),
@@ -105,23 +105,34 @@ export const vehicleWarnings = (lang: string): CardItem[] => [
   createItem('tirePressureWarning', 'vehicleCard.tirePressureWarning', lang),
 ];
 
-export const ecoScores = (lang: string): CardItem[] => [
+const ecoScores = (lang: string): CardItem[] => [
   createItem('ecoScoreBonusRange', 'ecoCard.ecoScoreBonusRange', lang, undefined, 'bonusRange'),
   createItem('ecoScoreAcceleraion', 'ecoCard.ecoScoreAcceleraion', lang, undefined, 'acceleration'),
   createItem('ecoScoreConstant', 'ecoCard.ecoScoreConstant', lang, undefined, 'constant'),
   createItem('ecoScoreFreeWheel', 'ecoCard.ecoScoreFreeWheel', lang, undefined, 'freeWheel'),
 ];
 
-export const tyrePressures = (lang: string): CardItem[] => [
+const tyrePressures = (lang: string): CardItem[] => [
   createItem('tirePressureFrontLeft', 'tyreCard.tirePressureFrontLeft', lang, 'mdi:tire'),
   createItem('tirePressureFrontRight', 'tyreCard.tirePressureFrontRight', lang, 'mdi:tire'),
   createItem('tirePressureRearLeft', 'tyreCard.tirePressureRearLeft', lang, 'mdi:tire'),
   createItem('tirePressureRearRight', 'tyreCard.tirePressureRearRight', lang, 'mdi:tire'),
 ];
 
-export const chargingOverview = (lang: string): CardItem[] => [
+const chargingOverview = (lang: string): CardItem[] => [
   createItem('chargingPower', 'chargingOverview.chargingPower', lang, 'mdi:flash'),
   createItem('soc', 'chargingOverview.soc', lang),
   createItem('maxSoc', 'chargingOverview.maxSoc', lang),
   createItem('selectedProgram', 'chargingOverview.selectedProgram', lang, 'mdi:ev-station'),
 ];
+
+export const baseDataKeys = (lang: string) => ({
+  tripOverview: tripOverview(lang),
+  tripFromReset: tripFromReset(lang),
+  tripFromStart: tripFromStart(lang),
+  vehicleOverview: vehicleOverview(lang),
+  vehicleWarnings: vehicleWarnings(lang),
+  ecoScores: ecoScores(lang),
+  tyrePressures: tyrePressures(lang),
+  chargingOverview: chargingOverview(lang),
+});

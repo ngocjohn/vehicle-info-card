@@ -186,7 +186,7 @@ export class VehicleButtons extends LitElement {
 
   private _renderGrid(): TemplateResult {
     // if (this.useSwiper) return html``;
-    console.log('render grid');
+    // console.log('render grid');
     const baseButtons = this._buttons;
     const showError = this._config.show_error_notify;
     return html`
