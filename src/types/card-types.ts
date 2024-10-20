@@ -1,3 +1,5 @@
+import { LovelaceCardConfig } from 'custom-card-helpers';
+import { CustomButtonEntity } from './config';
 export type HEADER_ACTION = 'next' | 'prev' | 'close';
 
 export type CardTypeConfig = {
@@ -43,3 +45,25 @@ export type CustomButton = {
   notify: boolean;
   state: string;
 };
+
+export interface Address {
+  streetNumber: string;
+  streetName: string;
+  sublocality: string;
+  city: string;
+  state: string;
+  country: string;
+  postcode: string;
+}
+
+export interface MapData {
+  lat: number;
+  lon: number;
+  address?: Partial<Address>;
+  popUpCard?: LovelaceCardConfig[];
+}
+
+export interface PreviewCard {
+  cardPreview?: LovelaceCardConfig[];
+  buttonPreview?: Partial<CustomButtonEntity>;
+}

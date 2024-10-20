@@ -84,37 +84,6 @@ export async function handleFilePicked(
   }
 }
 
-// export async function handleFilePicked(
-//   editor: VehicleCardEditor,
-//   ev: Event & { target: HTMLInputElement & { errorMsg?: string; toastId?: string } }
-// ): Promise<void> {
-//   console.log('File picked');
-//   console.log(ev.target);
-//   const input = ev.target as HTMLInputElement;
-//   const errorMsg = ev.target?.errorMsg;
-//   const toastId = ev.target?.toastId || '';
-//   console.log('Input:', ev.target);
-//   if (!input.files || input.files.length === 0) {
-//     console.log('No files selected.');
-//     return;
-//   }
-
-//   const files = Array.from(input.files); // Convert FileList to Array for easier iteration
-
-//   for (const file of files) {
-//     try {
-//       const imageUrl = await uploadImage(editor.hass, file);
-//       if (!imageUrl) continue;
-
-//       const imageName = file.name.toUpperCase();
-//       _addImage(editor, imageUrl, imageName);
-//     } catch (error) {
-//       console.error('Error uploading image:', error);
-//       editor.launchToast(toastId, errorMsg);
-//     }
-//   }
-// }
-
 function _addImage(editor: VehicleCardEditor, url: string, title: string): void {
   console.log('Image added:', url);
   if (editor._config) {

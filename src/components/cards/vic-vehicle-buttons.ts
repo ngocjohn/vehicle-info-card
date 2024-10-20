@@ -15,7 +15,7 @@ import swipercss from '../../css/swiper-bundle.css';
 @customElement('vehicle-buttons')
 export class VehicleButtons extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
-  @property({ type: Object }) component!: VehicleCard;
+  @property({ attribute: false }) private component!: VehicleCard;
   @property({ type: Object }) _config!: VehicleCardConfig;
   @property({ type: Object }) _buttons!: ButtonCardEntity;
 
