@@ -42,8 +42,8 @@ const latestRelease: { version: string; hacs: boolean; updated: boolean } = {
 @customElement('vehicle-info-card-editor')
 export class VehicleCardEditor extends LitElement implements LovelaceCardEditor {
   @property({ attribute: false }) public hass!: HomeAssistant;
-  @property() public _config!: VehicleCardConfig;
-  @property() private baseCardTypes: CardTypeConfig[] = [];
+  @property({ attribute: false }) public _config!: VehicleCardConfig;
+  @property({ attribute: false }) private baseCardTypes: CardTypeConfig[] = [];
 
   @property({ attribute: false }) public lovelace?: LovelaceConfig;
   @state() private _btnPreview: boolean = false;
@@ -893,10 +893,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
                 <ha-icon icon="mdi:pencil" slot="graphic"></ha-icon>
                 Edit
               </mwc-list-item>
-              <mwc-list-item @click=${this._hideCustomButton(button)} .graphic=${'icon'}>
-                <ha-icon icon=${eyeIcon} slot="graphic"></ha-icon>
-                ${this.localize(`editor.buttonConfig.${hideShowText}`)}
-              </mwc-list-item>
+
               ${addedCard
                 ? html`
                     <mwc-list-item
@@ -914,7 +911,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
               ? html` <div class="confirm-delete">
                   <span>${this.localize('editor.buttonConfig.deleteConfirm')}</span>
                   <ha-button @click=${this._removeCustomCard(type)}><ha-icon icon="mdi:check"></ha-button>
-                  <ha-button @click=${() => (this._confirmDeleteType = null)}><ha-icon icon="mdi:close"></button>
+                  <ha-button @click=${() => (this._confirmDeleteType = null)}><ha-icon icon="mdi:close"> </ha-icon></ha-button>
                 </div>`
               : nothing}
           </div>

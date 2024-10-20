@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { html, TemplateResult } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined';
 
-import { HA as HomeAssistant } from '../types';
+import { HA as HomeAssistant, CustomButtonEntity } from '../types';
 
 interface PickerOptions {
   cardIndex?: number;
@@ -79,7 +80,7 @@ export const Picker = ({
       ></ha-combo-box>
     `,
     boolean: html`
-      <ha-formfield label=${label}>
+      <ha-formfield .label=${label}>
         <ha-switch
           .label=${label}
           .checked=${value as boolean}
@@ -287,9 +288,36 @@ export const HaAlert = ({
       alert-type=${type || 'info'}
       ?dismissable=${dismissable || true}
       @alert-dismissed-clicked=${dismisHandler}
-      title=${options?.title}
+      title=${ifDefined(options?.title)}
     >
       ${message}
     </ha-alert>
+  `;
+};
+
+export const BtnPreview = (btn: CustomButtonEntity, hass: HomeAssistant): TemplateResult => {
+  if (!btn) return html``;
+  const { primary, icon, secondary, notify, entity } = btn;
+  return html`
+    <ha-card class="preview-card">
+      <div class="grid-item">
+        <div class="item-icon">
+          <div class="icon-background">
+            <ha-state-icon
+              .hass=${hass}
+              .stateObj=${entity ? hass.states[entity] : undefined}
+              .icon=${icon}
+            ></ha-state-icon>
+          </div>
+          <div class="item-notify ${notify ? '' : 'hidden'}">
+            <ha-icon icon="mdi:alert-circle"></ha-icon>
+          </div>
+        </div>
+        <div class="item-content">
+          <div class="primary"><span class="title">${primary}</span></div>
+          <span class="secondary">${secondary}</span>
+        </div>
+      </div>
+    </ha-card>
   `;
 };

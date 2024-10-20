@@ -14,11 +14,13 @@ import {
   CardTypeConfig,
   ButtonCardEntity,
   AddedCards,
+  MapData,
 } from '../types';
 
 import { baseDataKeys } from '../const/data-keys';
 import { VehicleCard } from '../vehicle-info-card';
 import { fetchLatestReleaseTag } from './loader';
+import { getAddressFromGoggle, getAddressFromOpenStreet } from './helpers';
 /**
  *
  * @param car
@@ -27,13 +29,9 @@ import { fetchLatestReleaseTag } from './loader';
 
 export async function getVehicleEntities(
   hass: HomeAssistant,
-  config: { entity?: string },
+  config: { entity: string },
   component: VehicleCard
-): Promise<VehicleEntities | void> {
-  if (!config.entity) {
-    console.log('Entity not provided', component._entityNotFound);
-    return;
-  }
+): Promise<VehicleEntities> {
   const entityState = hass.states[config.entity];
   if (!entityState) {
     component._entityNotFound = true;
@@ -285,20 +283,20 @@ export async function getAddedButton(
   return buttonCard;
 }
 
-export async function handleFirstUpdated(component: VehicleCardEditor): Promise<void> {
-  if (!component._latestRelease.version) {
+export async function handleFirstUpdated(editor: VehicleCardEditor): Promise<void> {
+  if (!editor._latestRelease.version) {
     console.log('Fetching latest release');
 
     // Use Promise.all to run both async operations in parallel
     const [latestVersion, installed] = await Promise.all([
       fetchLatestReleaseTag(),
-      installedByHACS(component.hass as HomeAssistant),
+      installedByHACS(editor.hass as HomeAssistant),
     ]);
 
     // Update component data after both promises resolve
-    component._latestRelease.version = latestVersion;
-    component._latestRelease.hacs = !!installed;
-    component._latestRelease.updated = latestVersion === CARD_VERSION;
+    editor._latestRelease.version = latestVersion;
+    editor._latestRelease.hacs = !!installed;
+    editor._latestRelease.updated = latestVersion === CARD_VERSION;
   } else {
     console.log('Latest release already fetched');
     return;
@@ -306,27 +304,28 @@ export async function handleFirstUpdated(component: VehicleCardEditor): Promise<
 
   const updates: Partial<VehicleCardConfig> = {};
 
-  if (!component._config.entity || component._config.entity === '') {
+  if (!editor._config.entity || editor._config.entity === '') {
     console.log('Entity not found, fetching...');
-    updates.entity = getCarEntity(component.hass as HomeAssistant);
+    updates.entity = getCarEntity(editor.hass as HomeAssistant);
   }
 
   // After setting the entity, fetch the model name
-  if (updates.entity || !component._config.model_name) {
-    const entity = updates.entity || component._config.entity;
-    updates.model_name = await getModelName(component.hass as HomeAssistant, entity);
+  if (updates.entity || !editor._config.model_name) {
+    const entity = updates.entity || editor._config.entity;
+    updates.model_name = await getModelName(editor.hass as HomeAssistant, entity);
   }
 
-  if (!component._config.selected_language) {
-    updates.selected_language = component.hass.language;
+  if (!editor._config.selected_language) {
+    updates.selected_language = editor.hass.language;
     console.log('Selected language:', updates.selected_language);
   }
 
   if (Object.keys(updates).length > 0) {
     console.log('Updating config with:', updates);
-    component._config = { ...component._config, ...updates };
-    console.log('New config:', component._config);
-    component.configChanged();
+    editor._config = { ...editor._config, ...updates };
+    console.log('New config:', editor._config);
+    editor._config = { ...editor._config, ...updates };
+    editor.configChanged();
   }
 }
 
@@ -341,15 +340,62 @@ export async function installedByHACS(hass: HomeAssistant): Promise<boolean> {
   return !!hacsEntity;
 }
 
+async function getMapData(hass: HomeAssistant, deviceTracker: string, apiKey: string): Promise<MapData> {
+  const deviceStateObj = hass.states[deviceTracker];
+  if (!deviceStateObj) {
+    return { lat: 0, lon: 0, address: {} };
+  }
+  const { latitude, longitude } = deviceStateObj.attributes;
+  const address = apiKey
+    ? await getAddressFromGoggle(latitude, longitude, apiKey)
+    : await getAddressFromOpenStreet(latitude, longitude);
+
+  if (!address) {
+    return { lat: latitude, lon: longitude, address: {} };
+  }
+  return { lat: latitude, lon: longitude, address };
+}
+
+async function createMapPopup(hass: HomeAssistant, config: VehicleCardConfig): Promise<LovelaceCardConfig[]> {
+  const { default_zoom, hours_to_show, theme_mode } = config.map_popup_config || {};
+  const haMapConfig = [
+    {
+      type: 'map',
+      default_zoom: default_zoom || 14,
+      hours_to_show: hours_to_show,
+      theme_mode: theme_mode,
+      entities: [
+        {
+          entity: config.device_tracker,
+        },
+      ],
+    },
+  ];
+  return await createCardElement(hass, haMapConfig);
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function handleCardFirstUpdated(component: any): Promise<void> {
-  component.vehicleEntities = await getVehicleEntities(component._hass as HomeAssistant, component.config, component);
-  component.DataKeys = baseDataKeys(component.userLang);
-  if (!component.vehicleEntities) {
+  const hass = component._hass as HomeAssistant;
+  const config = component.config as VehicleCardConfig;
+  const card = component as VehicleCard;
+  card.vehicleEntities = await getVehicleEntities(hass, config, component);
+  card.DataKeys = baseDataKeys(card.userLang);
+  if (config.show_map && config.device_tracker) {
+    console.log('Fetching map data...');
+    card.MapData = await getMapData(hass, config.device_tracker, config.google_api_key || '');
+    if (config.enable_map_popup) {
+      card.MapData.popUpCard = await createMapPopup(hass, config);
+    } else {
+      return;
+    }
+  }
+
+  if (!card.vehicleEntities) {
     console.log('Vehicle entities not found, fetching...');
 
     console.log('No vehicle entities found');
-    component._entityNotFound = true;
+    card._entityNotFound = true;
   }
 }
 
