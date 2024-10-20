@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { mdiChevronLeft, mdiChevronRight, mdiClose } from '@mdi/js';
 import {
   fireEvent,
   formatDateTime,
-  formatNumber,
   forwardHaptic,
   hasConfigOrEntityChanged,
   LovelaceCardConfig,
@@ -13,13 +13,10 @@ import {
 import { LitElement, html, TemplateResult, PropertyValues, CSSResultGroup, nothing } from 'lit';
 import { styleMap } from 'lit-html/directives/style-map.js';
 import { customElement, property, state, query } from 'lit/decorators.js';
-import { classMap } from 'lit/directives/class-map.js';
 
 import './components/cards';
 import { VehicleButtons } from './components/cards';
-
 import { CardItem, cardTypes } from './const/data-keys';
-
 import * as IMG from './const/imgconst';
 import * as StateMapping from './const/state-mapping';
 import { localize } from './localize/localize';
@@ -40,7 +37,6 @@ import { handleCardFirstUpdated, getCarEntity, handleCardSwipe, convertMinutes, 
 import { getAddedButton, getDefaultButton, createCardElement, createCustomButtons } from './utils/ha-helpers';
 
 import styles from './css/styles.css';
-import { mdiChevronLeft, mdiChevronRight, mdiClose } from '@mdi/js';
 
 @customElement('vehicle-info-card')
 export class VehicleCard extends LitElement implements LovelaceCard {
@@ -636,7 +632,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   private _renderButtons(): TemplateResult {
     if (!this.config.show_buttons) return html``;
     if (!this._buttonReady) return html``;
-    const notHidden = Object.entries(this.buttonCards).filter(([_, value]) => !value.button.hidden);
+    const notHidden = Object.entries(this.buttonCards).filter(([, value]) => !value.button.hidden);
     const buttonCards = Object.fromEntries(notHidden);
     const config = this.config;
     return html`
@@ -1519,7 +1515,6 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   };
 
   public getErrorNotify(cardType: string): boolean {
-    const lang = this.userLang;
     const { vehicleEntities } = this;
     switch (cardType) {
       case 'vehicleCards':
