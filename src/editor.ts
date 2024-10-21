@@ -435,15 +435,12 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       ></custom-button-template>
     `;
 
-    const cards = this.isAddedCard(card.type) ? this._config.added_cards[card.type].cards : this._config[card.config];
-
     const cardEditor = html`
       <custom-card-ui-editor
         .hass=${this.hass}
         .editor=${this}
         ._config=${this._config}
         .cardType=${card}
-        .cards=${cards}
         .isCardPreview=${this._cardPreview}
         .isCustomCard=${this.useCustomCard(card.config)}
         .isAddedCard=${this.isAddedCard(card.type)}

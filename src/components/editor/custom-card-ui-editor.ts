@@ -6,27 +6,28 @@ import { customElement, property, query, state } from 'lit/decorators.js';
 import { fireEvent, LovelaceCardConfig, HASSDomEvent } from 'custom-card-helpers';
 // Local types
 import { HA as HomeAssistant, VehicleCardConfig, GUIModeChangedEvent, CardTypeConfig } from '../../types';
-import { mdiPlus, mdiCodeBraces, mdiListBoxOutline, mdiDelete } from '@mdi/js';
-
+import { mdiPlus, mdiCodeBraces, mdiListBoxOutline, mdiDelete, mdiContentCut, mdiContentCopy } from '@mdi/js';
 import { VehicleCardEditor } from '../../editor';
 
 import styles from '../../css/editor.css';
 
 @customElement('custom-card-ui-editor')
 export class CustomCardUIEditor extends LitElement {
-  @property({ attribute: false }) public hass?: HomeAssistant;
+  @property({ attribute: false }) public hass!: HomeAssistant;
   @property({ type: Object }) editor!: VehicleCardEditor;
   @property({ type: Object }) _config!: VehicleCardConfig;
-  @property() cardType!: CardTypeConfig;
-  @property() cards!: Array<LovelaceCardConfig>;
+  @state() cardType!: CardTypeConfig;
+  @state() cards: LovelaceCardConfig[] = [];
   @property({ type: Boolean }) isCardPreview: boolean = false;
   @property({ type: Boolean }) isAddedCard: boolean = false;
   @property({ type: Boolean }) isCustomCard: boolean = false;
 
+  @state() protected _clipboard?: LovelaceCardConfig;
   @state() protected _selectedCard = 0;
   @state() protected _GUImode = true;
   @state() protected _guiModeAvailable? = true;
   @state() private _initialized = false;
+
   @query('hui-card-element-editor')
   protected _cardEditorEl?: any;
 
@@ -79,20 +80,26 @@ export class CustomCardUIEditor extends LitElement {
 
   protected firstUpdated(_changedProperties: PropertyValues): void {
     super.firstUpdated(_changedProperties);
-    this._selectedCard = 0;
+  }
+
+  protected updated(_changedProperties: PropertyValues): void {
+    super.updated(_changedProperties);
   }
 
   protected render(): TemplateResult {
-    if (!this.cardType) {
+    if (!this._config || !this.cardType || !this.hass) {
       return html``;
     }
     const localizeKey = (label: string): string => {
       return this.editor.localize(`editor.buttonConfig.${label}`);
     };
 
+    this.cards = this.isAddedCard
+      ? this._config.added_cards[this.cardType.config].cards
+      : this._config[this.cardType.config];
+
     const selected = this._selectedCard!;
-    const cards = Array.isArray(this.cards) ? this.cards : [];
-    const cardsLength = cards.length;
+    const cardsLength = this.cards.length;
     const isGuiMode = !this._cardEditorEl || this._GUImode;
 
     const header = html`
@@ -116,9 +123,7 @@ export class CustomCardUIEditor extends LitElement {
     const toolBar = html`
       <div class="toolbar">
         <paper-tabs .selected=${selected} scrollable @iron-activate=${this._handleSelectedCard}>
-          ${cards.map((_, i) => {
-            return html` <paper-tab> ${i + 1} </paper-tab> `;
-          })}
+          ${this.cards.map((_card, i) => html` <paper-tab> ${i + 1} </paper-tab> `)}
         </paper-tabs>
         <paper-tabs
           id="add-card"
@@ -126,7 +131,7 @@ export class CustomCardUIEditor extends LitElement {
           @iron-activate=${this._handleSelectedCard}
         >
           <paper-tab>
-            <ha-svg-icon .path="${mdiPlus}}"></ha-svg-icon>
+            <ha-svg-icon .path="${mdiPlus}"></ha-svg-icon>
           </paper-tab>
         </paper-tabs>
       </div>
@@ -159,7 +164,17 @@ export class CustomCardUIEditor extends LitElement {
                         @click=${this._handleMove}
                         .move=${1}
                       ></ha-icon-button-arrow-next>
+                      <ha-icon-button
+                        .label=${'Copy'}
+                        .path=${mdiContentCopy}
+                        @click=${this._handleCopyCard}
+                      ></ha-icon-button>
 
+                      <ha-icon-button
+                        .label=${'Cut'}
+                        .path=${mdiContentCut}
+                        @click=${this._handleCutCard}
+                      ></ha-icon-button>
                       <ha-icon-button
                         .label=${'Delete'}
                         .path=${mdiDelete}
@@ -179,6 +194,7 @@ export class CustomCardUIEditor extends LitElement {
                       .hass=${this.hass}
                       .lovelace=${this.editor.lovelace}
                       @config-changed=${this._handleCardPicked}
+                      ._clipboard=${this._clipboard}
                     >
                     </hui-card-picker>
                   `
@@ -256,16 +272,7 @@ export class CustomCardUIEditor extends LitElement {
     }
 
     if (this.isAddedCard) {
-      this._config = {
-        ...this._config,
-        added_cards: {
-          ...this._config.added_cards,
-          [cardType]: {
-            ...this._config.added_cards[cardType],
-            cards: cards,
-          },
-        },
-      };
+      this._handleAddedCard(cards);
     } else {
       this._config = { ...this._config, [cardType]: cards };
     }
@@ -281,17 +288,11 @@ export class CustomCardUIEditor extends LitElement {
     }
     const config = ev.detail.config;
     const cards = [...(this.cards || []), config];
+    if (this._config.card_preview && this.isCardPreview) {
+      this._config = { ...this._config, card_preview: cards };
+    }
     if (this.isAddedCard) {
-      this._config = {
-        ...this._config,
-        added_cards: {
-          ...this._config.added_cards,
-          [this.cardType.config]: {
-            ...this._config.added_cards[this.cardType.config],
-            cards: cards,
-          },
-        },
-      };
+      this._handleAddedCard(cards);
     } else {
       this._config = { ...this._config, [this.cardType.config]: cards };
     }
@@ -305,20 +306,15 @@ export class CustomCardUIEditor extends LitElement {
     const move = (ev.currentTarget as any).move;
     const source = this._selectedCard;
     const target = source + move;
-    const cards = [...this.cards];
+    const cards = [...(this.cards || [])];
     const card = cards.splice(this._selectedCard, 1)[0];
     cards.splice(target, 0, card);
+    if (this._config.card_preview && this.isCardPreview) {
+      this._config = { ...this._config, card_preview: cards };
+    }
+
     if (this.isAddedCard) {
-      this._config = {
-        ...this._config,
-        added_cards: {
-          ...this._config.added_cards,
-          [this.cardType.config]: {
-            ...this._config.added_cards[this.cardType.config],
-            cards: cards,
-          },
-        },
-      };
+      this._handleAddedCard(cards);
     } else {
       this._config = { ...this._config, [this.cardType.config]: cards };
     }
@@ -333,25 +329,56 @@ export class CustomCardUIEditor extends LitElement {
     }
     const cards = [...this.cards];
     cards.splice(this._selectedCard, 1);
-    const config = this.isAddedCard
-      ? {
-          ...this._config,
-          added_cards: {
-            ...this._config.added_cards,
-            [this.cardType.config]: {
-              ...this._config.added_cards[this.cardType.config],
-              cards: cards,
-            },
-          },
-        }
-      : {
-          ...this._config,
-          [this.cardType.config]: cards,
-        };
-    this._config = config;
+    if (this._config.card_preview && this.isCardPreview) {
+      this._config = { ...this._config, card_preview: cards };
+    }
+    if (this.isAddedCard) {
+      this._handleAddedCard(cards);
+    } else {
+      this._config = {
+        ...this._config,
+        [this.cardType.config]: cards,
+      };
+    }
     this._selectedCard = Math.max(0, this._selectedCard - 1);
     console.log('Card deleted', cards);
     fireEvent(this, 'config-changed', { config: this._config });
+  }
+
+  private _handleCopyCard(ev): void {
+    ev.stopPropagation();
+    if (!this._config) {
+      return;
+    }
+    const card = this.cards[this._selectedCard];
+    console.log('Card copied', card);
+    this._clipboard = card;
+  }
+
+  private _handleCutCard(ev): void {
+    ev.stopPropagation();
+    if (!this._config) {
+      return;
+    }
+
+    this._handleCopyCard(ev);
+    this._handleDeleteCard(ev);
+  }
+
+  private _handleAddedCard(cards: LovelaceCardConfig[]): void {
+    if (!this._config) {
+      return;
+    }
+    this._config = {
+      ...this._config,
+      added_cards: {
+        ...this._config.added_cards,
+        [this.cardType.config]: {
+          ...this._config.added_cards[this.cardType.config],
+          cards: cards,
+        },
+      },
+    };
   }
 
   private _dispatchEvent(ev, type: string) {

@@ -381,7 +381,7 @@ export async function handleCardFirstUpdated(component: any): Promise<void> {
   const card = component as VehicleCard;
   card.vehicleEntities = await getVehicleEntities(hass, config, component);
   card.DataKeys = baseDataKeys(card.userLang);
-  if (config.show_map && config.device_tracker) {
+  if (config.show_map && config.device_tracker && card._currentPreviewType === null) {
     console.log('Fetching map data...');
     card.MapData = await getMapData(hass, config.device_tracker, config.google_api_key || '');
     if (config.enable_map_popup) {

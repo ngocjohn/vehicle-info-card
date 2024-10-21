@@ -64,7 +64,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   @state() private chargingInfoVisible!: boolean;
 
   // Preview states
-  @state() private _currentPreviewType: 'button' | 'card' | 'tire' | null = null;
+  @state() _currentPreviewType: 'button' | 'card' | 'tire' | null = null;
 
   // Loading state
   @state() private _loading = true;
