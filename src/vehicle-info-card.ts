@@ -1438,6 +1438,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   }
 
   private getMinMaxTyrePressure = (): string => {
+    if (!this.DataKeys.tyrePressures) return '';
     const pressuresWithUnits = this.DataKeys.tyrePressures.map((key) => ({
       pressure: this.getEntityState(this.vehicleEntities[key.key]?.entity_id) || '',
       unit: this.getEntityAttribute(this.vehicleEntities[key.key]?.entity_id, 'unit_of_measurement'),
@@ -1455,6 +1456,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   };
 
   public getErrorNotify(cardType: string): boolean {
+    if (!this.DataKeys.vehicleWarnings) return false;
     const { vehicleEntities } = this;
     switch (cardType) {
       case 'vehicleCards':

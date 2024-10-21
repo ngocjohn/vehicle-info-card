@@ -28,8 +28,8 @@ const ACTIONSELECTOR = [
 export class CustomButtonAction extends LitElement {
   @property({ attribute: false }) hass!: HomeAssistant;
   @property({ type: Object }) config!: VehicleCardConfig;
-  @property() button!: ExtendedButtonConfigItem;
-  @property() card!: CardTypeConfig;
+  @state() button!: ExtendedButtonConfigItem;
+  @state() card!: CardTypeConfig;
   @property({ type: Boolean }) isButtonPreview: boolean = false;
   @state() _selectedAction: string = 'tap_action';
 
@@ -87,7 +87,6 @@ export class CustomButtonAction extends LitElement {
         .hass=${this.hass}
         .value=${buttonAction.entity || defaultButtonAction.entity}
         .label=${'Entity to interact with'}
-        .allow-custom-entity
         .configValue=${'entity'}
         .configBtnType=${'button_action'}
         @change=${(ev: CustomEvent) => this._handleActionTypeChange(ev, 'entity', this.cardButton)}

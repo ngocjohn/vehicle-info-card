@@ -107,8 +107,8 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     super.firstUpdated(changedProperties);
     await handleFirstUpdated(this);
     this.getBaseCardTypes();
-    this._convertDefaultCardConfigs();
-    this._convertAddedCardConfigs();
+    // this._convertDefaultCardConfigs();
+    // this._convertAddedCardConfigs();
   }
 
   protected updated(changedProperties: PropertyValues): void {
@@ -192,26 +192,26 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     return (this.baseCardTypes = baseCardTypes);
   }
 
-  private _convertDefaultCardConfigs(): void {
-    for (const cardType of this.baseCardTypes) {
-      if (this._config[cardType.button] && typeof this._config[cardType.button] === 'object') {
-        this._customBtns[cardType.button] = this._config[cardType.button];
-      }
-    }
-  }
+  // private _convertDefaultCardConfigs(): void {
+  //   for (const cardType of this.baseCardTypes) {
+  //     if (this._config[cardType.button] && typeof this._config[cardType.button] === 'object') {
+  //       this._customBtns[cardType.button] = this._config[cardType.button];
+  //     }
+  //   }
+  // }
 
-  private _convertAddedCardConfigs(): void {
-    if (!this.isAnyAddedCard) {
-      console.log('No added cards to convert');
-      return;
-    } else {
-      // console.log('Converting added card configs');
-      Object.keys(this._config.added_cards).forEach((key) => {
-        const button = this._config.added_cards[key].button;
-        this._customBtns[key] = button;
-      });
-    }
-  }
+  // private _convertAddedCardConfigs(): void {
+  //   if (!this.isAnyAddedCard) {
+  //     console.log('No added cards to convert');
+  //     return;
+  //   } else {
+  //     // console.log('Converting added card configs');
+  //     Object.keys(this._config.added_cards).forEach((key) => {
+  //       const button = this._config.added_cards[key].button;
+  //       this._customBtns[key] = button;
+  //     });
+  //   }
+  // }
 
   private _debouncedCustomBtnChanged = debounce(this.configChanged.bind(this), 500);
 
@@ -1073,7 +1073,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       this._config = { ...this._config, added_cards: newAddedCards };
       this.configChanged();
       this.getBaseCardTypes();
-      this._convertAddedCardConfigs();
     };
   }
 
@@ -1091,6 +1090,10 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _addNewCard(): void {
+    if (!this._config) {
+      return;
+    }
+
     const primary = this._newCardType.get('type');
     const icon = this._newCardType.get('icon') || 'mdi:car';
     if (primary) {
@@ -1104,8 +1107,9 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         this.launchToast(toastId, errorMsg);
         return;
       }
-      this._config.added_cards = {
-        ...this._config.added_cards,
+      let newAddedCards = { ...(this._config.added_cards || {}) };
+      newAddedCards = {
+        ...newAddedCards,
         [formattedCardType]: {
           cards: [],
           button: {
@@ -1130,13 +1134,17 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         },
       };
 
+      this._config = {
+        ...this._config,
+        added_cards: newAddedCards,
+      };
+
       const successMsg = this.localize('editor.buttonConfig.toastNewCard') + `: ${formattedCardType}`;
       this.configChanged();
       this.getBaseCardTypes();
-      this._convertAddedCardConfigs();
       this._newCardType.forEach((_, key) => this._newCardType.delete(key));
       this.updateComplete.then(() => {
-        this.launchToast('buttonConfig', successMsg, true);
+        this.launchToast('customButtonConfig', successMsg, true);
         setTimeout(() => {
           this._dispatchCardEvent(`btn_${formattedCardType}`);
           console.log('Added new card', formattedCardType);
@@ -1402,12 +1410,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       this._cardPreview = false;
       this.configChanged();
 
-      if (this._config.added_cards?.hasOwnProperty(cardType)) {
-        this._convertAddedCardConfigs();
-      } else {
-        this._convertDefaultCardConfigs();
-      }
-
       setTimeout(() => {
         this._dispatchCardEvent('close_card_preview');
       }, 50);
@@ -1472,11 +1474,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
       this._btnPreview = false;
       this.configChanged();
-      if (this._config.added_cards?.hasOwnProperty(button)) {
-        this._convertAddedCardConfigs();
-      } else {
-        this._convertDefaultCardConfigs();
-      }
       setTimeout(() => {
         this._dispatchCardEvent('close_preview');
       }, 50);
@@ -1565,11 +1562,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       this.updateComplete.then(resetState);
     } else if (this._activeSubcardType === card.type && (!this._cardPreview || !this._btnPreview)) {
       this._activeSubcardType = null;
-      this.updateComplete.then(() => {
-        this._convertAddedCardConfigs();
-        this._convertDefaultCardConfigs();
-        resetState();
-      });
     }
 
     this.updateComplete.then(() => {

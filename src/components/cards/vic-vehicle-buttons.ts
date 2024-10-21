@@ -324,19 +324,37 @@ export class VehicleButtons extends LitElement {
       const btnElt = this.shadowRoot?.getElementById(btnType) as HTMLElement;
 
       if (!btnElt) return;
+      if (this.useSwiper) {
+        const swiperSlides = this.shadowRoot?.querySelectorAll('.swiper-slide') as NodeListOf<HTMLElement>;
+        let targetSlideIndex = -1;
 
-      const swiperSlides = this.shadowRoot?.querySelectorAll('.swiper-slide') as NodeListOf<HTMLElement>;
-      let targetSlideIndex = -1;
+        swiperSlides.forEach((slide, index) => {
+          if (slide.contains(btnElt)) {
+            targetSlideIndex = index;
+          }
+        });
 
-      swiperSlides.forEach((slide, index) => {
-        if (slide.contains(btnElt)) {
-          targetSlideIndex = index;
+        if (targetSlideIndex !== -1) {
+          this.swiper?.slideTo(targetSlideIndex);
+
+          // Wait until the slide transition completes
+          setTimeout(() => {
+            const filteredBtns = Array.from(gridBtns).filter((btn) => btn.id !== btnType);
+
+            filteredBtns.forEach((btn) => {
+              btn.style.opacity = '0.2';
+            });
+
+            btnElt.classList.add('redGlows');
+            setTimeout(() => {
+              filteredBtns.forEach((btn) => {
+                btn.style.opacity = '';
+              });
+              btnElt.classList.remove('redGlows');
+            }, 3000);
+          }, 500);
         }
-      });
-
-      if (targetSlideIndex !== -1) {
-        this.swiper?.slideTo(targetSlideIndex);
-
+      } else {
         // Wait until the slide transition completes
         setTimeout(() => {
           const filteredBtns = Array.from(gridBtns).filter((btn) => btn.id !== btnType);

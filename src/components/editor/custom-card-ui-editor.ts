@@ -14,7 +14,7 @@ import styles from '../../css/editor.css';
 @customElement('custom-card-ui-editor')
 export class CustomCardUIEditor extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
-  @property({ type: Object }) editor!: VehicleCardEditor;
+  @property({ attribute: false }) editor!: VehicleCardEditor;
   @property({ type: Object }) _config!: VehicleCardConfig;
   @state() cardType!: CardTypeConfig;
   @state() cards: LovelaceCardConfig[] = [];
@@ -96,7 +96,7 @@ export class CustomCardUIEditor extends LitElement {
 
     this.cards = this.isAddedCard
       ? this._config.added_cards[this.cardType.config].cards
-      : this._config[this.cardType.config];
+      : this._config[this.cardType.config] || [];
 
     const selected = this._selectedCard!;
     const cardsLength = this.cards.length;

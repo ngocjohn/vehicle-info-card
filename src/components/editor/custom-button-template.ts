@@ -12,8 +12,8 @@ import editorcss from '../../css/editor.css';
 @customElement('custom-button-template')
 export class CustomButtonTemplate extends LitElement {
   @property({ type: Object }) editor!: VehicleCardEditor;
-  @property() button!: ExtendedButtonConfigItem;
-  @property() card!: CardTypeConfig;
+  @property({ attribute: false }) button!: ExtendedButtonConfigItem;
+  @property({ attribute: false }) card!: CardTypeConfig;
   @property({ type: Boolean }) isButtonPreview: boolean = false;
 
   static get styles(): CSSResultGroup {
@@ -98,7 +98,6 @@ export class CustomButtonTemplate extends LitElement {
           .configValue=${'entity'}
           .configBtnType=${button}
           @change=${(ev: Event) => this._dispatchEvent(ev, 'btn-changed')}
-          .allow-custom-entity
         ></ha-entity-picker>
       </div>
     `;

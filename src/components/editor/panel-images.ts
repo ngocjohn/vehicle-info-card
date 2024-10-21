@@ -16,7 +16,7 @@ import editorcss from '../../css/editor.css';
 
 @customElement('panel-images')
 export class PanelImages extends LitElement {
-  @property({ type: Object }) editor!: VehicleCardEditor;
+  @property({ attribute: false }) editor!: VehicleCardEditor;
   @property({ type: Object }) config!: VehicleCardConfig;
   @property({ type: Array }) _images!: ImageConfig[];
   @state() _selectedItems: Set<string> = new Set();
