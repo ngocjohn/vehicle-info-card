@@ -32,6 +32,7 @@
 | `cs`     | Czech          | Čeština          |
 | `de`     | German          | Deutsch          |
 | `en`     | English          | English          |
+| `es`     | Spanish          | Español          |
 | `en_GB`     | English          | English (GB)          |
 | `fr`     | French          | Français          |
 | `lt`     | Lithuanian          | Lietuvių          |
