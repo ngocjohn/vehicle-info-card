@@ -16,7 +16,7 @@
     "experimentalDecorators": true,
     "outDir": "./dist",
     "rootDir": "./src",
-    "typeRoots": ["./node_modules/@types", "./src/declarations.d.ts"],
+    "typeRoots": ["./node_modules/@types", "src/types/declarations.d.ts"],
     "sourceMap": true
   },
   "include": ["src/*", "src/**/*"]
