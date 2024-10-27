@@ -15,6 +15,7 @@ export default [
       '@typescript-eslint': typescriptEslintRecommended,
       perfectionist,
     },
+    ignorePatterns: ['node_modules/', 'dist/', 'build/', 'scripts/'],
     rules: {
       // Perfectionist sort-imports rule
       'perfectionist/sort-imports': [
