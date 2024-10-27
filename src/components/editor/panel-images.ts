@@ -46,7 +46,7 @@ export class PanelImages extends LitElement {
           margin-block: var(--vic-card-padding);
         }
 
-        .drop-area.dragging {
+        .drop-area[dragging] {
           background-color: rgba(var(--rgb-primary-text-color), 0.05);
         }
 
@@ -74,10 +74,10 @@ export class PanelImages extends LitElement {
   private _renderUploadAddNewImage(): TemplateResult {
     const urlInput = html`
       <div class="custom-background-wrapper">
-        <ha-button @click=${() => this.toggleUpload()} class="upload-btn">
+        <ha-button @click=${() => this.toggleUpload()} id="upload-btn">
           ${this.editor.hass.localize('ui.components.selectors.image.upload')}
         </ha-button>
-        <ha-button @click=${() => this.toggleSwiperConfig()} class="swiper-btn"> Swiper Config </ha-button>
+        <ha-button @click=${() => this.toggleSwiperConfig()} id="swiper-btn"> Swiper Config </ha-button>
       </div>
     `;
     return urlInput;
@@ -156,16 +156,14 @@ export class PanelImages extends LitElement {
       },
     ];
 
-    return html` <div class="sub-panel-config image-swiper-config" style="display: none;">
-      <div class="sub-header">
-        <div class="sub-header-title">Slide layout configuration</div>
+    return html` <div id="image-swiper-config" style="display: none;">
+      <div>
+        <div>Slide layout configuration</div>
       </div>
-      <div class="sub-panel">
+      <div>
         <div>${swiperConfig.map((config) => this.generateItemPicker({ ...config, ...sharedConfig }))}</div>
       </div>
-      <div class="sub-content">
-        ${swiperBooleanConfig.map((config) => this.generateItemPicker({ ...config, ...sharedConfig }), 'sub-content')}
-      </div>
+      <div>${swiperBooleanConfig.map((config) => this.generateItemPicker({ ...config, ...sharedConfig }))}</div>
     </div>`;
   }
 
@@ -236,7 +234,8 @@ export class PanelImages extends LitElement {
     return html`
       <div id="drop-area" style="display: none;">
         <div
-          class="drop-area ${this.isDragging ? 'dragging' : ''}"
+          class="drop-area"
+          ?dragging=${this.isDragging}
           @dragover=${this._handleDragOver}
           @dragleave=${this._handleDragLeave}
           @drop=${this._handleDrop}
@@ -286,10 +285,10 @@ export class PanelImages extends LitElement {
   }
 
   private toggleSwiperConfig(): void {
-    const swiperConfig = this.shadowRoot?.querySelector('.image-swiper-config') as HTMLElement;
+    const swiperConfig = this.shadowRoot?.getElementById('image-swiper-config') as HTMLElement;
     const imageList = this.shadowRoot?.getElementById('images-list') as HTMLElement;
-    const swiperBtn = this.shadowRoot?.querySelector('.swiper-btn') as HTMLElement;
-    const uploadBtn = this.shadowRoot?.querySelector('.upload-btn') as HTMLElement;
+    const swiperBtn = this.shadowRoot?.getElementById('swiper-btn') as HTMLElement;
+    const uploadBtn = this.shadowRoot?.getElementById('upload-btn') as HTMLElement;
     const isHidden = swiperConfig?.style.display === 'none';
     if (isHidden) {
       swiperConfig.style.display = 'block';
@@ -307,7 +306,7 @@ export class PanelImages extends LitElement {
   private toggleUpload(): void {
     const dropArea = this.shadowRoot?.getElementById('drop-area') as HTMLElement;
     const imageList = this.shadowRoot?.getElementById('images-list') as HTMLElement;
-    const addImageBtn = this.shadowRoot?.querySelector('.upload-btn') as HTMLElement;
+    const addImageBtn = this.shadowRoot?.getElementById('upload-btn') as HTMLElement;
     const isHidden = dropArea?.style.display === 'none';
     if (isHidden) {
       dropArea.style.display = 'block';
@@ -320,9 +319,9 @@ export class PanelImages extends LitElement {
     }
   }
 
-  private generateItemPicker(config: any, wrapperClass = 'item-content'): TemplateResult {
+  private generateItemPicker(config: any): TemplateResult {
     return html`
-      <div class="${wrapperClass}">
+      <div class="item-content">
         ${Picker({
           ...config,
         })}

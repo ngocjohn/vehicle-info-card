@@ -3,6 +3,7 @@
   --control-btn-radius: var(--feature-border-radius, 12px);
   --feature-height: 42px;
 }
+
 .service-control {
   display: flex;
   flex-direction: column;
@@ -45,6 +46,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -54,6 +56,7 @@
   from {
     opacity: 1;
   }
+
   to {
     opacity: 0;
   }
@@ -97,6 +100,7 @@
   text-wrap: balance;
   text-align: center;
   gap: 0.5rem;
+
   &:hover {
     box-shadow: inset 0 0 50px var(--primary-color) !important;
   }
@@ -106,7 +110,7 @@
   flex-direction: column;
 }
 
-.control-btn-rounded.active {
+.control-btn-rounded[active] {
   color: var(--primary-color);
   background-color: rgba(var(--rgb-primary-color), 0.1);
 }
@@ -119,6 +123,7 @@
   padding: 0.5rem !important;
   text-transform: uppercase;
 }
+
 .control-btn-sm.reset {
   background-color: var(--disabled-text-color) !important;
   height: min-content;
@@ -143,10 +148,12 @@
   border-bottom: 1px solid var(--divider-color);
   padding-bottom: 0.5rem;
 }
+
 .item-label {
   display: flex;
   flex: 1 0 50%;
 }
+
 .items-row:last-child {
   border-bottom: none;
   padding-bottom: 0;
@@ -168,6 +175,7 @@
   text-align: center;
   font-size: 1rem;
 }
+
 .control-btn {
   width: 1.2rem;
   height: 1.2rem;

@@ -143,9 +143,9 @@ export class RemoteControl extends LitElement {
     };
 
     const controlBtns = Object.entries(this.activeServices).map(([type, { name, icon }]) => {
-      const activeClass = this.subcardType === type ? 'active' : '';
+      const activeClass = this.subcardType === type;
       return html`
-        <div @click=${() => handleClick(type)} class="control-btn-rounded ${activeClass} click-shrink">
+        <div @click=${() => handleClick(type)} class="control-btn-rounded click-shrink" ?active=${activeClass}>
           <ha-icon icon=${icon}></ha-icon>
           <span>${name}</span>
         </div>
@@ -238,7 +238,7 @@ export class RemoteControl extends LitElement {
     const preheatDepartureTimeEL = html`
       <div class="items-row">
         <div>${preheatConfig.data.departure_time.label}</div>
-        <div class="time-input-wrap">
+        <div>
           <ha-textfield
             type="number"
             inputmode="numeric"
@@ -367,7 +367,7 @@ export class RemoteControl extends LitElement {
       return html`
         <div class="items-row">
           <div>${label}</div>
-          <div class="time-input-wrap">
+          <div>
             <ha-textfield
               type="number"
               inputmode="numeric"
@@ -619,7 +619,7 @@ export class RemoteControl extends LitElement {
 
     setTimeout(() => {
       const gridBtn = this.shadowRoot?.querySelectorAll(
-        '.control-btn-rounded:not(.active).click-shrink'
+        '.control-btn-rounded:not([active])'
       ) as NodeListOf<HTMLDivElement>;
 
       gridBtn?.forEach((btn) => {

@@ -1,4 +1,4 @@
-import { LitElement, css, html, TemplateResult, PropertyValues, nothing, CSSResultGroup } from 'lit';
+import { LitElement, css, html, TemplateResult, PropertyValues, nothing, CSSResultGroup, unsafeCSS } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
 import Swiper from 'swiper';
@@ -10,7 +10,7 @@ import { addActions } from '../../utils/tap-action';
 import { VehicleCard } from '../../vehicle-info-card';
 
 import mainstyle from '../../css/styles.css';
-import swipercss from '../../css/swiper-bundle.css';
+import swipercss from 'swiper/swiper-bundle.css';
 
 @customElement('vehicle-buttons')
 export class VehicleButtons extends LitElement {
@@ -32,12 +32,15 @@ export class VehicleButtons extends LitElement {
 
   static get styles(): CSSResultGroup {
     return [
-      swipercss,
+      unsafeCSS(swipercss),
       css`
         #button-swiper {
           --swiper-pagination-bottom: -8px;
           --swiper-theme-color: var(--primary-text-color);
           padding-bottom: 12px;
+        }
+        .swiper-container {
+          display: flex;
         }
         .swiper-pagination-bullet {
           background-color: var(--swiper-theme-color);
@@ -256,7 +259,7 @@ export class VehicleButtons extends LitElement {
             </div>
             ${showError
               ? html`
-                  <div class="item-notify ${btnNotify ? '' : 'hidden'}">
+                  <div class="item-notify" ?hidden=${!btnNotify}>
                     <ha-icon icon="mdi:alert-circle"></ha-icon>
                   </div>
                 `
@@ -264,7 +267,7 @@ export class VehicleButtons extends LitElement {
           </div>
           <div class="item-content">
             <div class="primary">
-              <span class="title">${buttonName}</span>
+              <span>${buttonName}</span>
             </div>
             <span class="secondary">${secondaryInfo}</span>
           </div>

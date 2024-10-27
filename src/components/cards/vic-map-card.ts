@@ -1,4 +1,4 @@
-import { LitElement, html, css, TemplateResult, PropertyValues, CSSResultGroup } from 'lit';
+import { LitElement, html, css, TemplateResult, PropertyValues, CSSResultGroup, unsafeCSS } from 'lit';
 import { customElement, state, property } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
@@ -8,7 +8,7 @@ import { MapData } from '../../types';
 import L from 'leaflet';
 import 'leaflet-providers/leaflet-providers.js';
 
-import mapstyle from '../../css/leaflet.css';
+import mapstyle from 'leaflet/dist/leaflet.css';
 import { VehicleCard } from '../../vehicle-info-card';
 import { isEmpty } from '../../utils';
 
@@ -23,7 +23,7 @@ export class VehicleMap extends LitElement {
 
   static get styles(): CSSResultGroup {
     return [
-      mapstyle,
+      unsafeCSS(mapstyle),
       css`
         *:focus {
           outline: none;
@@ -238,7 +238,7 @@ export class VehicleMap extends LitElement {
             </div>`,
       iconSize: [24, 24],
       iconAnchor: [12, 12],
-      className: 'custom-marker',
+      className: 'marker',
     });
 
     // Add marker to map

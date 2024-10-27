@@ -302,7 +302,7 @@ header h1 {
   --mdc-icon-size: 1.4rem;
 }
 
-.grid-item .item-notify.hidden {
+.grid-item .item-notify[hidden] {
   display: none;
 }
 
@@ -621,8 +621,8 @@ header h1 {
   color: var(--secondary-text-color);
 }
 
-.data-icon.warning,
-.warning {
+
+*[warning] {
   color: var(--warning-color, --error-color) !important;
 }
 
@@ -631,9 +631,10 @@ header h1 {
   transform: rotate(0deg);
   display: inline-block;
   cursor: pointer;
+  margin-bottom: 2px
 }
 
-.subcard-icon.active {
+.subcard-icon[active] {
   transform: rotate(180deg);
 }
 
@@ -655,7 +656,7 @@ header h1 {
   padding: var(--vic-card-padding);
 }
 
-.error {
+*[error] {
   color: var(--error-color);
 }
 
@@ -725,11 +726,11 @@ dialog::backdrop {
 }
 
 /* TYRE WRAP ROTATED */
-.tyre-wrapper.rotated {
+.tyre-wrapper[rotated] {
   transform: rotate(90deg);
 }
 
-.tyre-box.rotated {
+.tyre-box[rotated] {
   transform: rotate(-90deg);
 }
 
@@ -788,25 +789,25 @@ dialog::backdrop {
   text-align: center;
 }
 
-.frontleft {
+*[tyre=frontleft] {
   top: 0%;
   left: 0%;
   /* transform: translate(-15%, -10%); */
 }
 
-.frontright {
+*[tyre=frontright] {
   top: 0%;
   right: 0%;
   /* transform: translate(15%, -10%); */
 }
 
-.rearleft {
+*[tyre=rearleft] {
   bottom: 0%;
   left: 0%;
   /* transform: translate(-15%, 10%); */
 }
 
-.rearright {
+*[tyre=rearright] {
   bottom: 0%;
   right: 0%;
   /* transform: translate(15%, 10%); */

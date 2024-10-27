@@ -149,7 +149,7 @@ export class CustomButtonTemplate extends LitElement {
     const button = this.card.button;
 
     return html`
-      <div class="template-ui">
+      <div>
         <p>${label}</p>
         <ha-code-editor
           .mode=${'jinja2'}

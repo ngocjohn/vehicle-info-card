@@ -46,7 +46,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     return document.createElement('vehicle-info-card-editor');
   }
   // Properties
-  @property({ attribute: false }) public _hass!: HomeAssistant;
+  @state() _hass!: HomeAssistant;
   @property({ type: Object }) public config!: VehicleCardConfig;
   @property({ type: Boolean }) public editMode = false;
 
@@ -338,7 +338,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
     const name = this.config.name || '';
     return html`
-      <ha-card class="main-card">
+      <ha-card>
         ${this._renderHeaderBackground()}
         <header>
           <h1>${name}</h1>
@@ -392,15 +392,14 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
   private _renderWarnings(): TemplateResult {
     const defaultIndicData = this.createDataArray([{ key: 'lockSensor' }, { key: 'parkBrake' }]);
-    const isChargingVisible = this.isCharging && this.config.enable_services_control ? 'base-menu' : '';
 
     // Helper function to render items
     const renderItem = (icon: string, label: string, onClick: () => void, isActive: boolean = false) => html`
       <div class="item active-btn" @click=${onClick}>
         <ha-icon icon=${icon}></ha-icon>
         <div class="added-item-arrow">
-          <span class="${isChargingVisible}">${label}</span>
-          <div class="subcard-icon ${isActive ? 'active' : ''}" style="margin-bottom: 2px">
+          <span>${label}</span>
+          <div class="subcard-icon" ?active=${isActive}>
             <ha-icon icon="mdi:chevron-down"></ha-icon>
           </div>
         </div>
@@ -412,7 +411,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       ({ state, icon }) => html`
         <div class="item">
           <ha-icon .icon=${icon}></ha-icon>
-          <div><span class="${isChargingVisible}">${state}</span></div>
+          <div><span>${state}</span></div>
         </div>
       `
     );
@@ -685,7 +684,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
           <div @click=${() => this.toggleSubCard('warnings')} ?clickable=${true}>
             ${this.localize('card.vehicleCard.vehicleWarnings')}
           </div>
-          <div class="subcard-icon ${!isSubCardVisible ? 'active' : ''}" @click=${() => this.toggleSubCard('warnings')}>
+          <div class="subcard-icon" ?active=${!isSubCardVisible} @click=${() => this.toggleSubCard('warnings')}>
             <ha-icon icon="mdi:chevron-down"></ha-icon>
           </div>
         </div>
@@ -702,7 +701,8 @@ export class VehicleCard extends LitElement implements LovelaceCard {
                   <span>${name}</span>
                 </div>
                 <div
-                  class="data-value-unit ${active ? 'error' : ''} "
+                  class="data-value-unit"
+                  ?error=${active}
                   @click=${() => this.toggleMoreInfo(this.vehicleEntities[key]?.entity_id)}
                 >
                   <span>${state}</span>
@@ -741,7 +741,6 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       '--vic-tire-size': `${tireImageSize}%`,
       '--vic-tire-value-size': tireValueSize / 100,
     };
-    const directionClass = isHorizontal ? 'rotated' : '';
 
     const isPressureWarning = this.getBooleanState(this.vehicleEntities.tirePressureWarning?.entity_id);
 
@@ -750,7 +749,6 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     const tireWarningOk = this.localize('card.tyreCard.tireWarningOk');
 
     const tyreInfo = isPressureWarning ? tireWarningProblem : tireWarningOk;
-    const infoClass = isPressureWarning ? 'warning' : '';
 
     return html`
       <div class="default-card">
@@ -758,17 +756,21 @@ export class VehicleCard extends LitElement implements LovelaceCard {
         <div class="tyre-toggle-btn click-shrink" @click=${(ev: Event) => this.toggleTireDirection(ev)}>
           <ha-icon icon="mdi:rotate-right-variant"></ha-icon>
         </div>
-        <div class="data-box tyre-wrapper ${directionClass}" style=${styleMap(sizeStyle)}>
+        <div class="data-box tyre-wrapper" ?rotated=${isHorizontal} style=${styleMap(sizeStyle)}>
           <div class="background" style="background-image: url(${customTyreBg})"></div>
           ${this.DataKeys.tyrePressures.map(
             (tyre) =>
-              html` <div class="tyre-box ${directionClass} ${tyre.key.replace('tirePressure', '').toLowerCase()}">
+              html` <div
+                class="tyre-box"
+                tyre=${tyre.key.replace('tirePressure', '').toLowerCase()}
+                ?rotated=${isHorizontal}
+              >
                 <span class="tyre-value">${this.getStateDisplay(this.vehicleEntities[tyre.key]?.entity_id)}</span>
                 <span class="tyre-name">${tyre.name}</span>
               </div>`
           )}
         </div>
-        <div class="tyre-info ${infoClass}">
+        <div class="tyre-info" ?warning=${isPressureWarning}>
           <span>${tyreInfo}</span>
         </div>
       </div>
@@ -782,11 +784,12 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     const tyreBoxex = tyreWrapper?.querySelectorAll('.tyre-box');
     if (!tyreWrapper || !tyreBoxex) return;
 
-    const isHorizontal = tyreWrapper.classList.contains('rotated');
+    const isHorizontal = tyreWrapper.attributes.hasOwnProperty('rotated');
 
-    tyreWrapper.classList.toggle('rotated', !isHorizontal);
+    tyreWrapper.toggleAttribute('rotated', !isHorizontal);
+
     tyreBoxex.forEach((el) => {
-      el.classList.toggle('rotated', !isHorizontal);
+      el.toggleAttribute('rotated', !isHorizontal);
     });
   }
 
@@ -931,20 +934,18 @@ export class VehicleCard extends LitElement implements LovelaceCard {
             <div class="data-row">
               <div>
                 <ha-icon
-                  class="data-icon ${!active ? 'warning' : ''}"
+                  class="data-icon"
+                  ?warning=${!active}
                   .icon="${icon}"
                   @click=${() => toggleMoreInfo(key)}
                 ></ha-icon>
                 <span class="data-label">${name}</span>
               </div>
               <div class="data-value-unit" @click=${() => toggleSubCard(key)}>
-                <span class=${!active ? 'warning' : ''} style="text-transform: capitalize;">${state}</span>
+                <span ?warning=${!active} style="text-transform: capitalize;">${state}</span>
                 ${subCard
                   ? html`
-                      <ha-icon
-                        class="subcard-icon ${subCardVisible(subCard.key) ? 'active' : ''}"
-                        icon="mdi:chevron-down"
-                      >
+                      <ha-icon class="subcard-icon" ?active=${subCardVisible(subCard.key)} icon="mdi:chevron-down">
                       </ha-icon>
                     `
                   : ''}
@@ -1002,8 +1003,8 @@ export class VehicleCard extends LitElement implements LovelaceCard {
             return html`
               <div class="data-row">
                 <span>${stateMapping[attribute].name}</span>
-                <div class="data-value-unit">
-                  <span style="text-transform: capitalize" class="${classStateString}">${readableState}</span>
+                <div class="data-value-unit" ?warning=${classState}>
+                  <span style="text-transform: capitalize">${readableState}</span>
                 </div>
               </div>
             `;
@@ -1046,7 +1047,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     const subCardToggleBtn = (key: string) => {
       if (key !== '') {
         return html`
-          <div class="subcard-icon ${isActive(key) ? 'active' : ''}" @click=${() => this.toggleSubCard(key)}>
+          <div class="subcard-icon" ?active=${isActive(key)} @click=${() => this.toggleSubCard(key)}>
             <ha-icon icon="mdi:chevron-down"></ha-icon>
           </div>
         `;

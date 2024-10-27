@@ -1,4 +1,4 @@
-import { LitElement, css, html, TemplateResult, PropertyValues } from 'lit';
+import { LitElement, css, html, TemplateResult, PropertyValues, unsafeCSS } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { styleMap } from 'lit-html/directives/style-map.js';
 
@@ -7,7 +7,7 @@ import { Autoplay, Pagination, EffectFade, EffectCoverflow } from 'swiper/module
 import { SwiperOptions } from 'swiper/types';
 import { VehicleCardConfig } from '../../types';
 
-import swipercss from '../../css/swiper-bundle.css';
+import swipercss from 'swiper/swiper-bundle.css';
 
 @customElement('header-slide')
 export class HeaderSlide extends LitElement {
@@ -127,7 +127,7 @@ export class HeaderSlide extends LitElement {
   }
 
   static styles = [
-    swipercss,
+    unsafeCSS(swipercss),
     css`
       :host {
         --swiper-pagination-bottom: 0px;
