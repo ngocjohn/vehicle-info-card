@@ -8,7 +8,6 @@ import {
   LovelaceCardConfig,
   LovelaceCardEditor,
   applyThemesOnElement,
-  LovelaceCard,
 } from 'custom-card-helpers';
 import { LitElement, html, TemplateResult, PropertyValues, CSSResultGroup, nothing } from 'lit';
 import { styleMap } from 'lit-html/directives/style-map.js';
@@ -17,8 +16,8 @@ import { customElement, property, state, query } from 'lit/decorators.js';
 import './components/cards';
 import { VehicleButtons, VehicleMap } from './components/cards';
 import { CardItem, cardTypes } from './const/data-keys';
-import * as IMG from './const/imgconst';
 import * as StateMapping from './const/state-mapping';
+import { IMAGE } from './const/imgconst';
 import { localize } from './localize/localize';
 import {
   HA as HomeAssistant,
@@ -40,12 +39,28 @@ import { getAddedButton, getDefaultButton, createCardElement, createCustomButton
 import styles from './css/styles.css';
 
 @customElement('vehicle-info-card')
-export class VehicleCard extends LitElement implements LovelaceCard {
+export class VehicleCard extends LitElement {
   public static async getConfigElement(): Promise<LovelaceCardEditor> {
     await import('./editor');
     return document.createElement('vehicle-info-card-editor');
   }
   // Properties
+  @property({ attribute: false })
+  set hass(hass: HomeAssistant) {
+    this._hass = hass;
+    if (this._buttonReady && this.buttonCards) {
+      Object.keys(this.buttonCards).forEach((key) => {
+        const customCard = this.buttonCards[key].custom_card;
+        const useCustom = this.buttonCards[key].card_type === 'custom';
+        if (useCustom && !isEmpty(customCard)) {
+          customCard.forEach((card) => {
+            card.hass = hass;
+          });
+        }
+      });
+    }
+  }
+
   @state() _hass!: HomeAssistant;
   @property({ type: Object }) public config!: VehicleCardConfig;
   @property({ type: Boolean }) public editMode = false;
@@ -78,21 +93,6 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   constructor() {
     super();
     this.handleEditorEvents = this.handleEditorEvents.bind(this);
-  }
-
-  set hass(hass: HomeAssistant) {
-    this._hass = hass;
-    if (this._buttonReady && this.buttonCards) {
-      Object.keys(this.buttonCards).forEach((key) => {
-        const customCard = this.buttonCards[key].custom_card;
-        const useCustom = this.buttonCards[key].card_type === 'custom';
-        if (useCustom && !isEmpty(customCard)) {
-          customCard.forEach((card) => {
-            card.hass = hass;
-          });
-        }
-      });
-    }
   }
 
   get userLang(): string {
@@ -180,10 +180,6 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     if (!this.config || !this._hass) {
       console.log('config or hass is null');
       return false;
-    }
-
-    if (_changedProps.has('_currentCardType') && !this._currentCardType && !this.editMode) {
-      this.applyMarquee();
     }
 
     if (_changedProps.has('config') && this.config.selected_theme?.theme !== 'default') {
@@ -366,7 +362,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     return html`
       <ha-card>
         <div class="loading-image" style="height: ${cardHeight}px">
-          <img src="${IMG.logoLoading}" alt="Loading" />
+          <img src="${IMAGE.LOADING}" alt="Loading" />
         </div>
       </ha-card>
     `;
@@ -374,7 +370,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
   private _renderHeaderBackground(): TemplateResult | typeof nothing {
     if (!this.config.show_background || this._currentCardType !== null) return nothing;
-    const background = this.isDark ? IMG.amgWhite : IMG.amgBlack;
+    const background = this.isDark ? IMAGE.BACK_WHITE : IMAGE.BACK_DARK;
 
     return html` <div class="header-background" style="background-image: url(${background})"></div> `;
   }
@@ -728,7 +724,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   private _renderDefaultTyreCard(): TemplateResult {
     if (!this.DataKeys.tyrePressures) return html``;
     const tireConfig = this.config?.extra_configs?.tire_card_custom || {};
-    const customTyreBg = tireConfig?.background || IMG.tyreBg;
+    const customTyreBg = tireConfig?.background || IMAGE.BACK_TYRE;
     const isHorizontal = tireConfig?.horizontal ?? false;
     const tireImageSize = tireConfig?.image_size ?? 100;
     const tireValueSize = tireConfig?.value_size ?? 100;
@@ -1471,27 +1467,6 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       default:
         return false;
     }
-  }
-
-  private applyMarquee() {
-    this.updateComplete.then(() => {
-      const items = this.shadowRoot?.querySelectorAll('.primary') as NodeListOf<HTMLElement>;
-      if (!items) return;
-      items.forEach((item) => {
-        const itemText = item.querySelector('span');
-        if (item.scrollWidth > item.clientWidth) {
-          item.classList.add('title-wrap');
-          itemText?.classList.add('marquee');
-          setTimeout(() => {
-            itemText?.classList.remove('marquee');
-            item.classList.remove('title-wrap');
-          }, 18000);
-        } else {
-          item.classList.remove('title-wrap');
-          itemText?.classList.remove('marquee');
-        }
-      });
-    });
   }
 
   /* ----------------------------- EVENTS HANDLERS ---------------------------- */

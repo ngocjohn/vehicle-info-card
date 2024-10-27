@@ -167,8 +167,6 @@ export class VehicleButtons extends LitElement {
     if (this.activeSlideIndex !== 0 && this.swiper) {
       this.swiper.slideTo(this.activeSlideIndex, 0, false);
     }
-
-    // console.log('swiper init done');
   }
 
   private _renderSwiper(): TemplateResult {
@@ -293,6 +291,27 @@ export class VehicleButtons extends LitElement {
     }, {} as ButtonCardEntity);
   };
 
+  private applyMarquee() {
+    this.updateComplete.then(() => {
+      const items = this.shadowRoot?.querySelectorAll('.primary') as NodeListOf<HTMLElement>;
+      if (!items) return;
+      items.forEach((item) => {
+        const itemText = item.querySelector('span');
+        if (item.scrollWidth > item.clientWidth) {
+          item.classList.add('title-wrap');
+          itemText?.classList.add('marquee');
+          setTimeout(() => {
+            itemText?.classList.remove('marquee');
+            item.classList.remove('title-wrap');
+          }, 18000);
+        } else {
+          item.classList.remove('title-wrap');
+          itemText?.classList.remove('marquee');
+        }
+      });
+    });
+  }
+
   private _setButtonActions = (): void => {
     const buttons = this._buttons;
     Object.keys(buttons).forEach((btn) => {
@@ -309,7 +328,7 @@ export class VehicleButtons extends LitElement {
         // console.log('Default button action added:', btnId);
       }
     });
-    // console.log('Button actions set');
+    this.applyMarquee();
   };
 
   private _handleClick = (btnId: string): void => {
