@@ -123,7 +123,7 @@
 | `enable_map_popup`        | boolean     | Optional    | Set to `true` to enable map popup function. Default is `false`.                                                                                                                                                               |
 | `enable_services_control` | boolean     | Optional    | Set to `true` to enable remote control tab. Default is `false`.                                                                                                                                                               |
 | `map_popup_config`        | object      | Optional    | Configuration including `theme_mode` to control the map’s appearance (`light` `dark` `auto`), `hours_to_show` to specify the number of hours of data to display, and `default_zoom` to set the initial zoom level of the map. |
-| `images`                  | list        | Optional    | List of image URLs or Paths from config/www folder for the slideshow. Images render better with a transparent background and a maximum width of 500px to fit the card.                                                        |
+| `images`                  | object list        | Optional    | List of image URLs or Paths from config/www folder for the slideshow. Each image must contain a "url" property. Images render better with a transparent background and a maximum width of 500px to fit the card.                                                        |
 | `trip_card`               | object list | Optional    | Configuration objects for the trip card.                                                                                                                                                                                      |
 | `vehicle_card`            | object list | Optional    | Configuration objects for the vehicle card.                                                                                                                                                                                   |
 | `eco_card`                | object list | Optional    | Configuration objects for the eco display card.                                                                                                                                                                               |
@@ -194,11 +194,11 @@ Below is the configuration replaced entities card for `Vehicle status` button.
   show_background: true
   enable_map_popup: false
   images:
-    - /local/benz/benz-1.png
-    - /local/benz/benz-2.png
-    - /local/benz/benz-3.png
-    - /local/benz/benz-4.png
-    - /local/benz/benz-5.png
+    - url: /local/benz/benz-1.png
+    - url: /local/benz/benz-2.png
+    - url: /local/benz/benz-3.png
+    - url: /local/benz/benz-4.png
+    - url: /local/benz/benz-5.png
   vehicle_card:
     - type: entities
       show_header_toggle: false
