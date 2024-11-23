@@ -1,13 +1,12 @@
 import { LitElement, css, html, TemplateResult, PropertyValues, unsafeCSS } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
 import { styleMap } from 'lit-html/directives/style-map.js';
-
+import { customElement, state } from 'lit/decorators.js';
 import Swiper from 'swiper';
 import { Autoplay, Pagination, EffectFade, EffectCoverflow } from 'swiper/modules';
-import { SwiperOptions } from 'swiper/types';
-import { VehicleCardConfig } from '../../types';
-
 import swipercss from 'swiper/swiper-bundle.css';
+import { SwiperOptions } from 'swiper/types';
+
+import { VehicleCardConfig } from '../../types';
 
 @customElement('header-slide')
 export class HeaderSlide extends LitElement {

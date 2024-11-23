@@ -7,10 +7,10 @@ import { MapData } from '../../types';
 // Leaflet imports
 import L from 'leaflet';
 import 'leaflet-providers/leaflet-providers.js';
-
 import mapstyle from 'leaflet/dist/leaflet.css';
-import { VehicleCard } from '../../vehicle-info-card';
+
 import { isEmpty } from '../../utils';
+import { VehicleCard } from '../../vehicle-info-card';
 
 @customElement('vehicle-map')
 export class VehicleMap extends LitElement {

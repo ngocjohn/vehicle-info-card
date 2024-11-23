@@ -7,12 +7,11 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import Sortable from 'sortablejs';
 
+import editorcss from '../../css/editor.css';
 import { VehicleCardEditor } from '../../editor';
 import { ImageConfig, VehicleCardConfig } from '../../types';
-import { imageInputChange, handleFilePicked } from '../../utils/editor-image-handler';
 import { Picker } from '../../utils/create';
-
-import editorcss from '../../css/editor.css';
+import { imageInputChange, handleFilePicked } from '../../utils/editor-image-handler';
 
 @customElement('panel-images')
 export class PanelImages extends LitElement {

@@ -16,8 +16,9 @@ import { customElement, property, state, query } from 'lit/decorators.js';
 import './components/cards';
 import { VehicleButtons, VehicleMap } from './components/cards';
 import { CardItem, cardTypes } from './const/data-keys';
-import * as StateMapping from './const/state-mapping';
 import { IMAGE } from './const/imgconst';
+import * as StateMapping from './const/state-mapping';
+import styles from './css/styles.css';
 import { localize } from './localize/localize';
 import {
   HA as HomeAssistant,
@@ -35,8 +36,6 @@ import {
 import { HEADER_ACTION, PreviewCard, MapData } from './types/card-types';
 import { handleCardFirstUpdated, getCarEntity, handleCardSwipe, convertMinutes, isEmpty, Create } from './utils';
 import { getAddedButton, getDefaultButton, createCardElement, createCustomButtons } from './utils/ha-helpers';
-
-import styles from './css/styles.css';
 
 @customElement('vehicle-info-card')
 export class VehicleCard extends LitElement {

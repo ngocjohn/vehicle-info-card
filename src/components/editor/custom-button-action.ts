@@ -2,9 +2,8 @@ import { fireEvent } from 'custom-card-helpers';
 import { LitElement, html, TemplateResult, CSSResultGroup, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
-import { ExtendedButtonConfigItem, CardTypeConfig, HA as HomeAssistant, VehicleCardConfig } from '../../types';
-
 import editorcss from '../../css/editor.css';
+import { ExtendedButtonConfigItem, CardTypeConfig, HA as HomeAssistant, VehicleCardConfig } from '../../types';
 
 const ACTIONSELECTOR = [
   {

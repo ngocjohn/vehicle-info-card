@@ -1,15 +1,14 @@
+import { mdiPlus, mdiCodeBraces, mdiListBoxOutline, mdiDelete, mdiContentCut, mdiContentCopy } from '@mdi/js';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { LitElement, html, TemplateResult, CSSResultGroup, PropertyValues, css } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
-
 // Custom card helpers
 import { fireEvent, LovelaceCardConfig, HASSDomEvent } from 'custom-card-helpers';
-// Local types
-import { HA as HomeAssistant, VehicleCardConfig, GUIModeChangedEvent, CardTypeConfig } from '../../types';
-import { mdiPlus, mdiCodeBraces, mdiListBoxOutline, mdiDelete, mdiContentCut, mdiContentCopy } from '@mdi/js';
-import { VehicleCardEditor } from '../../editor';
 
 import styles from '../../css/editor.css';
+import { VehicleCardEditor } from '../../editor';
+// Local types
+import { HA as HomeAssistant, VehicleCardConfig, GUIModeChangedEvent, CardTypeConfig } from '../../types';
 
 @customElement('custom-card-ui-editor')
 export class CustomCardUIEditor extends LitElement {

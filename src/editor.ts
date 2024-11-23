@@ -1,14 +1,13 @@
+import { mdiArrowLeft } from '@mdi/js';
+
 import { CARD_VERSION, PREVIEW_CONFIG_TYPES } from './const/const';
 import { cardTypes, editorShowOpts } from './const/data-keys';
 import { servicesCtrl } from './const/remote-control-keys';
-import { languageOptions, localize } from './localize/localize';
-
 import editorcss from './css/editor.css';
-
+import { languageOptions, localize } from './localize/localize';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { LitElement, html, TemplateResult, CSSResultGroup, PropertyValues, nothing } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
-
 // Custom card helpers
 import { fireEvent, LovelaceCardConfig, LovelaceCardEditor, LovelaceConfig } from 'custom-card-helpers';
 import { debounce } from 'es-toolkit';
@@ -29,9 +28,8 @@ import { loadHaComponents, stickyPreview } from './utils/loader';
 
 // Import the custom card components
 import './components/editor';
-import './components/editor/custom-card-ui-editor';
 import { PanelImages } from './components/editor';
-import { mdiArrowLeft } from '@mdi/js';
+import './components/editor/custom-card-ui-editor';
 
 const latestRelease: { version: string; hacs: boolean; updated: boolean } = {
   version: '',
@@ -246,7 +244,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const versionInfo = this._renderVersionInfo();
 
     return html`
-      <div class="base-config">
+      <div>
         ${nameEntityForm} ${cardButtonPanel} ${customButtonPanel} ${mapPopupConfig} ${imageConfig} ${servicesConfig}
         ${themesConfig} ${showOptions} ${versionInfo}
       </div>
@@ -652,7 +650,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const selectorItems = this.getServicesOptions();
     const servicesSelector = html`
       <ha-alert alert-type="info">${infoAlert}</ha-alert>
-      <div class="selector-row">
+      <div>
         <ha-selector
           .hass=${this.hass}
           .label=${'Select Services'}
@@ -667,7 +665,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _renderVersionInfo(): TemplateResult {
-    const { version, hacs, updated } = this._latestRelease;
+    const { version, updated } = this._latestRelease;
     return html`
       <div class="version">
         <span>
@@ -706,7 +704,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           @alert-dismissed-clicked=${() => this._handleToastUpdateDismissed()}
         >
           <span class="alert-icon" slot="icon">${content[versionResult].icon}</span>
-          <span class="content">Latest: ${this._latestRelease.version}</span>
+          <span>Latest: ${this._latestRelease.version}</span>
         </ha-alert>
       </div>
     `;
@@ -833,11 +831,11 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       <div class="card-types">
         <div class="header-sm">
           <span>${title}</span>
-          <div section-id="${key}" class="subcard-icon ${isVisible ? 'active' : ''}" @click="${() => toggle()}">
+          <div section-id="${key}" class="subcard-icon" ?active=${isVisible} @click="${() => toggle()}">
             <ha-icon icon="mdi:chevron-down"></ha-icon>
           </div>
         </div>
-        <div class="sub-card-rows ${isVisible ? '' : 'hidden'}">${cards}</div>
+        <div class="sub-card-rows" ?hidden=${!isVisible}>${cards}</div>
       </div>
     `;
   }
@@ -854,15 +852,13 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   // Function to render card items
   private renderCardItems = (cards: CardTypeConfig[]) => {
     return cards.map((card, index) => {
-      const hiddenClass = this.isButtonHidden(card.button) ? 'disabled' : '';
+      const hiddenClass = this.isButtonHidden(card.button);
       const addedCard = this.isAddedCard(card.type);
-      const hideShowText = this.isButtonHidden(card.button) ? 'showButton' : 'hideButton';
-      const eyeIcon = this.isButtonHidden(card.button) ? 'mdi:eye' : 'mdi:eye-off';
-      const { icon, name, type, config, button } = card;
+      const { icon, name, type, config } = card;
 
       return html`
         <div class="card-type-item">
-          <div class="card-type-row ${hiddenClass}">
+          <div class="card-type-row" ?disabled=${hiddenClass}>
             <div class="card-type-icon">
               <div class="icon-background">
                 <ha-icon
@@ -908,7 +904,8 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
               ? html` <div class="confirm-delete">
                   <span>${this.localize('editor.buttonConfig.deleteConfirm')}</span>
                   <ha-button @click=${this._removeCustomCard(type)}><ha-icon icon="mdi:check"></ha-button>
-                  <ha-button @click=${() => (this._confirmDeleteType = null)}><ha-icon icon="mdi:close"> </ha-icon></ha-button>
+                  <ha-button @click=${() =>
+                    (this._confirmDeleteType = null)}><ha-icon icon="mdi:close"> </ha-icon></ha-button>
                 </div>`
               : nothing}
           </div>
@@ -951,7 +948,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private generateItemPicker(config: any, wrapperClass = 'item-content'): TemplateResult {
     return html`
-      <div class="${wrapperClass}">
+      <div class=${wrapperClass}>
         ${Create.Picker({
           ...config,
           component: this,

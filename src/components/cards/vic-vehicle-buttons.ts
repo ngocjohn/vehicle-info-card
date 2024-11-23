@@ -3,14 +3,13 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
 import Swiper from 'swiper';
 import { Pagination } from 'swiper/modules';
+import swipercss from 'swiper/swiper-bundle.css';
 
+import mainstyle from '../../css/styles.css';
 import { ButtonCardEntity, HA as HomeAssistant, VehicleCardConfig, CustomButton } from '../../types';
 import { getTemplateValue, getBooleanTemplate } from '../../utils';
 import { addActions } from '../../utils/tap-action';
 import { VehicleCard } from '../../vehicle-info-card';
-
-import mainstyle from '../../css/styles.css';
-import swipercss from 'swiper/swiper-bundle.css';
 
 @customElement('vehicle-buttons')
 export class VehicleButtons extends LitElement {

@@ -128,7 +128,7 @@ h3 {
   cursor: pointer;
 }
 
-.subcard-icon.active {
+.subcard-icon[active] {
   transform: rotate(180deg);
 }
 
@@ -139,7 +139,7 @@ h3 {
   transition: all 400ms ease-in-out;
 }
 
-.sub-card-rows.hidden {
+.sub-card-rows[hidden] {
   opacity: 0;
   max-height: 0;
   overflow: hidden;
@@ -184,7 +184,7 @@ h3 {
   width: 100%;
 }
 
-.card-type-row.disabled {
+.card-type-row[disabled] {
   opacity: 0.5;
 }
 

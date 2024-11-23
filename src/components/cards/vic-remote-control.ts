@@ -4,12 +4,11 @@ import { LitElement, html, TemplateResult, CSSResultGroup } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 
 import * as Srvc from '../../const/remote-control-keys';
+import styles from '../../css/remote-control.css';
+import mainstyle from '../../css/styles.css';
 import { localize } from '../../localize/localize';
 import { Services } from '../../types';
 import { cloneDeep, convertToMinutes } from '../../utils/helpers';
-
-import styles from '../../css/remote-control.css';
-import mainstyle from '../../css/styles.css';
 
 @customElement('remote-control')
 export class RemoteControl extends LitElement {

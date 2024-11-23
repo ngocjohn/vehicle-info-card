@@ -3,6 +3,7 @@ const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelper
 import { LovelaceCardConfig } from 'custom-card-helpers';
 
 import { combinedFilters, CARD_UPADE_SENSOR, CARD_VERSION } from '../const/const';
+import { baseDataKeys } from '../const/data-keys';
 import { VehicleCardEditor } from '../editor';
 import {
   HA as HomeAssistant,
@@ -16,11 +17,9 @@ import {
   AddedCards,
   MapData,
 } from '../types';
-
-import { baseDataKeys } from '../const/data-keys';
 import { VehicleCard } from '../vehicle-info-card';
-import { fetchLatestReleaseTag } from './loader';
 import { getAddressFromGoggle, getAddressFromOpenStreet } from './helpers';
+import { fetchLatestReleaseTag } from './loader';
 /**
  *
  * @param car

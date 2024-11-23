@@ -4,10 +4,9 @@ import { isString } from 'es-toolkit';
 import { LitElement, html, TemplateResult, CSSResultGroup } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
+import editorcss from '../../css/editor.css';
 import { VehicleCardEditor } from '../../editor';
 import { ExtendedButtonConfigItem, CardTypeConfig } from '../../types';
-
-import editorcss from '../../css/editor.css';
 
 @customElement('custom-button-template')
 export class CustomButtonTemplate extends LitElement {
