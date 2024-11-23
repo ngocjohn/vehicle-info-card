@@ -20,7 +20,7 @@
             "titleServices": "Diensten",
             "toastCommandSent": "Opdracht succesvol verstuurd!",
             "toastImageError": "Fout bij het opladen van de afbeelding. Enkel PNG en JPEG bestanden zijn toegelaten.",
-            "toastCardAlreadyExists": "Card already exists"
+            "toastCardAlreadyExists": "Kaart bestaat al"
         },
         "cardType": {
             "ecoCards": "ECO-aanduiding",
@@ -68,7 +68,7 @@
             "labelLatitude": "Breedtegraad",
             "labelLockCar": "Vergrendel wagen",
             "labelLongitude": "Lengtegraad",
-            "labelMaxStateOfCharge": "Maximale oplaadstatus",
+            "labelMaxStateOfCharge": "Maximale oplaadtoestand",
             "labelMoreInfo": "Meer info",
             "labelMove": "Beweeg",
             "labelNoSelection": "Niets geselecteerd",
@@ -76,7 +76,7 @@
             "labelPostCode": "Postcode",
             "labelSave": "Bewaren",
             "labelSend": "Verzenden",
-            "labelSetMaxSoc": "Maximale oplaadstatus selecteren",
+            "labelSetMaxSoc": "Maximale oplaadtoestand selecteren",
             "labelSetProgram": "Programma selecteren",
             "labelStart": "Start",
             "labelStartTime": "Starttijd",
@@ -211,9 +211,9 @@
             "hidePreview": "Verberg voorvertoning",
             "secondaryInfo": "Bijkomende info",
             "secondaryInfoDesc": "Dit zal onder de titel van de kaart worden weergegeven.",
-            "secondaryInfoHelper": "Gebruik Jinja2 template om bijkomende informatie te tonen",
+            "secondaryInfoHelper": "Gebruik Jinja2 template om bijkomende informatie weer te geven",
             "notifyInfo": "Meldingsinstellingen",
-            "notifyInfoHelper": "Het resultaat moet "True" teruggeven om te worden weergegeven.",
+            "notifyInfoHelper": "Het resultaat moet 'True' teruggeven om te worden weergegeven.",
             "deleteConfirm": "Weet u zeker dat u deze kaart wilt verwijderen",
             "toastNewCard": "Nieuwe kaart toegevoegd!",
             "buttonGridSwipe": "Knoppenraster configuratie",
@@ -224,7 +224,7 @@
             "checkAll": "Controleer alles",
             "infoButton": "Selecteer de kaart die u wilt configureren.",
             "infoImages": "Het is niet nodig om een '-' toe te voegen vóór elke lijn. Elke lijn zal automatisch als een aparte URL worden beschouwd.",
-            "infoMap": "Dit is de configuratie voor kaart pop up.",
+            "infoMap": "Dit is de configuratie voor kaart pop-up.",
             "infoServices": "Kies welke diensten u wilt inschakelen. Als een dienst is uitgeschakeld, zal deze niet worden weergeven op de kaart.",
             "uncheckAll": "Alles uitvinken"
         },
@@ -275,7 +275,7 @@
             "info": "De afbeelding moet een vierkant zijn met een maximale resolutie van 450x450 pixels. Een transparante achtergrond is aanbevolen."
         },
         "customActionConfig": {
-            "title": "Knop interactie,
+            "title": "Knop interactie",
             "desc": "Stel de actie voor de aangepaste knop in"
         }
     }
