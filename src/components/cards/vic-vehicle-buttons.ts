@@ -1,25 +1,36 @@
+// Lit
 import { LitElement, css, html, TemplateResult, PropertyValues, nothing, CSSResultGroup, unsafeCSS } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
+// Swiper
 import Swiper from 'swiper';
 import { Pagination } from 'swiper/modules';
 import swipercss from 'swiper/swiper-bundle.css';
-
-import mainstyle from '../../css/styles.css';
-import { ButtonCardEntity, HA as HomeAssistant, VehicleCardConfig, CustomButton } from '../../types';
-import { getTemplateValue, getBooleanTemplate } from '../../utils';
+// Custom helpers
+import { UnsubscribeFunc } from 'home-assistant-js-websocket';
+// Local imports
+import { ButtonCardEntity, HA as HomeAssistant, VehicleCardConfig } from '../../types';
 import { addActions } from '../../utils/tap-action';
+import { RenderTemplateResult, subscribeRenderTemplate } from '../../utils/ws-templates';
 import { VehicleCard } from '../../vehicle-info-card';
+
+// Styles
+import mainstyle from '../../css/styles.css';
+
+const TEMPLATE_KEYS = ['secondary', 'notify'] as const;
+type TemplateKey = (typeof TEMPLATE_KEYS)[number];
 
 @customElement('vehicle-buttons')
 export class VehicleButtons extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
   @property({ attribute: false }) private component!: VehicleCard;
-  @property({ type: Object }) _config!: VehicleCardConfig;
+  @property({ attribute: false }) _config!: VehicleCardConfig;
   @property({ type: Object }) _buttons!: ButtonCardEntity;
 
-  @state() private _isButtonReady: boolean = false;
-  @state() _secondaryInfo: { [key: string]: CustomButton } = {};
+  @state() private _templateResults: Record<string, Partial<Record<TemplateKey, RenderTemplateResult | undefined>>> =
+    {};
+
+  @state() private _unsubRenderTemplates: Record<string, Map<TemplateKey, Promise<UnsubscribeFunc>>> = {};
 
   private swiper: Swiper | null = null;
   private activeSlideIndex: number = 0;
@@ -27,6 +38,17 @@ export class VehicleButtons extends LitElement {
   constructor() {
     super();
     this._handleClick = this._handleClick.bind(this);
+  }
+
+  connectedCallback(): void {
+    super.connectedCallback();
+    window.BenzButtons = this; // Expose the class to the window object
+    this._tryConnect();
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this._tryDisconnect();
   }
 
   static get styles(): CSSResultGroup {
@@ -59,58 +81,6 @@ export class VehicleButtons extends LitElement {
 
   protected firstUpdated(_changedProperties: PropertyValues): void {
     super.firstUpdated(_changedProperties);
-    this._fetchSecondaryInfo();
-  }
-
-  protected updated(changedProperties: PropertyValues): void {
-    super.updated(changedProperties);
-    if (changedProperties.has('hass') && this._isButtonReady) {
-      this.checkCustomChanged();
-    }
-  }
-
-  private async checkCustomChanged(): Promise<void> {
-    let changed = false;
-    const changedKeys: string[] = [];
-    for (const key in this._secondaryInfo) {
-      const oldState = this._secondaryInfo[key].state;
-      const oldNotify = this._secondaryInfo[key].notify;
-      const { state, notify } = await this._getSecondaryInfo(key);
-      if (oldState !== state || oldNotify !== notify) {
-        changedKeys.push(key);
-        changed = true;
-      }
-    }
-
-    if (changed) {
-      const newSecondaryInfo = { ...this._secondaryInfo }; // Copy the object
-      await Promise.all(
-        changedKeys.map(async (key) => {
-          newSecondaryInfo[key] = await this._getSecondaryInfo(key);
-        })
-      );
-
-      // Trigger reactivity by reassigning the object
-      this._secondaryInfo = newSecondaryInfo;
-
-      // Force a re-render
-      this.requestUpdate();
-    }
-  }
-
-  private async _fetchSecondaryInfo(): Promise<void> {
-    this._isButtonReady = false;
-
-    // console.log('prepare custom button:', this._customButtonReady);
-    const filteredBtns = Object.keys(this._buttons).filter((key) => this._buttons[key].custom_button);
-    await Promise.all(
-      filteredBtns.map(async (key) => {
-        this._secondaryInfo[key] = await this._getSecondaryInfo(key);
-      })
-    );
-
-    this._isButtonReady = true;
-    // console.log('custom button ready:', this._customButtonReady);
     if (this.useSwiper) {
       this.updateComplete.then(() => {
         this.initSwiper();
@@ -121,17 +91,126 @@ export class VehicleButtons extends LitElement {
     }
   }
 
-  private async _getSecondaryInfo(key: string): Promise<CustomButton> {
+  protected updated(changedProperties: PropertyValues): void {
+    super.updated(changedProperties);
+  }
+
+  public isTemplate(btnKey: string, templateKey: string): boolean {
+    const value = this._buttons[btnKey].button[templateKey];
+    return value?.includes('{');
+  }
+
+  private async _tryConnect(): Promise<void> {
+    const customKeys = Object.keys(this._buttons).filter((key) => this._buttons[key].custom_button);
+
+    for (const key of customKeys) {
+      TEMPLATE_KEYS.forEach((templateKey) => {
+        this._subscribeTemplate(key, templateKey);
+      });
+    }
+  }
+
+  private async _subscribeTemplate(key: string, templateKey: TemplateKey): Promise<void> {
+    if (!this.hass || !this.isTemplate(key, templateKey)) {
+      return;
+    }
+
     const button = this._buttons[key].button;
 
-    const state = button.secondary
-      ? await getTemplateValue(this.hass, button.secondary)
-      : button.attribute
-        ? this.component.getFormattedAttributeState(button.entity, button.attribute)
-        : this.component.getStateDisplay(button.entity);
-    const notify = (await getBooleanTemplate(this.hass, button.notify)) ?? false;
+    try {
+      const sub = subscribeRenderTemplate(
+        this.hass.connection,
+        (result) => {
+          this._templateResults = {
+            ...this._templateResults,
+            [key]: {
+              ...(this._templateResults[key] || {}),
+              [templateKey]: result,
+            },
+          };
+        },
+        {
+          template: button[templateKey] ?? '',
+        }
+      );
 
-    return { state, notify };
+      // Ensure the nested map for the button exists
+      if (!this._unsubRenderTemplates[key]) {
+        this._unsubRenderTemplates[key] = new Map();
+      }
+
+      this._unsubRenderTemplates[key].set(templateKey, sub);
+      await sub; // Ensure subscription completes
+    } catch (_err) {
+      const result = {
+        result: button[templateKey] ?? '',
+        listeners: {
+          all: false,
+          domains: [],
+          entities: [],
+          time: false,
+        },
+      };
+      this._templateResults = {
+        ...this._templateResults,
+        [key]: {
+          ...(this._templateResults[key] || {}),
+          [templateKey]: result,
+        },
+      };
+      if (this._unsubRenderTemplates[key]) {
+        this._unsubRenderTemplates[key].delete(templateKey);
+      }
+    }
+  }
+
+  private async _tryDisconnect(): Promise<void> {
+    for (const key in this._unsubRenderTemplates) {
+      await this._tryDisconnectKey(key);
+    }
+  }
+
+  private async _tryDisconnectKey(buttonKey: string): Promise<void> {
+    const unsubMap = this._unsubRenderTemplates[buttonKey];
+    if (!unsubMap) {
+      return;
+    }
+
+    for (const [templateKey, unsubPromise] of unsubMap.entries()) {
+      try {
+        const unsub = await unsubPromise;
+        unsub();
+        unsubMap.delete(templateKey);
+      } catch (err: any) {
+        if (err.code === 'not_found' || err.code === 'template_error') {
+          // If we get here, the connection was probably already closed. Ignore.
+        } else {
+          throw err;
+        }
+      }
+    }
+
+    // Remove the button key from the unsub map if all subscriptions are cleared
+    if (unsubMap.size === 0) {
+      delete this._unsubRenderTemplates[buttonKey];
+    }
+  }
+
+  private _getCustomState(key: string, templateKey: string): string {
+    const button = this._buttons[key].button;
+    switch (templateKey) {
+      case 'secondary':
+        const state = button.secondary
+          ? this._templateResults[key]?.secondary?.result ?? ''
+          : button.attribute
+          ? this.component.getFormattedAttributeState(button.entity, button.attribute)
+          : this.component.getStateDisplay(button.entity);
+        return state;
+      case 'notify':
+        return this._templateResults[key]?.notify?.result ?? '';
+      default:
+        return '';
+    }
   }
 
   private initSwiper(): void {
@@ -201,7 +280,6 @@ export class VehicleButtons extends LitElement {
   }
 
   protected render(): TemplateResult {
-    if (!this._isButtonReady) return html``;
     return html`${when(
       this.useSwiper,
       () => this._renderSwiper(),
@@ -233,8 +311,8 @@ export class VehicleButtons extends LitElement {
     const customBtn = this._buttons[key].custom_button;
     const buttonName = customBtn ? button?.primary : this._buttons[key].default_name;
     const buttonIcon = customBtn ? button?.icon : this._buttons[key].default_icon;
-    const secondaryInfo = customBtn ? this._secondaryInfo[key].state : this.component.getSecondaryInfo(key);
-    const btnNotify = customBtn ? this._secondaryInfo[key].notify : this.component.getErrorNotify(key);
+    const secondaryInfo = customBtn ? this._getCustomState(key, 'secondary') : this.component.getSecondaryInfo(key);
+    const btnNotify = customBtn ? this._getCustomState(key, 'notify') : this.component.getErrorNotify(key);
     const btnEntity = customBtn ? button?.entity : '';
     const hidden = button?.hidden;
 
@@ -394,5 +472,14 @@ export class VehicleButtons extends LitElement {
         }, 500);
       }
     });
+  }
+}
+
+declare global {
+  interface Window {
+    BenzButtons: VehicleButtons;
+  }
+  interface HTMLElementTagNameMap {
+    'vehicle-buttons': VehicleButtons;
   }
 }

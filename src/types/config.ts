@@ -1,7 +1,7 @@
 // Cutom card helpers:
 import { ActionConfig, LovelaceCardConfig, Themes, HomeAssistant, Theme } from 'custom-card-helpers';
 import { HassEntity } from 'home-assistant-js-websocket';
-
+import { Connection } from 'home-assistant-js-websocket';
 export interface ModeSpecificTheme {
   light: Partial<Theme>;
   dark: Partial<Theme>;
@@ -30,6 +30,7 @@ export type HA = HomeAssistant & {
   formatEntityState: (stateObj: HassEntity) => string;
   formatAttributeName: (entityId: string, attribute: string) => string;
   formatEntityAttributeValue: (entityId: HassEntity, attribute: string) => string;
+  connection: Connection;
 };
 /**
  * Configuration interface for the Vehicle Card.
