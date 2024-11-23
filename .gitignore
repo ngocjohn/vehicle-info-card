@@ -13,3 +13,4 @@ src/test/
 dist/
 dist/vehicle-info-card.js
 missing_translations.json
+.hass-config
