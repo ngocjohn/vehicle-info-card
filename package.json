@@ -38,7 +38,7 @@
     "apexcharts": "^4.0.0",
     "es-toolkit": "^1.17.0",
     "eslint": "^8.9.0",
-    "eslint-plugin-perfectionist": "^3.7.0",
+    "eslint-plugin-perfectionist": "^4.1.1",
     "eslint-plugin-unused-imports": "^4.1.4",
     "json5": "^2.2.3",
     "leaflet": "^1.9.4",
