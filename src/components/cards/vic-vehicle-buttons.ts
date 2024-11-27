@@ -1,5 +1,5 @@
 // Lit
-import { LitElement, css, html, TemplateResult, PropertyValues, nothing, CSSResultGroup, unsafeCSS } from 'lit';
+import { LitElement, css, html, TemplateResult, PropertyValues, CSSResultGroup, unsafeCSS } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
 // Swiper
@@ -8,6 +8,7 @@ import { Pagination } from 'swiper/modules';
 import swipercss from 'swiper/swiper-bundle.css';
 // Custom helpers
 import { UnsubscribeFunc } from 'home-assistant-js-websocket';
+import tinycolor from 'tinycolor2';
 // Local imports
 import { ButtonCardEntity, HA as HomeAssistant, VehicleCardConfig } from '../../types';
 import { addActions } from '../../utils/tap-action';
@@ -17,8 +18,9 @@ import { VehicleCard } from '../../vehicle-info-card';
 // Styles
 import mainstyle from '../../css/styles.css';
 
-const TEMPLATE_KEYS = ['secondary', 'notify'] as const;
+const TEMPLATE_KEYS = ['secondary', 'notify', 'icon_template', 'color_template'] as const;
 type TemplateKey = (typeof TEMPLATE_KEYS)[number];
+const COLOR_AlPHA = '.2';
 
 @customElement('vehicle-buttons')
 export class VehicleButtons extends LitElement {
@@ -26,14 +28,15 @@ export class VehicleButtons extends LitElement {
   @property({ attribute: false }) private component!: VehicleCard;
   @property({ attribute: false }) _config!: VehicleCardConfig;
   @property({ type: Object }) _buttons!: ButtonCardEntity;
+  @state() private _cardCurrentSwipeIndex?: number;
 
   @state() private _templateResults: Record<string, Partial<Record<TemplateKey, RenderTemplateResult | undefined>>> =
     {};
 
   @state() private _unsubRenderTemplates: Record<string, Map<TemplateKey, Promise<UnsubscribeFunc>>> = {};
 
-  private swiper: Swiper | null = null;
-  private activeSlideIndex: number = 0;
+  @state() swiper: Swiper | null = null;
+  @state() public activeSlideIndex: number = 0;
 
   constructor() {
     super();
@@ -42,13 +45,15 @@ export class VehicleButtons extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
+    console.log('Vehicle buttons connected');
     window.BenzButtons = this; // Expose the class to the window object
     this._tryConnect();
   }
 
   disconnectedCallback(): void {
-    super.disconnectedCallback();
+    console.log('Vehicle buttons disconnected');
     this._tryDisconnect();
+    super.disconnectedCallback();
   }
 
   static get styles(): CSSResultGroup {
@@ -58,11 +63,24 @@ export class VehicleButtons extends LitElement {
         #button-swiper {
           --swiper-pagination-bottom: -8px;
           --swiper-theme-color: var(--primary-text-color);
-          padding-bottom: 12px;
+          padding: 0 0 var(--vic-card-padding) 0;
+          border: none !important;
+          background: none !important;
+          overflow: visible;
         }
         .swiper-container {
-          display: flex;
+          width: 100%;
+          height: 100%;
         }
+        .swiper-slide {
+          height: 100%;
+          width: 100%;
+        }
+        .swiper-pagination {
+          margin-top: var(--swiper-pagination-bottom);
+          display: block;
+        }
+
         .swiper-pagination-bullet {
           background-color: var(--swiper-theme-color);
           transition: all 0.3s ease-in-out !important;
@@ -82,10 +100,8 @@ export class VehicleButtons extends LitElement {
   protected firstUpdated(_changedProperties: PropertyValues): void {
     super.firstUpdated(_changedProperties);
     if (this.useSwiper) {
-      this.updateComplete.then(() => {
-        this.initSwiper();
-        this._setButtonActions();
-      });
+      this.initSwiper();
+      this._setButtonActions();
     } else {
       this._setButtonActions();
     }
@@ -131,6 +147,11 @@ export class VehicleButtons extends LitElement {
         },
         {
           template: button[templateKey] ?? '',
+          variables: {
+            config: button,
+            user: this.hass.user!.name,
+            entity: button.entity,
+          },
         }
       );
 
@@ -196,20 +217,25 @@ export class VehicleButtons extends LitElement {
     }
   }
 
-  private _getCustomState(key: string, templateKey: string): string {
+  private _getCustomState(key: string, templateKey: string) {
     const button = this._buttons[key].button;
     switch (templateKey) {
       case 'secondary':
         const state = button.secondary
-          ? this._templateResults[key]?.secondary?.result ?? ''
+          ? this._templateResults[key]?.secondary?.result ?? button.secondary
           : button.attribute
           ? this.component.getFormattedAttributeState(button.entity, button.attribute)
           : this.component.getStateDisplay(button.entity);
         return state;
       case 'notify':
         return this._templateResults[key]?.notify?.result ?? '';
-      default:
-        return '';
+      case 'icon_template':
+        const icon = button.icon_template
+          ? this._templateResults[key]?.icon_template?.result.toString() ?? button.icon
+          : button.icon;
+        return icon.includes('mdi:') ? icon : '';
+      case 'color_template':
+        return this._templateResults[key]?.color_template?.result ?? '';
     }
   }
 
@@ -221,15 +247,10 @@ export class VehicleButtons extends LitElement {
     const paginationEl = swiperCon.querySelector('.swiper-pagination') as HTMLElement;
     this.swiper = new Swiper(swiperCon as HTMLElement, {
       modules: [Pagination],
-      centeredSlides: true,
       grabCursor: true,
       speed: 500,
       roundLengths: true,
       spaceBetween: 12,
-      keyboard: {
-        enabled: true,
-        onlyInViewport: true,
-      },
       loop: false,
       slidesPerView: 'auto',
       pagination: {
@@ -242,8 +263,12 @@ export class VehicleButtons extends LitElement {
       this.activeSlideIndex = this.swiper?.activeIndex ?? 0;
     });
 
-    if (this.activeSlideIndex !== 0 && this.swiper) {
-      this.swiper.slideTo(this.activeSlideIndex, 0, false);
+    if (
+      this.swiper &&
+      this._cardCurrentSwipeIndex !== undefined &&
+      this._cardCurrentSwipeIndex !== this.activeSlideIndex
+    ) {
+      this.swiper.slideTo(this._cardCurrentSwipeIndex, 0, false);
     }
   }
 
@@ -252,11 +277,10 @@ export class VehicleButtons extends LitElement {
     // console.log('render swiper');
     const baseButtons = this._buttons;
 
-    const showError = this._config.show_error_notify;
     return html`
       <section id="button-swiper">
         <div class="swiper-container">
-          <div class="swiper-wrapper">${this._buttonsGridGroup(baseButtons, showError)}</div>
+          <div class="swiper-wrapper">${this._buttonsGridGroup(baseButtons)}</div>
           <div class="swiper-pagination"></div>
         </div>
       </section>
@@ -267,12 +291,12 @@ export class VehicleButtons extends LitElement {
     // if (this.useSwiper) return html``;
     // console.log('render grid');
     const baseButtons = this._buttons;
-    const showError = this._config.show_error_notify;
+
     return html`
       <section id="button-swiper">
         <div class="grid-container">
           ${Object.keys(baseButtons).map((key) => {
-            return html`${this._renderButton(key, showError)} `;
+            return html`${this._renderButton(key)} `;
           })}
         </div>
       </section>
@@ -288,7 +312,7 @@ export class VehicleButtons extends LitElement {
   }
 
   // Chunked buttons into groups of 4 for slides in swiper
-  private _buttonsGridGroup(BaseButton: ButtonCardEntity, showError: boolean): TemplateResult {
+  private _buttonsGridGroup(BaseButton: ButtonCardEntity): TemplateResult {
     const rowSize = this.component.config?.button_grid?.rows_size ? this.component.config.button_grid.rows_size * 2 : 4;
     const chunkedCardTypes = this._chunkObject(BaseButton, rowSize); // Divide into groups of 4
     // console.log('chunked', chunkedCardTypes);
@@ -296,7 +320,7 @@ export class VehicleButtons extends LitElement {
       const buttons = html`
         <div class="grid-container">
           ${Object.keys(chunkedCardTypes[key]).map((key) => {
-            return html`${this._renderButton(key, showError)} `;
+            return html`${this._renderButton(key)} `;
           })}
         </div>
       `;
@@ -306,45 +330,40 @@ export class VehicleButtons extends LitElement {
   }
 
   // Render button template
-  private _renderButton(key: string, showError: boolean): TemplateResult {
-    const button = this._buttons[key].button;
-    const customBtn = this._buttons[key].custom_button;
-    const buttonName = customBtn ? button?.primary : this._buttons[key].default_name;
-    const buttonIcon = customBtn ? button?.icon : this._buttons[key].default_icon;
-    const secondaryInfo = customBtn ? this._getCustomState(key, 'secondary') : this.component.getSecondaryInfo(key);
-    const btnNotify = customBtn ? this._getCustomState(key, 'notify') : this.component.getErrorNotify(key);
-    const btnEntity = customBtn ? button?.entity : '';
-    const hidden = button?.hidden;
+  private _renderButton(key: string): TemplateResult {
+    const getTemplate = (templateKey: TemplateKey) => this._getCustomState(key, templateKey);
+    const { show_error_notify } = this._config;
+    const { button, custom_button, default_name, default_icon } = this._buttons[key];
+
+    const primary = custom_button ? button?.primary : default_name;
+    const icon = custom_button ? getTemplate('icon_template') : default_icon;
+    const secondary = custom_button ? getTemplate('secondary') : this.component.getSecondaryInfo(key);
+    const notify = custom_button ? getTemplate('notify') : this.component.getErrorNotify(key);
+    const entity = custom_button ? button?.entity : '';
+    const color = custom_button ? getTemplate('color_template') : '';
+    const iconBackground = color ? this._setColorAlpha(color) : this._getBackgroundColors();
 
     return html`
-      <div
-        id="${`button-${key}`}"
-        ?hide=${hidden}
-        class="grid-item click-shrink"
-        @click=${() => this._handleClick(key)}
-      >
+      <div id="${`button-${key}`}" class="grid-item click-shrink">
         <div class="click-container" id="${`button-action-${key}`}">
           <div class="item-icon">
-            <div class="icon-background">
+            <div class="icon-background" style=${`background-color: ${iconBackground}`}>
               <ha-state-icon
                 .hass=${this.hass}
-                .stateObj=${btnEntity ? this.hass.states[btnEntity] : undefined}
-                .icon=${buttonIcon}
+                .stateObj=${entity ? this.hass.states[entity] : undefined}
+                .icon=${icon}
+                style=${color ? `color: ${color}` : ''}
               ></ha-state-icon>
             </div>
-            ${showError
-              ? html`
-                  <div class="item-notify" ?hidden=${!btnNotify}>
-                    <ha-icon icon="mdi:alert-circle"></ha-icon>
-                  </div>
-                `
-              : nothing}
+            <div class="item-notify" ?hidden=${!notify || !show_error_notify}>
+              <ha-icon icon="mdi:alert-circle"></ha-icon>
+            </div>
           </div>
           <div class="item-content">
             <div class="primary">
-              <span>${buttonName}</span>
+              <span>${primary}</span>
             </div>
-            <span class="secondary">${secondaryInfo}</span>
+            <span class="secondary">${secondary}</span>
           </div>
         </div>
       </div>
@@ -367,6 +386,16 @@ export class VehicleButtons extends LitElement {
       return chunked;
     }, {} as ButtonCardEntity);
   };
+
+  private _setColorAlpha(color: string): string {
+    const colorObj = tinycolor(color);
+    return colorObj.setAlpha(COLOR_AlPHA).toRgbString();
+  }
+  private _getBackgroundColors(): string {
+    const cssColor = getComputedStyle(this).getPropertyValue('--primary-text-color');
+    const rgbaColor = this._setColorAlpha(cssColor);
+    return rgbaColor;
+  }
 
   private applyMarquee() {
     this.updateComplete.then(() => {
@@ -412,6 +441,7 @@ export class VehicleButtons extends LitElement {
     const button = this._buttons[btnId];
     const btnType = button?.button_type;
     if (btnType === 'default') {
+      this.component._currentSwipeIndex = this.activeSlideIndex;
       this.component._currentCardType = btnId;
     }
   };
