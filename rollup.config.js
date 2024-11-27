@@ -72,13 +72,15 @@ const plugins = [
 export default [
   {
     input: 'src/vehicle-info-card.ts',
-    output: {
-      dir: './dist',
-      format: 'es',
-      sourcemap: dev ? true : false,
-      inlineDynamicImports: true,
-      banner: custombanner,
-    },
+    output: [
+      {
+        dir: './dist',
+        format: 'es',
+        sourcemap: dev ? true : false,
+        inlineDynamicImports: true,
+        banner: custombanner,
+      },
+    ],
     watch: {
       exclude: 'node_modules/**',
     },
