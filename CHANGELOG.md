@@ -1,3 +1,28 @@
+<a id="v1.6.0"></a>
+# [v1.6.0](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.6.0) - 2024-11-27
+
+<!-- Release notes generated using configuration in .github/release.yml at v1.6.0 -->
+
+## What's Changed
+### Fixes 🐛
+* Fix: Render Template Subscription for Non-Admin Users by [@ngocjohn](https://github.com/ngocjohn) in [#87](https://github.com/ngocjohn/vehicle-info-card/pull/87)
+### Translations 🌍
+* Add spanish translation by [@ivangarrera](https://github.com/ivangarrera) in [#76](https://github.com/ngocjohn/vehicle-info-card/pull/76)
+* Dutch translation added by [@jhuskens](https://github.com/jhuskens) in [#83](https://github.com/ngocjohn/vehicle-info-card/pull/83)
+### Other Changes
+* Updated readme to reflect required url property in images by [@silashansen](https://github.com/silashansen) in [#81](https://github.com/ngocjohn/vehicle-info-card/pull/81)
+* chore(deps-dev): bump apexcharts from 3.54.1 to 4.0.0 by [@dependabot](https://github.com/dependabot) in [#79](https://github.com/ngocjohn/vehicle-info-card/pull/79)
+
+## New Contributors
+* [@ivangarrera](https://github.com/ivangarrera) made their first contribution in [#76](https://github.com/ngocjohn/vehicle-info-card/pull/76)
+* [@silashansen](https://github.com/silashansen) made their first contribution in [#81](https://github.com/ngocjohn/vehicle-info-card/pull/81)
+* [@jhuskens](https://github.com/jhuskens) made their first contribution in [#83](https://github.com/ngocjohn/vehicle-info-card/pull/83)
+
+**Full Changelog**: https://github.com/ngocjohn/vehicle-info-card/compare/v1.5.0...v1.6.0
+
+[Changes][v1.6.0]
+
+
 <a id="v1.5.0"></a>
 # [v1.5.0](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.5.0) - 2024-10-21
 
@@ -356,6 +381,7 @@ This update enhances the usability and accuracy of our custom card, providing cl
 [Changes][v1.0.0]
 
 
+[v1.6.0]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.5.0...v1.6.0
 [v1.5.0]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.4.0...v1.5.0
 [v1.4.0]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.3.1...v1.4.0
 [v1.3.1]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.3.0...v1.3.1
