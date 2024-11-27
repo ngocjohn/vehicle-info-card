@@ -20,6 +20,7 @@ import {
 import { VehicleCard } from '../vehicle-info-card';
 import { getAddressFromGoggle, getAddressFromOpenStreet } from './helpers';
 import { fetchLatestReleaseTag } from './loader';
+
 /**
  *
  * @param car
@@ -130,24 +131,26 @@ export async function createCustomButtons(
   const stateValue = button.secondary
     ? await getTemplateValue(hass, button.secondary)
     : button.attribute && button.entity
-      ? hass.formatEntityAttributeValue(hass.states[button.entity], button.attribute)
-      : button.entity
-        ? hass.formatEntityState(hass.states[button.entity])
-        : '';
+    ? hass.formatEntityAttributeValue(hass.states[button.entity], button.attribute)
+    : button.entity
+    ? hass.formatEntityState(hass.states[button.entity])
+    : '';
 
   const notify = button.notify ? await getBooleanTemplate(hass, button.notify) : false;
-
+  const icon = button.icon_template ? await getTemplateValue(hass, button.icon_template) : button.icon || '';
+  const color = button.color_template ? await getTemplateValue(hass, button.color_template) : '';
   const customButton: CustomButtonEntity = {
     enabled: true,
     hide: false,
     primary: button.primary,
     secondary: stateValue,
-    icon: button.icon || '',
+    icon,
     notify,
     button_type: button.button_type || 'default',
     button_action: button.button_action,
     entity: button.entity || '',
     attribute: button.attribute || '',
+    color,
   };
 
   return customButton;
@@ -245,6 +248,8 @@ export async function getDefaultButton(
       secondary: button?.secondary || '',
       attribute: button?.attribute || '',
       notify: button?.notify || '',
+      icon_template: button?.icon_template || '',
+      color_template: button?.color_template || '',
     },
     button_type: button?.button_type || 'default',
     card_type: useCustom ? ('custom' as const) : ('default' as const),
@@ -274,6 +279,8 @@ export async function getAddedButton(
       secondary: button.secondary || '',
       attribute: button.attribute || '',
       notify: button.notify || '',
+      icon_template: button.icon_template || '',
+      color_template: button.color_template || '',
     },
     button_type: button.button_type || 'default',
     card_type: 'custom' as const,

@@ -218,7 +218,11 @@
             "toastNewCard": "Přidána nová karta!",
             "buttonGridSwipe": "Konfigurace mřížky tlačítek",
             "swipeRows": "Řádky na slide",
-            "useButtonSwipe": "Použít swipe pro tlačítka"
+            "useButtonSwipe": "Použít swipe pro tlačítka",
+            "iconInfo": "Šablona ikony",
+            "iconInfoHelper": "Použijte šablonu Jinja2 k zobrazení ikony",
+            "colorInfo": "Šablona barvy",
+            "colorInfoHelper": "Použijte šablonu Jinja2 ke změně barvy ikony"
         },
         "common": {
             "checkAll": "Vyrat vše",

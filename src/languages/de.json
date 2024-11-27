@@ -218,7 +218,11 @@
             "toastNewCard": "Neue Karte hinzugefügt!",
             "buttonGridSwipe": "Konfiguration des Schaltflächengitters",
             "swipeRows": "Zeilen pro Folie",
-            "useButtonSwipe": "Wischen für Schaltflächen verwenden"
+            "useButtonSwipe": "Wischen für Schaltflächen verwenden",
+            "iconInfo": "Icon-Vorlage",
+            "iconInfoHelper": "Verwenden Sie eine Jinja2-Vorlage, um das Icon anzuzeigen",
+            "colorInfo": "Farbvorlage",
+            "colorInfoHelper": "Verwenden Sie eine Jinja2-Vorlage, um die Farbe des Symbols zu ändern"
         },
         "common": {
             "checkAll": "Alles auswählen",

@@ -218,7 +218,11 @@
             "toastNewCard": "Nuova card aggiunta!",
             "buttonGridSwipe": "Configurazione della griglia dei pulsanti",
             "swipeRows": "Immagini per riga",
-            "useButtonSwipe": "Utilizzare lo scorrimento per i pulsanti"
+            "useButtonSwipe": "Utilizzare lo scorrimento per i pulsanti",
+            "iconInfo": "Modello di icona",
+            "iconInfoHelper": "Usa un modello Jinja2 per mostrare l'icona",
+            "colorInfo": "Modello di colore",
+            "colorInfoHelper": "Usa un modello Jinja2 per cambiare il colore dell'icona"
         },
         "common": {
             "checkAll": "Seleziona tutto",

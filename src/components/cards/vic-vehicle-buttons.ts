@@ -1,32 +1,59 @@
-import { LitElement, css, html, TemplateResult, PropertyValues, nothing, CSSResultGroup, unsafeCSS } from 'lit';
+// Lit
+import { LitElement, css, html, TemplateResult, PropertyValues, CSSResultGroup, unsafeCSS } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
+// Swiper
 import Swiper from 'swiper';
 import { Pagination } from 'swiper/modules';
 import swipercss from 'swiper/swiper-bundle.css';
-
-import mainstyle from '../../css/styles.css';
-import { ButtonCardEntity, HA as HomeAssistant, VehicleCardConfig, CustomButton } from '../../types';
-import { getTemplateValue, getBooleanTemplate } from '../../utils';
+// Custom helpers
+import { UnsubscribeFunc } from 'home-assistant-js-websocket';
+import tinycolor from 'tinycolor2';
+// Local imports
+import { ButtonCardEntity, HA as HomeAssistant, VehicleCardConfig } from '../../types';
 import { addActions } from '../../utils/tap-action';
+import { RenderTemplateResult, subscribeRenderTemplate } from '../../utils/ws-templates';
 import { VehicleCard } from '../../vehicle-info-card';
+
+// Styles
+import mainstyle from '../../css/styles.css';
+
+const TEMPLATE_KEYS = ['secondary', 'notify', 'icon_template', 'color_template'] as const;
+type TemplateKey = (typeof TEMPLATE_KEYS)[number];
+const COLOR_AlPHA = '.2';
 
 @customElement('vehicle-buttons')
 export class VehicleButtons extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
   @property({ attribute: false }) private component!: VehicleCard;
-  @property({ type: Object }) _config!: VehicleCardConfig;
+  @property({ attribute: false }) _config!: VehicleCardConfig;
   @property({ type: Object }) _buttons!: ButtonCardEntity;
+  @state() private _cardCurrentSwipeIndex?: number;
 
-  @state() private _isButtonReady: boolean = false;
-  @state() _secondaryInfo: { [key: string]: CustomButton } = {};
+  @state() private _templateResults: Record<string, Partial<Record<TemplateKey, RenderTemplateResult | undefined>>> =
+    {};
 
-  private swiper: Swiper | null = null;
-  private activeSlideIndex: number = 0;
+  @state() private _unsubRenderTemplates: Record<string, Map<TemplateKey, Promise<UnsubscribeFunc>>> = {};
+
+  @state() swiper: Swiper | null = null;
+  @state() public activeSlideIndex: number = 0;
 
   constructor() {
     super();
     this._handleClick = this._handleClick.bind(this);
+  }
+
+  connectedCallback(): void {
+    super.connectedCallback();
+    console.log('Vehicle buttons connected');
+    window.BenzButtons = this; // Expose the class to the window object
+    this._tryConnect();
+  }
+
+  disconnectedCallback(): void {
+    console.log('Vehicle buttons disconnected');
+    this._tryDisconnect();
+    super.disconnectedCallback();
   }
 
   static get styles(): CSSResultGroup {
@@ -36,11 +63,24 @@ export class VehicleButtons extends LitElement {
         #button-swiper {
           --swiper-pagination-bottom: -8px;
           --swiper-theme-color: var(--primary-text-color);
-          padding-bottom: 12px;
+          padding: 0 0 var(--vic-card-padding) 0;
+          border: none !important;
+          background: none !important;
+          overflow: visible;
         }
         .swiper-container {
-          display: flex;
+          width: 100%;
+          height: 100%;
         }
+        .swiper-slide {
+          height: 100%;
+          width: 100%;
+        }
+        .swiper-pagination {
+          margin-top: var(--swiper-pagination-bottom);
+          display: block;
+        }
+
         .swiper-pagination-bullet {
           background-color: var(--swiper-theme-color);
           transition: all 0.3s ease-in-out !important;
@@ -59,79 +99,144 @@ export class VehicleButtons extends LitElement {
 
   protected firstUpdated(_changedProperties: PropertyValues): void {
     super.firstUpdated(_changedProperties);
-    this._fetchSecondaryInfo();
-  }
-
-  protected updated(changedProperties: PropertyValues): void {
-    super.updated(changedProperties);
-    if (changedProperties.has('hass') && this._isButtonReady) {
-      this.checkCustomChanged();
-    }
-  }
-
-  private async checkCustomChanged(): Promise<void> {
-    let changed = false;
-    const changedKeys: string[] = [];
-    for (const key in this._secondaryInfo) {
-      const oldState = this._secondaryInfo[key].state;
-      const oldNotify = this._secondaryInfo[key].notify;
-      const { state, notify } = await this._getSecondaryInfo(key);
-      if (oldState !== state || oldNotify !== notify) {
-        changedKeys.push(key);
-        changed = true;
-      }
-    }
-
-    if (changed) {
-      const newSecondaryInfo = { ...this._secondaryInfo }; // Copy the object
-      await Promise.all(
-        changedKeys.map(async (key) => {
-          newSecondaryInfo[key] = await this._getSecondaryInfo(key);
-        })
-      );
-
-      // Trigger reactivity by reassigning the object
-      this._secondaryInfo = newSecondaryInfo;
-
-      // Force a re-render
-      this.requestUpdate();
-    }
-  }
-
-  private async _fetchSecondaryInfo(): Promise<void> {
-    this._isButtonReady = false;
-
-    // console.log('prepare custom button:', this._customButtonReady);
-    const filteredBtns = Object.keys(this._buttons).filter((key) => this._buttons[key].custom_button);
-    await Promise.all(
-      filteredBtns.map(async (key) => {
-        this._secondaryInfo[key] = await this._getSecondaryInfo(key);
-      })
-    );
-
-    this._isButtonReady = true;
-    // console.log('custom button ready:', this._customButtonReady);
     if (this.useSwiper) {
-      this.updateComplete.then(() => {
-        this.initSwiper();
-        this._setButtonActions();
-      });
+      this.initSwiper();
+      this._setButtonActions();
     } else {
       this._setButtonActions();
     }
   }
 
-  private async _getSecondaryInfo(key: string): Promise<CustomButton> {
+  protected updated(changedProperties: PropertyValues): void {
+    super.updated(changedProperties);
+  }
+
+  public isTemplate(btnKey: string, templateKey: string): boolean {
+    const value = this._buttons[btnKey].button[templateKey];
+    return value?.includes('{');
+  }
+
+  private async _tryConnect(): Promise<void> {
+    const customKeys = Object.keys(this._buttons).filter((key) => this._buttons[key].custom_button);
+
+    for (const key of customKeys) {
+      TEMPLATE_KEYS.forEach((templateKey) => {
+        this._subscribeTemplate(key, templateKey);
+      });
+    }
+  }
+
+  private async _subscribeTemplate(key: string, templateKey: TemplateKey): Promise<void> {
+    if (!this.hass || !this.isTemplate(key, templateKey)) {
+      return;
+    }
+
     const button = this._buttons[key].button;
 
-    const state = button.secondary
-      ? await getTemplateValue(this.hass, button.secondary)
-      : button.attribute
-        ? this.component.getFormattedAttributeState(button.entity, button.attribute)
-        : this.component.getStateDisplay(button.entity);
-    const notify = (await getBooleanTemplate(this.hass, button.notify)) ?? false;
+    try {
+      const sub = subscribeRenderTemplate(
+        this.hass.connection,
+        (result) => {
+          this._templateResults = {
+            ...this._templateResults,
+            [key]: {
+              ...(this._templateResults[key] || {}),
+              [templateKey]: result,
+            },
+          };
+        },
+        {
+          template: button[templateKey] ?? '',
+          variables: {
+            config: button,
+            user: this.hass.user!.name,
+            entity: button.entity,
+          },
+        }
+      );
 
-    return { state, notify };
+      // Ensure the nested map for the button exists
+      if (!this._unsubRenderTemplates[key]) {
+        this._unsubRenderTemplates[key] = new Map();
+      }
+
+      this._unsubRenderTemplates[key].set(templateKey, sub);
+      await sub; // Ensure subscription completes
+    } catch (_err) {
+      const result = {
+        result: button[templateKey] ?? '',
+        listeners: {
+          all: false,
+          domains: [],
+          entities: [],
+          time: false,
+        },
+      };
+      this._templateResults = {
+        ...this._templateResults,
+        [key]: {
+          ...(this._templateResults[key] || {}),
+          [templateKey]: result,
+        },
+      };
+      if (this._unsubRenderTemplates[key]) {
+        this._unsubRenderTemplates[key].delete(templateKey);
+      }
+    }
+  }
+
+  private async _tryDisconnect(): Promise<void> {
+    for (const key in this._unsubRenderTemplates) {
+      await this._tryDisconnectKey(key);
+    }
+  }
+
+  private async _tryDisconnectKey(buttonKey: string): Promise<void> {
+    const unsubMap = this._unsubRenderTemplates[buttonKey];
+    if (!unsubMap) {
+      return;
+    }
+
+    for (const [templateKey, unsubPromise] of unsubMap.entries()) {
+      try {
+        const unsub = await unsubPromise;
+        unsub();
+        unsubMap.delete(templateKey);
+      } catch (err: any) {
+        if (err.code === 'not_found' || err.code === 'template_error') {
+          // If we get here, the connection was probably already closed. Ignore.
+        } else {
+          throw err;
+        }
+      }
+    }
+
+    // Remove the button key from the unsub map if all subscriptions are cleared
+    if (unsubMap.size === 0) {
+      delete this._unsubRenderTemplates[buttonKey];
+    }
+  }
+
+  private _getCustomState(key: string, templateKey: string) {
+    const button = this._buttons[key].button;
+    switch (templateKey) {
+      case 'secondary':
+        const state = button.secondary
+          ? this._templateResults[key]?.secondary?.result ?? button.secondary
+          : button.attribute
+          ? this.component.getFormattedAttributeState(button.entity, button.attribute)
+          : this.component.getStateDisplay(button.entity);
+        return state;
+      case 'notify':
+        return this._templateResults[key]?.notify?.result ?? '';
+      case 'icon_template':
+        const icon = button.icon_template
+          ? this._templateResults[key]?.icon_template?.result.toString() ?? button.icon
+          : button.icon;
+        return icon.includes('mdi:') ? icon : '';
+      case 'color_template':
+        return this._templateResults[key]?.color_template?.result ?? '';
+    }
   }
 
   private initSwiper(): void {
@@ -142,15 +247,10 @@ export class VehicleButtons extends LitElement {
     const paginationEl = swiperCon.querySelector('.swiper-pagination') as HTMLElement;
     this.swiper = new Swiper(swiperCon as HTMLElement, {
       modules: [Pagination],
-      centeredSlides: true,
       grabCursor: true,
       speed: 500,
       roundLengths: true,
       spaceBetween: 12,
-      keyboard: {
-        enabled: true,
-        onlyInViewport: true,
-      },
       loop: false,
       slidesPerView: 'auto',
       pagination: {
@@ -163,8 +263,12 @@ export class VehicleButtons extends LitElement {
       this.activeSlideIndex = this.swiper?.activeIndex ?? 0;
     });
 
-    if (this.activeSlideIndex !== 0 && this.swiper) {
-      this.swiper.slideTo(this.activeSlideIndex, 0, false);
+    if (
+      this.swiper &&
+      this._cardCurrentSwipeIndex !== undefined &&
+      this._cardCurrentSwipeIndex !== this.activeSlideIndex
+    ) {
+      this.swiper.slideTo(this._cardCurrentSwipeIndex, 0, false);
     }
   }
 
@@ -173,11 +277,10 @@ export class VehicleButtons extends LitElement {
     // console.log('render swiper');
     const baseButtons = this._buttons;
 
-    const showError = this._config.show_error_notify;
     return html`
       <section id="button-swiper">
         <div class="swiper-container">
-          <div class="swiper-wrapper">${this._buttonsGridGroup(baseButtons, showError)}</div>
+          <div class="swiper-wrapper">${this._buttonsGridGroup(baseButtons)}</div>
           <div class="swiper-pagination"></div>
         </div>
       </section>
@@ -188,12 +291,12 @@ export class VehicleButtons extends LitElement {
     // if (this.useSwiper) return html``;
     // console.log('render grid');
     const baseButtons = this._buttons;
-    const showError = this._config.show_error_notify;
+
     return html`
       <section id="button-swiper">
         <div class="grid-container">
           ${Object.keys(baseButtons).map((key) => {
-            return html`${this._renderButton(key, showError)} `;
+            return html`${this._renderButton(key)} `;
           })}
         </div>
       </section>
@@ -201,7 +304,6 @@ export class VehicleButtons extends LitElement {
   }
 
   protected render(): TemplateResult {
-    if (!this._isButtonReady) return html``;
     return html`${when(
       this.useSwiper,
       () => this._renderSwiper(),
@@ -210,7 +312,7 @@ export class VehicleButtons extends LitElement {
   }
 
   // Chunked buttons into groups of 4 for slides in swiper
-  private _buttonsGridGroup(BaseButton: ButtonCardEntity, showError: boolean): TemplateResult {
+  private _buttonsGridGroup(BaseButton: ButtonCardEntity): TemplateResult {
     const rowSize = this.component.config?.button_grid?.rows_size ? this.component.config.button_grid.rows_size * 2 : 4;
     const chunkedCardTypes = this._chunkObject(BaseButton, rowSize); // Divide into groups of 4
     // console.log('chunked', chunkedCardTypes);
@@ -218,7 +320,7 @@ export class VehicleButtons extends LitElement {
       const buttons = html`
         <div class="grid-container">
           ${Object.keys(chunkedCardTypes[key]).map((key) => {
-            return html`${this._renderButton(key, showError)} `;
+            return html`${this._renderButton(key)} `;
           })}
         </div>
       `;
@@ -228,45 +330,40 @@ export class VehicleButtons extends LitElement {
   }
 
   // Render button template
-  private _renderButton(key: string, showError: boolean): TemplateResult {
-    const button = this._buttons[key].button;
-    const customBtn = this._buttons[key].custom_button;
-    const buttonName = customBtn ? button?.primary : this._buttons[key].default_name;
-    const buttonIcon = customBtn ? button?.icon : this._buttons[key].default_icon;
-    const secondaryInfo = customBtn ? this._secondaryInfo[key].state : this.component.getSecondaryInfo(key);
-    const btnNotify = customBtn ? this._secondaryInfo[key].notify : this.component.getErrorNotify(key);
-    const btnEntity = customBtn ? button?.entity : '';
-    const hidden = button?.hidden;
+  private _renderButton(key: string): TemplateResult {
+    const getTemplate = (templateKey: TemplateKey) => this._getCustomState(key, templateKey);
+    const { show_error_notify } = this._config;
+    const { button, custom_button, default_name, default_icon } = this._buttons[key];
+
+    const primary = custom_button ? button?.primary : default_name;
+    const icon = custom_button ? getTemplate('icon_template') : default_icon;
+    const secondary = custom_button ? getTemplate('secondary') : this.component.getSecondaryInfo(key);
+    const notify = custom_button ? getTemplate('notify') : this.component.getErrorNotify(key);
+    const entity = custom_button ? button?.entity : '';
+    const color = custom_button ? getTemplate('color_template') : '';
+    const iconBackground = color ? this._setColorAlpha(color) : this._getBackgroundColors();
 
     return html`
-      <div
-        id="${`button-${key}`}"
-        ?hide=${hidden}
-        class="grid-item click-shrink"
-        @click=${() => this._handleClick(key)}
-      >
+      <div id="${`button-${key}`}" class="grid-item click-shrink">
         <div class="click-container" id="${`button-action-${key}`}">
           <div class="item-icon">
-            <div class="icon-background">
+            <div class="icon-background" style=${`background-color: ${iconBackground}`}>
               <ha-state-icon
                 .hass=${this.hass}
-                .stateObj=${btnEntity ? this.hass.states[btnEntity] : undefined}
-                .icon=${buttonIcon}
+                .stateObj=${entity ? this.hass.states[entity] : undefined}
+                .icon=${icon}
+                style=${color ? `color: ${color}` : ''}
               ></ha-state-icon>
             </div>
-            ${showError
-              ? html`
-                  <div class="item-notify" ?hidden=${!btnNotify}>
-                    <ha-icon icon="mdi:alert-circle"></ha-icon>
-                  </div>
-                `
-              : nothing}
+            <div class="item-notify" ?hidden=${!notify || !show_error_notify}>
+              <ha-icon icon="mdi:alert-circle"></ha-icon>
+            </div>
           </div>
           <div class="item-content">
             <div class="primary">
-              <span>${buttonName}</span>
+              <span>${primary}</span>
             </div>
-            <span class="secondary">${secondaryInfo}</span>
+            <span class="secondary">${secondary}</span>
           </div>
         </div>
       </div>
@@ -289,6 +386,16 @@ export class VehicleButtons extends LitElement {
       return chunked;
     }, {} as ButtonCardEntity);
   };
+
+  private _setColorAlpha(color: string): string {
+    const colorObj = tinycolor(color);
+    return colorObj.setAlpha(COLOR_AlPHA).toRgbString();
+  }
+  private _getBackgroundColors(): string {
+    const cssColor = getComputedStyle(this).getPropertyValue('--primary-text-color');
+    const rgbaColor = this._setColorAlpha(cssColor);
+    return rgbaColor;
+  }
 
   private applyMarquee() {
     this.updateComplete.then(() => {
@@ -334,6 +441,7 @@ export class VehicleButtons extends LitElement {
     const button = this._buttons[btnId];
     const btnType = button?.button_type;
     if (btnType === 'default') {
+      this.component._currentSwipeIndex = this.activeSlideIndex;
       this.component._currentCardType = btnId;
     }
   };
@@ -394,5 +502,14 @@ export class VehicleButtons extends LitElement {
         }, 500);
       }
     });
+  }
+}
+
+declare global {
+  interface Window {
+    BenzButtons: VehicleButtons;
+  }
+  interface HTMLElementTagNameMap {
+    'vehicle-buttons': VehicleButtons;
   }
 }

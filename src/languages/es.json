@@ -218,7 +218,11 @@
             "toastNewCard": "¡Nueva tarjeta añadida!",
             "buttonGridSwipe": "Configuración de cuadrícula de botones",
             "swipeRows": "Filas por diapositiva",
-            "useButtonSwipe": "Usar deslizamiento para botones"
+            "useButtonSwipe": "Usar deslizamiento para botones",
+            "iconInfo": "Plantilla de icono",
+            "iconInfoHelper": "Usa una plantilla Jinja2 para mostrar el icono",
+            "colorInfo": "Plantilla de color",
+            "colorInfoHelper": "Usa una plantilla Jinja2 para cambiar el color del icono"
         },
         "common": {
             "checkAll": "Seleccionar todo",

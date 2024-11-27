@@ -2,11 +2,12 @@
 
 import { isString } from 'es-toolkit';
 import { LitElement, html, TemplateResult, CSSResultGroup } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 
 import editorcss from '../../css/editor.css';
 import { VehicleCardEditor } from '../../editor';
 import { ExtendedButtonConfigItem, CardTypeConfig } from '../../types';
+import './custom-yaml-editor';
 
 @customElement('custom-button-template')
 export class CustomButtonTemplate extends LitElement {
@@ -14,6 +15,7 @@ export class CustomButtonTemplate extends LitElement {
   @property({ attribute: false }) button!: ExtendedButtonConfigItem;
   @property({ attribute: false }) card!: CardTypeConfig;
   @property({ type: Boolean }) isButtonPreview: boolean = false;
+  @state() _yamlMode = false;
 
   static get styles(): CSSResultGroup {
     return [editorcss];
@@ -50,18 +52,25 @@ export class CustomButtonTemplate extends LitElement {
         >
       </div>
       <div class="item-content">
-        ${checkboxConfigs.map(
-          (config) => html`
-            <ha-formfield .label=${config.label}>
-              <ha-checkbox
-                .checked=${config.value}
-                .configValue=${config.configValue}
-                .configBtnType=${this.card.button}
-                @change=${(ev: Event) => this._dispatchEvent(ev, 'btn-changed')}
-              ></ha-checkbox>
-            </ha-formfield>
-          `
-        )}
+        <ha-button @click=${() => (this._yamlMode = !this._yamlMode)}>
+          ${this._yamlMode ? 'Hide' : 'Show'} YAML
+        </ha-button>
+      </div>
+      <div>
+        <div class="item-content">
+          ${checkboxConfigs.map(
+            (config) => html`
+              <ha-formfield .label=${config.label}>
+                <ha-checkbox
+                  .checked=${config.value}
+                  .configValue=${config.configValue}
+                  .configBtnType=${this.card.button}
+                  @change=${(ev: Event) => this._dispatchEvent(ev, 'btn-changed')}
+                ></ha-checkbox>
+              </ha-formfield>
+            `
+          )}
+        </div>
       </div>
       <div class="item-content">
         <ha-combo-box
@@ -144,61 +153,83 @@ export class CustomButtonTemplate extends LitElement {
     return html` ${primaryInput}${iconSelector} ${entitySelector}${attributeSelector}`;
   }
 
-  private _templateUI(label: string, value: string, configValue: string, helper: string): TemplateResult {
-    const button = this.card.button;
+  private _createTemplateSelector(configKey: string): TemplateResult {
+    const cardButton = this.card.button;
+    const button = this.button;
+    const value = button[configKey] || '';
+    const localTrans = configKey.replace('_template', '');
+    const label = this.localizeKey(`${localTrans}Info`);
+    const helper = this.localizeKey(`${localTrans}InfoHelper`);
+
+    return html` <div>
+      <div>
+        <ha-selector
+          .hass=${this.editor.hass}
+          .value=${value}
+          .configValue=${configKey}
+          .configBtnType=${cardButton}
+          .label=${label}
+          .helper=${helper}
+          .required=${false}
+          .selector=${{ template: {} }}
+          @value-changed=${(ev: any) => this._dispatchEvent(ev, 'btn-changed')}
+        ></ha-selector>
+      </div>
+    </div>`;
+  }
+
+  private _renderTemplateSelector(): TemplateResult {
+    const templateSelectors = ['secondary', 'notify', 'icon_template', 'color_template'];
+    return html`${templateSelectors.map((configKey) => this._createTemplateSelector(configKey))}`;
+  }
+
+  private _renderYamlEditor(): TemplateResult {
+    if (!this._yamlMode) {
+      return html``;
+    }
+    const isDefaultCard = this.button.isDefaultCard;
+    const defaultConfig = isDefaultCard
+      ? this.editor._config[this.cardButton]
+      : this.editor._config['added_cards'][this.cardButton].button;
 
     return html`
-      <div>
-        <p>${label}</p>
-        <ha-code-editor
-          .mode=${'jinja2'}
-          .dir=${'ltr'}
-          .value=${value}
-          .configValue=${configValue}
-          .configBtnType=${button}
-          @value-changed=${(ev: any) => this._dispatchEvent(ev, 'btn-changed')}
-          .linewrap=${false}
-          .autofocus=${true}
-          .autocompleteEntities=${true}
-          .autocompleteIcons=${true}
-        ></ha-code-editor>
-        <ha-input-helper-text>${helper}</ha-input-helper-text>
-      </div>
+      <custom-yaml-editor
+        .hass=${this.editor.hass}
+        .editor=${this.editor}
+        .configDefault=${defaultConfig}
+        .isDefaultCard=${isDefaultCard}
+        .configType=${this.cardButton}
+      ></custom-yaml-editor>
     `;
   }
 
   render(): TemplateResult {
-    const localizeKey = this.localizeKey;
-    const { notify, secondary } = this.button;
     const editorHeader = this._editorHeader();
     const buttonTitleIconForms = this._buttonTitleIconForms();
-    const secondaryUI = this._templateUI(
-      localizeKey('secondaryInfo'),
-      secondary || '',
-      'secondary',
-      localizeKey('secondaryInfoHelper')
-    );
-    const notifyUI = this._templateUI(
-      localizeKey('notifyInfo'),
-      notify || '',
-      'notify',
-      localizeKey('notifyInfoHelper')
-    );
+    const templateConfig = this._renderTemplateSelector();
+    const yamlEditor = this._renderYamlEditor();
 
-    return html` <div class="card-button-cfg">${editorHeader}${buttonTitleIconForms}</div>
-      ${secondaryUI}${notifyUI}`;
+    const uiModeWrapper = html`
+      <div class="card-button-cfg">
+        ${buttonTitleIconForms}</div> ${templateConfig}
+      </div>`;
+
+    return html`<div class="card-button-cfg" > ${editorHeader} </div> ${
+      this._yamlMode ? yamlEditor : uiModeWrapper
+    } </div >`;
   }
 
   private _dispatchEvent(ev: any, type: string) {
+    const customEventValues = ['attribute', 'button_type', 'secondary', 'notify', 'icon_template', 'color_template'];
     const target = ev.target;
     const configValue = target?.configValue;
     const configBtnType = target?.configBtnType;
     const newValue =
       target.checked !== undefined
         ? target.checked
-        : configValue === 'attribute' || configValue === 'button_type'
-          ? ev.detail.value
-          : target.value;
+        : customEventValues.includes(configValue)
+        ? ev.detail.value
+        : target.value;
     const value = isString(newValue) ? newValue.trim() : newValue;
     const eventDetail = {
       detail: {

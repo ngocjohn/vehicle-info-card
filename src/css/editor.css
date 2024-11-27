@@ -353,6 +353,7 @@ h3 {
 .image-input {
   text-transform: uppercase !important;
   letter-spacing: inherit;
+  width: inherit;
 }
 
 .sub-card-header {

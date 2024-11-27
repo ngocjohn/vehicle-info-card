@@ -218,7 +218,11 @@
             "toastNewCard": "Pridaná nová karta!",
             "buttonGridSwipe": "Konfigurácia mriežky tlačidiel",
             "swipeRows": "Riadky na snímku",
-            "useButtonSwipe": "Použiť swipe pre tlačidlá"
+            "useButtonSwipe": "Použiť swipe pre tlačidlá",
+            "iconInfo": "Šablóna ikony",
+            "iconInfoHelper": "Použite šablónu Jinja2 na zobrazenie ikony",
+            "colorInfo": "Šablóna farieb",
+            "colorInfoHelper": "Použite šablónu Jinja2 na zmenu farby ikony"
         },
         "common": {
             "checkAll": "Zaškrtnúť všetko",

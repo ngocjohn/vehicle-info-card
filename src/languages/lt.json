@@ -218,7 +218,11 @@
             "toastNewCard": "Pridėta nauja kortelė!",
             "buttonGridSwipe": "Mygtukų tinklelio konfigūracija",
             "swipeRows": "Eilutės per skaidrę",
-            "useButtonSwipe": "Naudoti braukimą mygtukams"
+            "useButtonSwipe": "Naudoti braukimą mygtukams",
+            "iconInfo": "Piktogramos šablonas",
+            "iconInfoHelper": "Naudokite Jinja2 šabloną, kad būtų rodoma piktograma",
+            "colorInfo": "Spalvos šablonas",
+            "colorInfoHelper": "Naudokite Jinja2 šabloną spalvoms keisti"
         },
         "common": {
             "checkAll": "Pažymėkite visus",

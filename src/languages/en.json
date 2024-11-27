@@ -218,7 +218,11 @@
             "toastNewCard": "New card added!",
             "buttonGridSwipe": "Buttons grid configuration",
             "swipeRows": "Rows per slide",
-            "useButtonSwipe": "Use swipe for buttons"
+            "useButtonSwipe": "Use swipe for buttons",
+            "iconInfo": "Icon template",
+            "iconInfoHelper": "Use Jinja2 template to display icon",
+            "colorInfo": "Color template",
+            "colorInfoHelper": "Use Jinja2 template to change the color of icon"
         },
         "common": {
             "checkAll": "Check all",

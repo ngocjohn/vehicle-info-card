@@ -218,7 +218,11 @@
             "toastNewCard": "Nieuwe kaart toegevoegd!",
             "buttonGridSwipe": "Knoppenraster configuratie",
             "swipeRows": "Rijen per slide",
-            "useButtonSwipe": "Gebruik vegen voor knoppen"
+            "useButtonSwipe": "Gebruik vegen voor knoppen",
+            "iconInfo": "Pictogram sjabloon",
+            "iconInfoHelper": "Gebruik een Jinja2-sjabloon om het pictogram weer te geven",
+            "colorInfo": "Kleursjabloon",
+            "colorInfoHelper": "Gebruik een Jinja2-sjabloon om de kleur van het pictogram te wijzigen"
         },
         "common": {
             "checkAll": "Controleer alles",

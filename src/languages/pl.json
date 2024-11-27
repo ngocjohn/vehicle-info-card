@@ -218,7 +218,11 @@
             "toastNewCard": "Nowa karta dodana!",
             "buttonGridSwipe": "Konfiguracja siatki przycisków",
             "swipeRows": "Wiersze na slajd",
-            "useButtonSwipe": "Użyj przesunięcia dla przycisków"
+            "useButtonSwipe": "Użyj przesunięcia dla przycisków",
+            "iconInfo": "Szablon ikony",
+            "iconInfoHelper": "Użyj szablonu Jinja2 do wyświetlania ikony",
+            "colorInfo": "Szablon koloru",
+            "colorInfoHelper": "Użyj szablonu Jinja2, aby zmienić kolor ikony"
         },
         "common": {
             "checkAll": "Zaznacz wszystko",

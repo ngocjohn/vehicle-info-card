@@ -1,7 +1,7 @@
 // Cutom card helpers:
 import { ActionConfig, LovelaceCardConfig, Themes, HomeAssistant, Theme } from 'custom-card-helpers';
 import { HassEntity } from 'home-assistant-js-websocket';
-
+import { Connection } from 'home-assistant-js-websocket';
 export interface ModeSpecificTheme {
   light: Partial<Theme>;
   dark: Partial<Theme>;
@@ -30,6 +30,7 @@ export type HA = HomeAssistant & {
   formatEntityState: (stateObj: HassEntity) => string;
   formatAttributeName: (entityId: string, attribute: string) => string;
   formatEntityAttributeValue: (entityId: HassEntity, attribute: string) => string;
+  connection: Connection;
 };
 /**
  * Configuration interface for the Vehicle Card.
@@ -92,6 +93,8 @@ export type BaseButtonConfig = {
   button_action: ButtonActionConfig;
   entity?: string;
   attribute?: string;
+  color_template?: string;
+  icon_template?: string;
 };
 
 export type AddedCards = {
@@ -183,6 +186,8 @@ export type ButtonCardEntity = {
     entity: string;
     notify: string;
     hidden: boolean;
+    color_template: string;
+    icon_template: string;
   };
   button_type: 'default' | 'action';
   card_type: 'default' | 'custom';
@@ -201,6 +206,7 @@ export type CustomButtonEntity = {
   button_action: ButtonActionConfig;
   entity: string;
   attribute?: string;
+  color?: string;
 };
 
 export type ExtendedButtonConfigItem = BaseButtonConfig & {

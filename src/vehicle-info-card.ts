@@ -83,6 +83,7 @@ export class VehicleCard extends LitElement {
   // Loading state
   @state() private _loading = true;
   @state() private _buttonReady = false;
+  @state() _currentSwipeIndex?: number;
 
   // Components
   @query('vehicle-buttons') vehicleButtons!: VehicleButtons;
@@ -378,14 +379,18 @@ export class VehicleCard extends LitElement {
     return html`
       <main id="main-wrapper">
         <div class="header-info-box">
-          ${this._renderWarnings()} ${this._renderChargingInfo()} ${this._renderRangeInfo()}
+          ${this._renderInfoBox()} ${this._renderChargingInfo()} ${this._renderRangeInfo()}
         </div>
         ${this._renderHeaderSlides()} ${this._renderMap()} ${this._renderButtons()}
       </main>
     `;
   }
 
-  private _renderWarnings(): TemplateResult {
+  private _renderInfoBox(): TemplateResult {
+    const isCharging = this.isCharging;
+    const isServiceControl = this.config.enable_services_control !== false;
+    const justify = isCharging && isServiceControl ? 'space-evenly' : 'center';
+
     const defaultIndicData = this.createDataArray([{ key: 'lockSensor' }, { key: 'parkBrake' }]);
 
     // Helper function to render items
@@ -430,7 +435,11 @@ export class VehicleCard extends LitElement {
         : nothing;
 
     // Combine all parts and render
-    return html` <div class="info-box">${defaultIndicators} ${serviceControl} ${addedChargingInfo}</div> `;
+    return html`
+      <div class="info-box" style=${`justify-content: ${justify}`}>
+        ${defaultIndicators} ${serviceControl} ${addedChargingInfo}
+      </div>
+    `;
   }
 
   private _renderChargingInfo(): TemplateResult {
@@ -574,6 +583,7 @@ export class VehicleCard extends LitElement {
         .component=${this}
         ._config=${config}
         ._buttons=${buttonCards}
+        ._cardCurrentSwipeIndex=${this._currentSwipeIndex}
       ></vehicle-buttons>
     `;
   }
@@ -820,13 +830,10 @@ export class VehicleCard extends LitElement {
       // Filter out only top-level properties for CSS variables and the modes property
       const filteredThemeData = Object.keys(themeData)
         .filter((key) => key !== 'modes')
-        .reduce(
-          (obj, key) => {
-            obj[key] = themeData[key];
-            return obj;
-          },
-          {} as Record<string, string>
-        );
+        .reduce((obj, key) => {
+          obj[key] = themeData[key];
+          return obj;
+        }, {} as Record<string, string>);
 
       // Get the current mode (light or dark)
       const mode = this.isDark ? 'dark' : 'light';
@@ -994,7 +1001,6 @@ export class VehicleCard extends LitElement {
             } else {
               classState = rawState === '2' || rawState === '1' || rawState === false ? false : true;
             }
-            const classStateString = classState ? 'warning' : '';
             return html`
               <div class="data-row">
                 <span>${stateMapping[attribute].name}</span>
