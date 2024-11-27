@@ -58,12 +58,6 @@ export class CustomCardUIEditor extends LitElement {
           padding-inline: 4px;
         }
 
-        @media (max-width: 450px) {
-          #editor-container {
-            margin: 0 -12px;
-          }
-        }
-
         .gui-mode-button {
           margin-right: auto;
           margin-inline-end: auto;

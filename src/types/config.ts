@@ -93,6 +93,8 @@ export type BaseButtonConfig = {
   button_action: ButtonActionConfig;
   entity?: string;
   attribute?: string;
+  color_template?: string;
+  icon_template?: string;
 };
 
 export type AddedCards = {
@@ -184,6 +186,8 @@ export type ButtonCardEntity = {
     entity: string;
     notify: string;
     hidden: boolean;
+    color_template: string;
+    icon_template: string;
   };
   button_type: 'default' | 'action';
   card_type: 'default' | 'custom';
@@ -202,6 +206,7 @@ export type CustomButtonEntity = {
   button_action: ButtonActionConfig;
   entity: string;
   attribute?: string;
+  color?: string;
 };
 
 export type ExtendedButtonConfigItem = BaseButtonConfig & {

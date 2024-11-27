@@ -16,7 +16,7 @@ ha-card {
   display: block;
   width: 100%;
   height: auto;
-  padding: 8px 12px;
+  padding: var(--vic-card-padding);
   background-color: var(--card-background-color);
 }
 
@@ -85,16 +85,16 @@ header h1 {
   gap: var(--vic-gutter-gap);
   flex-wrap: wrap;
   transition: all 0.5s ease;
-  margin-bottom: var(--vic-gutter-gap);
+  margin-bottom: var(--vic-card-padding);
 
 }
 
 .combined-info-box {
   display: grid;
   width: 100%;
-  height: -moz-fit-content;
   height: 100%;
-  grid-template-columns: repeat(auto-fill, minmax(50%, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(calc((100% - 24px) / 2), 1fr));
+  gap: var(--vic-card-padding);
 }
 
 .info-box {
@@ -120,10 +120,10 @@ header h1 {
 }
 
 .info-box.range {
-  flex-wrap: nowrap !important;
   justify-content: center;
   text-wrap: nowrap;
   align-items: center;
+  flex-wrap: nowrap !important;
 }
 
 .info-box.range .item {
@@ -134,12 +134,10 @@ header h1 {
 
 .info-box .item {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 0.4rem;
 
-  ha-icon {
-    margin-bottom: 3px;
-  }
+
 }
 
 @media screen and (max-width: 768px) {
@@ -165,10 +163,12 @@ header h1 {
 }
 
 .info-box.charge .icon-state {
-  display: flex;
+  display: inline-flex;
   height: auto;
   align-items: center;
   gap: var(--vic-gutter-gap);
+  width: 100%;
+  justify-content: center;
 }
 
 .info-box.charge.active {
@@ -179,21 +179,23 @@ header h1 {
 }
 
 .info-box.charge .item {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  flex-wrap: wrap;
-  flex-direction: column;
+  flex-flow: column;
   gap: initial;
-  width: max-content;
+  width: calc((100% /4) - 8px);
+  overflow: hidden;
 }
 
 .info-box.charge .item-name {
   color: var(--secondary-text-color);
+  text-wrap-style: auto;
+  text-align: center;
 }
 
 .fuel-wrapper {
   display: inline-block;
-  width: 40%;
+  width: 50%;
   height: 5px;
   background-color: #909090;
   border-radius: 5px;
@@ -254,11 +256,10 @@ header h1 {
 
 .grid-container {
   display: grid;
-  grid-template-columns: repeat(2, minmax(140px, 50%));
+  grid-template-columns: repeat(auto-fill, minmax(calc((100% - 24px) / 2), 1fr));
   grid-template-rows: auto;
   grid-gap: var(--vic-gutter-gap);
   position: relative;
-  margin-inline: 0.5rem;
 }
 
 .grid-item {
@@ -275,6 +276,7 @@ header h1 {
   transition: all 0.3s ease-out;
   opacity: 1;
   cursor: pointer;
+  align-items: center;
 }
 
 .grid-item:hover {
@@ -287,7 +289,6 @@ header h1 {
   height: 100%;
   flex-direction: row;
   align-items: center;
-  gap: var(--vic-card-padding);
   width: 100%;
 }
 
@@ -312,6 +313,7 @@ header h1 {
   position: relative;
   display: block;
   --mdc-icon-size: 22px;
+  margin-right: var(--vic-card-padding);
 }
 
 .item-icon .icon-background {
@@ -644,7 +646,6 @@ header h1 {
   transform: rotate(0deg);
   display: inline-block;
   cursor: pointer;
-  margin-bottom: 2px
 }
 
 .subcard-icon[active] {

@@ -218,7 +218,11 @@
             "toastNewCard": "Thẻ mới đã được thêm!",
             "buttonGridSwipe": "Cấu hình lưới nút",
             "swipeRows": "Hàng mỗi slide",
-            "useButtonSwipe": "Sử dụng swipe cho các nút"
+            "useButtonSwipe": "Sử dụng swipe cho các nút",
+            "iconInfo": "Mẫu biểu tượng",
+            "iconInfoHelper": "Sử dụng mẫu Jinja2 để hiển thị biểu tượng",
+            "colorInfo": "Mẫu màu",
+            "colorInfoHelper": "Sử dụng mẫu Jinja2 để thay đổi màu biểu tượng"
         },
         "common": {
             "checkAll": "Chọn tất cả",

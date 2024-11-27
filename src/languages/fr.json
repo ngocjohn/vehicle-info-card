@@ -218,7 +218,11 @@
             "toastNewCard": "Nouvelle carte ajoutée!",
             "buttonGridSwipe": "Configuration de la grille de boutons",
             "swipeRows": "Lignes par diapositive",
-            "useButtonSwipe": "Utiliser le swipe pour les boutons"
+            "useButtonSwipe": "Utiliser le swipe pour les boutons",
+            "iconInfo": "Modèle d'icône",
+            "iconInfoHelper": "Utilisez un modèle Jinja2 pour afficher l'icône",
+            "colorInfo": "Modèle de couleur",
+            "colorInfoHelper": "Utilisez un modèle Jinja2 pour modifier la couleur de l'icône"
         },
         "common": {
             "checkAll": "Tout cocher",
