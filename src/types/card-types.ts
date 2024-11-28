@@ -42,12 +42,7 @@ export interface EcoData {
   unit: string;
 }
 
-export type CustomButton = {
-  notify: boolean;
-  state: string;
-};
-
-export interface Address {
+interface Address {
   streetNumber: string;
   streetName: string;
   sublocality: string;

@@ -20,11 +20,7 @@ import {
   BaseButtonConfig,
   ExtendedButtonConfigItem,
 } from './types';
-import { Create } from './utils';
-import { uploadImage } from './utils/editor-image-handler';
-import { handleFirstUpdated } from './utils/ha-helpers';
-import { compareVersions } from './utils/helpers';
-import { loadHaComponents, stickyPreview } from './utils/loader';
+import { Create, handleFirstUpdated, compareVersions, uploadImage, stickyPreview, loadHaComponents } from './utils';
 
 // Import the custom card components
 import './components/editor';

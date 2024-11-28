@@ -135,7 +135,8 @@ export class EcoChart extends LitElement {
       fill: var(--primary-text-color);
     }
     .apexcharts-radialbar-track > path {
-      stroke: var(--divider-color);
+      stroke: var(--secondary-text-color);
+      opacity: 0.2;
     }
   `;
 }

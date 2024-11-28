@@ -8,7 +8,7 @@ import styles from '../../css/remote-control.css';
 import mainstyle from '../../css/styles.css';
 import { localize } from '../../localize/localize';
 import { Services } from '../../types';
-import { cloneDeep, convertToMinutes } from '../../utils/helpers';
+import { cloneDeep, convertToMinutes } from '../../utils';
 
 @customElement('remote-control')
 export class RemoteControl extends LitElement {
@@ -490,14 +490,11 @@ export class RemoteControl extends LitElement {
 
       case 'auxheat_configure':
         const { items, time_selection } = this.auxheatConfig.data;
-        const times: Record<string, number> = Object.entries(items).reduce(
-          (acc, [key, value]) => {
-            const { hour, minute } = value as { hour: string; minute: string };
-            acc[key] = convertToMinutes(hour, minute);
-            return acc;
-          },
-          {} as Record<string, number>
-        );
+        const times: Record<string, number> = Object.entries(items).reduce((acc, [key, value]) => {
+          const { hour, minute } = value as { hour: string; minute: string };
+          acc[key] = convertToMinutes(hour, minute);
+          return acc;
+        }, {} as Record<string, number>);
 
         const dataAux = {
           time_selection,
@@ -521,27 +518,21 @@ export class RemoteControl extends LitElement {
         break;
 
       case 'windows_move':
-        const dataWindows = Object.entries(this.windowsConfig.data.positions).reduce(
-          (acc, [key, value]) => {
-            const { value: inputValue } = value as { value: number };
-            acc[key] = inputValue;
-            return acc;
-          },
-          {} as Record<string, number>
-        );
+        const dataWindows = Object.entries(this.windowsConfig.data.positions).reduce((acc, [key, value]) => {
+          const { value: inputValue } = value as { value: number };
+          acc[key] = inputValue;
+          return acc;
+        }, {} as Record<string, number>);
 
         this.callService(service, dataWindows);
         break;
 
       case 'send_route':
-        const dataRoute = Object.entries(this.sendRouteConfig.data).reduce(
-          (acc, [key, value]) => {
-            const { value: inputValue } = value as { value: string };
-            acc[key] = inputValue;
-            return acc;
-          },
-          {} as Record<string, string>
-        );
+        const dataRoute = Object.entries(this.sendRouteConfig.data).reduce((acc, [key, value]) => {
+          const { value: inputValue } = value as { value: string };
+          acc[key] = inputValue;
+          return acc;
+        }, {} as Record<string, string>);
         this.callService(service, dataRoute);
         break;
 

@@ -1,17 +1,17 @@
 // Cutom card helpers:
 import { ActionConfig, LovelaceCardConfig, Themes, HomeAssistant, Theme } from 'custom-card-helpers';
-import { HassEntity } from 'home-assistant-js-websocket';
-import { Connection } from 'home-assistant-js-websocket';
-export interface ModeSpecificTheme {
+import { HassEntity, Connection } from 'home-assistant-js-websocket';
+
+interface ModeSpecificTheme {
   light: Partial<Theme>;
   dark: Partial<Theme>;
 }
 
-export interface ExtendedTheme extends Theme {
+interface ExtendedTheme extends Theme {
   modes?: ModeSpecificTheme;
 }
 
-export interface ExtendedThemes extends Themes {
+interface ExtendedThemes extends Themes {
   darkMode: boolean;
   themes: {
     [key: string]: ExtendedTheme;
@@ -36,7 +36,7 @@ export type HA = HomeAssistant & {
  * Configuration interface for the Vehicle Card.
  */
 
-export enum THEME_MODE {
+enum THEME_MODE {
   Auto = 'auto',
   Light = 'light',
   Dark = 'dark',
@@ -54,7 +54,7 @@ export type Services = {
   windows: boolean;
 };
 
-export type MapPopupConfig = {
+type MapPopupConfig = {
   hours_to_show: number;
   default_zoom: number;
   theme_mode: THEME_MODE;
@@ -65,12 +65,12 @@ export type ImageConfig = {
   title: string;
 };
 
-export type ThemesConfig = {
+type ThemesConfig = {
   theme: string;
   mode: THEME_MODE;
 };
 
-export type ButtonGridConfig = {
+type ButtonGridConfig = {
   use_swiper: boolean;
   rows_size: number;
 };
@@ -104,38 +104,14 @@ export type AddedCards = {
   };
 };
 
-export type CustomCardsUse = {
+type CustomCardsUse = {
   vehicle_card: boolean;
   trip_card: boolean;
   eco_card: boolean;
   tyre_card: boolean;
 };
 
-export interface CustomCards extends VehicleCardConfig {
-  vehicle_card?: LovelaceCardConfig[];
-  trip_card?: LovelaceCardConfig[];
-  eco_card?: LovelaceCardConfig[];
-  tyre_card?: LovelaceCardConfig[];
-}
-
-export interface CustomButtonsConfig extends VehicleCardConfig {
-  eco_button?: BaseButtonConfig;
-  trip_button?: BaseButtonConfig;
-  vehicle_button?: BaseButtonConfig;
-  tyre_button?: BaseButtonConfig;
-}
-
-export interface ShowOptionsConfig extends VehicleCardConfig {
-  show_slides: boolean;
-  show_map: boolean;
-  show_buttons: boolean;
-  show_background: boolean;
-  enable_map_popup: boolean;
-  enable_services_control: boolean;
-  show_error_notify: boolean;
-}
-
-export type ExtraConfigs = {
+type ExtraConfigs = {
   tire_card_custom: {
     background: string;
     horizontal: boolean;
@@ -169,8 +145,23 @@ export interface VehicleCardConfig extends LovelaceCardConfig {
   map_popup_config: MapPopupConfig;
   selected_theme: ThemesConfig;
   use_custom_cards?: CustomCardsUse;
+  vehicle_card?: LovelaceCardConfig[];
+  trip_card?: LovelaceCardConfig[];
+  eco_card?: LovelaceCardConfig[];
+  tyre_card?: LovelaceCardConfig[];
+  eco_button?: BaseButtonConfig;
+  trip_button?: BaseButtonConfig;
+  vehicle_button?: BaseButtonConfig;
+  tyre_button?: BaseButtonConfig;
   added_cards: AddedCards;
   extra_configs: ExtraConfigs;
+  show_slides: boolean;
+  show_map: boolean;
+  show_buttons: boolean;
+  show_background: boolean;
+  enable_map_popup: boolean;
+  enable_services_control: boolean;
+  show_error_notify: boolean;
 }
 
 export type ButtonCardEntity = {
@@ -273,18 +264,6 @@ export const defaultConfig: Partial<VehicleCardConfig> = {
     sigPos: false,
     sunroof: false,
     windows: false,
-  },
-  eco_button: {
-    enabled: false,
-  },
-  trip_button: {
-    enabled: false,
-  },
-  vehicle_button: {
-    enabled: false,
-  },
-  tyre_button: {
-    enabled: false,
   },
   use_custom_cards: {
     vehicle_card: false,

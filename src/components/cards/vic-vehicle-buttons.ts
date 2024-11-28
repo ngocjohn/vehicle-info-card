@@ -11,7 +11,7 @@ import { UnsubscribeFunc } from 'home-assistant-js-websocket';
 import tinycolor from 'tinycolor2';
 // Local imports
 import { ButtonCardEntity, HA as HomeAssistant, VehicleCardConfig } from '../../types';
-import { addActions } from '../../utils/tap-action';
+import { addActions } from '../../utils';
 import { RenderTemplateResult, subscribeRenderTemplate } from '../../utils/ws-templates';
 import { VehicleCard } from '../../vehicle-info-card';
 

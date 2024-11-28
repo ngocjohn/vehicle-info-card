@@ -10,8 +10,8 @@ import Sortable from 'sortablejs';
 import editorcss from '../../css/editor.css';
 import { VehicleCardEditor } from '../../editor';
 import { ImageConfig, VehicleCardConfig } from '../../types';
+import { imageInputChange, handleFilePicked } from '../../utils';
 import { Picker } from '../../utils/create';
-import { imageInputChange, handleFilePicked } from '../../utils/editor-image-handler';
 
 @customElement('panel-images')
 export class PanelImages extends LitElement {

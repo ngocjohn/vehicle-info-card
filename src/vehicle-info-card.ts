@@ -13,7 +13,7 @@ import { LitElement, html, TemplateResult, PropertyValues, CSSResultGroup, nothi
 import { styleMap } from 'lit-html/directives/style-map.js';
 import { customElement, property, state, query } from 'lit/decorators.js';
 
-import './components/cards';
+import './components';
 import { VehicleButtons, VehicleMap } from './components/cards';
 import { CardItem, cardTypes } from './const/data-keys';
 import { IMAGE } from './const/imgconst';
@@ -33,9 +33,9 @@ import {
   BaseButtonConfig,
   VehicleEntities,
 } from './types';
-import { HEADER_ACTION, PreviewCard, MapData } from './types/card-types';
+import { HEADER_ACTION, PreviewCard, MapData } from './types';
 import { handleCardFirstUpdated, getCarEntity, handleCardSwipe, convertMinutes, isEmpty, Create } from './utils';
-import { getAddedButton, getDefaultButton, createCardElement, createCustomButtons } from './utils/ha-helpers';
+import { getAddedButton, getDefaultButton, createCardElement, createCustomButtons } from './utils';
 
 @customElement('vehicle-info-card')
 export class VehicleCard extends LitElement {

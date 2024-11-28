@@ -15,7 +15,7 @@ export const editorShowOpts = (lang: string) => [
   createShowOpts('editor.showOpts.show_error_notify', lang, 'show_error_notify'),
 ];
 
-export interface CardType {
+interface CardType {
   type: string;
   name: string;
   icon: string;

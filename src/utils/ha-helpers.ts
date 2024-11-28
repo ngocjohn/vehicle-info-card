@@ -2,7 +2,7 @@
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
 import { LovelaceCardConfig } from 'custom-card-helpers';
 
-import { combinedFilters, CARD_UPADE_SENSOR, CARD_VERSION } from '../const/const';
+import { combinedFilters, CARD_UPADE_SENSOR, CARD_VERSION, REPOSITORY } from '../const/const';
 import { baseDataKeys } from '../const/data-keys';
 import { VehicleCardEditor } from '../editor';
 import {
@@ -18,8 +18,6 @@ import {
   MapData,
 } from '../types';
 import { VehicleCard } from '../vehicle-info-card';
-import { getAddressFromGoggle, getAddressFromOpenStreet } from './helpers';
-import { fetchLatestReleaseTag } from './loader';
 
 /**
  *
@@ -27,7 +25,7 @@ import { fetchLatestReleaseTag } from './loader';
  * @returns
  */
 
-export async function getVehicleEntities(
+async function getVehicleEntities(
   hass: HomeAssistant,
   config: { entity: string },
   component: VehicleCard
@@ -85,7 +83,7 @@ export async function getVehicleEntities(
   return entityIds;
 }
 
-export async function getModelName(hass: HomeAssistant, entityCar: string): Promise<string> {
+async function getModelName(hass: HomeAssistant, entityCar: string): Promise<string> {
   // Fetch all entities
   const allEntities = await hass.callWS<{ entity_id: string; device_id: string }[]>({
     type: 'config/entity_registry/list',
@@ -195,7 +193,7 @@ export async function createCardElement(
   return cardElements;
 }
 
-export async function getTemplateValue(hass: HomeAssistant, templateConfig: string): Promise<string> {
+async function getTemplateValue(hass: HomeAssistant, templateConfig: string): Promise<string> {
   if (!hass || !templateConfig) {
     return '';
   }
@@ -209,7 +207,7 @@ export async function getTemplateValue(hass: HomeAssistant, templateConfig: stri
   }
 }
 
-export async function getBooleanTemplate(hass: HomeAssistant, templateConfig: string): Promise<boolean> {
+async function getBooleanTemplate(hass: HomeAssistant, templateConfig: string): Promise<boolean> {
   if (!hass || !templateConfig) {
     return false;
   }
@@ -335,7 +333,7 @@ export async function handleFirstUpdated(editor: VehicleCardEditor): Promise<voi
   }
 }
 
-export async function installedByHACS(hass: HomeAssistant): Promise<boolean> {
+async function installedByHACS(hass: HomeAssistant): Promise<boolean> {
   const hacs = hass?.config?.components?.includes('hacs');
   if (!hacs) return false;
   const hacsEntities = await hass.callWS<{ entity_id: string }[]>({
@@ -405,22 +403,97 @@ export async function handleCardFirstUpdated(component: any): Promise<void> {
   }
 }
 
-// eslint-disable-next-line
-export function deepMerge(target: any, source: VehicleCardConfig): VehicleCardConfig {
-  const output = { ...target };
+async function getAddressFromGoggle(lat: number, lon: number, apiKey: string) {
+  console.log('getAddressFromGoggle');
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${apiKey}`;
 
-  for (const key of Object.keys(source)) {
-    if (source[key] === null) {
-      // If the source value is null, use the target's value
-      output[key] = target[key];
-    } else if (source[key] instanceof Object && key in target) {
-      // If the value is an object and exists in the target, merge deeply
-      output[key] = deepMerge(target[key], source[key]);
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.status === 'OK') {
+      const addressComponents = data.results[0].address_components;
+      const adress = {
+        streetNumber: '',
+        streetName: '',
+        sublocality: '',
+        city: '',
+      };
+
+      addressComponents.forEach((component) => {
+        if (component.types.includes('street_number')) {
+          adress.streetNumber = component.long_name;
+        }
+        if (component.types.includes('route')) {
+          adress.streetName = component.long_name;
+        }
+        if (component.types.includes('sublocality')) {
+          adress.sublocality = component.short_name;
+        }
+
+        if (component.types.includes('locality')) {
+          adress.city = component.long_name;
+        }
+        // Sometimes city might be under 'administrative_area_level_2' or 'administrative_area_level_1'
+        if (!adress.city && component.types.includes('administrative_area_level_2')) {
+          adress.city = component.short_name;
+        }
+        if (!adress.city && component.types.includes('administrative_area_level_1')) {
+          adress.city = component.short_name;
+        }
+      });
+
+      return adress;
     } else {
-      // Otherwise, use the source's value
-      output[key] = source[key];
+      throw new Error('No results found');
     }
+  } catch (error) {
+    console.error('Error fetching address:', error);
+    return;
   }
+}
 
-  return output;
+async function getAddressFromOpenStreet(lat: number, lon: number) {
+  const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=jsonv2`;
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (response.ok) {
+      // Extract address components from the response
+      const address = {
+        streetNumber: data.address.house_number || '', // Retrieve street number
+        streetName: data.address.road || '',
+        sublocality: data.address.suburb || data.address.village || '',
+        city: data.address.city || data.address.town || '',
+        state: data.address.state || data.address.county || '',
+        country: data.address.country || '',
+        postcode: data.address.postcode || '',
+      };
+
+      return address;
+    } else {
+      throw new Error('Failed to fetch address OpenStreetMap');
+    }
+  } catch (error) {
+    // console.error('Error fetching address:', error);
+    return;
+  }
+}
+
+async function fetchLatestReleaseTag() {
+  const apiUrl = `https://api.github.com/repos/${REPOSITORY}/releases/latest`;
+
+  try {
+    const response = await fetch(apiUrl);
+    if (response.ok) {
+      const data = await response.json();
+      const releaseTag = data.tag_name;
+      return releaseTag;
+    } else {
+      console.error('Failed to fetch the latest release tag:', response.statusText);
+    }
+  } catch (error) {
+    console.error('Error fetching the latest release tag:', error);
+  }
 }
