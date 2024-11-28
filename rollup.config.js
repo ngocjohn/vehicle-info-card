@@ -80,6 +80,13 @@ export default [
         inlineDynamicImports: true,
         banner: custombanner,
       },
+      {
+        dir: './build',
+        format: 'es',
+        sourcemap: false,
+        inlineDynamicImports: true,
+        banner: custombanner,
+      },
     ],
     watch: {
       exclude: 'node_modules/**',
