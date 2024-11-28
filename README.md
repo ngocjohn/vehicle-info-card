@@ -22,6 +22,7 @@
 - **Multilingual Support**: The card includes various translations, making it accessible in multiple languages.
 
 
+
 ### Supported Localization
 
 <details>
@@ -32,10 +33,12 @@
 | `cs`     | Czech          | Čeština          |
 | `de`     | German          | Deutsch          |
 | `en`     | English          | English          |
-| `es`     | Spanish          | Español          |
 | `en_GB`     | English          | English (GB)          |
+| `es`     | Spanish          | Español          |
 | `fr`     | French          | Français          |
+| `it`     | Italiano          | Italian          |
 | `lt`     | Lithuanian          | Lietuvių          |
+| `nl`     | Dutch          | Nederlands          |
 | `pl`     | Polish          | Polski          |
 | `sk`     | Slovak          | Slovenčina          |
 | `vi`     | Vietnamese          | Tiếng Việt          |
