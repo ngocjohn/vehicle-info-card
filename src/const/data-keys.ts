@@ -49,14 +49,12 @@ export interface CardItem {
   key: string;
   name: string;
   icon?: string;
-  apexProp?: string;
 }
 
-const createItem = (key: string, nameKey: string, lang: string, icon?: string, apexProp?: string): CardItem => ({
+const createItem = (key: string, nameKey: string, lang: string, icon?: string): CardItem => ({
   key,
   name: localize(`card.${nameKey}`, lang),
   ...(icon ? { icon } : {}),
-  ...(apexProp ? { apexProp } : {}),
 });
 
 const tripOverview = (lang: string) => [
@@ -106,10 +104,10 @@ const vehicleWarnings = (lang: string): CardItem[] => [
 ];
 
 const ecoScores = (lang: string): CardItem[] => [
-  createItem('ecoScoreBonusRange', 'ecoCard.ecoScoreBonusRange', lang, undefined, 'bonusRange'),
-  createItem('ecoScoreAcceleraion', 'ecoCard.ecoScoreAcceleraion', lang, undefined, 'acceleration'),
-  createItem('ecoScoreConstant', 'ecoCard.ecoScoreConstant', lang, undefined, 'constant'),
-  createItem('ecoScoreFreeWheel', 'ecoCard.ecoScoreFreeWheel', lang, undefined, 'freeWheel'),
+  createItem('ecoScoreBonusRange', 'ecoCard.ecoScoreBonusRange', lang),
+  createItem('ecoScoreAcceleraion', 'ecoCard.ecoScoreAcceleraion', lang),
+  createItem('ecoScoreConstant', 'ecoCard.ecoScoreConstant', lang),
+  createItem('ecoScoreFreeWheel', 'ecoCard.ecoScoreFreeWheel', lang),
 ];
 
 const tyrePressures = (lang: string): CardItem[] => [

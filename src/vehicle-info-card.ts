@@ -14,7 +14,7 @@ import { styleMap } from 'lit-html/directives/style-map.js';
 import { customElement, property, state, query } from 'lit/decorators.js';
 
 import './components';
-import { VehicleButtons, VehicleMap } from './components/cards';
+import { EcoChart, VehicleButtons, VehicleMap } from './components/cards';
 import { CardItem, cardTypes } from './const/data-keys';
 import { IMAGE } from './const/imgconst';
 import * as StateMapping from './const/state-mapping';
@@ -25,13 +25,13 @@ import {
   VehicleCardConfig,
   EntityConfig,
   VehicleEntity,
-  EcoData,
   ButtonCardEntity,
   CardTypeConfig,
   CustomButtonEntity,
   defaultConfig,
   BaseButtonConfig,
   VehicleEntities,
+  ecoChartModel,
 } from './types';
 import { HEADER_ACTION, PreviewCard, MapData } from './types';
 import { handleCardFirstUpdated, getCarEntity, handleCardSwipe, convertMinutes, isEmpty, Create } from './utils';
@@ -88,7 +88,7 @@ export class VehicleCard extends LitElement {
   // Components
   @query('vehicle-buttons') vehicleButtons!: VehicleButtons;
   @query('vehicle-map') vehicleMap!: VehicleMap;
-  @query('eco-chart') ecoChart!: Element;
+  @query('eco-chart') ecoChart!: EcoChart;
 
   constructor() {
     super();
@@ -408,10 +408,10 @@ export class VehicleCard extends LitElement {
 
     // Render default indicators
     const defaultIndicators = defaultIndicData.map(
-      ({ state, icon }) => html`
-        <div class="item">
+      ({ state, icon, key }) => html`
+        <div class="item" @click=${() => this.toggleMoreInfo(this.vehicleEntities[key]?.entity_id)}>
           <ha-icon .icon=${icon}></ha-icon>
-          <div><span>${state}</span></div>
+          <span>${state}</span>
         </div>
       `
     );
@@ -549,26 +549,30 @@ export class VehicleCard extends LitElement {
 
   private _renderEcoChart(): TemplateResult {
     if (this._currentCardType !== 'ecoCards') return html``;
-    const lang = this.userLang;
-    const ecoUnit = this.getEntityAttribute(this.vehicleEntities.ecoScoreBonusRange?.entity_id, 'unit_of_measurement');
 
     const getEcoScore = (entity: string | undefined): number => {
       if (!entity) return 0;
       const state = this.getEntityState(entity);
       return state === 'unavailable' ? 0 : parseFloat(state);
     };
-    const ecoScoreEntries = this.DataKeys.ecoScores;
-    const ecoDataObj = ecoScoreEntries.reduce((acc, score) => {
-      if (score.apexProp) {
-        acc[score.apexProp] = getEcoScore(this.vehicleEntities[score.key].entity_id);
-      }
 
-      return acc;
-    }, {} as EcoData);
+    const filteredData = Object.values(this.DataKeys.ecoScores).filter((item) => item.key !== 'ecoScoreBonusRange');
 
-    ecoDataObj.unit = ecoUnit;
+    const echoChartObj = {} as ecoChartModel;
 
-    return html`<eco-chart .ecoData=${ecoDataObj} .selectedLanguage=${lang}></eco-chart>`;
+    const chartData = filteredData.map((item) => {
+      const label = this.localize(`card.ecoCard.${item.key}`);
+      const score = getEcoScore(this.vehicleEntities[item.key].entity_id);
+      return { series: score, labels: label };
+    });
+
+    echoChartObj.chartData = chartData;
+    echoChartObj.bonusRange = {
+      label: this.localize('card.ecoCard.ecoScoreBonusRange'),
+      value: this.getStateDisplay(this.vehicleEntities.ecoScoreBonusRange?.entity_id),
+    };
+
+    return html`<eco-chart .ecoChartData=${echoChartObj}></eco-chart>`;
   }
 
   private _renderButtons(): TemplateResult {

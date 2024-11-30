@@ -34,12 +34,15 @@ export type EntityConfig = {
   active?: boolean;
 };
 
-export interface EcoData {
-  bonusRange: number;
-  acceleration: number;
-  constant: number;
-  freeWheel: number;
-  unit: string;
+export interface ecoChartModel {
+  bonusRange: {
+    label: string;
+    value: string;
+  };
+  chartData: {
+    series: number;
+    labels: string;
+  }[];
 }
 
 interface Address {
