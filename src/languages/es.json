@@ -93,7 +93,9 @@
             "labelWindowFrontLeft": "Delante izquierda",
             "labelWindowFrontRight": "Delante derecha",
             "labelWindowRearLeft": "Detrás izquierda",
-            "labelWindowRearRight": "Detrás derecha"
+            "labelWindowRearRight": "Detrás derecha",
+            "labelSeatConfig": "Guardar configuración de asiento",
+            "labelSetTempZone": "Guardar zona de temperatura"
         },
         "servicesCtrl": {
             "auxheat": "Calefacción auxiliar",

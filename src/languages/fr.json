@@ -93,7 +93,9 @@
             "labelWindowFrontLeft": "Avant gauche",
             "labelWindowFrontRight": "Avant droit",
             "labelWindowRearLeft": "Arrière gauche",
-            "labelWindowRearRight": "Arrière droit"
+            "labelWindowRearRight": "Arrière droit",
+            "labelSeatConfig": "Enregistrer la configuration des sièges",
+            "labelSetTempZone": "Enregistrer la zone de température"
         },
         "servicesCtrl": {
             "auxheat": "Chauffage auxiliaire",

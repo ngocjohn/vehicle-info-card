@@ -93,7 +93,9 @@
             "labelWindowFrontLeft": "Predné vľavo",
             "labelWindowFrontRight": "Predné vpravo",
             "labelWindowRearLeft": "Zadné vľavo",
-            "labelWindowRearRight": "Zadné vpravo"
+            "labelWindowRearRight": "Zadné vpravo",
+            "labelSeatConfig": "Uložiť konfiguráciu sedadiel",
+            "labelSetTempZone": "Uložiť zónu teploty"
         },
         "servicesCtrl": {
             "auxheat": "Prídavné kúrenie",

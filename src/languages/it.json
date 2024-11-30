@@ -93,7 +93,9 @@
             "labelWindowFrontLeft": "Anteriore sinistro",
             "labelWindowFrontRight": "Anteriore destro",
             "labelWindowRearLeft": "Posteriore sinistro",
-            "labelWindowRearRight": "Posteriore destro"
+            "labelWindowRearRight": "Posteriore destro",
+            "labelSeatConfig": "Salva configurazione del sedile",
+            "labelSetTempZone": "Salva zona di temperatura"
         },
         "servicesCtrl": {
             "auxheat": "riscaldamento ausiliario",
