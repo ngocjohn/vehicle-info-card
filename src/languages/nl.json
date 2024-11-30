@@ -93,7 +93,9 @@
             "labelWindowFrontLeft": "Links vooraan",
             "labelWindowFrontRight": "Rechts vooraan",
             "labelWindowRearLeft": "Links achteraan",
-            "labelWindowRearRight": "Rechts achteraan"
+            "labelWindowRearRight": "Rechts achteraan",
+            "labelSeatConfig": "Stoelconfiguratie opslaan",
+            "labelSetTempZone": "Temperatuurzone opslaan"
         },
         "servicesCtrl": {
             "auxheat": "Standverwarming",

@@ -131,4 +131,35 @@ export const serviceData = (lang: string) => ({
       TILT: createService('sunroof_tilt', 'mdi:window-shutter', 'serviceData.labelTilt', lang),
     },
   },
+
+  precondSeatConfig: {
+    service: {
+      DATA_SEAT_CONFIGURE: createService(
+        'preconditioning_configure_seats',
+        'mdi:car-seat',
+        'serviceData.labelSeatConfig',
+        lang
+      ),
+      DATA_TEMP_CONFIGURE: createService(
+        'temperature_configure',
+        'mdi:thermometer',
+        'serviceData.labelSetTempZone',
+        lang
+      ),
+    },
+    data: {
+      precondSeat: {
+        front_left: { label: localize('card.serviceData.labelWindowFrontLeft', lang), value: false },
+        front_right: { label: localize('card.serviceData.labelWindowFrontRight', lang), value: false },
+        rear_left: { label: localize('card.serviceData.labelWindowRearLeft', lang), value: false },
+        rear_right: { label: localize('card.serviceData.labelWindowRearRight', lang), value: false },
+      },
+      temperature: {
+        front_left: { label: localize('card.serviceData.labelWindowFrontLeft', lang) },
+        front_right: { label: localize('card.serviceData.labelWindowFrontRight', lang) },
+        rear_left: { label: localize('card.serviceData.labelWindowRearLeft', lang) },
+        rear_right: { label: localize('card.serviceData.labelWindowRearRight', lang) },
+      },
+    },
+  },
 });

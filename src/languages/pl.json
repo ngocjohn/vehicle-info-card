@@ -93,7 +93,9 @@
             "labelWindowFrontLeft": "Przednie lewe",
             "labelWindowFrontRight": "Przednie prawe",
             "labelWindowRearLeft": "Tylne lewe",
-            "labelWindowRearRight": "Tylne prawe"
+            "labelWindowRearRight": "Tylne prawe",
+            "labelSeatConfig": "Zapisz konfigurację siedzenia",
+            "labelSetTempZone": "Zapisz strefę temperatury"
         },
         "servicesCtrl": {
             "auxheat": "Ogrzewanie pomocnicze",

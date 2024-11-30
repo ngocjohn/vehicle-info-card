@@ -10,6 +10,42 @@ import { localize } from '../../localize/localize';
 import { Services } from '../../types';
 import { cloneDeep, convertToMinutes } from '../../utils';
 
+const enum PRECOND {
+  TIME = 'time',
+  ZONE_TEMP = 'zone_temp',
+}
+
+const tempSelectOptions = [
+  { value: '0', label: 'Low' },
+  { value: '16', label: '16°C' },
+  { value: '16.5', label: '16.5°C' },
+  { value: '17', label: '17°C' },
+  { value: '17.5', label: '17.5°C' },
+  { value: '18', label: '18°C' },
+  { value: '18.5', label: '18.5°C' },
+  { value: '19', label: '19°C' },
+  { value: '19.5', label: '19.5°C' },
+  { value: '20', label: '20°C' },
+  { value: '20.5', label: '20.5°C' },
+  { value: '21', label: '21°C' },
+  { value: '21.5', label: '21.5°C' },
+  { value: '22', label: '22°C' },
+  { value: '22.5', label: '22.5°C' },
+  { value: '23', label: '23°C' },
+  { value: '23.5', label: '23.5°C' },
+  { value: '24', label: '24°C' },
+  { value: '24.5', label: '24.5°C' },
+  { value: '25', label: '25°C' },
+  { value: '25.5', label: '25.5°C' },
+  { value: '26', label: '26°C' },
+  { value: '26.5', label: '26.5°C' },
+  { value: '27', label: '27°C' },
+  { value: '27.5', label: '27.5°C' },
+  { value: '28', label: '28°C' },
+  { value: '28.5', label: '28.5°C' },
+  { value: '30', label: 'High' },
+];
+
 @customElement('remote-control')
 export class RemoteControl extends LitElement {
   @state() private hass!: HomeAssistant;
@@ -21,6 +57,7 @@ export class RemoteControl extends LitElement {
   @state() private subcardType: string | null = null;
   @state() private serviceData: any = {};
   @state() private activeServices: { [key: string]: { name: string; icon: string } } = {};
+  @state() private _precondState: string = PRECOND.TIME;
 
   protected firstUpdated(): void {
     console.log('getiing servicesConfig');
@@ -87,13 +124,16 @@ export class RemoteControl extends LitElement {
   private get chargeConfig() {
     return this.serviceData.batteryChargeConfig;
   }
-
   private get sendRouteConfig() {
     return this.serviceData.sendRouteConfig;
   }
 
   private get sunroofConfig() {
     return this.serviceData.sunroofConfigData;
+  }
+
+  private get precondSeatConfig() {
+    return this.serviceData.precondSeatConfig;
   }
 
   static get styles(): CSSResultGroup {
@@ -231,9 +271,28 @@ export class RemoteControl extends LitElement {
   }
 
   private _renderPreheatControl(): TemplateResult {
-    const { preheatConfig } = this;
+    const { preheatConfig, precondSeatConfig } = this;
     const time = preheatConfig.data.time;
     const service = preheatConfig.service;
+    // Preconditioning options
+    const precondService = precondSeatConfig.service;
+    const seatOptions = precondSeatConfig.data.precondSeat;
+    const tempOptions = precondSeatConfig.data.temperature;
+
+    const precondOptions = [
+      { value: PRECOND.TIME, label: 'Time' },
+      { value: PRECOND.ZONE_TEMP, label: 'Zone & Temperature' },
+    ];
+    const precondHeaderSelect = html`
+      <ha-control-select
+        .value=${this._precondState}
+        .options=${precondOptions}
+        @value-changed=${(e: CustomEvent) => {
+          this._precondState = e.detail.value;
+        }}
+      ></ha-control-select>
+    `;
+
     const preheatDepartureTimeEL = html`
       <div class="items-row">
         <div>${preheatConfig.data.departure_time.label}</div>
@@ -266,15 +325,76 @@ export class RemoteControl extends LitElement {
       </div>
     `;
 
+    const precondZoneTemp = Object.entries(seatOptions).map(([key, seatValue]) => {
+      const { label: seatLabel, value: seatInputValue } = seatValue as { label: string; value: boolean };
+      const tempValue = tempOptions[key]; // Match temperature control by key
+      const tempInputValue = tempValue?.value || '';
+
+      return html`
+        <div class="items-row">
+          <!-- Seat Controls -->
+          <div>${seatLabel}</div>
+          <ha-switch
+            .checked=${seatInputValue}
+            .configValue=${key}
+            @change=${(e: Event) => this._handleSeatChange(e)}
+          ></ha-switch>
+
+          <!-- Temperature Controls -->
+          <ha-select
+            .label=${'Temperature'}
+            .value=${String(tempInputValue)}
+            .configValue=${key}
+            @selected=${this._handleTempSelect}
+            @closed=${(ev: Event) => ev.stopPropagation()}
+            fixedMenuPosition
+          >
+            ${tempSelectOptions.map(({ value, label }) => {
+              return html`<mwc-list-item value=${value}>${label}</mwc-list-item>`;
+            })}
+          </ha-select>
+        </div>
+      `;
+    });
+
+    const serviceBtns = html` <div class="head-sub-row">
+      ${this._precondState === PRECOND.TIME
+        ? html` ${Object.entries(service).map(([key, data]) => {
+            return this._renderServiceBtn(key, data);
+          })}`
+        : html` ${Object.entries(precondService).map(([key, data]) => {
+            return this._renderServiceBtn(key, data);
+          })}`}
+    </div>`;
+
     return html`
-      <div class="sub-row">${preheatDepartureTimeEL}</div>
-      ${this._renderResetBtn()}
-      <div class="head-sub-row preheat">
-        ${Object.entries(service).map(([key, data]) => {
-          return this._renderServiceBtn(key, data);
-        })}
+      <div class="sub-row">
+        ${precondHeaderSelect} ${this._precondState === PRECOND.TIME ? preheatDepartureTimeEL : precondZoneTemp}
+        ${this._renderResetBtn()}
       </div>
+      ${serviceBtns}
     `;
+  }
+
+  private _handleSeatChange(e: any): void {
+    e.stopPropagation();
+    const target = e.target;
+    const configValue = e.target.configValue;
+    const value = target.checked;
+    this.precondSeatConfig.data.precondSeat[configValue].value = value;
+
+    console.log(this.precondSeatConfig.data.precondSeat);
+    this.requestUpdate(); // Trigger re-render to update UI after change
+  }
+
+  private _handleTempSelect(e: any): void {
+    e.stopPropagation();
+    const target = e.target;
+    const configValue = target.configValue;
+    const value = target.value;
+    this.precondSeatConfig.data.temperature[configValue].value = value;
+    console.log(this.precondSeatConfig.data.temperature);
+    this.requestUpdate(); // Trigger re-render to update UI after change
   }
 
   private _renderEngineControl(): TemplateResult {
@@ -480,6 +600,7 @@ export class RemoteControl extends LitElement {
   /* ----------------------------- HANDLER METHODS ---------------------------- */
 
   private saveConfigChange(service: string): void {
+    console.log('Saving config change for:', service);
     switch (service) {
       case 'preheat_start_departure_time':
         const data = {
@@ -535,7 +656,22 @@ export class RemoteControl extends LitElement {
         }, {} as Record<string, string>);
         this.callService(service, dataRoute);
         break;
-
+      case 'temperature_configure':
+        const dataTemp = Object.entries(this.precondSeatConfig.data.temperature).reduce((acc, [key, value]) => {
+          const { value: inputValue } = value as { value: string };
+          acc[key] = inputValue;
+          return acc;
+        }, {} as Record<string, string>);
+        this.callService(service, dataTemp);
+        break;
+      case 'preconditioning_configure_seats':
+        const dataSeats = Object.entries(this.precondSeatConfig.data.precondSeat).reduce((acc, [key, value]) => {
+          const { value: inputValue } = value as { value: boolean };
+          acc[key] = inputValue;
+          return acc;
+        }, {} as Record<string, boolean>);
+        this.callService(service, dataSeats);
+        break;
       default:
         break;
     }
@@ -646,6 +782,7 @@ export class RemoteControl extends LitElement {
       });
     } finally {
       console.log('call-service:', service, data);
+
       this.launchToast();
     }
   }

@@ -2,6 +2,8 @@
   --control-icon-size: 32px;
   --control-btn-radius: var(--feature-border-radius, 12px);
   --feature-height: 42px;
+  --mdc-menu-max-height: 200px !important;
+  --ha-select-min-width: 150px;
 }
 
 .service-control {
@@ -33,13 +35,13 @@
 
 .head-sub-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   position: relative;
   gap: 0.5rem;
 }
 
-.head-sub-row.preheat {
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+.head-sub-row>.control-btn-sm:nth-last-child(1):nth-child(odd) {
+  grid-column: span 2;
 }
 
 @keyframes fade-in {
@@ -80,7 +82,7 @@
   gap: 1rem;
   margin-top: 1rem;
   height: auto;
-  padding: var(--vic-card-padding);
+  /* padding: var(--vic-card-padding); */
 }
 
 .control-btn-sm,

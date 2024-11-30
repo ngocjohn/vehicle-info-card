@@ -93,7 +93,9 @@
             "labelWindowFrontLeft": "Trước trái",
             "labelWindowFrontRight": "Trước phải",
             "labelWindowRearLeft": "Sau trái",
-            "labelWindowRearRight": "Sau phải"
+            "labelWindowRearRight": "Sau phải",
+            "labelSeatConfig": "Lưu cấu hình ghế ngồi",
+            "labelSetTempZone": "Lưu khu vực nhiệt độ"
         },
         "servicesCtrl": {
             "auxheat": "Sưởi phụ",
