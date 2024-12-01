@@ -14,9 +14,10 @@ import { styleMap } from 'lit-html/directives/style-map.js';
 import { customElement, property, state, query } from 'lit/decorators.js';
 
 import './components';
-import { EcoChart, VehicleButtons, VehicleMap } from './components/cards';
+import { EcoChart, RemoteControl, VehicleButtons, VehicleMap } from './components/cards';
 import { CardItem, cardTypes } from './const/data-keys';
 import { IMAGE } from './const/imgconst';
+import { servicesCtrl } from './const/remote-control-keys';
 import * as StateMapping from './const/state-mapping';
 import styles from './css/styles.css';
 import { localize } from './localize/localize';
@@ -89,6 +90,7 @@ export class VehicleCard extends LitElement {
   @query('vehicle-buttons') vehicleButtons!: VehicleButtons;
   @query('vehicle-map') vehicleMap!: VehicleMap;
   @query('eco-chart') ecoChart!: EcoChart;
+  @query('remote-control') remoteControl!: RemoteControl;
 
   constructor() {
     super();
@@ -111,7 +113,7 @@ export class VehicleCard extends LitElement {
     return Boolean(chargingActive);
   }
 
-  private get carVinNumber(): string {
+  get carVinNumber(): string {
     if (!this.config.entity) return '';
     return this.getEntityAttribute(this.config.entity, 'vin');
   }
@@ -213,10 +215,9 @@ export class VehicleCard extends LitElement {
     if (this._currentPreviewType !== null) return;
     this._buttonReady = false;
 
-    const buttonCards: { [key: string]: ButtonCardEntity } = {};
     const logging: string[] = [];
     for (const baseCard of this.baseCardTypes) {
-      buttonCards[baseCard.type] = await getDefaultButton(this._hass, this.config, baseCard);
+      this.buttonCards[baseCard.type] = await getDefaultButton(this._hass, this.config, baseCard);
       logging.push(baseCard.type);
       // this.buttonCards = buttonCards;
       // console.log('Button Cards ready:', logging);
@@ -228,16 +229,12 @@ export class VehicleCard extends LitElement {
         Object.keys(this.config.added_cards).map(async (key) => {
           const card = this.config.added_cards[key];
           if (card) {
-            buttonCards[key] = await getAddedButton(this._hass, card, key);
+            this.buttonCards[key] = await getAddedButton(this._hass, card, key);
           }
           // this.buttonCards = buttonCards;
           logging.push(key);
         })
       );
-    }
-
-    if (buttonCards) {
-      this.buttonCards = buttonCards;
     }
 
     this._buttonReady = true;
@@ -307,7 +304,7 @@ export class VehicleCard extends LitElement {
     this.requestUpdate();
   }
 
-  private localize = (string: string, search = '', replace = ''): string => {
+  public localize = (string: string, search = '', replace = ''): string => {
     return localize(string, this.userLang, search, replace);
   };
 
@@ -805,19 +802,21 @@ export class VehicleCard extends LitElement {
   private _renderServiceControl(): TemplateResult | void {
     const hass = this._hass;
     const serviceControl = this.config.services;
-    const carVin = this.carVinNumber;
-    const carLockEntity = this.vehicleEntities.lock?.entity_id;
-    const selectedLanguage = this.userLang;
+
+    const activeServices = Object.entries(serviceControl).reduce((acc, [key, value]) => {
+      if (value) {
+        acc[key] = {
+          name: servicesCtrl(this.userLang)[key].name,
+          icon: servicesCtrl(this.userLang)[key].icon,
+        };
+      }
+      return acc;
+    }, {} as Record<string, { name: string; icon: string }>);
+
     return html`
       <div class="default-card remote-tab">
         <div class="data-header">${this.localize('card.common.titleRemoteControl')}</div>
-        <remote-control
-          .hass=${hass}
-          .servicesConfig=${serviceControl}
-          .carVin=${carVin}
-          .carLockEntity=${carLockEntity}
-          .selectedLanguage=${selectedLanguage}
-        ></remote-control>
+        <remote-control .hass=${hass} .card=${this as VehicleCard} .selectedServices=${activeServices}></remote-control>
       </div>
     `;
   }
@@ -972,42 +971,41 @@ export class VehicleCard extends LitElement {
     const entityID = this.getEntityTypeId(attributeType);
     const stateMapping = this.getAttrStateMap(attributeType, lang);
     const attributesVisible = this.isSubCardActive(attributeType);
-    const attributesClass = attributesVisible ? 'sub-attributes active' : 'sub-attributes';
 
     // Iterate over the keys of the stateMapping object
-    Object.keys(stateMapping).forEach((attribute) => {
+    Object.keys(stateMapping).forEach((key) => {
       let attributeState: string | boolean | null | undefined;
       // Check if the attribute is the charge flap DC status
-      if (attribute === 'chargeflapdcstatus' && this.vehicleEntities.chargeFlapDCStatus?.entity_id !== undefined) {
+      if (key === 'chargeflapdcstatus' && this.vehicleEntities.chargeFlapDCStatus?.entity_id !== undefined) {
         attributeState = this.getEntityState(this.vehicleEntities.chargeFlapDCStatus.entity_id);
-      } else if (attribute === 'sunroofstatus' && this.vehicleEntities.sunroofStatus?.entity_id !== undefined) {
+      } else if (key === 'sunroofstatus' && this.vehicleEntities.sunroofStatus?.entity_id !== undefined) {
         attributeState = this.getEntityState(this.vehicleEntities.sunroofStatus.entity_id);
       } else {
-        attributeState = this.getEntityAttribute(entityID, attribute);
+        attributeState = this.getEntityAttribute(entityID, key);
       }
       // Check if the attribute state
 
       if (attributeState !== undefined && attributeState !== null) {
-        state[attribute] = attributeState;
+        state[key] = attributeState;
       }
     });
     // Render the attributes
     return html`
-      <div class=${attributesClass}>
-        ${Object.keys(state).map((attribute) => {
-          const rawState = state[attribute];
+      <div class="sub-attributes" ?active=${attributesVisible}>
+        ${Object.keys(state).map((key) => {
+          const rawState = state[key];
           // Check if the state is valid and the attribute mapping exists
-          if (rawState !== undefined && rawState !== null && stateMapping[attribute]) {
-            const readableState = stateMapping[attribute].state[rawState] || 'Unknown';
+          if (rawState !== undefined && rawState !== null && stateMapping[key]) {
+            const readableState = stateMapping[key].state[rawState] || 'Unknown';
             let classState: boolean;
-            if (attribute === 'sunroofstatus') {
+            if (key === 'sunroofstatus') {
               classState = rawState === '0' ? false : true;
             } else {
-              classState = rawState === '2' || rawState === '1' || rawState === false ? false : true;
+              classState = ['2', '1', false].includes(rawState as string) ? false : true;
             }
             return html`
               <div class="data-row">
-                <span>${stateMapping[attribute].name}</span>
+                <span>${stateMapping[key].name}</span>
                 <div class="data-value-unit" ?warning=${classState}>
                   <span style="text-transform: capitalize">${readableState}</span>
                 </div>

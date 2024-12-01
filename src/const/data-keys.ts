@@ -1,5 +1,5 @@
 import { localize } from '../localize/localize';
-
+import { CardTypeConfig } from '../types/card-types';
 const createShowOpts = (nameKey: string, lang: string, configKey: string) => ({
   label: localize(nameKey, lang),
   configKey,
@@ -15,41 +15,26 @@ export const editorShowOpts = (lang: string) => [
   createShowOpts('editor.showOpts.show_error_notify', lang, 'show_error_notify'),
 ];
 
-interface CardType {
-  type: string;
-  name: string;
-  icon: string;
-  config: string;
-  button: string;
-}
-
-const createCard = (
-  key: string,
-  nameKey: string,
-  icon: string,
-  config: string,
-  button: string,
-  lang: string
-): CardType => ({
+const createCard = (key: string, icon: string, config: string, button: string, lang: string): CardTypeConfig => ({
   type: key,
-  name: localize(`card.${nameKey}`, lang),
+  name: localize(`card.cardType.${key}`, lang),
   icon,
   config,
   button,
 });
 
 export const cardTypes = (lang: string) => [
-  createCard('tripCards', 'cardType.tripCards', 'mdi:map-marker-path', 'trip_card', 'trip_button', lang),
-  createCard('vehicleCards', 'cardType.vehicleCards', 'mdi:car-info', 'vehicle_card', 'vehicle_button', lang),
-  createCard('ecoCards', 'cardType.ecoCards', 'mdi:leaf', 'eco_card', 'eco_button', lang),
-  createCard('tyreCards', 'cardType.tyreCards', 'mdi:tire', 'tyre_card', 'tyre_button', lang),
+  createCard('tripCards', 'mdi:map-marker-path', 'trip_card', 'trip_button', lang),
+  createCard('vehicleCards', 'mdi:car-info', 'vehicle_card', 'vehicle_button', lang),
+  createCard('ecoCards', 'mdi:leaf', 'eco_card', 'eco_button', lang),
+  createCard('tyreCards', 'mdi:tire', 'tyre_card', 'tyre_button', lang),
 ];
 
-export interface CardItem {
+export type CardItem = {
   key: string;
   name: string;
   icon?: string;
-}
+};
 
 const createItem = (key: string, nameKey: string, lang: string, icon?: string): CardItem => ({
   key,
@@ -124,6 +109,20 @@ const chargingOverview = (lang: string): CardItem[] => [
   createItem('selectedProgram', 'chargingOverview.selectedProgram', lang, 'mdi:ev-station'),
 ];
 
+const precondSeats = (lang: string): CardItem[] => [
+  createItem('precondSeatFrontLeft', 'precondSeatTemp.frontLeft', lang),
+  createItem('precondSeatFrontRight', 'precondSeatTemp.frontRight', lang),
+  createItem('precondSeatRearLeft', 'precondSeatTemp.rearLeft', lang),
+  createItem('precondSeatRearRight', 'precondSeatTemp.rearRight', lang),
+];
+
+const precondTemps = (lang: string): CardItem[] => [
+  createItem('temperature_points_frontLeft', 'precondSeatTemp.frontLeft', lang),
+  createItem('temperature_points_frontRight', 'precondSeatTemp.frontRight', lang),
+  createItem('temperature_points_rearLeft', 'precondSeatTemp.rearLeft', lang),
+  createItem('temperature_points_rearRight', 'precondSeatTemp.rearRight', lang),
+];
+
 export const baseDataKeys = (lang: string) => ({
   tripOverview: tripOverview(lang),
   tripFromReset: tripFromReset(lang),
@@ -133,4 +132,6 @@ export const baseDataKeys = (lang: string) => ({
   ecoScores: ecoScores(lang),
   tyrePressures: tyrePressures(lang),
   chargingOverview: chargingOverview(lang),
+  precondSeats: precondSeats(lang),
+  precondTemps: precondTemps(lang),
 });
