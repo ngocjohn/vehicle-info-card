@@ -94,7 +94,7 @@
             "labelWindowFrontRight": "Avant droit",
             "labelWindowRearLeft": "Arrière gauche",
             "labelWindowRearRight": "Arrière droit",
-            "labelSeatConfig": "Enregistrer la configuration des sièges",
+            "labelSeatConfig": "Enregistrer la position des sièges",
             "labelSetTempZone": "Enregistrer la zone de température"
         },
         "servicesCtrl": {
@@ -116,7 +116,7 @@
             "vehicleNoLongerAvailable": "Véhicule non disponible"
         },
         "sunroofState": {
-            "antiBoomingLifting": "Levé déflecteur d'air",
+            "antiBoomingLifting": "Déflecteur d'air levé",
             "antiBoomingPosition": "Position anti-bruit d'air",
             "closing": "Fermeture",
             "closingLifting": "Fermeture mode incliné",
@@ -163,7 +163,7 @@
             "tirePressureRearRight": "Arrière droit",
             "tireWarningOk": "Aucune perte de pression détectée",
             "tireWarningProblem": "Perte de pression détectée! Vérifiez les pneus.",
-            "tyrePressure": "Pressions pneus"
+            "tyrePressure": "Pression des pneus"
         },
         "vehicleCard": {
             "doorStatusOverall": "Portes",
@@ -175,20 +175,20 @@
             "lowWashWater": "Liquide lave-glace",
             "parkBrake": "Frein de stationnement",
             "starterBatteryState": "Batterie de démarrage",
-            "tirePressureWarning": "Pression des pneus",
+            "tirePressureWarning": "Pression des pneus !",
             "vehicleStatus": "État du véhicule",
             "vehicleWarnings": "Avertissements",
             "windowsClosed": "Vitres"
         },
         "windowAttributes": {
             "windowstatusfrontleft": "Vitre avant gauche",
-            "windowstatusfrontleftblind": "Store avant gauche",
+            "windowstatusfrontleftblind": "Store pare-soleil avant gauche",
             "windowstatusfrontright": "Vitre avant droite",
-            "windowstatusfrontrightblind": "Store avant droit",
+            "windowstatusfrontrightblind": "Store pare-soleil avant droit",
             "windowstatusrearleft": "Vitre arrière gauche",
-            "windowstatusrearleftblind": "Store arrière gauche",
+            "windowstatusrearleftblind": "Store pare-soleil arrière gauche",
             "windowstatusrearright": "Vitre arrière droite",
-            "windowstatusrearrightblind": "Store arrière droit"
+            "windowstatusrearrightblind": "Store pare-soleil arrière droit"
         },
         "ignitionState": {
             "ignitionLock": "Verrouillage",
@@ -206,7 +206,7 @@
     },
     "editor": {
         "buttonConfig": {
-            "desc": "Configurer les sous-cartes pour chaque bouton.",
+            "desc": "Configurer les cartes secondaires pour chaque bouton.",
             "title": "Configuration des boutons",
             "defaultCards": "Cartes par défaut",
             "customCards": "Cartes personnalisées",
@@ -219,25 +219,25 @@
             "hidePreview": "Masquer l'aperçu",
             "secondaryInfo": "Informations secondaires",
             "secondaryInfoDesc": "Cela sera affiché sous le titre de la carte.",
-            "secondaryInfoHelper": "Utilisez le modèle Jinja2 pour afficher des informations secondaires",
+            "secondaryInfoHelper": "Utiliser le modèle Jinja2 pour afficher des informations secondaires",
             "notifyInfo": "Configuration des notifications",
             "notifyInfoHelper": "Le résultat doit renvoyer 'True' pour afficher la notification.",
             "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette carte?",
-            "toastNewCard": "Nouvelle carte ajoutée!",
+            "toastNewCard": "Nouvelle carte ajoutée !",
             "buttonGridSwipe": "Configuration de la grille de boutons",
             "swipeRows": "Lignes par diapositive",
-            "useButtonSwipe": "Utiliser le swipe pour les boutons",
+            "useButtonSwipe": "Utiliser le glisser pour les boutons",
             "iconInfo": "Modèle d'icône",
-            "iconInfoHelper": "Utilisez un modèle Jinja2 pour afficher l'icône",
+            "iconInfoHelper": "Utiliser un modèle Jinja2 pour afficher l'icône",
             "colorInfo": "Modèle de couleur",
-            "colorInfoHelper": "Utilisez un modèle Jinja2 pour modifier la couleur de l'icône"
+            "colorInfoHelper": "Utiliser un modèle Jinja2 pour modifier la couleur de l'icône"
         },
         "common": {
             "checkAll": "Tout cocher",
-            "infoButton": "Sélectionnez la carte que vous souhaitez configurer.",
+            "infoButton": "Sélectionner la carte à configurer.",
             "infoImages": "Il n'est pas nécessaire d'ajouter un '-' pour chaque ligne. Chaque ligne sera traitée comme une URL séparée automatiquement.",
             "infoMap": "Configuration pour la popup de carte.",
-            "infoServices": "Choisissez les services que vous souhaitez activer. Si un service est désactivé, il ne sera pas affiché dans la carte.",
+            "infoServices": "Choisir les services à activer. Si un service est désactivé, il ne sera pas affiché dans la carte.",
             "uncheckAll": "Tout décocher"
         },
         "imagesConfig": {
@@ -248,15 +248,15 @@
             "deleteSelected": "Supprimer la sélection"
         },
         "mapConfig": {
-            "desc": "Choisissez la configuration de la carte",
-            "title": "Configuration carte"
+            "desc": "Choisir la configuration de la carte",
+            "title": "Configuration de la carte"
         },
         "servicesConfig": {
-            "desc": "Choisissez les services que vous souhaitez activer.",
-            "title": "Configuration services"
+            "desc": "Choisir les services à activer.",
+            "title": "Configuration des services"
         },
         "showConfig": {
-            "desc": "Choisissez les éléments que vous souhaitez afficher.",
+            "desc": "Choisir les éléments à afficher.",
             "title": "Afficher la configuration"
         },
         "showOpts": {
@@ -269,7 +269,7 @@
             "show_slides": "Afficher le slide"
         },
         "themeLangConfig": {
-            "desc": "Choisissez le thème et la langue.",
+            "desc": "Choisir le thème et la langue.",
             "title": "Thèmes & Langage"
         },
         "customButtonConfig": {
@@ -282,8 +282,8 @@
             "desc": "Configuration YAML pour la carte Lovelace"
         },
         "customTireBackground": {
-            "title": "Arrière-plan personnalisé des pneus",
-            "desc": "Téléchargez une image pour remplacer l'arrière-plan par défaut.",
+            "title": "Personnalisation arrière-plan vue pneus",
+            "desc": "Télécharger une image pour remplacer l'arrière-plan par défaut.",
             "info": "L'image doit être carrée et avoir une résolution maximale de 450x450 pixels. Un arrière-plan transparent est recommandé."
         },
         "customActionConfig": {
