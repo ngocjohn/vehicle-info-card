@@ -30,8 +30,93 @@ export class CustomButtonTemplate extends LitElement {
   };
 
   private _editorHeader(): TemplateResult {
-    const isDefaultCard = this.button.isDefaultCard;
     const localizeKey = this.localizeKey;
+
+    return html`
+      <div class="card-button-cfg ha-button">
+        ${!this.button.isHidden
+          ? html`<ha-button @click=${() => this.editor._toggleShowButton(this.card)}
+              >${localizeKey('showButton')}</ha-button
+            >`
+          : ''}
+        <ha-button @click=${(ev: Event) => this._dispatchEvent(ev, 'toggle_preview_button')}
+          >${!this.isButtonPreview ? localizeKey('preview') : localizeKey('hidePreview')}</ha-button
+        >
+        <ha-button @click=${() => (this._yamlMode = !this._yamlMode)}>
+          ${this._yamlMode ? 'Hide' : 'Show'} YAML
+        </ha-button>
+      </div>
+    `;
+  }
+
+  private _buttonTitleIconForms(): TemplateResult {
+    const localizeKey = this.localizeKey;
+    const { primary, icon, entity, isDefaultCard } = this.button;
+    const button = this.card.button;
+
+    const attributes = entity ? Object.keys(this.editor.hass.states[entity].attributes) : [];
+    const attrOpts = [...attributes.map((attr) => ({ value: attr, label: attr }))];
+
+    const buttonTypeSelector = html`
+      <ha-combo-box
+        .item-value-path=${'value'}
+        .item-label-path=${'label'}
+        .label=${'Button Type'}
+        .value=${this.button.button_type || 'default'}
+        .configValue=${'button_type'}
+        .configBtnType=${this.card.button}
+        .items=${[
+          { value: 'default', label: 'Default' },
+          { value: 'action', label: 'Action' },
+        ]}
+        @value-changed=${(ev: any) => this._dispatchEvent(ev, 'btn-changed')}
+      ></ha-combo-box>
+    `;
+
+    const entitySelector = html`
+      <ha-entity-picker
+        .hass=${this.editor.hass}
+        .label=${'Entity'}
+        .value=${this.button.entity || ''}
+        .configValue=${'entity'}
+        .configBtnType=${button}
+        @change=${(ev: Event) => this._dispatchEvent(ev, 'btn-changed')}
+      ></ha-entity-picker>
+    `;
+
+    const attributeSelector = html`
+      <ha-combo-box
+        .item-value-path=${'value'}
+        .item-label-path=${'label'}
+        .label=${'Attribute'}
+        .hass=${this.editor.hass}
+        .value=${this.button.attribute || ''}
+        .configValue=${'attribute'}
+        .configBtnType=${button}
+        .items=${attrOpts}
+        @value-changed=${(ev: any) => this._dispatchEvent(ev, 'btn-changed')}
+      ></ha-combo-box>
+    `;
+
+    const primaryInput = html`
+      <ha-textfield
+        .label=${'Button Title'}
+        .value=${primary || ''}
+        .configValue=${'primary'}
+        .configBtnType=${button}
+        @change=${(ev: Event) => this._dispatchEvent(ev, 'btn-changed')}
+      ></ha-textfield>
+    `;
+
+    const iconSelector = html`
+      <ha-icon-picker
+        .label=${'Icon'}
+        .value=${icon}
+        .configValue=${'icon'}
+        .configBtnType=${button}
+        @value-changed=${(ev: any) => this._dispatchEvent(ev, 'btn-changed')}
+      ></ha-icon-picker>
+    `;
 
     const checkboxConfigs = [
       ...(isDefaultCard
@@ -40,117 +125,24 @@ export class CustomButtonTemplate extends LitElement {
       { label: localizeKey('hideButton'), value: this.button.hide, configValue: 'hide' },
     ];
 
-    return html`
-      ${!this.button.isHidden
-        ? html`<div class="item-content">
-            <ha-button @click=${() => this.editor._toggleShowButton(this.card)}>${localizeKey('showButton')}</ha-button>
-          </div> `
-        : ''}
-      <div class="item-content">
-        <ha-button @click=${(ev: Event) => this._dispatchEvent(ev, 'toggle_preview_button')}
-          >${!this.isButtonPreview ? localizeKey('preview') : localizeKey('hidePreview')}</ha-button
-        >
-      </div>
-      <div class="item-content">
-        <ha-button @click=${() => (this._yamlMode = !this._yamlMode)}>
-          ${this._yamlMode ? 'Hide' : 'Show'} YAML
-        </ha-button>
-      </div>
-      <div>
-        <div class="item-content">
-          ${checkboxConfigs.map(
-            (config) => html`
-              <ha-formfield .label=${config.label}>
-                <ha-checkbox
-                  .checked=${config.value}
-                  .configValue=${config.configValue}
-                  .configBtnType=${this.card.button}
-                  @change=${(ev: Event) => this._dispatchEvent(ev, 'btn-changed')}
-                ></ha-checkbox>
-              </ha-formfield>
-            `
-          )}
-        </div>
-      </div>
-      <div class="item-content">
-        <ha-combo-box
-          .item-value-path=${'value'}
-          .item-label-path=${'label'}
-          .label=${'Button Type'}
-          .value=${this.button.button_type || 'default'}
-          .configValue=${'button_type'}
-          .configBtnType=${this.card.button}
-          .items=${[
-            { value: 'default', label: 'Default' },
-            { value: 'action', label: 'Action' },
-          ]}
-          @value-changed=${(ev: any) => this._dispatchEvent(ev, 'btn-changed')}
-        ></ha-combo-box>
-      </div>
-    `;
-  }
-
-  private _buttonTitleIconForms(): TemplateResult {
-    const { primary, icon, entity } = this.button;
-    const button = this.card.button;
-
-    const attributes = entity ? Object.keys(this.editor.hass.states[entity].attributes) : [];
-    const attrOpts = [...attributes.map((attr) => ({ value: attr, label: attr }))];
-
-    const entitySelector = html`
-      <div class="item-content">
-        <ha-entity-picker
-          .hass=${this.editor.hass}
-          .label=${'Entity'}
-          .value=${this.button.entity || ''}
-          .configValue=${'entity'}
-          .configBtnType=${button}
-          @change=${(ev: Event) => this._dispatchEvent(ev, 'btn-changed')}
-        ></ha-entity-picker>
-      </div>
-    `;
-
-    const attributeSelector = html`
-      <div class="item-content">
-        <ha-combo-box
-          .item-value-path=${'value'}
-          .item-label-path=${'label'}
-          .label=${'Attribute'}
-          .hass=${this.editor.hass}
-          .value=${this.button.attribute || ''}
-          .configValue=${'attribute'}
-          .configBtnType=${button}
-          .items=${attrOpts}
-          @value-changed=${(ev: any) => this._dispatchEvent(ev, 'btn-changed')}
-        ></ha-combo-box>
-      </div>
-    `;
-
-    const primaryInput = html`
-      <div class="item-content">
-        <ha-textfield
-          .label=${'Button Title'}
-          .value=${primary}
-          .configValue=${'primary'}
-          .configBtnType=${button}
-          @change=${(ev: Event) => this._dispatchEvent(ev, 'btn-changed')}
-        ></ha-textfield>
-      </div>
-    `;
-
-    const iconSelector = html`
-      <div class="item-content">
-        <ha-icon-picker
-          .label=${'Icon'}
-          .value=${icon}
-          .configValue=${'icon'}
-          .configBtnType=${button}
-          @value-changed=${(ev: any) => this._dispatchEvent(ev, 'btn-changed')}
-        ></ha-icon-picker>
-      </div>
-    `;
-
-    return html` ${primaryInput}${iconSelector} ${entitySelector}${attributeSelector}`;
+    const checkBoxes = html` <div class="card-button-cfg">
+      ${checkboxConfigs.map(
+        (config) => html`
+          <ha-formfield .label=${config.label}>
+            <ha-checkbox
+              .checked=${config.value}
+              .configValue=${config.configValue}
+              .configBtnType=${this.card.button}
+              @change=${(ev: Event) => this._dispatchEvent(ev, 'btn-changed')}
+            ></ha-checkbox>
+          </ha-formfield>
+        `
+      )}
+    </div>`;
+    return html` ${checkBoxes}
+      <div class="card-button-cfg">
+        ${buttonTypeSelector} ${primaryInput}${iconSelector} ${entitySelector}${attributeSelector}
+      </div>`;
   }
 
   private _createTemplateSelector(configKey: string): TemplateResult {
@@ -161,21 +153,19 @@ export class CustomButtonTemplate extends LitElement {
     const label = this.localizeKey(`${localTrans}Info`);
     const helper = this.localizeKey(`${localTrans}InfoHelper`);
 
-    return html` <div>
-      <div>
-        <ha-selector
-          .hass=${this.editor.hass}
-          .value=${value}
-          .configValue=${configKey}
-          .configBtnType=${cardButton}
-          .label=${label}
-          .helper=${helper}
-          .required=${false}
-          .selector=${{ template: {} }}
-          @value-changed=${(ev: any) => this._dispatchEvent(ev, 'btn-changed')}
-        ></ha-selector>
-      </div>
-    </div>`;
+    return html`
+      <ha-selector
+        .hass=${this.editor.hass}
+        .value=${value}
+        .configValue=${configKey}
+        .configBtnType=${cardButton}
+        .label=${label}
+        .helper=${helper}
+        .required=${false}
+        .selector=${{ template: {} }}
+        @value-changed=${(ev: any) => this._dispatchEvent(ev, 'btn-changed')}
+      ></ha-selector>
+    `;
   }
 
   private _renderTemplateSelector(): TemplateResult {
@@ -209,14 +199,9 @@ export class CustomButtonTemplate extends LitElement {
     const templateConfig = this._renderTemplateSelector();
     const yamlEditor = this._renderYamlEditor();
 
-    const uiModeWrapper = html`
-      <div class="card-button-cfg">
-        ${buttonTitleIconForms}</div> ${templateConfig}
-      </div>`;
+    const uiModeWrapper = html` ${buttonTitleIconForms} ${templateConfig} `;
 
-    return html`<div class="card-button-cfg" > ${editorHeader} </div> ${
-      this._yamlMode ? yamlEditor : uiModeWrapper
-    } </div >`;
+    return html`${editorHeader}${this._yamlMode ? yamlEditor : uiModeWrapper}`;
   }
 
   private _dispatchEvent(ev: any, type: string) {

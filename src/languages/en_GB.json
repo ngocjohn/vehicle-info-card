@@ -93,7 +93,9 @@
             "labelWindowFrontLeft": "Front left",
             "labelWindowFrontRight": "Front right",
             "labelWindowRearLeft": "Rear left",
-            "labelWindowRearRight": "Rear right"
+            "labelWindowRearRight": "Rear right",
+            "labelSeatConfig": "Save seat configuration",
+            "labelSetTempZone": "Save temperature zone"
         },
         "servicesCtrl": {
             "auxheat": "Auxiliary heating",
@@ -194,6 +196,12 @@
             "ignitionAccessory": "Accessory",
             "ignitionOn": "On",
             "ignitionStart": "Start"
+        },
+        "precondSeatTemp": {
+            "frontLeft": "Front left",
+            "frontRight": "Front right",
+            "rearLeft": "Rear left",
+            "rearRight": "Rear right"
         }
     },
     "editor": {

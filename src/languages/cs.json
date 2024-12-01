@@ -93,7 +93,9 @@
             "labelWindowFrontLeft": "Přední vlevo",
             "labelWindowFrontRight": "Přední vpravo",
             "labelWindowRearLeft": "Zadní vlevo",
-            "labelWindowRearRight": "Zadní vpravo"
+            "labelWindowRearRight": "Zadní vpravo",
+            "labelSeatConfig": "Uložit konfiguraci sedadel",
+            "labelSetTempZone": "Uložit teplotní zónu"
         },
         "servicesCtrl": {
             "auxheat": "Pomocné vytápění",
@@ -194,6 +196,12 @@
             "ignitionAccessory": "příslušenství",
             "ignitionOn": "zapnuto",
             "ignitionStart": "start"
+        },
+        "precondSeatTemp": {
+            "frontLeft": "Přední levé",
+            "frontRight": "Přední pravé",
+            "rearLeft": "Zadní levé",
+            "rearRight": "Zadní pravé"
         }
     },
     "editor": {

@@ -54,15 +54,16 @@ const sensorDeviceFilters: {
   lockSensor: { prefix: 'sensor.', suffix: '_lock' },
   maxSoc: { prefix: 'sensor.', suffix: '_max_state_of_charge' },
   odometer: { suffix: '_odometer' },
+  precondStatus: { suffix: '_preclimatestatus' },
   rangeElectric: { suffix: '_rangeelectrickm' },
   rangeLiquid: { suffix: '_rangeliquid' },
   soc: { prefix: 'sensor.', suffix: 'soc' },
   starterBatteryState: { suffix: '_starterbatterystate' },
+  sunroofStatus: { suffix: '_sunroofstatus' },
   tirePressureFrontLeft: { suffix: '_tirepressurefrontleft' },
   tirePressureFrontRight: { suffix: '_tirepressurefrontright' },
   tirePressureRearLeft: { suffix: '_tirepressurerearleft' },
   tirePressureRearRight: { suffix: '_tirepressurerearright' },
-  sunroofStatus: { suffix: '_sunroofstatus' },
 };
 
 export const combinedFilters = { ...binarySensorsFilters, ...sensorDeviceFilters };

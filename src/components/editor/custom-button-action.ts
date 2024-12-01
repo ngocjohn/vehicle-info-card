@@ -88,7 +88,7 @@ export class CustomButtonAction extends LitElement {
         .label=${'Entity to interact with'}
         .configValue=${'entity'}
         .configBtnType=${'button_action'}
-        @change=${(ev: CustomEvent) => this._handleActionTypeChange(ev, 'entity', this.cardButton)}
+        @change=${(ev: Event) => this._handleActionTypeChange(ev, 'entity', this.cardButton)}
       ></ha-entity-picker>
     </div>`;
 
@@ -112,11 +112,10 @@ export class CustomButtonAction extends LitElement {
     alert.style.display = 'none';
   }
 
-  private _handleActionTypeChange(ev: CustomEvent, actionName: string, buttonName: string): void {
+  private _handleActionTypeChange(ev: any, actionName: string, buttonName: string): void {
     ev.stopPropagation();
-    const actionValue = ev.detail.value;
+    const actionValue = ev.detail.value ?? ev.target.value;
     this._selectedAction = actionValue;
-
     this._customButtonAction(actionName, actionValue, buttonName);
   }
 

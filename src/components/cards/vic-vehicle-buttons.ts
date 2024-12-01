@@ -45,13 +45,10 @@ export class VehicleButtons extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
-    console.log('Vehicle buttons connected');
-    window.BenzButtons = this; // Expose the class to the window object
     this._tryConnect();
   }
 
   disconnectedCallback(): void {
-    console.log('Vehicle buttons disconnected');
     this._tryDisconnect();
     super.disconnectedCallback();
   }
@@ -345,6 +342,7 @@ export class VehicleButtons extends LitElement {
 
     return html`
       <div id="${`button-${key}`}" class="grid-item click-shrink">
+        <ha-ripple></ha-ripple>
         <div class="click-container" id="${`button-action-${key}`}">
           <div class="item-icon">
             <div class="icon-background" style=${`background-color: ${iconBackground}`}>
@@ -506,9 +504,6 @@ export class VehicleButtons extends LitElement {
 }
 
 declare global {
-  interface Window {
-    BenzButtons: VehicleButtons;
-  }
   interface HTMLElementTagNameMap {
     'vehicle-buttons': VehicleButtons;
   }

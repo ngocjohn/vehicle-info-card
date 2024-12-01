@@ -93,7 +93,9 @@
             "labelWindowFrontLeft": "Priekinė kairė",
             "labelWindowFrontRight": "Priekinė dešinė",
             "labelWindowRearLeft": "Galinė kairė",
-            "labelWindowRearRight": "Galinė dešinė"
+            "labelWindowRearRight": "Galinė dešinė",
+            "labelSeatConfig": "Išsaugoti sėdynės konfigūraciją",
+            "labelSetTempZone": "Išsaugoti temperatūros zoną"
         },
         "servicesCtrl": {
             "auxheat": "Papildomas šildymas",
@@ -194,6 +196,12 @@
             "ignitionAccessory": "Priedas",
             "ignitionOn": "Įjungta",
             "ignitionStart": "Pradėti"
+        },
+        "precondSeatTemp": {
+            "frontLeft": "Priekinė kairė",
+            "frontRight": "Priekinė dešinė",
+            "rearLeft": "Galinis kairysis",
+            "rearRight": "Galinis dešinysis"
         }
     },
     "editor": {

@@ -1,72 +1,42 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { HomeAssistant, fireEvent, forwardHaptic } from 'custom-card-helpers';
 import { LitElement, html, TemplateResult, CSSResultGroup } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement, state, property } from 'lit/decorators.js';
 
-import * as Srvc from '../../const/remote-control-keys';
+import { ControlServiceData, tempSelectOptions } from '../../const/remote-control-keys';
 import styles from '../../css/remote-control.css';
 import mainstyle from '../../css/styles.css';
-import { localize } from '../../localize/localize';
-import { Services } from '../../types';
 import { cloneDeep, convertToMinutes } from '../../utils';
+import { VehicleCard } from '../../vehicle-info-card';
+
+const enum PRECOND {
+  TIME = 'time',
+  ZONE_TEMP = 'zone_temp',
+}
 
 @customElement('remote-control')
 export class RemoteControl extends LitElement {
-  @state() private hass!: HomeAssistant;
-  @state() private servicesConfig!: Services;
-  @state() private carVin!: string;
-  @state() private carLockEntity!: string;
-  @state() private selectedLanguage!: string;
+  @property({ attribute: false }) hass!: HomeAssistant;
+  @property({ attribute: false }) card!: VehicleCard;
+  @property({ attribute: false }) private selectedServices!: { [key: string]: { name: string; icon: string } };
 
   @state() private subcardType: string | null = null;
   @state() private serviceData: any = {};
-  @state() private activeServices: { [key: string]: { name: string; icon: string } } = {};
+  @state() private _precondState: string = PRECOND.TIME;
 
   protected firstUpdated(): void {
     console.log('getiing servicesConfig');
     this.initializeServiceData();
-    this.getActiveServices(); // Get active services from servicesConfig
-  }
-
-  private getActiveServices(): void {
-    // Ensure servicesConfig is initialized before calling this
-    if (!this.servicesConfig) {
-      console.error('servicesConfig is not initialized');
-      return;
-    }
-
-    Object.entries(this.servicesConfig).forEach(([key, value]) => {
-      if (value) {
-        this.activeServices[key] = {
-          name: Srvc.servicesCtrl(this.selectedLanguage)[key].name,
-          icon: Srvc.servicesCtrl(this.selectedLanguage)[key].icon,
-        };
-      }
-    });
-  }
-
-  connectedCallback(): void {
-    super.connectedCallback();
-    window.RemoteControl = this;
-  }
-
-  disconnectedCallback(): void {
-    super.disconnectedCallback();
-    window.RemoteControl = null as any;
   }
 
   private initializeServiceData() {
-    this.serviceData = cloneDeep(Srvc.serviceData(this.selectedLanguage));
+    this.serviceData = cloneDeep(ControlServiceData(this.card.userLang));
   }
 
   private resetConfig(): void {
-    this.serviceData = cloneDeep(Srvc.serviceData(this.selectedLanguage));
+    this.serviceData = cloneDeep(ControlServiceData(this.card.userLang));
     this.requestUpdate(); // Trigger re-render to update UI after reset
   }
-
-  private localize = (string: string, search = '', replace = ''): string => {
-    return localize(string, this.selectedLanguage, search, replace);
-  };
 
   private get auxheatConfig() {
     return this.serviceData.auxheatConfig;
@@ -87,7 +57,6 @@ export class RemoteControl extends LitElement {
   private get chargeConfig() {
     return this.serviceData.batteryChargeConfig;
   }
-
   private get sendRouteConfig() {
     return this.serviceData.sendRouteConfig;
   }
@@ -96,12 +65,16 @@ export class RemoteControl extends LitElement {
     return this.serviceData.sunroofConfigData;
   }
 
+  private get precondSeatConfig() {
+    return this.serviceData.precondSeatConfig;
+  }
+
   static get styles(): CSSResultGroup {
     return [styles, mainstyle];
   }
 
   protected render(): TemplateResult {
-    if (Object.keys(this.activeServices).length === 0) return html`<hui-warning>No service selected.</hui-warning>`;
+    if (Object.keys(this.selectedServices).length === 0) return html`<hui-warning>No service selected.</hui-warning>`;
 
     return html`
       <div class="service-control">
@@ -141,7 +114,7 @@ export class RemoteControl extends LitElement {
       }
     };
 
-    const controlBtns = Object.entries(this.activeServices).map(([type, { name, icon }]) => {
+    const controlBtns = Object.entries(this.selectedServices).map(([type, { name, icon }]) => {
       const activeClass = this.subcardType === type;
       return html`
         <div @click=${() => handleClick(type)} class="control-btn-rounded click-shrink" ?active=${activeClass}>
@@ -155,7 +128,7 @@ export class RemoteControl extends LitElement {
   }
 
   private _renderToast(): TemplateResult {
-    const toastMsg = this.localize('card.common.toastCommandSent');
+    const toastMsg = this.card.localize('card.common.toastCommandSent');
     return html`
       <div id="toast">
         <ha-alert alert-type="success">${toastMsg} </ha-alert>
@@ -231,10 +204,93 @@ export class RemoteControl extends LitElement {
   }
 
   private _renderPreheatControl(): TemplateResult {
+    const { preheatConfig, precondSeatConfig } = this;
+    const service = preheatConfig.service;
+    const precondService = precondSeatConfig.service;
+
+    const precondOptions = [
+      { value: PRECOND.TIME, label: 'Time' },
+      { value: PRECOND.ZONE_TEMP, label: 'Zones & Temperatures' },
+    ];
+
+    const precondHeaderSelect = html`
+      <ha-control-select
+        .value=${this._precondState}
+        .options=${precondOptions}
+        @value-changed=${(e: CustomEvent) => {
+          this._precondState = e.detail.value;
+        }}
+      ></ha-control-select>
+    `;
+
+    const preheatDepartureTimeEL = this._renderDepartureTime();
+    const precondZoneTemp = this._renderPrecondZoneTemp();
+
+    const serviceBtns = html` <div class="head-sub-row">
+      ${this._precondState === PRECOND.TIME
+        ? html` ${Object.entries(service).map(([key, data]) => {
+            return this._renderServiceBtn(key, data);
+          })}`
+        : html` ${Object.entries(precondService).map(([key, data]) => {
+            return this._renderServiceBtn(key, data);
+          })}`}
+    </div>`;
+
+    return html`
+      <div class="sub-row">
+        ${precondHeaderSelect} ${this._precondState === PRECOND.TIME ? preheatDepartureTimeEL : precondZoneTemp}
+        ${this._renderResetBtn()}
+      </div>
+      ${serviceBtns}
+    `;
+  }
+
+  private _renderPrecondZoneTemp(): TemplateResult {
+    const { precondSeatConfig } = this;
+    const seatOptions = precondSeatConfig.data.precondSeat;
+    const tempOptions = precondSeatConfig.data.temperature;
+
+    const precondZoneTemp = Object.entries(seatOptions).map(([key, seatValue]) => {
+      const { label: seatLabel, value: seatInputValue } = seatValue as { label: string; value: boolean };
+      const tempValue = tempOptions[key]; // Match temperature control by key
+      const tempInputValue = tempValue?.value || '';
+
+      return html`
+        <div class="items-row">
+          <!-- Seat Controls -->
+          <div>${seatLabel}</div>
+          <ha-switch
+            .checked=${seatInputValue}
+            .configValue=${key}
+            @change=${(e: Event) => this._handleSeatChange(e)}
+          ></ha-switch>
+
+          <!-- Temperature Controls -->
+          <ha-select
+            .label=${'Temperature'}
+            .value=${String(tempInputValue)}
+            .configValue=${key}
+            @selected=${this._handleTempSelect}
+            @closed=${(ev: Event) => ev.stopPropagation()}
+            fixedMenuPosition
+            clearAble
+          >
+            ${tempSelectOptions.map(({ value, label }) => {
+              return html`<mwc-list-item value=${value}>${label}</mwc-list-item>`;
+            })}
+          </ha-select>
+        </div>
+      `;
+    });
+
+    return html`${precondZoneTemp}`;
+  }
+
+  private _renderDepartureTime(): TemplateResult {
     const { preheatConfig } = this;
     const time = preheatConfig.data.time;
-    const service = preheatConfig.service;
-    const preheatDepartureTimeEL = html`
+
+    return html`
       <div class="items-row">
         <div>${preheatConfig.data.departure_time.label}</div>
         <div>
@@ -265,16 +321,27 @@ export class RemoteControl extends LitElement {
         </div>
       </div>
     `;
+  }
 
-    return html`
-      <div class="sub-row">${preheatDepartureTimeEL}</div>
-      ${this._renderResetBtn()}
-      <div class="head-sub-row preheat">
-        ${Object.entries(service).map(([key, data]) => {
-          return this._renderServiceBtn(key, data);
-        })}
-      </div>
-    `;
+  private _handleSeatChange(e: any): void {
+    e.stopPropagation();
+    const target = e.target;
+    const configValue = e.target.configValue;
+    const value = target.checked;
+    this.precondSeatConfig.data.precondSeat[configValue].value = value;
+
+    console.log(this.precondSeatConfig.data.precondSeat);
+    this.requestUpdate(); // Trigger re-render to update UI after change
+  }
+
+  private _handleTempSelect(e: any): void {
+    e.stopPropagation();
+    const target = e.target;
+    const configValue = target.configValue;
+    const value = target.value;
+    this.precondSeatConfig.data.temperature[configValue].value = value;
+    console.log(this.precondSeatConfig.data.temperature);
+    this.requestUpdate(); // Trigger re-render to update UI after change
   }
 
   private _renderEngineControl(): TemplateResult {
@@ -404,17 +471,19 @@ export class RemoteControl extends LitElement {
   }
 
   private _renderLockControl(): TemplateResult {
-    const lockState = this.hass.states[this.carLockEntity].state;
+    const lockEntity = this.card.vehicleEntities.lock?.entity_id;
+    const lockState = this.hass.states[lockEntity]?.state;
+    const localize = (key: string) => this.card.localize(key);
     const config = {
       locked: {
         icon: 'mdi:lock',
-        stateDisplay: this.localize('card.serviceData.labelUnlockCar', this.selectedLanguage),
+        stateDisplay: localize('card.serviceData.labelUnlockCar'),
         command: 'doors_unlock',
         bgColor: 'var(--state-lock-locked-color)',
       },
       unlocked: {
         icon: 'mdi:lock-open',
-        stateDisplay: this.localize('card.serviceData.labelLockCar', this.selectedLanguage),
+        stateDisplay: localize('card.serviceData.labelLockCar'),
         command: 'doors_lock',
         bgColor: 'var(--state-lock-unlocked-color)',
       },
@@ -438,7 +507,7 @@ export class RemoteControl extends LitElement {
           <ha-icon icon=${icon}></ha-icon><span>${stateDisplay}</span>
         </div>
         <div class="control-btn-sm click-shrink" @click=${this.lockMoreInfo}>
-          <ha-icon icon="mdi:information"></ha-icon><span>${this.localize('card.serviceData.labelMoreInfo')}</span>
+          <ha-icon icon="mdi:information"></ha-icon><span>${localize('card.serviceData.labelMoreInfo')}</span>
         </div>
       </div>
     `;
@@ -480,6 +549,7 @@ export class RemoteControl extends LitElement {
   /* ----------------------------- HANDLER METHODS ---------------------------- */
 
   private saveConfigChange(service: string): void {
+    console.log('Saving config change for:', service);
     switch (service) {
       case 'preheat_start_departure_time':
         const data = {
@@ -536,6 +606,24 @@ export class RemoteControl extends LitElement {
         this.callService(service, dataRoute);
         break;
 
+      case 'temperature_configure':
+        const dataTemp = Object.entries(this.precondSeatConfig.data.temperature).reduce((acc, [key, value]) => {
+          const { value: inputValue } = value as { value: string };
+          if (inputValue === '' || inputValue === null || inputValue === undefined) return acc;
+          acc[key] = inputValue;
+          return acc;
+        }, {} as Record<string, string>);
+        this.callService(service, dataTemp);
+        break;
+
+      case 'preconditioning_configure_seats':
+        const dataSeats = Object.entries(this.precondSeatConfig.data.precondSeat).reduce((acc, [key, value]) => {
+          const { value: inputValue } = value as { value: boolean };
+          acc[key] = inputValue;
+          return acc;
+        }, {} as Record<string, boolean>);
+        this.callService(service, dataSeats);
+        break;
       default:
         break;
     }
@@ -632,8 +720,9 @@ export class RemoteControl extends LitElement {
   }
 
   private lockMoreInfo(): void {
+    const lockEntity = this.card.vehicleEntities.lock?.entity_id;
     fireEvent(this, 'hass-more-info', {
-      entityId: this.carLockEntity,
+      entityId: lockEntity,
     });
   }
 
@@ -641,11 +730,12 @@ export class RemoteControl extends LitElement {
     forwardHaptic('success');
     try {
       await this.hass.callService('mbapi2020', service, {
-        vin: this.carVin,
+        vin: this.card.carVinNumber,
         ...data,
       });
     } finally {
       console.log('call-service:', service, data);
+
       this.launchToast();
     }
   }
@@ -662,7 +752,7 @@ export class RemoteControl extends LitElement {
 }
 
 declare global {
-  interface Window {
-    RemoteControl: RemoteControl;
+  interface HTMLElementTagNameMap {
+    'remote-control': RemoteControl;
   }
 }

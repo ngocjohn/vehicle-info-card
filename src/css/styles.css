@@ -664,7 +664,7 @@ header h1 {
   transition: all 400ms cubic-bezier(0.3, 0.0, 0.8, 0.15);
 }
 
-.sub-attributes.active {
+.sub-attributes[active] {
   max-height: 1000px;
   opacity: 1;
   padding: var(--vic-card-padding);
