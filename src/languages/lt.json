@@ -196,6 +196,12 @@
             "ignitionAccessory": "Priedas",
             "ignitionOn": "Įjungta",
             "ignitionStart": "Pradėti"
+        },
+        "precondSeatTemp": {
+            "frontLeft": "Priekinė kairė",
+            "frontRight": "Priekinė dešinė",
+            "rearLeft": "Galinis kairysis",
+            "rearRight": "Galinis dešinysis"
         }
     },
     "editor": {

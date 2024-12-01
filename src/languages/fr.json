@@ -196,6 +196,12 @@
             "ignitionAccessory": "Accessoire",
             "ignitionOn": "Allumé",
             "ignitionStart": "Démarrage"
+        },
+        "precondSeatTemp": {
+            "frontLeft": "Avant gauche",
+            "frontRight": "Avant droit",
+            "rearLeft": "Arrière gauche",
+            "rearRight": "Arrière droit"
         }
     },
     "editor": {

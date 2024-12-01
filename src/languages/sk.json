@@ -196,6 +196,12 @@
             "ignitionAccessory": "Príslušenstvo",
             "ignitionOn": "Zapnuté",
             "ignitionStart": "Štart"
+        },
+        "precondSeatTemp": {
+            "frontLeft": "Predné ľavé",
+            "frontRight": "Predné pravé",
+            "rearLeft": "Zadné ľavé",
+            "rearRight": "Zadné pravé"
         }
     },
     "editor": {

@@ -196,6 +196,12 @@
             "ignitionAccessory": "Accessoire",
             "ignitionOn": "Aan",
             "ignitionStart": "Start"
+        },
+        "precondSeatTemp": {
+            "frontLeft": "Voor links",
+            "frontRight": "Voor rechts",
+            "rearLeft": "Achter links",
+            "rearRight": "Achter rechts"
         }
     },
     "editor": {
