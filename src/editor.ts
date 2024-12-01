@@ -48,7 +48,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   @state() private _activeSubcardType: string | null = null;
   @state() private _confirmDeleteType: string | null = null;
-  @state() private _customBtns: { [key: string]: BaseButtonConfig } = {};
   @state() private _selectedLanguage: string = 'system';
   @state() _latestRelease = latestRelease;
   private _toastDissmissed: boolean = false;
@@ -1040,24 +1039,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   /* ----------------------- CUSTOM BUTTON ITEMS ACTIONS ---------------------- */
-
-  private _hideCustomButton(cardButton: string) {
-    return () => {
-      const isAddedCard = this.isAddedCard(cardButton);
-      if (isAddedCard) {
-        const newAddedCards = { ...this._config.added_cards };
-        newAddedCards[cardButton].button.hide = !newAddedCards[cardButton].button.hide;
-        this._config = { ...this._config, added_cards: newAddedCards };
-      } else {
-        const button = this._config[cardButton];
-        button.hide = !button.hide;
-        this._config = { ...this._config, [cardButton]: button };
-        console.log('Hide button', cardButton, button.hide, 'Enabled:', button.enabled);
-      }
-      this.configChanged();
-      this.getBaseCardTypes();
-    };
-  }
 
   private _removeCustomCard(cardType: string) {
     return () => {

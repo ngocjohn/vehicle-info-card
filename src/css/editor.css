@@ -23,7 +23,11 @@
   margin-block: var(--vic-gutter-gap);
 }
 
-.card-button-cfg>.item-content:nth-last-child(1):nth-child(odd) {
+.card-button-cfg.ha-button {
+  grid-template-columns: repeat(auto-fit, minmax(calc((100% - 8px) / 4), 1fr))
+}
+
+.card-button-cfg:not(.ha-button)>*:nth-last-child(1):nth-child(odd) {
   grid-column: span 2;
 }
 
