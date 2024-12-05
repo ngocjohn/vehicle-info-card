@@ -124,12 +124,12 @@ const auxheatConfig = (lang: string) => ({
     DATA_CONFIGURE: createService('auxheat_configure', 'mdi:cog', 'labelSave', lang),
   },
   data: {
-    time_selection: 0, // Store the selected value here
+    time_selection: '0',
     time_selection_options: {
-      0: transLabel('labelNoSelection', lang),
-      1: transLabel('labelTime1', lang),
-      2: transLabel('labelTime2', lang),
-      3: transLabel('labelTime3', lang),
+      '0': transLabel('labelNoSelection', lang),
+      '1': transLabel('labelTime1', lang),
+      '2': transLabel('labelTime2', lang),
+      '3': transLabel('labelTime3', lang),
     },
     items: {
       time_1: { label: transLabel('labelTime1', lang), value: 0, hour: '00', minute: '00' },

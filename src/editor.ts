@@ -185,27 +185,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     return (this.baseCardTypes = baseCardTypes);
   }
 
-  // private _convertDefaultCardConfigs(): void {
-  //   for (const cardType of this.baseCardTypes) {
-  //     if (this._config[cardType.button] && typeof this._config[cardType.button] === 'object') {
-  //       this._customBtns[cardType.button] = this._config[cardType.button];
-  //     }
-  //   }
-  // }
-
-  // private _convertAddedCardConfigs(): void {
-  //   if (!this.isAnyAddedCard) {
-  //     console.log('No added cards to convert');
-  //     return;
-  //   } else {
-  //     // console.log('Converting added card configs');
-  //     Object.keys(this._config.added_cards).forEach((key) => {
-  //       const button = this._config.added_cards[key].button;
-  //       this._customBtns[key] = button;
-  //     });
-  //   }
-  // }
-
   private _debouncedCustomBtnChanged = debounce(this.configChanged.bind(this), 500);
 
   public localize = (string: string, search = '', replace = ''): string => {
