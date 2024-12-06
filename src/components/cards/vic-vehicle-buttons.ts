@@ -18,7 +18,7 @@ import { VehicleCard } from '../../vehicle-info-card';
 // Styles
 import mainstyle from '../../css/styles.css';
 
-const TEMPLATE_KEYS = ['secondary', 'notify', 'icon_template', 'color_template'] as const;
+const TEMPLATE_KEYS = ['secondary', 'notify', 'icon_template', 'color_template', 'picture_template'] as const;
 type TemplateKey = (typeof TEMPLATE_KEYS)[number];
 const COLOR_AlPHA = '.2';
 
@@ -233,6 +233,8 @@ export class VehicleButtons extends LitElement {
         return icon.includes('mdi:') ? icon : '';
       case 'color_template':
         return this._templateResults[key]?.color_template?.result ?? '';
+      case 'picture_template':
+        return this._templateResults[key]?.picture_template?.result ?? '';
     }
   }
 
@@ -339,6 +341,7 @@ export class VehicleButtons extends LitElement {
     const entity = custom_button ? button?.entity : '';
     const color = custom_button ? getTemplate('color_template') : '';
     const iconBackground = color ? this._setColorAlpha(color) : this._getBackgroundColors();
+    const picture = custom_button ? getTemplate('picture_template') : '';
 
     return html`
       <div id="${`button-${key}`}" class="grid-item click-shrink">
@@ -346,12 +349,16 @@ export class VehicleButtons extends LitElement {
         <div class="click-container" id="${`button-action-${key}`}">
           <div class="item-icon">
             <div class="icon-background" style=${`background-color: ${iconBackground}`}>
-              <ha-state-icon
-                .hass=${this.hass}
-                .stateObj=${entity ? this.hass.states[entity] : undefined}
-                .icon=${icon}
-                style=${color ? `color: ${color}` : ''}
-              ></ha-state-icon>
+              ${picture
+                ? html`<img src="${picture}" class="icon-picture" />`
+                : html`
+                    <ha-state-icon
+                      .hass=${this.hass}
+                      .stateObj=${entity ? this.hass.states[entity] : undefined}
+                      .icon=${icon}
+                      style=${color ? `color: ${color}` : ''}
+                    ></ha-state-icon>
+                  `}
             </div>
             <div class="item-notify" ?hidden=${!notify || !show_error_notify}>
               <ha-icon icon="mdi:alert-circle"></ha-icon>

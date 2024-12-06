@@ -230,7 +230,9 @@
             "iconInfo": "Icon template",
             "iconInfoHelper": "Use Jinja2 template to display icon",
             "colorInfo": "Color template",
-            "colorInfoHelper": "Use Jinja2 template to change the color of icon"
+            "colorInfoHelper": "Use Jinja2 template to change the color of icon",
+            "pictureInfo": "Picture (will replace the icon)",
+            "pictureInfoHelper": "You can use a template to display a picture, or url to an image file",
         },
         "common": {
             "checkAll": "Check all",

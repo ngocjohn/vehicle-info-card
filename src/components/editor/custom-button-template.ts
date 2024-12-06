@@ -169,7 +169,7 @@ export class CustomButtonTemplate extends LitElement {
   }
 
   private _renderTemplateSelector(): TemplateResult {
-    const templateSelectors = ['secondary', 'notify', 'icon_template', 'color_template'];
+    const templateSelectors = ['secondary', 'notify', 'icon_template', 'color_template', 'picture_template'];
     return html`${templateSelectors.map((configKey) => this._createTemplateSelector(configKey))}`;
   }
 
@@ -205,7 +205,15 @@ export class CustomButtonTemplate extends LitElement {
   }
 
   private _dispatchEvent(ev: any, type: string) {
-    const customEventValues = ['attribute', 'button_type', 'secondary', 'notify', 'icon_template', 'color_template'];
+    const customEventValues = [
+      'attribute',
+      'button_type',
+      'secondary',
+      'notify',
+      'icon_template',
+      'color_template',
+      'picture_template',
+    ];
     const target = ev.target;
     const configValue = target?.configValue;
     const configBtnType = target?.configBtnType;

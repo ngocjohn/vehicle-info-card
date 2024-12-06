@@ -1,294 +1,296 @@
 {
-    "name": "Dutch",
-    "nativeName": "Nederlands",
-    "card": {
-        "common": {
-            "lastUpdate": "Laatste update",
-            "stateCharging": "Opladen",
-            "stateClosed": "Gesloten",
-            "stateLocked": "Vergrendeld",
-            "stateLockedInt": "Vergrendeld int",
-            "stateNotExisting": "Niet bestaand",
-            "stateOpen": "Open",
-            "stateParkBrakeOff": "Gedeactiveerd",
-            "stateParkBrakeOn": "Geactiveerd",
-            "statePartlyUnlocked": "Gedeeltelijk ontgrendeld",
-            "stateUnknown": "Onbekend",
-            "stateUnlocked": "Ontgrendeld",
-            "statePressed": "Ingedrukt",
-            "titleRemoteControl": "Afstandsbediening",
-            "titleServices": "Diensten",
-            "toastCommandSent": "Opdracht succesvol verstuurd!",
-            "toastImageError": "Fout bij het opladen van de afbeelding. Enkel PNG en JPEG bestanden zijn toegelaten.",
-            "toastCardAlreadyExists": "Kaart bestaat al"
-        },
-        "cardType": {
-            "ecoCards": "ECO-aanduiding",
-            "tripCards": "Ritgegevens",
-            "tyreCards": "Bandenspanning",
-            "vehicleCards": "Voertuigstatus"
-        },
-        "chargingOverview": {
-            "chargingPower": "Laadvermogen",
-            "maxSoc": "Maximale oplaadtoestand",
-            "selectedProgram": "Programma",
-            "soc": "Oplaadtoestand"
-        },
-        "doorAttributes": {
-            "decklidstatus": "Bagageruimte",
-            "doorstatusfrontleft": "Portier links vooraan",
-            "doorstatusfrontright": "Portier rechts vooraan",
-            "doorstatusrearleft": "Portier links achteraan",
-            "doorstatusrearright": "Portier rechts achteraan",
-            "enginehoodstatus": "Motorkap",
-            "sunroofstatus": "Schuifdak",
-            "chargeflapdcstatus": "Klep oplaadaansluiting"
-        },
-        "ecoCard": {
-            "ecoDisplay": "ECO-aanduiding",
-            "ecoScore": "ECO score",
-            "ecoScoreAcceleraion": "Accelereren",
-            "ecoScoreBonusRange": "Bonusactieradius",
-            "ecoScoreConstant": "Gelijkmatig",
-            "ecoScoreFreeWheel": "Uitrollen"
-        },
-        "lockAttributes": {
-            "doorlockstatusfrontleft": "Vergrendelingsstatus links vooraan",
-            "doorlockstatusfrontright": "Vergrendelingsstatus rechts vooraan",
-            "doorlockstatusgas": "Vergrendelingsstatus tankklep",
-            "doorlockstatusrearleft": "Vergrendelingsstatus links achteraan",
-            "doorlockstatusrearright": "Vergrendelingsstatus rechts achteraan"
-        },
-        "serviceData": {
-            "labelChargeProgram": "Oplaadprogramma",
-            "labelCity": "Stad",
-            "labelClose": "Sluiten",
-            "labelDepartureTime": "Vertrektijd",
-            "labelDurationTime": "Duur",
-            "labelLatitude": "Breedtegraad",
-            "labelLockCar": "Vergrendel wagen",
-            "labelLongitude": "Lengtegraad",
-            "labelMaxStateOfCharge": "Maximale oplaadtoestand",
-            "labelMoreInfo": "Meer info",
-            "labelMove": "Beweeg",
-            "labelNoSelection": "Niets geselecteerd",
-            "labelOpen": "Open",
-            "labelPostCode": "Postcode",
-            "labelSave": "Bewaren",
-            "labelSend": "Verzenden",
-            "labelSetMaxSoc": "Maximale oplaadtoestand selecteren",
-            "labelSetProgram": "Programma selecteren",
-            "labelStart": "Start",
-            "labelStartTime": "Starttijd",
-            "labelStop": "Stop",
-            "labelStopTime": "Eindtijd",
-            "labelStreet": "Straat",
-            "labelTilt": "Kantelen",
-            "labelTime1": "Tijd 1",
-            "labelTime2": "Tijd 2",
-            "labelTime3": "Tijd 3",
-            "labelTimeSelection": "Tijdselectie",
-            "labelTitle": "Titel",
-            "labelUnlockCar": "Wagen ontgrendelen",
-            "labelWindowFrontLeft": "Links vooraan",
-            "labelWindowFrontRight": "Rechts vooraan",
-            "labelWindowRearLeft": "Links achteraan",
-            "labelWindowRearRight": "Rechts achteraan",
-            "labelSeatConfig": "Stoelconfiguratie opslaan",
-            "labelSetTempZone": "Temperatuurzone opslaan"
-        },
-        "servicesCtrl": {
-            "auxheat": "Standverwarming",
-            "charge": "Opladen",
-            "doorsLock": "Vergrendelingsstatus",
-            "engine": "Motor",
-            "preheat": "Interieur Voorklimatisering",
-            "sendRoute": "Adres aan voertuig doorgeven",
-            "sigPos": "Verlichting",
-            "sunroof": "Schuifdak",
-            "windows": "Ruiten"
-        },
-        "starterBattery": {
-            "notAvailable": "Niet beschikbaar",
-            "partlyCharged": "Gedeeltelijk opgeladen",
-            "remoteServiceDisabled": "Bediening van op afstand uitgeschakeld",
-            "stateOk": "Ok",
-            "vehicleNoLongerAvailable": "Voertuig niet langer beschikbaar"
-        },
-        "sunroofState": {
-            "antiBoomingLifting": "Ventilatie",
-            "antiBoomingPosition": "Ventilatiestand",
-            "closing": "Sluiten",
-            "closingLifting": "Sluiten",
-            "intermediatePosition": "Tussenpositie",
-            "liftingIntermediate": "Gedeeltelijk gekanteld",
-            "liftingOpen": "Gekanteld",
-            "opening": "Openen",
-            "openingLifting": "Kantelen",
-            "running": "Bezig",
-            "slidingIntermediate": "Gedeeltelijk geopend",
-            "stateClosed": "Gesloten",
-            "stateOpen": "Geopend"
-        },
-        "tripCard": {
-            "adBlueLevel": "AdBlue-niveau",
-            "averageSpeedReset": "Gemiddelde snelheid",
-            "averageSpeedStart": "Gemiddelde snelheid",
-            "distanceReset": "Gereden afstand",
-            "distanceStart": "Gereden afstand",
-            "distanceZEReset": "Gereden afstand Zero Emission",
-            "distanceZEStart": "Gereden afstand Zero Emission",
-            "drivenTimeReset": "Rijtijd",
-            "drivenTimeStart": "Rijtijd",
-            "drivenTimeZEReset": "Rijtijd Zero Emission",
-            "drivenTimeZEStart": "Rijtijd Zero Emission",
-            "electricConsumptionReset": "Gemiddeld verbruik",
-            "electricConsumptionStart": "Gemiddeld verbruik",
-            "fromReset": "Vanaf reset",
-            "fromStart": "Vanaf begin van rit",
-            "fuelLevel": "Brandstofniveau",
-            "liquidConsumptionReset": "Gemiddeld verbruik",
-            "liquidConsumptionStart": "Gemiddeld verbruik",
-            "maxSoc": "Maximale oplaadtoestand",
-            "odometer": "Kilometerstand",
-            "overview": "Overzicht",
-            "rangeElectric": "Actieradius",
-            "rangeLiquid": "Actieradius",
-            "soc": "Oplaadtoestand"
-        },
-        "tyreCard": {
-            "tirePressureFrontLeft": "Links vooraan",
-            "tirePressureFrontRight": "Rechts vooraan",
-            "tirePressureRearLeft": "Links achteraan",
-            "tirePressureRearRight": "Rechts achteraan",
-            "tireWarningOk": "Geen spanningsverlies gedetecteerd",
-            "tireWarningProblem": "Spanningsverlies gedetecteerd. Banden controleren.",
-            "tyrePressure": "Bandenspanning"
-        },
-        "vehicleCard": {
-            "doorStatusOverall": "Deurvergrendeling",
-            "engineLight": "Motorlampje",
-            "ignitionState": "Ontstekingstoestand",
-            "lockSensor": "Vergrendelingsstatus",
-            "lowBrakeFluid": "Remvloeistof",
-            "lowCoolantLevel": "Koelvloeistof",
-            "lowWashWater": "Sproeivloeistof",
-            "parkBrake": "Parkeerrem",
-            "starterBatteryState": "12V-batterij",
-            "tirePressureWarning": "Bandenspanning",
-            "vehicleStatus": "Voertuigstatus",
-            "vehicleWarnings": "Waarschuwingen",
-            "windowsClosed": "Ruiten"
-        },
-        "windowAttributes": {
-            "windowstatusfrontleft": "Ruit links vooraan",
-            "windowstatusfrontleftblind": "Ruit links vooraan blind",
-            "windowstatusfrontright": "Ruit rechts vooraan",
-            "windowstatusfrontrightblind": "Ruit rechts vooraan blind",
-            "windowstatusrearleft": "Ruit links achteraan",
-            "windowstatusrearleftblind": "Ruit links achteraan blind",
-            "windowstatusrearright": "Ruit rechts achteraan",
-            "windowstatusrearrightblind": "Ruit rechts achteraan blind"
-        },
-        "ignitionState": {
-            "ignitionLock": "Vergrendeld",
-            "ignitionOff": "Uit",
-            "ignitionAccessory": "Accessoire",
-            "ignitionOn": "Aan",
-            "ignitionStart": "Start"
-        },
-        "precondSeatTemp": {
-            "frontLeft": "Voor links",
-            "frontRight": "Voor rechts",
-            "rearLeft": "Achter links",
-            "rearRight": "Achter rechts"
-        }
+  "name": "Dutch",
+  "nativeName": "Nederlands",
+  "card": {
+    "common": {
+      "lastUpdate": "Laatste update",
+      "stateCharging": "Opladen",
+      "stateClosed": "Gesloten",
+      "stateLocked": "Vergrendeld",
+      "stateLockedInt": "Vergrendeld int",
+      "stateNotExisting": "Niet bestaand",
+      "stateOpen": "Open",
+      "stateParkBrakeOff": "Gedeactiveerd",
+      "stateParkBrakeOn": "Geactiveerd",
+      "statePartlyUnlocked": "Gedeeltelijk ontgrendeld",
+      "stateUnknown": "Onbekend",
+      "stateUnlocked": "Ontgrendeld",
+      "statePressed": "Ingedrukt",
+      "titleRemoteControl": "Afstandsbediening",
+      "titleServices": "Diensten",
+      "toastCommandSent": "Opdracht succesvol verstuurd!",
+      "toastImageError": "Fout bij het opladen van de afbeelding. Enkel PNG en JPEG bestanden zijn toegelaten.",
+      "toastCardAlreadyExists": "Kaart bestaat al"
     },
-    "editor": {
-        "buttonConfig": {
-            "desc": "Configureer de subkaarten voor individuele knoppen.",
-            "title": "Knopconfiguratie",
-            "defaultCards": "Standaard kaarten",
-            "customCards": "Aangepaste kaarten",
-            "addNewCard": "Nieuwe kaart toevoegen",
-            "hideButton": "Verberg knop op kaart",
-            "useCustomButton": "Gebruik aangepaste knop",
-            "useCustomCard": "Gebruik aangepaste kaart",
-            "showButton": "Knop weergeven",
-            "preview": "Voorvertoning",
-            "hidePreview": "Verberg voorvertoning",
-            "secondaryInfo": "Bijkomende info",
-            "secondaryInfoDesc": "Dit zal onder de titel van de kaart worden weergegeven.",
-            "secondaryInfoHelper": "Gebruik Jinja2 template om bijkomende informatie weer te geven",
-            "notifyInfo": "Meldingsinstellingen",
-            "notifyInfoHelper": "Het resultaat moet 'True' teruggeven om te worden weergegeven.",
-            "deleteConfirm": "Weet u zeker dat u deze kaart wilt verwijderen",
-            "toastNewCard": "Nieuwe kaart toegevoegd!",
-            "buttonGridSwipe": "Knoppenraster configuratie",
-            "swipeRows": "Rijen per slide",
-            "useButtonSwipe": "Gebruik vegen voor knoppen",
-            "iconInfo": "Pictogram sjabloon",
-            "iconInfoHelper": "Gebruik een Jinja2-sjabloon om het pictogram weer te geven",
-            "colorInfo": "Kleursjabloon",
-            "colorInfoHelper": "Gebruik een Jinja2-sjabloon om de kleur van het pictogram te wijzigen"
-        },
-        "common": {
-            "checkAll": "Controleer alles",
-            "infoButton": "Selecteer de kaart die u wilt configureren.",
-            "infoImages": "Het is niet nodig om een '-' toe te voegen vóór elke lijn. Elke lijn zal automatisch als een aparte URL worden beschouwd.",
-            "infoMap": "Dit is de configuratie voor kaart pop-up.",
-            "infoServices": "Kies welke diensten u wilt inschakelen. Als een dienst is uitgeschakeld, zal deze niet worden weergeven op de kaart.",
-            "uncheckAll": "Alles uitvinken"
-        },
-        "imagesConfig": {
-            "desc": "Voeg de urls voor de afbeeldingen toe.",
-            "title": "Afbeelding configuratie",
-            "selectAll": "Alles selecteren",
-            "deselectAll": "Niets selecteren",
-            "deleteSelected": "Verwijder geselecteerd "
-        },
-        "mapConfig": {
-            "desc": "Kies de configuratie voor de kaart",
-            "title": "Kaartconfiguratie"
-        },
-        "servicesConfig": {
-            "desc": "Kies de diensten die u wilt inschakelen.",
-            "title": "Dienstenconfiguratie"
-        },
-        "showConfig": {
-            "desc": "Kies de elementen die u wilt weergeven.",
-            "title": "Configuratie weergeven"
-        },
-        "showOpts": {
-            "enable_map_popup": "Kaart popup inschakelen",
-            "enable_services_control": "Diensten controle inschakelen",
-            "show_background": "Achtergrond weergeven",
-            "show_buttons": "Knoppen weergeven",
-            "show_error_notify": "Foutmelding weergeven",
-            "show_map": "Kaart weergeven",
-            "show_slides": "Slides weergeven"
-        },
-        "themeLangConfig": {
-            "desc": "Kies het thema en de taal.",
-            "title": "Thema & taal"
-        },
-        "customButtonConfig": {
-            "title": "Aangepaste knop",
-            "desc": "Stel de waarde in voor de aangepaste knop",
-            "info": "Voeg nieuwe aangepaste knoppen toe of bewerk bestaanden"
-        },
-        "customCardConfig": {
-            "title": "Aangepaste kaart",
-            "desc": "Yaml configuratie voor lovelace kaart"
-        },
-        "customTireBackground": {
-            "title": "Aangepaste banden achtergrond",
-            "desc": "Upload een afbeelding om de standaard achtergrond te vervangen.",
-            "info": "De afbeelding moet een vierkant zijn met een maximale resolutie van 450x450 pixels. Een transparante achtergrond is aanbevolen."
-        },
-        "customActionConfig": {
-            "title": "Knop interactie",
-            "desc": "Stel de actie voor de aangepaste knop in"
-        }
+    "cardType": {
+      "ecoCards": "ECO-aanduiding",
+      "tripCards": "Ritgegevens",
+      "tyreCards": "Bandenspanning",
+      "vehicleCards": "Voertuigstatus"
+    },
+    "chargingOverview": {
+      "chargingPower": "Laadvermogen",
+      "maxSoc": "Maximale oplaadtoestand",
+      "selectedProgram": "Programma",
+      "soc": "Oplaadtoestand"
+    },
+    "doorAttributes": {
+      "decklidstatus": "Bagageruimte",
+      "doorstatusfrontleft": "Portier links vooraan",
+      "doorstatusfrontright": "Portier rechts vooraan",
+      "doorstatusrearleft": "Portier links achteraan",
+      "doorstatusrearright": "Portier rechts achteraan",
+      "enginehoodstatus": "Motorkap",
+      "sunroofstatus": "Schuifdak",
+      "chargeflapdcstatus": "Klep oplaadaansluiting"
+    },
+    "ecoCard": {
+      "ecoDisplay": "ECO-aanduiding",
+      "ecoScore": "ECO score",
+      "ecoScoreAcceleraion": "Accelereren",
+      "ecoScoreBonusRange": "Bonusactieradius",
+      "ecoScoreConstant": "Gelijkmatig",
+      "ecoScoreFreeWheel": "Uitrollen"
+    },
+    "lockAttributes": {
+      "doorlockstatusfrontleft": "Vergrendelingsstatus links vooraan",
+      "doorlockstatusfrontright": "Vergrendelingsstatus rechts vooraan",
+      "doorlockstatusgas": "Vergrendelingsstatus tankklep",
+      "doorlockstatusrearleft": "Vergrendelingsstatus links achteraan",
+      "doorlockstatusrearright": "Vergrendelingsstatus rechts achteraan"
+    },
+    "serviceData": {
+      "labelChargeProgram": "Oplaadprogramma",
+      "labelCity": "Stad",
+      "labelClose": "Sluiten",
+      "labelDepartureTime": "Vertrektijd",
+      "labelDurationTime": "Duur",
+      "labelLatitude": "Breedtegraad",
+      "labelLockCar": "Vergrendel wagen",
+      "labelLongitude": "Lengtegraad",
+      "labelMaxStateOfCharge": "Maximale oplaadtoestand",
+      "labelMoreInfo": "Meer info",
+      "labelMove": "Beweeg",
+      "labelNoSelection": "Niets geselecteerd",
+      "labelOpen": "Open",
+      "labelPostCode": "Postcode",
+      "labelSave": "Bewaren",
+      "labelSend": "Verzenden",
+      "labelSetMaxSoc": "Maximale oplaadtoestand selecteren",
+      "labelSetProgram": "Programma selecteren",
+      "labelStart": "Start",
+      "labelStartTime": "Starttijd",
+      "labelStop": "Stop",
+      "labelStopTime": "Eindtijd",
+      "labelStreet": "Straat",
+      "labelTilt": "Kantelen",
+      "labelTime1": "Tijd 1",
+      "labelTime2": "Tijd 2",
+      "labelTime3": "Tijd 3",
+      "labelTimeSelection": "Tijdselectie",
+      "labelTitle": "Titel",
+      "labelUnlockCar": "Wagen ontgrendelen",
+      "labelWindowFrontLeft": "Links vooraan",
+      "labelWindowFrontRight": "Rechts vooraan",
+      "labelWindowRearLeft": "Links achteraan",
+      "labelWindowRearRight": "Rechts achteraan",
+      "labelSeatConfig": "Stoelconfiguratie opslaan",
+      "labelSetTempZone": "Temperatuurzone opslaan"
+    },
+    "servicesCtrl": {
+      "auxheat": "Standverwarming",
+      "charge": "Opladen",
+      "doorsLock": "Vergrendelingsstatus",
+      "engine": "Motor",
+      "preheat": "Interieur Voorklimatisering",
+      "sendRoute": "Adres aan voertuig doorgeven",
+      "sigPos": "Verlichting",
+      "sunroof": "Schuifdak",
+      "windows": "Ruiten"
+    },
+    "starterBattery": {
+      "notAvailable": "Niet beschikbaar",
+      "partlyCharged": "Gedeeltelijk opgeladen",
+      "remoteServiceDisabled": "Bediening van op afstand uitgeschakeld",
+      "stateOk": "Ok",
+      "vehicleNoLongerAvailable": "Voertuig niet langer beschikbaar"
+    },
+    "sunroofState": {
+      "antiBoomingLifting": "Ventilatie",
+      "antiBoomingPosition": "Ventilatiestand",
+      "closing": "Sluiten",
+      "closingLifting": "Sluiten",
+      "intermediatePosition": "Tussenpositie",
+      "liftingIntermediate": "Gedeeltelijk gekanteld",
+      "liftingOpen": "Gekanteld",
+      "opening": "Openen",
+      "openingLifting": "Kantelen",
+      "running": "Bezig",
+      "slidingIntermediate": "Gedeeltelijk geopend",
+      "stateClosed": "Gesloten",
+      "stateOpen": "Geopend"
+    },
+    "tripCard": {
+      "adBlueLevel": "AdBlue-niveau",
+      "averageSpeedReset": "Gemiddelde snelheid",
+      "averageSpeedStart": "Gemiddelde snelheid",
+      "distanceReset": "Gereden afstand",
+      "distanceStart": "Gereden afstand",
+      "distanceZEReset": "Gereden afstand Zero Emission",
+      "distanceZEStart": "Gereden afstand Zero Emission",
+      "drivenTimeReset": "Rijtijd",
+      "drivenTimeStart": "Rijtijd",
+      "drivenTimeZEReset": "Rijtijd Zero Emission",
+      "drivenTimeZEStart": "Rijtijd Zero Emission",
+      "electricConsumptionReset": "Gemiddeld verbruik",
+      "electricConsumptionStart": "Gemiddeld verbruik",
+      "fromReset": "Vanaf reset",
+      "fromStart": "Vanaf begin van rit",
+      "fuelLevel": "Brandstofniveau",
+      "liquidConsumptionReset": "Gemiddeld verbruik",
+      "liquidConsumptionStart": "Gemiddeld verbruik",
+      "maxSoc": "Maximale oplaadtoestand",
+      "odometer": "Kilometerstand",
+      "overview": "Overzicht",
+      "rangeElectric": "Actieradius",
+      "rangeLiquid": "Actieradius",
+      "soc": "Oplaadtoestand"
+    },
+    "tyreCard": {
+      "tirePressureFrontLeft": "Links vooraan",
+      "tirePressureFrontRight": "Rechts vooraan",
+      "tirePressureRearLeft": "Links achteraan",
+      "tirePressureRearRight": "Rechts achteraan",
+      "tireWarningOk": "Geen spanningsverlies gedetecteerd",
+      "tireWarningProblem": "Spanningsverlies gedetecteerd. Banden controleren.",
+      "tyrePressure": "Bandenspanning"
+    },
+    "vehicleCard": {
+      "doorStatusOverall": "Deurvergrendeling",
+      "engineLight": "Motorlampje",
+      "ignitionState": "Ontstekingstoestand",
+      "lockSensor": "Vergrendelingsstatus",
+      "lowBrakeFluid": "Remvloeistof",
+      "lowCoolantLevel": "Koelvloeistof",
+      "lowWashWater": "Sproeivloeistof",
+      "parkBrake": "Parkeerrem",
+      "starterBatteryState": "12V-batterij",
+      "tirePressureWarning": "Bandenspanning",
+      "vehicleStatus": "Voertuigstatus",
+      "vehicleWarnings": "Waarschuwingen",
+      "windowsClosed": "Ruiten"
+    },
+    "windowAttributes": {
+      "windowstatusfrontleft": "Ruit links vooraan",
+      "windowstatusfrontleftblind": "Ruit links vooraan blind",
+      "windowstatusfrontright": "Ruit rechts vooraan",
+      "windowstatusfrontrightblind": "Ruit rechts vooraan blind",
+      "windowstatusrearleft": "Ruit links achteraan",
+      "windowstatusrearleftblind": "Ruit links achteraan blind",
+      "windowstatusrearright": "Ruit rechts achteraan",
+      "windowstatusrearrightblind": "Ruit rechts achteraan blind"
+    },
+    "ignitionState": {
+      "ignitionLock": "Vergrendeld",
+      "ignitionOff": "Uit",
+      "ignitionAccessory": "Accessoire",
+      "ignitionOn": "Aan",
+      "ignitionStart": "Start"
+    },
+    "precondSeatTemp": {
+      "frontLeft": "Voor links",
+      "frontRight": "Voor rechts",
+      "rearLeft": "Achter links",
+      "rearRight": "Achter rechts"
     }
+  },
+  "editor": {
+    "buttonConfig": {
+      "desc": "Configureer de subkaarten voor individuele knoppen.",
+      "title": "Knopconfiguratie",
+      "defaultCards": "Standaard kaarten",
+      "customCards": "Aangepaste kaarten",
+      "addNewCard": "Nieuwe kaart toevoegen",
+      "hideButton": "Verberg knop op kaart",
+      "useCustomButton": "Gebruik aangepaste knop",
+      "useCustomCard": "Gebruik aangepaste kaart",
+      "showButton": "Knop weergeven",
+      "preview": "Voorvertoning",
+      "hidePreview": "Verberg voorvertoning",
+      "secondaryInfo": "Bijkomende info",
+      "secondaryInfoDesc": "Dit zal onder de titel van de kaart worden weergegeven.",
+      "secondaryInfoHelper": "Gebruik Jinja2 template om bijkomende informatie weer te geven",
+      "notifyInfo": "Meldingsinstellingen",
+      "notifyInfoHelper": "Het resultaat moet 'True' teruggeven om te worden weergegeven.",
+      "deleteConfirm": "Weet u zeker dat u deze kaart wilt verwijderen",
+      "toastNewCard": "Nieuwe kaart toegevoegd!",
+      "buttonGridSwipe": "Knoppenraster configuratie",
+      "swipeRows": "Rijen per slide",
+      "useButtonSwipe": "Gebruik vegen voor knoppen",
+      "iconInfo": "Pictogram sjabloon",
+      "iconInfoHelper": "Gebruik een Jinja2-sjabloon om het pictogram weer te geven",
+      "colorInfo": "Kleursjabloon",
+      "colorInfoHelper": "Gebruik een Jinja2-sjabloon om de kleur van het pictogram te wijzigen",
+      "pictureInfo": "Afbeelding (vervangt het pictogram)",
+      "pictureInfoHelper": "U kunt een sjabloon gebruiken om een afbeelding weer te geven of een URL naar een afbeeldingsbestand"
+    },
+    "common": {
+      "checkAll": "Controleer alles",
+      "infoButton": "Selecteer de kaart die u wilt configureren.",
+      "infoImages": "Het is niet nodig om een '-' toe te voegen vóór elke lijn. Elke lijn zal automatisch als een aparte URL worden beschouwd.",
+      "infoMap": "Dit is de configuratie voor kaart pop-up.",
+      "infoServices": "Kies welke diensten u wilt inschakelen. Als een dienst is uitgeschakeld, zal deze niet worden weergeven op de kaart.",
+      "uncheckAll": "Alles uitvinken"
+    },
+    "imagesConfig": {
+      "desc": "Voeg de urls voor de afbeeldingen toe.",
+      "title": "Afbeelding configuratie",
+      "selectAll": "Alles selecteren",
+      "deselectAll": "Niets selecteren",
+      "deleteSelected": "Verwijder geselecteerd "
+    },
+    "mapConfig": {
+      "desc": "Kies de configuratie voor de kaart",
+      "title": "Kaartconfiguratie"
+    },
+    "servicesConfig": {
+      "desc": "Kies de diensten die u wilt inschakelen.",
+      "title": "Dienstenconfiguratie"
+    },
+    "showConfig": {
+      "desc": "Kies de elementen die u wilt weergeven.",
+      "title": "Configuratie weergeven"
+    },
+    "showOpts": {
+      "enable_map_popup": "Kaart popup inschakelen",
+      "enable_services_control": "Diensten controle inschakelen",
+      "show_background": "Achtergrond weergeven",
+      "show_buttons": "Knoppen weergeven",
+      "show_error_notify": "Foutmelding weergeven",
+      "show_map": "Kaart weergeven",
+      "show_slides": "Slides weergeven"
+    },
+    "themeLangConfig": {
+      "desc": "Kies het thema en de taal.",
+      "title": "Thema & taal"
+    },
+    "customButtonConfig": {
+      "title": "Aangepaste knop",
+      "desc": "Stel de waarde in voor de aangepaste knop",
+      "info": "Voeg nieuwe aangepaste knoppen toe of bewerk bestaanden"
+    },
+    "customCardConfig": {
+      "title": "Aangepaste kaart",
+      "desc": "Yaml configuratie voor lovelace kaart"
+    },
+    "customTireBackground": {
+      "title": "Aangepaste banden achtergrond",
+      "desc": "Upload een afbeelding om de standaard achtergrond te vervangen.",
+      "info": "De afbeelding moet een vierkant zijn met een maximale resolutie van 450x450 pixels. Een transparante achtergrond is aanbevolen."
+    },
+    "customActionConfig": {
+      "title": "Knop interactie",
+      "desc": "Stel de actie voor de aangepaste knop in"
+    }
+  }
 }
