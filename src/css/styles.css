@@ -561,7 +561,7 @@ header h1 {
   margin-bottom: 0;
 }
 
-.default-card .data-header {
+.data-header {
   color: var(--ha-card-header-color, --primary-text-color);
   font-family: var(--ha-card-header-font-family, inherit);
   font-size: 1.5rem;
@@ -573,7 +573,7 @@ header h1 {
   /* padding: 8px 0; */
 }
 
-.default-card .data-header>div[clickable] {
+.data-header>div[clickable] {
   cursor: pointer;
 
   &:hover {
@@ -601,9 +601,9 @@ header h1 {
   padding: 0px;
 }
 
-.default-card.remote-tab>.data-header {
+/* .default-card.remote-tab>.data-header {
   padding: var(--vic-gutter-gap);
-}
+} */
 
 .data-row {
   display: flex;

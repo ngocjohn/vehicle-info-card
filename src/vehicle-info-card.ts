@@ -8,6 +8,7 @@ import {
   LovelaceCardConfig,
   LovelaceCardEditor,
   applyThemesOnElement,
+  FrontendLocaleData,
 } from 'custom-card-helpers';
 import { LitElement, html, TemplateResult, PropertyValues, CSSResultGroup, nothing } from 'lit';
 import { styleMap } from 'lit-html/directives/style-map.js';
@@ -125,6 +126,16 @@ export class VehicleCard extends LitElement {
       return false;
     }
     return this._hass.themes.darkMode;
+  }
+
+  get _locale(): FrontendLocaleData {
+    const locale = this._hass.locale;
+    const language = this.userLang;
+    const newLocale = {
+      ...locale,
+      language,
+    };
+    return newLocale;
   }
 
   private get isEditorPreview(): boolean {
@@ -617,34 +628,36 @@ export class VehicleCard extends LitElement {
     }
 
     const lastCarUpdate = this.config.entity ? this._hass.states[this.config.entity].last_changed : '';
-    const hassLocale = this._hass.locale;
-    hassLocale.language = this.userLang;
 
-    const formattedDate = formatDateTime(new Date(lastCarUpdate), hassLocale);
+    const formattedDate = formatDateTime(new Date(lastCarUpdate), this._locale);
 
     const cardHeaderBox = html`<div class="added-card-header">
       <ha-icon-button .label=${'Close'} .path=${mdiClose} class="click-shrink" @click=${() => this.toggleCard('close')}>
       </ha-icon-button>
-      <div class="card-toggle">
-        <ha-icon-button
-          .label=${'Previous'}
-          .path=${mdiChevronLeft}
-          @click=${() => this.toggleCard('prev')}
-          class="click-shrink"
-        ></ha-icon-button>
+      ${key !== 'mapDialog'
+        ? html`
+            <div class="card-toggle">
+              <ha-icon-button
+                .label=${'Previous'}
+                .path=${mdiChevronLeft}
+                @click=${() => this.toggleCard('prev')}
+                class="click-shrink"
+              ></ha-icon-button>
 
-        <ha-icon-button
-          .label=${'Next'}
-          .path=${mdiChevronRight}
-          @click=${() => this.toggleCard('next')}
-          class="click-shrink"
-        ></ha-icon-button>
-      </div>
+              <ha-icon-button
+                .label=${'Next'}
+                .path=${mdiChevronRight}
+                @click=${() => this.toggleCard('next')}
+                class="click-shrink"
+              ></ha-icon-button>
+            </div>
+          `
+        : nothing}
     </div>`;
 
     return html`
       <main id="cards-wrapper">
-        ${cardHeaderBox}
+        ${!['servicesCard'].includes(key) ? cardHeaderBox : nothing}
         <section class="card-element">${renderCard}</section>
         <div class="last-update">
           <span>${this.localize('card.common.lastUpdate')}: ${formattedDate}</span>
@@ -815,7 +828,6 @@ export class VehicleCard extends LitElement {
 
     return html`
       <div class="default-card remote-tab">
-        <div class="data-header">${this.localize('card.common.titleRemoteControl')}</div>
         <remote-control .hass=${hass} .card=${this as VehicleCard} .selectedServices=${activeServices}></remote-control>
       </div>
     `;
@@ -858,7 +870,7 @@ export class VehicleCard extends LitElement {
   /* ADDED CARD FUNCTIONALITY                                                   */
   /* -------------------------------------------------------------------------- */
 
-  private toggleCard = (action: HEADER_ACTION) => {
+  toggleCard = (action: HEADER_ACTION) => {
     forwardHaptic('light');
     const cardElement = this.shadowRoot?.querySelector('.card-element') as HTMLElement;
     if (!this._currentCardType || !cardElement) return;

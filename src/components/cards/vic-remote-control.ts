@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { mdiClose } from '@mdi/js';
 import { HomeAssistant, fireEvent, forwardHaptic } from 'custom-card-helpers';
 import { LitElement, html, TemplateResult, CSSResultGroup } from 'lit';
 import { customElement, state, property } from 'lit/decorators.js';
@@ -21,11 +22,10 @@ export class RemoteControl extends LitElement {
   @property({ attribute: false }) private selectedServices!: { [key: string]: { name: string; icon: string } };
 
   @state() private subcardType: string | null = null;
-  @state() private serviceData: any = {};
+  @state() private serviceData: Record<string, any> = {};
   @state() private _precondState: string = PRECOND.TIME;
 
   protected firstUpdated(): void {
-    console.log('getiing servicesConfig');
     this.initializeServiceData();
   }
 
@@ -75,8 +75,21 @@ export class RemoteControl extends LitElement {
 
   protected render(): TemplateResult {
     if (Object.keys(this.selectedServices).length === 0) return html`<hui-warning>No service selected.</hui-warning>`;
+    const title = !this.subcardType
+      ? this.card.localize('card.common.titleRemoteControl')
+      : this.selectedServices[this.subcardType].name;
 
     return html`
+      <div class="data-header">
+        <ha-icon-button
+          .label=${'Close'}
+          .path=${mdiClose}
+          class="click-shrink"
+          @click=${() => this.card.toggleCard('close')}
+        >
+        </ha-icon-button
+        >${title}
+      </div>
       <div class="service-control">
         <div class="head-row">${this._renderControlBtn()}</div>
         ${this._renderSubCard()}
@@ -114,17 +127,16 @@ export class RemoteControl extends LitElement {
       }
     };
 
-    const controlBtns = Object.entries(this.selectedServices).map(([type, { name, icon }]) => {
+    return html`${Object.keys(this.selectedServices).map((type) => {
       const activeClass = this.subcardType === type;
+      const { name, icon } = this.selectedServices[type];
       return html`
         <div @click=${() => handleClick(type)} class="control-btn-rounded click-shrink" ?active=${activeClass}>
           <ha-icon icon=${icon}></ha-icon>
           <span>${name}</span>
         </div>
       `;
-    });
-
-    return html`${controlBtns}`;
+    })}`;
   }
 
   private _renderToast(): TemplateResult {
