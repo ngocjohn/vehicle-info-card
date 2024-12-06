@@ -1,294 +1,296 @@
 {
-    "name": "English",
-    "nativeName": "English (GB)",
-    "card": {
-        "common": {
-            "lastUpdate": "Last update",
-            "stateCharging": "Charging",
-            "stateClosed": "Closed",
-            "stateLocked": "Locked",
-            "stateLockedInt": "Locked int",
-            "stateNotExisting": "Not existing",
-            "stateOpen": "Open",
-            "stateParkBrakeOff": "Released",
-            "stateParkBrakeOn": "Engaged",
-            "statePartlyUnlocked": "Partly unlocked",
-            "stateUnknown": "Unknown",
-            "stateUnlocked": "Unlocked",
-            "statePressed": "Pressed",
-            "titleRemoteControl": "Remote control",
-            "titleServices": "Services",
-            "toastCommandSent": "Command sent sucess!",
-            "toastImageError": "Error uploading image. Only PNG and JPEG files are allowed.",
-            "toastCardAlreadyExists": "Card already exists"
-        },
-        "cardType": {
-            "ecoCards": "Eco display",
-            "tripCards": "Trip data",
-            "tyreCards": "Tyre pressure",
-            "vehicleCards": "Vehicle status"
-        },
-        "chargingOverview": {
-            "chargingPower": "Power",
-            "maxSoc": "Maximum",
-            "selectedProgram": "Programme",
-            "soc": "Current state"
-        },
-        "doorAttributes": {
-            "decklidstatus": "Boot lid/Tailgate",
-            "doorstatusfrontleft": "Door front left",
-            "doorstatusfrontright": "Door front right",
-            "doorstatusrearleft": "Door rear left",
-            "doorstatusrearright": "Door rear right",
-            "enginehoodstatus": "Bonnet",
-            "sunroofstatus": "Sunroof",
-            "chargeflapdcstatus": "Charging socket flap"
-        },
-        "ecoCard": {
-            "ecoDisplay": "Eco display",
-            "ecoScore": "Scores",
-            "ecoScoreAcceleraion": "Acceleraion",
-            "ecoScoreBonusRange": "Bonus range",
-            "ecoScoreConstant": "Constant",
-            "ecoScoreFreeWheel": "Free wheel"
-        },
-        "lockAttributes": {
-            "doorlockstatusfrontleft": "Door lock front left",
-            "doorlockstatusfrontright": "Door lock front right",
-            "doorlockstatusgas": "Fuel flap lock",
-            "doorlockstatusrearleft": "Door lock rear left",
-            "doorlockstatusrearright": "Door lock rear right"
-        },
-        "serviceData": {
-            "labelChargeProgram": "Charge programme",
-            "labelCity": "City",
-            "labelClose": "Close",
-            "labelDepartureTime": "Departure time",
-            "labelDurationTime": "Duration time",
-            "labelLatitude": "Latitude",
-            "labelLockCar": "Lock car",
-            "labelLongitude": "Longitude",
-            "labelMaxStateOfCharge": "Max state of charge",
-            "labelMoreInfo": "More info",
-            "labelMove": "Move",
-            "labelNoSelection": "No selection",
-            "labelOpen": "Open",
-            "labelPostCode": "Post code",
-            "labelSave": "Save",
-            "labelSend": "Send",
-            "labelSetMaxSoc": "Set maximum",
-            "labelSetProgram": "Set program",
-            "labelStart": "Start",
-            "labelStartTime": "Start time",
-            "labelStop": "Stop",
-            "labelStopTime": "Stop time",
-            "labelStreet": "Street",
-            "labelTilt": "Tilt",
-            "labelTime1": "Time 1",
-            "labelTime2": "Time 2",
-            "labelTime3": "Time 3",
-            "labelTimeSelection": "Time selection",
-            "labelTitle": "Title",
-            "labelUnlockCar": "Unlock car",
-            "labelWindowFrontLeft": "Front left",
-            "labelWindowFrontRight": "Front right",
-            "labelWindowRearLeft": "Rear left",
-            "labelWindowRearRight": "Rear right",
-            "labelSeatConfig": "Save seat configuration",
-            "labelSetTempZone": "Save temperature zone"
-        },
-        "servicesCtrl": {
-            "auxheat": "Auxiliary heating",
-            "charge": "Charge",
-            "doorsLock": "Security",
-            "engine": "Engine control",
-            "preheat": "Pre-conditioning",
-            "sendRoute": "Send route",
-            "sigPos": "Signal position",
-            "sunroof": "Sunroof",
-            "windows": "Windows"
-        },
-        "starterBattery": {
-            "notAvailable": "Not available",
-            "partlyCharged": "Partly charged",
-            "remoteServiceDisabled": "Remote service disabled",
-            "stateOk": "Ok",
-            "vehicleNoLongerAvailable": "Vehicle no longer available"
-        },
-        "sunroofState": {
-            "antiBoomingLifting": "Anti-booming lifting",
-            "antiBoomingPosition": "Anti-booming position",
-            "closing": "Closing",
-            "closingLifting": "Closing lifting",
-            "intermediatePosition": "Intermediate position",
-            "liftingIntermediate": "Lifting intermediate",
-            "liftingOpen": "Lifting open",
-            "opening": "Opening",
-            "openingLifting": "Opening lifting",
-            "running": "Running",
-            "slidingIntermediate": "Sliding intermediate",
-            "stateClosed": "Closed",
-            "stateOpen": "Open"
-        },
-        "tripCard": {
-            "adBlueLevel": "AdBlue level",
-            "averageSpeedReset": "Average speed",
-            "averageSpeedStart": "Average speed",
-            "distanceReset": "Distance travelled",
-            "distanceStart": "Distance travelled",
-            "distanceZEReset": "Distance Zero Emission travelled",
-            "distanceZEStart": "Distance Zero Emission travelled",
-            "drivenTimeReset": "Driving time",
-            "drivenTimeStart": "Driving time",
-            "drivenTimeZEReset": "Driving time Zero Emission",
-            "drivenTimeZEStart": "Driving time Zero Emission",
-            "electricConsumptionReset": "Average consumption",
-            "electricConsumptionStart": "Average consumption",
-            "fromReset": "From reset",
-            "fromStart": "From start",
-            "fuelLevel": "Fuel level",
-            "liquidConsumptionReset": "Average consumption",
-            "liquidConsumptionStart": "Average consumption",
-            "maxSoc": "Max state of charge",
-            "odometer": "Odometer",
-            "overview": "Overview",
-            "rangeElectric": "Range",
-            "rangeLiquid": "Range",
-            "soc": "State of charge"
-        },
-        "tyreCard": {
-            "tirePressureFrontLeft": "Front left",
-            "tirePressureFrontRight": "Front right",
-            "tirePressureRearLeft": "Rear left",
-            "tirePressureRearRight": "Rear right",
-            "tireWarningOk": "No pressure loss detected",
-            "tireWarningProblem": "Pressure loss detected. Check tyres.",
-            "tyrePressure": "Tyre pressures"
-        },
-        "vehicleCard": {
-            "doorStatusOverall": "Doors",
-            "engineLight": "Engine light",
-            "ignitionState": "Ignition state",
-            "lockSensor": "Lock status",
-            "lowBrakeFluid": "Brake fluid",
-            "lowCoolantLevel": "Coolant",
-            "lowWashWater": "Washer fluid",
-            "parkBrake": "Parking brake",
-            "starterBatteryState": "12v battery",
-            "tirePressureWarning": "Tyre pressure",
-            "vehicleStatus": "Vehicle status",
-            "vehicleWarnings": "Warnings",
-            "windowsClosed": "Windows"
-        },
-        "windowAttributes": {
-            "windowstatusfrontleft": "Window front left",
-            "windowstatusfrontleftblind": "Window front left blind",
-            "windowstatusfrontright": "Window front right",
-            "windowstatusfrontrightblind": "Window front right blind",
-            "windowstatusrearleft": "Window rear left",
-            "windowstatusrearleftblind": "Window rear left blind",
-            "windowstatusrearright": "Window rear right",
-            "windowstatusrearrightblind": "Window rear right blind"
-        },
-        "ignitionState": {
-            "ignitionLock": "Lock",
-            "ignitionOff": "Off",
-            "ignitionAccessory": "Accessory",
-            "ignitionOn": "On",
-            "ignitionStart": "Start"
-        },
-        "precondSeatTemp": {
-            "frontLeft": "Front left",
-            "frontRight": "Front right",
-            "rearLeft": "Rear left",
-            "rearRight": "Rear right"
-        }
+  "name": "English",
+  "nativeName": "English (GB)",
+  "card": {
+    "common": {
+      "lastUpdate": "Last update",
+      "stateCharging": "Charging",
+      "stateClosed": "Closed",
+      "stateLocked": "Locked",
+      "stateLockedInt": "Locked int",
+      "stateNotExisting": "Not existing",
+      "stateOpen": "Open",
+      "stateParkBrakeOff": "Released",
+      "stateParkBrakeOn": "Engaged",
+      "statePartlyUnlocked": "Partly unlocked",
+      "stateUnknown": "Unknown",
+      "stateUnlocked": "Unlocked",
+      "statePressed": "Pressed",
+      "titleRemoteControl": "Remote control",
+      "titleServices": "Services",
+      "toastCommandSent": "Command sent sucess!",
+      "toastImageError": "Error uploading image. Only PNG and JPEG files are allowed.",
+      "toastCardAlreadyExists": "Card already exists"
     },
-    "editor": {
-        "buttonConfig": {
-            "desc": "Configure the subcards for individual buttons.",
-            "title": "Buttons configuration",
-            "defaultCards": "Default cards",
-            "customCards": "Custom cards",
-            "addNewCard": "Add new card",
-            "hideButton": "Hide button on card",
-            "useCustomButton": "Use custom button",
-            "useCustomCard": "Use custom card",
-            "showButton": "Show button",
-            "preview": "Preview",
-            "hidePreview": "Hide preview",
-            "secondaryInfo": "Secondary info",
-            "secondaryInfoDesc": "This will be shown below the title of the card.",
-            "secondaryInfoHelper": "Use Jinja2 template to display secondary information",
-            "notifyInfo": "Notify configuration",
-            "notifyInfoHelper": "The result must return 'True' boolean to show the notification.",
-            "deleteConfirm": "Are you sure you want to delete this card?",
-            "toastNewCard": "New card added!",
-            "buttonGridSwipe": "Buttons grid configuration",
-            "swipeRows": "Rows per slide",
-            "useButtonSwipe": "Use swipe for buttons",
-            "iconInfo": "Icon template",
-            "iconInfoHelper": "Use Jinja2 template to display icon",
-            "colorInfo": "Colour template",
-            "colorInfoHelper": "Use Jinja2 template to change the icon colour"
-        },
-        "common": {
-            "checkAll": "Check all",
-            "infoButton": "Select the card you want to configure.",
-            "infoImages": "There is no need to add a '-' for each line. Each line will be treated as a separate URL automatically.",
-            "infoMap": "This is configuration for map popup.",
-            "infoServices": "Choose which services you want to enable. If a service is disabled, it will not be shown in the card.",
-            "uncheckAll": "Uncheck all"
-        },
-        "imagesConfig": {
-            "desc": "Add the URLs of the images.",
-            "title": "Image configuration",
-            "selectAll": "Select all",
-            "deselectAll": "Deselect all",
-            "deleteSelected": "Delete selected"
-        },
-        "mapConfig": {
-            "desc": "Choose the configuration for the map",
-            "title": "Map configuration"
-        },
-        "servicesConfig": {
-            "desc": "Choose the services you want to enable.",
-            "title": "Services configuration"
-        },
-        "showConfig": {
-            "desc": "Choose the items you want to display.",
-            "title": "Show configuration"
-        },
-        "showOpts": {
-            "enable_map_popup": "Enable map popup",
-            "enable_services_control": "Enable services control",
-            "show_background": "Show background",
-            "show_buttons": "Show buttons",
-            "show_error_notify": "Show error notification",
-            "show_map": "Show map",
-            "show_slides": "Show slides"
-        },
-        "themeLangConfig": {
-            "desc": "Choose the theme and language.",
-            "title": "Themes & Language"
-        },
-        "customButtonConfig": {
-            "title": "Custom Button",
-            "desc": "Set the value for the custom button",
-            "info": "Add new or edit existing custom button"
-        },
-        "customCardConfig": {
-            "title": "Custom Card",
-            "desc": "Yaml configuration for lovelace card"
-        },
-        "customTireBackground": {
-            "title": "Custom Tire Background",
-            "desc": "Upload an image to replace the default background.",
-            "info": "The image should be square with a maximum resolution of 450x450 pixels. A transparent background is recommended."
-        },
-        "customActionConfig": {
-            "title": "Button interaction",
-            "desc": "Set the action for the custom button"
-        }
+    "cardType": {
+      "ecoCards": "Eco display",
+      "tripCards": "Trip data",
+      "tyreCards": "Tyre pressure",
+      "vehicleCards": "Vehicle status"
+    },
+    "chargingOverview": {
+      "chargingPower": "Power",
+      "maxSoc": "Maximum",
+      "selectedProgram": "Programme",
+      "soc": "Current state"
+    },
+    "doorAttributes": {
+      "decklidstatus": "Boot lid/Tailgate",
+      "doorstatusfrontleft": "Door front left",
+      "doorstatusfrontright": "Door front right",
+      "doorstatusrearleft": "Door rear left",
+      "doorstatusrearright": "Door rear right",
+      "enginehoodstatus": "Bonnet",
+      "sunroofstatus": "Sunroof",
+      "chargeflapdcstatus": "Charging socket flap"
+    },
+    "ecoCard": {
+      "ecoDisplay": "Eco display",
+      "ecoScore": "Scores",
+      "ecoScoreAcceleraion": "Acceleraion",
+      "ecoScoreBonusRange": "Bonus range",
+      "ecoScoreConstant": "Constant",
+      "ecoScoreFreeWheel": "Free wheel"
+    },
+    "lockAttributes": {
+      "doorlockstatusfrontleft": "Door lock front left",
+      "doorlockstatusfrontright": "Door lock front right",
+      "doorlockstatusgas": "Fuel flap lock",
+      "doorlockstatusrearleft": "Door lock rear left",
+      "doorlockstatusrearright": "Door lock rear right"
+    },
+    "serviceData": {
+      "labelChargeProgram": "Charge programme",
+      "labelCity": "City",
+      "labelClose": "Close",
+      "labelDepartureTime": "Departure time",
+      "labelDurationTime": "Duration time",
+      "labelLatitude": "Latitude",
+      "labelLockCar": "Lock car",
+      "labelLongitude": "Longitude",
+      "labelMaxStateOfCharge": "Max state of charge",
+      "labelMoreInfo": "More info",
+      "labelMove": "Move",
+      "labelNoSelection": "No selection",
+      "labelOpen": "Open",
+      "labelPostCode": "Post code",
+      "labelSave": "Save",
+      "labelSend": "Send",
+      "labelSetMaxSoc": "Set maximum",
+      "labelSetProgram": "Set program",
+      "labelStart": "Start",
+      "labelStartTime": "Start time",
+      "labelStop": "Stop",
+      "labelStopTime": "Stop time",
+      "labelStreet": "Street",
+      "labelTilt": "Tilt",
+      "labelTime1": "Time 1",
+      "labelTime2": "Time 2",
+      "labelTime3": "Time 3",
+      "labelTimeSelection": "Time selection",
+      "labelTitle": "Title",
+      "labelUnlockCar": "Unlock car",
+      "labelWindowFrontLeft": "Front left",
+      "labelWindowFrontRight": "Front right",
+      "labelWindowRearLeft": "Rear left",
+      "labelWindowRearRight": "Rear right",
+      "labelSeatConfig": "Save seat configuration",
+      "labelSetTempZone": "Save temperature zone"
+    },
+    "servicesCtrl": {
+      "auxheat": "Auxiliary heating",
+      "charge": "Charge",
+      "doorsLock": "Security",
+      "engine": "Engine control",
+      "preheat": "Pre-conditioning",
+      "sendRoute": "Send route",
+      "sigPos": "Signal position",
+      "sunroof": "Sunroof",
+      "windows": "Windows"
+    },
+    "starterBattery": {
+      "notAvailable": "Not available",
+      "partlyCharged": "Partly charged",
+      "remoteServiceDisabled": "Remote service disabled",
+      "stateOk": "Ok",
+      "vehicleNoLongerAvailable": "Vehicle no longer available"
+    },
+    "sunroofState": {
+      "antiBoomingLifting": "Anti-booming lifting",
+      "antiBoomingPosition": "Anti-booming position",
+      "closing": "Closing",
+      "closingLifting": "Closing lifting",
+      "intermediatePosition": "Intermediate position",
+      "liftingIntermediate": "Lifting intermediate",
+      "liftingOpen": "Lifting open",
+      "opening": "Opening",
+      "openingLifting": "Opening lifting",
+      "running": "Running",
+      "slidingIntermediate": "Sliding intermediate",
+      "stateClosed": "Closed",
+      "stateOpen": "Open"
+    },
+    "tripCard": {
+      "adBlueLevel": "AdBlue level",
+      "averageSpeedReset": "Average speed",
+      "averageSpeedStart": "Average speed",
+      "distanceReset": "Distance travelled",
+      "distanceStart": "Distance travelled",
+      "distanceZEReset": "Distance Zero Emission travelled",
+      "distanceZEStart": "Distance Zero Emission travelled",
+      "drivenTimeReset": "Driving time",
+      "drivenTimeStart": "Driving time",
+      "drivenTimeZEReset": "Driving time Zero Emission",
+      "drivenTimeZEStart": "Driving time Zero Emission",
+      "electricConsumptionReset": "Average consumption",
+      "electricConsumptionStart": "Average consumption",
+      "fromReset": "From reset",
+      "fromStart": "From start",
+      "fuelLevel": "Fuel level",
+      "liquidConsumptionReset": "Average consumption",
+      "liquidConsumptionStart": "Average consumption",
+      "maxSoc": "Max state of charge",
+      "odometer": "Odometer",
+      "overview": "Overview",
+      "rangeElectric": "Range",
+      "rangeLiquid": "Range",
+      "soc": "State of charge"
+    },
+    "tyreCard": {
+      "tirePressureFrontLeft": "Front left",
+      "tirePressureFrontRight": "Front right",
+      "tirePressureRearLeft": "Rear left",
+      "tirePressureRearRight": "Rear right",
+      "tireWarningOk": "No pressure loss detected",
+      "tireWarningProblem": "Pressure loss detected. Check tyres.",
+      "tyrePressure": "Tyre pressures"
+    },
+    "vehicleCard": {
+      "doorStatusOverall": "Doors",
+      "engineLight": "Engine light",
+      "ignitionState": "Ignition state",
+      "lockSensor": "Lock status",
+      "lowBrakeFluid": "Brake fluid",
+      "lowCoolantLevel": "Coolant",
+      "lowWashWater": "Washer fluid",
+      "parkBrake": "Parking brake",
+      "starterBatteryState": "12v battery",
+      "tirePressureWarning": "Tyre pressure",
+      "vehicleStatus": "Vehicle status",
+      "vehicleWarnings": "Warnings",
+      "windowsClosed": "Windows"
+    },
+    "windowAttributes": {
+      "windowstatusfrontleft": "Window front left",
+      "windowstatusfrontleftblind": "Window front left blind",
+      "windowstatusfrontright": "Window front right",
+      "windowstatusfrontrightblind": "Window front right blind",
+      "windowstatusrearleft": "Window rear left",
+      "windowstatusrearleftblind": "Window rear left blind",
+      "windowstatusrearright": "Window rear right",
+      "windowstatusrearrightblind": "Window rear right blind"
+    },
+    "ignitionState": {
+      "ignitionLock": "Lock",
+      "ignitionOff": "Off",
+      "ignitionAccessory": "Accessory",
+      "ignitionOn": "On",
+      "ignitionStart": "Start"
+    },
+    "precondSeatTemp": {
+      "frontLeft": "Front left",
+      "frontRight": "Front right",
+      "rearLeft": "Rear left",
+      "rearRight": "Rear right"
     }
+  },
+  "editor": {
+    "buttonConfig": {
+      "desc": "Configure the subcards for individual buttons.",
+      "title": "Buttons configuration",
+      "defaultCards": "Default cards",
+      "customCards": "Custom cards",
+      "addNewCard": "Add new card",
+      "hideButton": "Hide button on card",
+      "useCustomButton": "Use custom button",
+      "useCustomCard": "Use custom card",
+      "showButton": "Show button",
+      "preview": "Preview",
+      "hidePreview": "Hide preview",
+      "secondaryInfo": "Secondary info",
+      "secondaryInfoDesc": "This will be shown below the title of the card.",
+      "secondaryInfoHelper": "Use Jinja2 template to display secondary information",
+      "notifyInfo": "Notify configuration",
+      "notifyInfoHelper": "The result must return 'True' boolean to show the notification.",
+      "deleteConfirm": "Are you sure you want to delete this card?",
+      "toastNewCard": "New card added!",
+      "buttonGridSwipe": "Buttons grid configuration",
+      "swipeRows": "Rows per slide",
+      "useButtonSwipe": "Use swipe for buttons",
+      "iconInfo": "Icon template",
+      "iconInfoHelper": "Use Jinja2 template to display icon",
+      "colorInfo": "Colour template",
+      "colorInfoHelper": "Use Jinja2 template to change the icon colour",
+      "pictureInfo": "Picture (will replace the icon)",
+      "pictureInfoHelper": "You can use a template to display a picture, or url to an image file"
+    },
+    "common": {
+      "checkAll": "Check all",
+      "infoButton": "Select the card you want to configure.",
+      "infoImages": "There is no need to add a '-' for each line. Each line will be treated as a separate URL automatically.",
+      "infoMap": "This is configuration for map popup.",
+      "infoServices": "Choose which services you want to enable. If a service is disabled, it will not be shown in the card.",
+      "uncheckAll": "Uncheck all"
+    },
+    "imagesConfig": {
+      "desc": "Add the URLs of the images.",
+      "title": "Image configuration",
+      "selectAll": "Select all",
+      "deselectAll": "Deselect all",
+      "deleteSelected": "Delete selected"
+    },
+    "mapConfig": {
+      "desc": "Choose the configuration for the map",
+      "title": "Map configuration"
+    },
+    "servicesConfig": {
+      "desc": "Choose the services you want to enable.",
+      "title": "Services configuration"
+    },
+    "showConfig": {
+      "desc": "Choose the items you want to display.",
+      "title": "Show configuration"
+    },
+    "showOpts": {
+      "enable_map_popup": "Enable map popup",
+      "enable_services_control": "Enable services control",
+      "show_background": "Show background",
+      "show_buttons": "Show buttons",
+      "show_error_notify": "Show error notification",
+      "show_map": "Show map",
+      "show_slides": "Show slides"
+    },
+    "themeLangConfig": {
+      "desc": "Choose the theme and language.",
+      "title": "Themes & Language"
+    },
+    "customButtonConfig": {
+      "title": "Custom Button",
+      "desc": "Set the value for the custom button",
+      "info": "Add new or edit existing custom button"
+    },
+    "customCardConfig": {
+      "title": "Custom Card",
+      "desc": "Yaml configuration for lovelace card"
+    },
+    "customTireBackground": {
+      "title": "Custom Tire Background",
+      "desc": "Upload an image to replace the default background.",
+      "info": "The image should be square with a maximum resolution of 450x450 pixels. A transparent background is recommended."
+    },
+    "customActionConfig": {
+      "title": "Button interaction",
+      "desc": "Set the action for the custom button"
+    }
+  }
 }
