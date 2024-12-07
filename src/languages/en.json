@@ -205,6 +205,10 @@
         }
     },
     "editor": {
+        "entityConfig": {
+            "desc": "Choose the entity and card name.",
+            "title": "Entity & Card name"
+        },
         "buttonConfig": {
             "desc": "Configure the subcards for individual buttons.",
             "title": "Buttons configuration",
