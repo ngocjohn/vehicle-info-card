@@ -386,7 +386,7 @@ header h1 {
   content: '';
   position: absolute;
   bottom: 0;
-  left: -15px;
+  left: -10px;
   width: 15%;
   height: 100%;
   background-image: linear-gradient(to left,
@@ -396,10 +396,10 @@ header h1 {
 
 .marquee {
   display: inline-block;
-  animation: marquee 6s linear 1s infinite;
+  animation: marquee linear 1s infinite;
   overflow: visible !important;
   animation-iteration-count: 3;
-  /* left: 100%; */
+  animation-duration: var(--speed, 6s);
 }
 
 @keyframes marquee {
@@ -408,7 +408,7 @@ header h1 {
   }
 
   50% {
-    transform: translateX(-50%);
+    transform: translateX(var(--offset));
   }
 
   100% {

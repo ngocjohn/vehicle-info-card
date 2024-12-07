@@ -321,11 +321,13 @@ h3 {
   background-color: var(--primary-color);
 }
 
+#card-list .handle,
 .custom-background-wrapper .handle {
   cursor: grab;
   color: var(--secondary-text-color);
 }
 
+#card-list .handle:active,
 .custom-background-wrapper .handle:active {
   cursor: grabbing;
   color: var(--primary-color);
