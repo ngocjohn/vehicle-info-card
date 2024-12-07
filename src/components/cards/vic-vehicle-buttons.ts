@@ -409,12 +409,17 @@ export class VehicleButtons extends LitElement {
       items.forEach((item) => {
         const itemText = item.querySelector('span');
         if (item.scrollWidth > item.clientWidth) {
+          const offset = item.scrollWidth - item.clientWidth;
+          const speed = offset / 5;
+          item.style.setProperty('--offset', `-${offset}px`);
+          item.style.setProperty('--speed', `${speed}s`);
           item.classList.add('title-wrap');
           itemText?.classList.add('marquee');
-          setTimeout(() => {
+          itemText?.addEventListener('animationend', () => {
             itemText?.classList.remove('marquee');
             item.classList.remove('title-wrap');
-          }, 18000);
+            item.style.removeProperty('--offset');
+          });
         } else {
           item.classList.remove('title-wrap');
           itemText?.classList.remove('marquee');
@@ -505,6 +510,28 @@ export class VehicleButtons extends LitElement {
             btnElt.classList.remove('redGlows');
           }, 3000);
         }, 500);
+      }
+    });
+  }
+  public swipeToButton(btnId: string): void {
+    this.updateComplete.then(() => {
+      const btnType = `button-${btnId}`;
+      const btnElt = this.shadowRoot?.getElementById(btnType) as HTMLElement;
+
+      if (!btnElt) return;
+      if (this.useSwiper) {
+        const swiperSlides = this.shadowRoot?.querySelectorAll('.swiper-slide') as NodeListOf<HTMLElement>;
+        let targetSlideIndex = -1;
+
+        swiperSlides.forEach((slide, index) => {
+          if (slide.contains(btnElt)) {
+            targetSlideIndex = index;
+          }
+        });
+
+        if (targetSlideIndex !== -1) {
+          this.swiper?.slideTo(targetSlideIndex, 0, false);
+        }
       }
     });
   }

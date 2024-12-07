@@ -234,20 +234,16 @@ export class VehicleCard extends LitElement {
       // console.log('Button Cards ready:', logging);
     }
 
-    // Use Promise.all for added_cards processing
     if (this.config.added_cards && Object.keys(this.config.added_cards).length > 0) {
-      await Promise.all(
-        Object.keys(this.config.added_cards).map(async (key) => {
-          const card = this.config.added_cards[key];
-          if (card) {
-            this.buttonCards[key] = await getAddedButton(this._hass, card, key);
-          }
-          // this.buttonCards = buttonCards;
-          logging.push(key);
-        })
-      );
+      for (const [key, card] of Object.entries(this.config.added_cards)) {
+        if (card) {
+          this.buttonCards[key] = await getAddedButton(this._hass, card, key);
+        }
+        logging.push(key);
+      }
     }
 
+    // console.log('Button Cards ready:', logging);
     this._buttonReady = true;
     setTimeout(() => {
       this._loading = false;
@@ -1512,7 +1508,10 @@ export class VehicleCard extends LitElement {
           this._configurePreview(preview);
         });
         break;
-
+      case actionType.startsWith('swipe_'):
+        const swipeAction = actionType.replace('swipe_', '');
+        this.vehicleButtons?.swipeToButton(swipeAction);
+        break;
       default:
         break;
     }
