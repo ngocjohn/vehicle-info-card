@@ -27,6 +27,8 @@ export const servicesCtrl = (lang: string) => ({
 
 const precondSeatConfig = (lang: string) => ({
   service: {
+    START: createService('preheat_start', 'mdi:car-seat-heater', 'labelStart', lang),
+    STOP: createService('preheat_stop', 'mdi:car-seat', 'labelStop', lang),
     DATA_SEAT_CONFIGURE: createService('preconditioning_configure_seats', 'mdi:car-seat', 'labelSeatConfig', lang),
     DATA_TEMP_CONFIGURE: createService('temperature_configure', 'mdi:thermometer', 'labelSetTempZone', lang),
   },
@@ -92,8 +94,6 @@ const preheatConfig = (lang: string) => ({
   service: {
     DATA_START_DEP_TIME: createService('preheat_start_departure_time', 'mdi:cog', 'labelStartTime', lang),
     STOP_DEP_TIME: createService('preheat_stop_departure_time', 'mdi:cog', 'labelStopTime', lang),
-    START: createService('preheat_start', 'mdi:car-seat-heater', 'labelStart', lang),
-    STOP: createService('preheat_stop', 'mdi:car-seat', 'labelStop', lang),
   },
   data: {
     time: { label: transLabel('labelDepartureTime', lang), value: 0, hour: '00', minute: '00' },

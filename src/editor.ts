@@ -542,6 +542,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           .configValue=${'selected_language'}
           @selected=${this._valueChanged}
           @closed=${(ev: Event) => ev.stopPropagation()}
+          fixedMenuPosition
         >
           ${langOpts.map(
             (lang) =>
@@ -565,6 +566,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           .configValue=${'mode'}
           @selected=${this._valueChanged}
           @closed=${(ev: Event) => ev.stopPropagation()}
+          fixedMenuPosition
         >
           ${themeMode.map((mode) => html`<mwc-list-item value=${mode.key}>${mode.name}</mwc-list-item>`)}
         </ha-select>
@@ -610,6 +612,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           .configValue=${'theme_mode'}
           @selected=${this._valueChanged}
           @closed=${(ev: Event) => ev.stopPropagation()}
+          fixedMenuPosition
         >
           ${themeMode.map((mode) => html`<mwc-list-item value=${mode.key}>${mode.name}</mwc-list-item>`)}
         </ha-select>

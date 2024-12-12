@@ -262,6 +262,10 @@ export class RemoteControl extends LitElement {
     const seatOptions = precondSeatConfig.data.precondSeat;
     const tempOptions = precondSeatConfig.data.temperature;
 
+    const precondEid = this.card.vehicleEntities.precondStatus?.entity_id;
+    const rawPrecondState = this.hass.states[precondEid]?.state === 'on' ? true : false;
+    const precondState = this.card.getStateDisplay(precondEid);
+
     const precondZoneTemp = Object.entries(seatOptions).map(([key, seatValue]) => {
       const { label: seatLabel, value: seatInputValue } = seatValue as { label: string; value: boolean };
       const tempValue = tempOptions[key]; // Match temperature control by key
@@ -294,8 +298,14 @@ export class RemoteControl extends LitElement {
         </div>
       `;
     });
-
-    return html`${precondZoneTemp}`;
+    const preheatStatus = html`<div class="items-row">
+      <div>${this.card.localize('card.serviceData.labelPreclimateStatus')}</div>
+      <div>
+        <ha-switch .checked=${rawPrecondState} @change=${(e: Event) => this._handlePreclimateSwitch(e)}></ha-switch>
+        ${precondState}
+      </div>
+    </div>`;
+    return html` ${preheatStatus} ${precondZoneTemp}`;
   }
 
   private _renderDepartureTime(): TemplateResult {
@@ -344,6 +354,13 @@ export class RemoteControl extends LitElement {
 
     console.log(this.precondSeatConfig.data.precondSeat);
     this.requestUpdate(); // Trigger re-render to update UI after change
+  }
+
+  private _handlePreclimateSwitch(e: any): void {
+    e.stopPropagation();
+    const target = e.target;
+    const value = target.checked;
+    this.callService(value ? 'preheat_start' : 'preheat_stop');
   }
 
   private _handleTempSelect(e: any): void {
