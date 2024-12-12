@@ -16,3 +16,10 @@ missing_translations.json
 .hass-config
 build/
 scripts/update-bug-template.js
+
+scripts/*
+!scripts/check-localization.js
+!scripts/generate-lang-imports.js
+!scripts/generate-new-lang-file.js
+!scripts/update-languages.js
+scripts/add-missing-translations.js
