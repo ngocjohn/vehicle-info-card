@@ -95,7 +95,8 @@
             "labelWindowRearLeft": "Rear left",
             "labelWindowRearRight": "Rear right",
             "labelSeatConfig": "Save seat configuration",
-            "labelSetTempZone": "Save temperature zone"
+            "labelSetTempZone": "Save temperature zone",
+            "labelPreclimateStatus": "Preclimate status"
         },
         "servicesCtrl": {
             "auxheat": "Auxiliary heating",
