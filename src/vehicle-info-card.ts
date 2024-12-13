@@ -187,6 +187,9 @@ export class VehicleCard extends LitElement {
         handleCardSwipe(cardElement, this.toggleCard.bind(this));
       }
     }
+    if (changedProps.has('_loading') && !this._loading) {
+      this._setUpButtonAnimation();
+    }
   }
 
   protected shouldUpdate(_changedProps: PropertyValues): boolean {
@@ -824,7 +827,7 @@ export class VehicleCard extends LitElement {
 
     return html`
       <div class="default-card remote-tab">
-        <remote-control .hass=${hass} .card=${this as VehicleCard} .selectedServices=${activeServices}></remote-control>
+        <remote-control .hass=${hass} .card=${this as any} .selectedServices=${activeServices}></remote-control>
       </div>
     `;
   }
@@ -1385,15 +1388,6 @@ export class VehicleCard extends LitElement {
 
   /* --------------------- GET ENTITY STATE AND ATTRIBUTES -------------------- */
 
-  private getDeviceTrackerLatLong = (): { lat: number; lon: number } | undefined => {
-    if (!this.config.device_tracker) return;
-    const deviceTracker = this._hass.states[this.config.device_tracker];
-    if (!deviceTracker) return;
-    const lat = deviceTracker.attributes.latitude;
-    const lon = deviceTracker.attributes.longitude;
-    return { lat, lon };
-  };
-
   public getStateDisplay(entityId: string | undefined): string {
     if (!entityId || !this._hass.states[entityId]) return '';
     return this._hass.formatEntityState(this._hass.states[entityId]);
@@ -1484,6 +1478,20 @@ export class VehicleCard extends LitElement {
     }
   }
 
+  /* --------------------------- CONFIGURATION METHODS -------------------------- */
+  private _setUpButtonAnimation = (): void => {
+    if (this.isEditorPreview) return;
+    setTimeout(() => {
+      const gridItems = this.vehicleButtons.shadowRoot?.querySelectorAll('.grid-item');
+      if (!gridItems) return;
+      gridItems.forEach((item) => {
+        item.classList.add('zoom-in');
+        item.addEventListener('animationend', () => {
+          item.classList.remove('zoom-in');
+        });
+      });
+    }, 0);
+  };
   /* ----------------------------- EVENTS HANDLERS ---------------------------- */
 
   private handleEditorEvents(e: Event): void {

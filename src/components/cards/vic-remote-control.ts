@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { mdiClose } from '@mdi/js';
 import { HomeAssistant, fireEvent, forwardHaptic } from 'custom-card-helpers';
-import { LitElement, html, TemplateResult, CSSResultGroup } from 'lit';
+import { LitElement, html, TemplateResult, CSSResultGroup, nothing } from 'lit';
 import { customElement, state, property } from 'lit/decorators.js';
 
 import { ControlServiceData, tempSelectOptions } from '../../const/remote-control-keys';
@@ -298,13 +298,15 @@ export class RemoteControl extends LitElement {
         </div>
       `;
     });
-    const preheatStatus = html`<div class="items-row">
-      <div>${this.card.localize('card.serviceData.labelPreclimateStatus')}</div>
-      <div>
-        <ha-switch .checked=${rawPrecondState} @change=${(e: Event) => this._handlePreclimateSwitch(e)}></ha-switch>
-        ${precondState}
-      </div>
-    </div>`;
+    const preheatStatus = precondState
+      ? html`<div class="items-row">
+          <div>${this.card.localize('card.serviceData.labelPreclimateStatus')}</div>
+          <div>
+            <ha-switch .checked=${rawPrecondState} @change=${(e: Event) => this._handlePreclimateSwitch(e)}></ha-switch>
+            ${precondState}
+          </div>
+        </div>`
+      : nothing;
     return html` ${preheatStatus} ${precondZoneTemp}`;
   }
 

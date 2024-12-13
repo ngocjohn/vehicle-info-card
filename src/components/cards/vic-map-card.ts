@@ -191,6 +191,7 @@ export class VehicleMap extends LitElement {
 
   protected firstUpdated(changedProperties: PropertyValues): void {
     super.firstUpdated(changedProperties);
+    this._handleTouchEvent();
   }
 
   protected updated(changedProperties: PropertyValues): void {
@@ -207,6 +208,20 @@ export class VehicleMap extends LitElement {
       '--vic-map-tiles-filter': this.darkMode
         ? 'var(--vic-map-tiles-dark-filter)'
         : 'var(--vic-map-tiles-light-filter)',
+    });
+  }
+
+  private _handleTouchEvent(): void {
+    const map = this.shadowRoot?.getElementById('map') as HTMLElement;
+    if (!map) return;
+    ['touchstart', 'touchmove', 'touchend', 'touchcancel'].forEach((event) => {
+      map.addEventListener(
+        event,
+        (e) => {
+          e.preventDefault();
+        },
+        { passive: false }
+      );
     });
   }
 
