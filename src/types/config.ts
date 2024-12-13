@@ -95,6 +95,7 @@ export type BaseButtonConfig = {
   attribute?: string;
   color_template?: string;
   icon_template?: string;
+  picture_template?: string;
 };
 
 export type AddedCards = {
@@ -179,6 +180,7 @@ export type ButtonCardEntity = {
     hidden: boolean;
     color_template: string;
     icon_template: string;
+    picture_template: string;
   };
   button_type: 'default' | 'action';
   card_type: 'default' | 'custom';

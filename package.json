@@ -1,6 +1,6 @@
 {
   "name": "vehicle-info-card",
-  "version": "1.6.0",
+  "version": "1.6.1-beta.1",
   "description": "Lovelace custom card for displaying vehicle information from Mercedes Component integration",
   "keywords": [
     "home-assistant",
@@ -19,10 +19,11 @@
   "module": "vehicle-info-card.js",
   "license": "MIT",
   "dependencies": {
+    "@dotenvx/dotenvx": "^1.29.0",
     "@mdi/js": "^7.4.47",
     "@rollup/plugin-babel": "^6.0.4",
     "custom-card-helpers": "^1.7.2",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.4.7",
     "home-assistant-js-websocket": "^9.4.0",
     "lit": "^3.1.4",
     "lit-html": "^3.2.1",
@@ -38,6 +39,7 @@
     "@typescript-eslint/eslint-plugin": "^7.15.0",
     "@typescript-eslint/parser": "^7.15.0",
     "apexcharts": "^3.52.0",
+    "axios": "^1.7.9",
     "es-toolkit": "^1.17.0",
     "eslint": "^8.9.0",
     "eslint-plugin-perfectionist": "^3.7.0",
@@ -65,6 +67,9 @@
     "lint": "eslint src/**/*.ts",
     "rollup": "rollup -c",
     "update-lang": "node scripts/update-languages",
-    "import-lang": "node scripts/generate-lang-imports.js"
+    "import-lang": "node scripts/generate-lang-imports.js",
+    "add-missing-translations": "node scripts/add-missing-translations.js",
+    "translate-new-strings": "npx dotenvx run -- node scripts/translate-new-strings.js",
+    "update-missing": "npm run translate-new-strings && npm run add-missing-translations"
   }
 }

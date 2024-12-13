@@ -18,7 +18,7 @@ import { VehicleCard } from '../../vehicle-info-card';
 // Styles
 import mainstyle from '../../css/styles.css';
 
-const TEMPLATE_KEYS = ['secondary', 'notify', 'icon_template', 'color_template'] as const;
+const TEMPLATE_KEYS = ['secondary', 'notify', 'icon_template', 'color_template', 'picture_template'] as const;
 type TemplateKey = (typeof TEMPLATE_KEYS)[number];
 const COLOR_AlPHA = '.2';
 
@@ -84,6 +84,166 @@ export class VehicleButtons extends LitElement {
         }
         .swiper-pagination-bullet-active {
           opacity: 0.7;
+        }
+
+        .grid-container {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(calc((100% - 24px) / 2), 1fr));
+          grid-template-rows: auto;
+          grid-gap: var(--vic-gutter-gap);
+          position: relative;
+        }
+
+        .grid-item {
+          display: flex;
+          position: relative;
+          padding: var(--vic-gutter-gap) var(--vic-card-padding);
+          background: var(--secondary-background-color, var(--card-background-color, #fff));
+          box-shadow: var(--ha-card-box-shadow);
+          box-sizing: border-box;
+          border-radius: var(--ha-card-border-radius, 12px);
+          border-width: var(--ha-card-border-width, 1px);
+          border-style: solid;
+          border-color: var(--ha-card-border-color, var(--divider-color, #e0e0e0));
+          transition: all 0.3s ease-out;
+          opacity: 1;
+          cursor: pointer;
+          align-items: center;
+        }
+
+        /* .grid-item:hover {
+  box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.3);
+} */
+
+        .grid-item .click-container {
+          display: flex;
+          height: 100%;
+          flex-direction: row;
+          align-items: center;
+          width: 100%;
+        }
+
+        .grid-item .item-notify {
+          display: flex;
+          position: absolute;
+          top: -4px;
+          right: -8px;
+          /* opacity: 0.8; */
+          color: #db4437;
+          color: var(--error-color, #db4437);
+          --mdc-icon-size: 1.4rem;
+        }
+
+        .grid-item .item-notify[hidden] {
+          display: none;
+        }
+
+        .grid-item .item-icon {
+          position: relative;
+          display: block;
+          --mdc-icon-size: 22px;
+          margin-right: var(--vic-card-padding);
+        }
+
+        .item-icon .icon-background {
+          position: relative;
+          width: var(--vic-icon-size);
+          height: var(--vic-icon-size);
+          font-size: var(--vic-icon-size);
+          border-radius: var(--vic-icon-border-radius);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background-color: var(--vic-icon-shape-color);
+          transition-property: background-color, box-shadow;
+          transition-duration: 280ms;
+          transition-timing-function: ease-out;
+        }
+
+        .icon-picture {
+          width: 100%;
+          height: 100%;
+          border-radius: var(--vic-icon-border-radius);
+        }
+
+        .grid-item .item-content {
+          display: flex;
+          flex-direction: column;
+          min-width: 0;
+          overflow: hidden;
+        }
+
+        .grid-item .item-content .primary {
+          display: block;
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          font-size: 1rem;
+          font-weight: 500;
+        }
+
+        .grid-item .item-content > .primary > .title {
+          display: inline-block;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          font-weight: 500;
+          font-size: 1rem;
+        }
+
+        .grid-item .item-content .secondary {
+          color: var(--secondary-text-color);
+          /* text-transform: capitalize; */
+          letter-spacing: 0.5px;
+          font-size: smaller;
+          white-space: nowrap;
+        }
+
+        .primary.title-wrap {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          display: block;
+          left: 0;
+          top: 0;
+        }
+
+        .primary.title-wrap::after {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: -10px;
+          width: 15%;
+          height: 100%;
+          background-image: linear-gradient(
+            to left,
+            transparent 0,
+            var(--secondary-background-color, var(--card-background-color, #fff)) 100%
+          );
+        }
+
+        .marquee {
+          display: inline-block;
+          animation: marquee linear 1s infinite;
+          overflow: visible !important;
+          animation-iteration-count: 3;
+          animation-duration: var(--speed, 6s);
+        }
+
+        @keyframes marquee {
+          0% {
+            transform: translateX(0%);
+          }
+
+          50% {
+            transform: translateX(var(--offset));
+          }
+
+          100% {
+            transform: translateX(0%);
+          }
         }
       `,
       mainstyle,
@@ -233,6 +393,8 @@ export class VehicleButtons extends LitElement {
         return icon.includes('mdi:') ? icon : '';
       case 'color_template':
         return this._templateResults[key]?.color_template?.result ?? '';
+      case 'picture_template':
+        return this._templateResults[key]?.picture_template?.result ?? '';
     }
   }
 
@@ -331,7 +493,7 @@ export class VehicleButtons extends LitElement {
     const getTemplate = (templateKey: TemplateKey) => this._getCustomState(key, templateKey);
     const { show_error_notify } = this._config;
     const { button, custom_button, default_name, default_icon } = this._buttons[key];
-
+    const index = Object.keys(this._buttons).indexOf(key);
     const primary = custom_button ? button?.primary : default_name;
     const icon = custom_button ? getTemplate('icon_template') : default_icon;
     const secondary = custom_button ? getTemplate('secondary') : this.component.getSecondaryInfo(key);
@@ -339,19 +501,24 @@ export class VehicleButtons extends LitElement {
     const entity = custom_button ? button?.entity : '';
     const color = custom_button ? getTemplate('color_template') : '';
     const iconBackground = color ? this._setColorAlpha(color) : this._getBackgroundColors();
+    const picture = custom_button ? getTemplate('picture_template') : '';
 
     return html`
-      <div id="${`button-${key}`}" class="grid-item click-shrink">
+      <div id="${`button-${key}`}" class="grid-item click-shrink" style="animation-delay: ${index * 50}ms">
         <ha-ripple></ha-ripple>
         <div class="click-container" id="${`button-action-${key}`}">
           <div class="item-icon">
             <div class="icon-background" style=${`background-color: ${iconBackground}`}>
-              <ha-state-icon
-                .hass=${this.hass}
-                .stateObj=${entity ? this.hass.states[entity] : undefined}
-                .icon=${icon}
-                style=${color ? `color: ${color}` : ''}
-              ></ha-state-icon>
+              ${picture
+                ? html`<img src="${picture}" class="icon-picture" />`
+                : html`
+                    <ha-state-icon
+                      .hass=${this.hass}
+                      .stateObj=${entity ? this.hass.states[entity] : undefined}
+                      .icon=${icon}
+                      style=${color ? `color: ${color}` : ''}
+                    ></ha-state-icon>
+                  `}
             </div>
             <div class="item-notify" ?hidden=${!notify || !show_error_notify}>
               <ha-icon icon="mdi:alert-circle"></ha-icon>
@@ -402,12 +569,17 @@ export class VehicleButtons extends LitElement {
       items.forEach((item) => {
         const itemText = item.querySelector('span');
         if (item.scrollWidth > item.clientWidth) {
+          const offset = item.scrollWidth - item.clientWidth;
+          const speed = offset / 5;
+          item.style.setProperty('--offset', `-${offset}px`);
+          item.style.setProperty('--speed', `${speed}s`);
           item.classList.add('title-wrap');
           itemText?.classList.add('marquee');
-          setTimeout(() => {
+          itemText?.addEventListener('animationend', () => {
             itemText?.classList.remove('marquee');
             item.classList.remove('title-wrap');
-          }, 18000);
+            item.style.removeProperty('--offset');
+          });
         } else {
           item.classList.remove('title-wrap');
           itemText?.classList.remove('marquee');
@@ -498,6 +670,28 @@ export class VehicleButtons extends LitElement {
             btnElt.classList.remove('redGlows');
           }, 3000);
         }, 500);
+      }
+    });
+  }
+  public swipeToButton(btnId: string): void {
+    this.updateComplete.then(() => {
+      const btnType = `button-${btnId}`;
+      const btnElt = this.shadowRoot?.getElementById(btnType) as HTMLElement;
+
+      if (!btnElt) return;
+      if (this.useSwiper) {
+        const swiperSlides = this.shadowRoot?.querySelectorAll('.swiper-slide') as NodeListOf<HTMLElement>;
+        let targetSlideIndex = -1;
+
+        swiperSlides.forEach((slide, index) => {
+          if (slide.contains(btnElt)) {
+            targetSlideIndex = index;
+          }
+        });
+
+        if (targetSlideIndex !== -1) {
+          this.swiper?.slideTo(targetSlideIndex, 0, false);
+        }
       }
     });
   }

@@ -8,6 +8,7 @@ import {
   LovelaceCardConfig,
   LovelaceCardEditor,
   applyThemesOnElement,
+  FrontendLocaleData,
 } from 'custom-card-helpers';
 import { LitElement, html, TemplateResult, PropertyValues, CSSResultGroup, nothing } from 'lit';
 import { styleMap } from 'lit-html/directives/style-map.js';
@@ -127,6 +128,16 @@ export class VehicleCard extends LitElement {
     return this._hass.themes.darkMode;
   }
 
+  get _locale(): FrontendLocaleData {
+    const locale = this._hass.locale;
+    const language = this.userLang;
+    const newLocale = {
+      ...locale,
+      language,
+    };
+    return newLocale;
+  }
+
   private get isEditorPreview(): boolean {
     const parentElementClassPreview = this.offsetParent?.classList.contains('element-preview');
     return parentElementClassPreview || false;
@@ -176,6 +187,9 @@ export class VehicleCard extends LitElement {
         handleCardSwipe(cardElement, this.toggleCard.bind(this));
       }
     }
+    if (changedProps.has('_loading') && !this._loading) {
+      this._setUpButtonAnimation();
+    }
   }
 
   protected shouldUpdate(_changedProps: PropertyValues): boolean {
@@ -223,20 +237,16 @@ export class VehicleCard extends LitElement {
       // console.log('Button Cards ready:', logging);
     }
 
-    // Use Promise.all for added_cards processing
     if (this.config.added_cards && Object.keys(this.config.added_cards).length > 0) {
-      await Promise.all(
-        Object.keys(this.config.added_cards).map(async (key) => {
-          const card = this.config.added_cards[key];
-          if (card) {
-            this.buttonCards[key] = await getAddedButton(this._hass, card, key);
-          }
-          // this.buttonCards = buttonCards;
-          logging.push(key);
-        })
-      );
+      for (const [key, card] of Object.entries(this.config.added_cards)) {
+        if (card) {
+          this.buttonCards[key] = await getAddedButton(this._hass, card, key);
+        }
+        logging.push(key);
+      }
     }
 
+    // console.log('Button Cards ready:', logging);
     this._buttonReady = true;
     setTimeout(() => {
       this._loading = false;
@@ -617,34 +627,36 @@ export class VehicleCard extends LitElement {
     }
 
     const lastCarUpdate = this.config.entity ? this._hass.states[this.config.entity].last_changed : '';
-    const hassLocale = this._hass.locale;
-    hassLocale.language = this.userLang;
 
-    const formattedDate = formatDateTime(new Date(lastCarUpdate), hassLocale);
+    const formattedDate = formatDateTime(new Date(lastCarUpdate), this._locale);
 
     const cardHeaderBox = html`<div class="added-card-header">
       <ha-icon-button .label=${'Close'} .path=${mdiClose} class="click-shrink" @click=${() => this.toggleCard('close')}>
       </ha-icon-button>
-      <div class="card-toggle">
-        <ha-icon-button
-          .label=${'Previous'}
-          .path=${mdiChevronLeft}
-          @click=${() => this.toggleCard('prev')}
-          class="click-shrink"
-        ></ha-icon-button>
+      ${key !== 'mapDialog'
+        ? html`
+            <div class="card-toggle">
+              <ha-icon-button
+                .label=${'Previous'}
+                .path=${mdiChevronLeft}
+                @click=${() => this.toggleCard('prev')}
+                class="click-shrink"
+              ></ha-icon-button>
 
-        <ha-icon-button
-          .label=${'Next'}
-          .path=${mdiChevronRight}
-          @click=${() => this.toggleCard('next')}
-          class="click-shrink"
-        ></ha-icon-button>
-      </div>
+              <ha-icon-button
+                .label=${'Next'}
+                .path=${mdiChevronRight}
+                @click=${() => this.toggleCard('next')}
+                class="click-shrink"
+              ></ha-icon-button>
+            </div>
+          `
+        : nothing}
     </div>`;
 
     return html`
       <main id="cards-wrapper">
-        ${cardHeaderBox}
+        ${!['servicesCard'].includes(key) ? cardHeaderBox : nothing}
         <section class="card-element">${renderCard}</section>
         <div class="last-update">
           <span>${this.localize('card.common.lastUpdate')}: ${formattedDate}</span>
@@ -815,8 +827,7 @@ export class VehicleCard extends LitElement {
 
     return html`
       <div class="default-card remote-tab">
-        <div class="data-header">${this.localize('card.common.titleRemoteControl')}</div>
-        <remote-control .hass=${hass} .card=${this as VehicleCard} .selectedServices=${activeServices}></remote-control>
+        <remote-control .hass=${hass} .card=${this as any} .selectedServices=${activeServices}></remote-control>
       </div>
     `;
   }
@@ -858,7 +869,7 @@ export class VehicleCard extends LitElement {
   /* ADDED CARD FUNCTIONALITY                                                   */
   /* -------------------------------------------------------------------------- */
 
-  private toggleCard = (action: HEADER_ACTION) => {
+  toggleCard = (action: HEADER_ACTION) => {
     forwardHaptic('light');
     const cardElement = this.shadowRoot?.querySelector('.card-element') as HTMLElement;
     if (!this._currentCardType || !cardElement) return;
@@ -1377,15 +1388,6 @@ export class VehicleCard extends LitElement {
 
   /* --------------------- GET ENTITY STATE AND ATTRIBUTES -------------------- */
 
-  private getDeviceTrackerLatLong = (): { lat: number; lon: number } | undefined => {
-    if (!this.config.device_tracker) return;
-    const deviceTracker = this._hass.states[this.config.device_tracker];
-    if (!deviceTracker) return;
-    const lat = deviceTracker.attributes.latitude;
-    const lon = deviceTracker.attributes.longitude;
-    return { lat, lon };
-  };
-
   public getStateDisplay(entityId: string | undefined): string {
     if (!entityId || !this._hass.states[entityId]) return '';
     return this._hass.formatEntityState(this._hass.states[entityId]);
@@ -1476,6 +1478,20 @@ export class VehicleCard extends LitElement {
     }
   }
 
+  /* --------------------------- CONFIGURATION METHODS -------------------------- */
+  private _setUpButtonAnimation = (): void => {
+    if (this.isEditorPreview) return;
+    setTimeout(() => {
+      const gridItems = this.vehicleButtons.shadowRoot?.querySelectorAll('.grid-item');
+      if (!gridItems) return;
+      gridItems.forEach((item) => {
+        item.classList.add('zoom-in');
+        item.addEventListener('animationend', () => {
+          item.classList.remove('zoom-in');
+        });
+      });
+    }, 0);
+  };
   /* ----------------------------- EVENTS HANDLERS ---------------------------- */
 
   private handleEditorEvents(e: Event): void {
@@ -1500,7 +1516,10 @@ export class VehicleCard extends LitElement {
           this._configurePreview(preview);
         });
         break;
-
+      case actionType.startsWith('swipe_'):
+        const swipeAction = actionType.replace('swipe_', '');
+        this.vehicleButtons?.swipeToButton(swipeAction);
+        break;
       default:
         break;
     }
