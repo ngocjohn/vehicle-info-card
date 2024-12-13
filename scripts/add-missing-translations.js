@@ -10,6 +10,7 @@ const missingTranslations = JSON.parse(fs.readFileSync(missingTranslationsPath, 
 
 // Function to update language files
 const updateLanguageFiles = () => {
+  let updateComplate = false;
   Object.entries(missingTranslations).forEach(([languageFile, translations]) => {
     const languageFilePath = path.join(translationsDir, languageFile);
 
@@ -36,10 +37,16 @@ const updateLanguageFiles = () => {
       // Write the updated data back to the language file
       fs.writeFileSync(languageFilePath, JSON.stringify(languageData, null, 2), 'utf8');
       console.log(`Updated ${languageFile}`);
+      updateComplate = true;
     } else {
       console.log(`Language file ${languageFile} not found.`);
     }
   });
+
+  // Remove the missing translations file if the update is complete
+  if (updateComplate) {
+    fs.unlinkSync(missingTranslationsPath);
+  }
 };
 
 // Run the script

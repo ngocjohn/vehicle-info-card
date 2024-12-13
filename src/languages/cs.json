@@ -1,301 +1,301 @@
 {
-  "name": "Czech",
-  "nativeName": "Čeština",
-  "card": {
-    "common": {
-      "lastUpdate": "Aktualizováno",
-      "stateCharging": "Nabíjení",
-      "stateClosed": "Zavřené",
-      "stateLocked": "Zamknuté",
-      "stateLockedInt": "Interně zamčeno",
-      "stateNotExisting": "Neexistující",
-      "stateOpen": "Otevřené",
-      "stateParkBrakeOff": "Uvolněno",
-      "stateParkBrakeOn": "Přitaženo",
-      "statePartlyUnlocked": "Částečně odemčeno",
-      "stateUnknown": "Neznámý",
-      "stateUnlocked": "Odemknuté",
-      "statePressed": "Stisknuto",
-      "titleRemoteControl": "Vzdálené ovládání",
-      "titleServices": "Služby",
-      "toastCommandSent": "Příkaz odeslán úspěšně!",
-      "toastImageError": "Chyba při nahrávání obrázku. Jsou povoleny pouze soubory PNG a JPEG.",
-      "toastCardAlreadyExists": "Karta už existuje, zadejte jiný název"
+    "name": "Czech",
+    "nativeName": "Čeština",
+    "card": {
+        "common": {
+            "lastUpdate": "Aktualizováno",
+            "stateCharging": "Nabíjení",
+            "stateClosed": "Zavřené",
+            "stateLocked": "Zamknuté",
+            "stateLockedInt": "Interně zamčeno",
+            "stateNotExisting": "Neexistující",
+            "stateOpen": "Otevřené",
+            "stateParkBrakeOff": "Uvolněno",
+            "stateParkBrakeOn": "Přitaženo",
+            "statePartlyUnlocked": "Částečně odemčeno",
+            "stateUnknown": "Neznámý",
+            "stateUnlocked": "Odemknuté",
+            "statePressed": "Stisknuto",
+            "titleRemoteControl": "Vzdálené ovládání",
+            "titleServices": "Služby",
+            "toastCommandSent": "Příkaz odeslán úspěšně!",
+            "toastImageError": "Chyba při nahrávání obrázku. Jsou povoleny pouze soubory PNG a JPEG.",
+            "toastCardAlreadyExists": "Karta už existuje, zadejte jiný název"
+        },
+        "cardType": {
+            "ecoCards": "Ukazatel ECO",
+            "tripCards": "Údaje o jízdě",
+            "tyreCards": "Tlak pneumatik",
+            "vehicleCards": "Stav vozidla"
+        },
+        "chargingOverview": {
+            "chargingPower": "Výkon",
+            "maxSoc": "Maximum",
+            "selectedProgram": "Program",
+            "soc": "Stav nabití"
+        },
+        "doorAttributes": {
+            "decklidstatus": "Zavazadlový prostor",
+            "doorstatusfrontleft": "Přední levé dveře",
+            "doorstatusfrontright": "Přední pravé dveře",
+            "doorstatusrearleft": "Zadní levé dveře",
+            "doorstatusrearright": "Zadní pravé dveře",
+            "enginehoodstatus": "Kapota",
+            "sunroofstatus": "Střešní okno",
+            "chargeflapdcstatus": "Krytka nabíjecího zásuvu"
+        },
+        "ecoCard": {
+            "ecoDisplay": "Ukazatel ECO",
+            "ecoScore": "Skóre",
+            "ecoScoreAcceleraion": "Zrychlení",
+            "ecoScoreBonusRange": "Bonusový dojezd",
+            "ecoScoreConstant": "Konstanta",
+            "ecoScoreFreeWheel": "Volnoběh"
+        },
+        "lockAttributes": {
+            "doorlockstatusfrontleft": "Přední levé dveře",
+            "doorlockstatusfrontright": "Přední pravé dveře",
+            "doorlockstatusgas": "Zámek nádrže",
+            "doorlockstatusrearleft": "Zadní levé dveře",
+            "doorlockstatusrearright": "Zadní pravé dveře"
+        },
+        "serviceData": {
+            "labelChargeProgram": "Program nabíjení",
+            "labelCity": "Město",
+            "labelClose": "Zavřít",
+            "labelDepartureTime": "Čas odjezdu",
+            "labelDurationTime": "Doba trvání",
+            "labelLatitude": "Zeměpisná šířka",
+            "labelLockCar": "Zamknout auto",
+            "labelLongitude": "Zeměpisná délka",
+            "labelMaxStateOfCharge": "Maximální stav nabití",
+            "labelMoreInfo": "Více",
+            "labelMove": "Přesunout",
+            "labelNoSelection": "Žádný výběr",
+            "labelOpen": "Otevřít",
+            "labelPostCode": "PSČ",
+            "labelSave": "Uložit",
+            "labelSend": "Odeslat",
+            "labelSetMaxSoc": "Nastavit maximum",
+            "labelSetProgram": "Nastavit program",
+            "labelStart": "Start",
+            "labelStartTime": "Čas začátku",
+            "labelStop": "Stop",
+            "labelStopTime": "Čas konce",
+            "labelStreet": "Ulice",
+            "labelTilt": "Náklon",
+            "labelTime1": "Čas 1",
+            "labelTime2": "Čas 2",
+            "labelTime3": "Čas 3",
+            "labelTimeSelection": "Výběr času",
+            "labelTitle": "Název",
+            "labelUnlockCar": "Odemknout auto",
+            "labelWindowFrontLeft": "Přední vlevo",
+            "labelWindowFrontRight": "Přední vpravo",
+            "labelWindowRearLeft": "Zadní vlevo",
+            "labelWindowRearRight": "Zadní vpravo",
+            "labelSeatConfig": "Uložit konfiguraci sedadel",
+            "labelSetTempZone": "Uložit teplotní zónu",
+            "labelPreclimateStatus": "Předklimatický stav"
+        },
+        "servicesCtrl": {
+            "auxheat": "Pomocné vytápění",
+            "charge": "Nabíjení",
+            "doorsLock": "Zabezpečení",
+            "engine": "Ovládání motoru",
+            "preheat": "Předkondicionování",
+            "sendRoute": "Odeslat trasu",
+            "sigPos": "Signální pozice",
+            "sunroof": "Střešní okno",
+            "windows": "Okna"
+        },
+        "starterBattery": {
+            "notAvailable": "Není k dispozici",
+            "partlyCharged": "Částečně nabitá",
+            "remoteServiceDisabled": "Vzdálená služba zakázána",
+            "stateOk": "Ok",
+            "vehicleNoLongerAvailable": "Vozidlo již není k dispozici"
+        },
+        "sunroofState": {
+            "antiBoomingLifting": "Proti hučení zvedání",
+            "antiBoomingPosition": "Pozice proti hučení",
+            "closing": "Zavírání",
+            "closingLifting": "Zavírání zvedání",
+            "intermediatePosition": "Mezilehlá pozice",
+            "liftingIntermediate": "Mezilehlé zvedání",
+            "liftingOpen": "Zvedání otevřeno",
+            "opening": "Otevírání",
+            "openingLifting": "Otevírání zvedání",
+            "running": "V provozu",
+            "slidingIntermediate": "Mezilehlé posunutí",
+            "stateClosed": "Zamknuté",
+            "stateOpen": "Otevřené"
+        },
+        "tripCard": {
+            "adBlueLevel": "Hladina AdBlue",
+            "averageSpeedReset": "Průměrná rychlost",
+            "averageSpeedStart": "Průměrná rychlost",
+            "distanceReset": "Ujetá vzdálenost",
+            "distanceStart": "Ujetá vzdálenost",
+            "distanceZEReset": "Ujetá vzdálenost ZE",
+            "distanceZEStart": "Ujetá vzdálenost ZE",
+            "drivenTimeReset": "Doba jízdy",
+            "drivenTimeStart": "Doba jízdy",
+            "drivenTimeZEReset": "Doba jízdy ZE",
+            "drivenTimeZEStart": "Doba jízdy ZE",
+            "electricConsumptionReset": "Průměrná spotřeba",
+            "electricConsumptionStart": "Průměrná spotřeba",
+            "fromReset": "Od resetu",
+            "fromStart": "Od startu",
+            "fuelLevel": "Hladina paliva",
+            "liquidConsumptionReset": "Průměrná spotřeba",
+            "liquidConsumptionStart": "Průměrná spotřeba",
+            "maxSoc": "Maximální stav nabití",
+            "odometer": "Tachometr",
+            "overview": "Přehled",
+            "rangeElectric": "Dojezd",
+            "rangeLiquid": "Dojezd",
+            "soc": "Stav nabití"
+        },
+        "tyreCard": {
+            "tirePressureFrontLeft": "Přední levá",
+            "tirePressureFrontRight": "Přední pravá",
+            "tirePressureRearLeft": "Zadní levá",
+            "tirePressureRearRight": "Zadní pravá",
+            "tireWarningOk": "Nepoznána žádná ztráta tlaku",
+            "tireWarningProblem": "Zjištěna ztráta tlaku. Zkontrolujte pneumatiky.",
+            "tyrePressure": "Tlak vzduchu v pneumatikách"
+        },
+        "vehicleCard": {
+            "doorStatusOverall": "Dveře",
+            "engineLight": "Kontrolka motoru",
+            "ignitionState": "Stav zapalování",
+            "lockSensor": "Stav zamknutí",
+            "lowBrakeFluid": "Brzdová kapalina",
+            "lowCoolantLevel": "Chladicí kapalina",
+            "lowWashWater": "Kapalina ostřikovače",
+            "parkBrake": "Ruční brzda",
+            "starterBatteryState": "Akumulátor",
+            "tirePressureWarning": "Stav tlaku v pneumatikách",
+            "vehicleStatus": "Stav vozidla",
+            "vehicleWarnings": "Varování",
+            "windowsClosed": "Okna"
+        },
+        "windowAttributes": {
+            "windowstatusfrontleft": "Okno přední levé",
+            "windowstatusfrontleftblind": "Okno přední levé roleta",
+            "windowstatusfrontright": "Okno přední pravé",
+            "windowstatusfrontrightblind": "Okno přední pravé roleta",
+            "windowstatusrearleft": "Okno zadní levé",
+            "windowstatusrearleftblind": "Okno zadní levé roleta",
+            "windowstatusrearright": "Okno zadní pravé",
+            "windowstatusrearrightblind": "Okno zadní pravé roleta"
+        },
+        "ignitionState": {
+            "ignitionLock": "zamčeno",
+            "ignitionOff": "vypnuto",
+            "ignitionAccessory": "příslušenství",
+            "ignitionOn": "zapnuto",
+            "ignitionStart": "start"
+        },
+        "precondSeatTemp": {
+            "frontLeft": "Přední levé",
+            "frontRight": "Přední pravé",
+            "rearLeft": "Zadní levé",
+            "rearRight": "Zadní pravé"
+        }
     },
-    "cardType": {
-      "ecoCards": "Ukazatel ECO",
-      "tripCards": "Údaje o jízdě",
-      "tyreCards": "Tlak pneumatik",
-      "vehicleCards": "Stav vozidla"
-    },
-    "chargingOverview": {
-      "chargingPower": "Výkon",
-      "maxSoc": "Maximum",
-      "selectedProgram": "Program",
-      "soc": "Stav nabití"
-    },
-    "doorAttributes": {
-      "decklidstatus": "Zavazadlový prostor",
-      "doorstatusfrontleft": "Přední levé dveře",
-      "doorstatusfrontright": "Přední pravé dveře",
-      "doorstatusrearleft": "Zadní levé dveře",
-      "doorstatusrearright": "Zadní pravé dveře",
-      "enginehoodstatus": "Kapota",
-      "sunroofstatus": "Střešní okno",
-      "chargeflapdcstatus": "Krytka nabíjecího zásuvu"
-    },
-    "ecoCard": {
-      "ecoDisplay": "Ukazatel ECO",
-      "ecoScore": "Skóre",
-      "ecoScoreAcceleraion": "Zrychlení",
-      "ecoScoreBonusRange": "Bonusový dojezd",
-      "ecoScoreConstant": "Konstanta",
-      "ecoScoreFreeWheel": "Volnoběh"
-    },
-    "lockAttributes": {
-      "doorlockstatusfrontleft": "Přední levé dveře",
-      "doorlockstatusfrontright": "Přední pravé dveře",
-      "doorlockstatusgas": "Zámek nádrže",
-      "doorlockstatusrearleft": "Zadní levé dveře",
-      "doorlockstatusrearright": "Zadní pravé dveře"
-    },
-    "serviceData": {
-      "labelChargeProgram": "Program nabíjení",
-      "labelCity": "Město",
-      "labelClose": "Zavřít",
-      "labelDepartureTime": "Čas odjezdu",
-      "labelDurationTime": "Doba trvání",
-      "labelLatitude": "Zeměpisná šířka",
-      "labelLockCar": "Zamknout auto",
-      "labelLongitude": "Zeměpisná délka",
-      "labelMaxStateOfCharge": "Maximální stav nabití",
-      "labelMoreInfo": "Více",
-      "labelMove": "Přesunout",
-      "labelNoSelection": "Žádný výběr",
-      "labelOpen": "Otevřít",
-      "labelPostCode": "PSČ",
-      "labelSave": "Uložit",
-      "labelSend": "Odeslat",
-      "labelSetMaxSoc": "Nastavit maximum",
-      "labelSetProgram": "Nastavit program",
-      "labelStart": "Start",
-      "labelStartTime": "Čas začátku",
-      "labelStop": "Stop",
-      "labelStopTime": "Čas konce",
-      "labelStreet": "Ulice",
-      "labelTilt": "Náklon",
-      "labelTime1": "Čas 1",
-      "labelTime2": "Čas 2",
-      "labelTime3": "Čas 3",
-      "labelTimeSelection": "Výběr času",
-      "labelTitle": "Název",
-      "labelUnlockCar": "Odemknout auto",
-      "labelWindowFrontLeft": "Přední vlevo",
-      "labelWindowFrontRight": "Přední vpravo",
-      "labelWindowRearLeft": "Zadní vlevo",
-      "labelWindowRearRight": "Zadní vpravo",
-      "labelSeatConfig": "Uložit konfiguraci sedadel",
-      "labelSetTempZone": "Uložit teplotní zónu",
-      "labelPreclimateStatus": "Předklimatický stav"
-    },
-    "servicesCtrl": {
-      "auxheat": "Pomocné vytápění",
-      "charge": "Nabíjení",
-      "doorsLock": "Zabezpečení",
-      "engine": "Ovládání motoru",
-      "preheat": "Předkondicionování",
-      "sendRoute": "Odeslat trasu",
-      "sigPos": "Signální pozice",
-      "sunroof": "Střešní okno",
-      "windows": "Okna"
-    },
-    "starterBattery": {
-      "notAvailable": "Není k dispozici",
-      "partlyCharged": "Částečně nabitá",
-      "remoteServiceDisabled": "Vzdálená služba zakázána",
-      "stateOk": "Ok",
-      "vehicleNoLongerAvailable": "Vozidlo již není k dispozici"
-    },
-    "sunroofState": {
-      "antiBoomingLifting": "Proti hučení zvedání",
-      "antiBoomingPosition": "Pozice proti hučení",
-      "closing": "Zavírání",
-      "closingLifting": "Zavírání zvedání",
-      "intermediatePosition": "Mezilehlá pozice",
-      "liftingIntermediate": "Mezilehlé zvedání",
-      "liftingOpen": "Zvedání otevřeno",
-      "opening": "Otevírání",
-      "openingLifting": "Otevírání zvedání",
-      "running": "V provozu",
-      "slidingIntermediate": "Mezilehlé posunutí",
-      "stateClosed": "Zamknuté",
-      "stateOpen": "Otevřené"
-    },
-    "tripCard": {
-      "adBlueLevel": "Hladina AdBlue",
-      "averageSpeedReset": "Průměrná rychlost",
-      "averageSpeedStart": "Průměrná rychlost",
-      "distanceReset": "Ujetá vzdálenost",
-      "distanceStart": "Ujetá vzdálenost",
-      "distanceZEReset": "Ujetá vzdálenost ZE",
-      "distanceZEStart": "Ujetá vzdálenost ZE",
-      "drivenTimeReset": "Doba jízdy",
-      "drivenTimeStart": "Doba jízdy",
-      "drivenTimeZEReset": "Doba jízdy ZE",
-      "drivenTimeZEStart": "Doba jízdy ZE",
-      "electricConsumptionReset": "Průměrná spotřeba",
-      "electricConsumptionStart": "Průměrná spotřeba",
-      "fromReset": "Od resetu",
-      "fromStart": "Od startu",
-      "fuelLevel": "Hladina paliva",
-      "liquidConsumptionReset": "Průměrná spotřeba",
-      "liquidConsumptionStart": "Průměrná spotřeba",
-      "maxSoc": "Maximální stav nabití",
-      "odometer": "Tachometr",
-      "overview": "Přehled",
-      "rangeElectric": "Dojezd",
-      "rangeLiquid": "Dojezd",
-      "soc": "Stav nabití"
-    },
-    "tyreCard": {
-      "tirePressureFrontLeft": "Přední levá",
-      "tirePressureFrontRight": "Přední pravá",
-      "tirePressureRearLeft": "Zadní levá",
-      "tirePressureRearRight": "Zadní pravá",
-      "tireWarningOk": "Nepoznána žádná ztráta tlaku",
-      "tireWarningProblem": "Zjištěna ztráta tlaku. Zkontrolujte pneumatiky.",
-      "tyrePressure": "Tlak vzduchu v pneumatikách"
-    },
-    "vehicleCard": {
-      "doorStatusOverall": "Dveře",
-      "engineLight": "Kontrolka motoru",
-      "ignitionState": "Stav zapalování",
-      "lockSensor": "Stav zamknutí",
-      "lowBrakeFluid": "Brzdová kapalina",
-      "lowCoolantLevel": "Chladicí kapalina",
-      "lowWashWater": "Kapalina ostřikovače",
-      "parkBrake": "Ruční brzda",
-      "starterBatteryState": "Akumulátor",
-      "tirePressureWarning": "Stav tlaku v pneumatikách",
-      "vehicleStatus": "Stav vozidla",
-      "vehicleWarnings": "Varování",
-      "windowsClosed": "Okna"
-    },
-    "windowAttributes": {
-      "windowstatusfrontleft": "Okno přední levé",
-      "windowstatusfrontleftblind": "Okno přední levé roleta",
-      "windowstatusfrontright": "Okno přední pravé",
-      "windowstatusfrontrightblind": "Okno přední pravé roleta",
-      "windowstatusrearleft": "Okno zadní levé",
-      "windowstatusrearleftblind": "Okno zadní levé roleta",
-      "windowstatusrearright": "Okno zadní pravé",
-      "windowstatusrearrightblind": "Okno zadní pravé roleta"
-    },
-    "ignitionState": {
-      "ignitionLock": "zamčeno",
-      "ignitionOff": "vypnuto",
-      "ignitionAccessory": "příslušenství",
-      "ignitionOn": "zapnuto",
-      "ignitionStart": "start"
-    },
-    "precondSeatTemp": {
-      "frontLeft": "Přední levé",
-      "frontRight": "Přední pravé",
-      "rearLeft": "Zadní levé",
-      "rearRight": "Zadní pravé"
+    "editor": {
+        "entityConfig": {
+            "desc": "Vyberte entity a název karty.",
+            "title": "Entity a název karty"
+        },
+        "buttonConfig": {
+            "desc": "Nakonfigurujte podkarty pro jednotlivá tlačítka.",
+            "title": "Konfigurace tlačítek",
+            "defaultCards": "Výchozí karty",
+            "customCards": "Vlastní karty",
+            "addNewCard": "Přidat novou kartu",
+            "hideButton": "Skrýt tlačítko na kartě",
+            "useCustomButton": "Použít vlastní tlačítko",
+            "useCustomCard": "Použít vlastní kartu",
+            "showButton": "Zobrazit tlačítko",
+            "preview": "Náhled",
+            "hidePreview": "Skrýt náhled",
+            "secondaryInfo": "Sekundární informace",
+            "secondaryInfoDesc": "To bude zobrazeno pod názvem karty.",
+            "secondaryInfoHelper": "Použijte šablonu Jinja2 pro zobrazení sekundárních informací",
+            "notifyInfo": "Konfigurace oznámení",
+            "notifyInfoHelper": "Výsledek musí vrátit hodnotu 'True' pro zobrazení oznámení.",
+            "deleteConfirm": "Jste si jisti, že chcete tuto kartu smazat?",
+            "toastNewCard": "Přidána nová karta!",
+            "buttonGridSwipe": "Konfigurace mřížky tlačítek",
+            "swipeRows": "Řádky na slide",
+            "useButtonSwipe": "Použít swipe pro tlačítka",
+            "iconInfo": "Šablona ikony",
+            "iconInfoHelper": "Použijte šablonu Jinja2 k zobrazení ikony",
+            "colorInfo": "Šablona barvy",
+            "colorInfoHelper": "Použijte šablonu Jinja2 ke změně barvy ikony",
+            "pictureInfo": "Obrázek (nahradí ikonu)",
+            "pictureInfoHelper": "Můžete použít šablonu k zobrazení obrázku nebo URL k souboru obrázku"
+        },
+        "common": {
+            "checkAll": "Vyrat vše",
+            "infoButton": "Vyberte kartu, kterou chcete nakonfigurovat.",
+            "infoImages": "Není potřeba přidávat '-' pro každý řádek. Každý řádek bude automaticky považován za samostatnou URL adresu.",
+            "infoMap": "Toto je konfigurace pro mapové vyskakovací okno.",
+            "infoServices": "Vyberte, které služby chcete povolit. Pokud je služba deaktivována, nebude v kartě zobrazena.",
+            "uncheckAll": "Zrušit vše"
+        },
+        "imagesConfig": {
+            "desc": "Přidejte URL adresy obrázků.",
+            "title": "Konfigurace obrázků",
+            "selectAll": "Vybrat vše",
+            "deselectAll": "Zrušit výběr",
+            "deleteSelected": "Smazat vybrané"
+        },
+        "mapConfig": {
+            "desc": "Vyberte konfiguraci pro mapu",
+            "title": "Konfigurace mapy"
+        },
+        "servicesConfig": {
+            "desc": "Vyberte služby, které chcete povolit.",
+            "title": "Konfigurace služeb"
+        },
+        "showConfig": {
+            "desc": "Vyberte položky, které chcete zobrazit.",
+            "title": "Konfigurace zobrazení"
+        },
+        "showOpts": {
+            "enable_map_popup": "Povolit vyskakovací okno mapy",
+            "enable_services_control": "Povolit ovládání služeb",
+            "show_background": "Zobrazit pozadí",
+            "show_buttons": "Zobrazit tlačítka",
+            "show_error_notify": "Zobrazit oznámení o chybě",
+            "show_map": "Zobrazit mapu",
+            "show_slides": "Zobrazit snímky"
+        },
+        "themeLangConfig": {
+            "desc": "Vyberte téma a jazyk.",
+            "title": "Témata a jazyk"
+        },
+        "customButtonConfig": {
+            "title": "Vlastní tlačítko",
+            "desc": "Nastavte hodnotu pro vlastní tlačítko",
+            "info": "Přidat nový nebo upravit existující vlastní tlačítko"
+        },
+        "customCardConfig": {
+            "title": "Vlastní karta",
+            "desc": "Konfigurace YAML pro kartu lovelace"
+        },
+        "customTireBackground": {
+            "title": "Vlastní pozadí pneumatik",
+            "desc": "Nahrajte obrázek pro změnu výchozího pozadí.",
+            "info": "Obrázek by měl být čtvercový s maximálním rozlišením 450x450 pixelů. Doporučuje se průhledné pozadí."
+        },
+        "customActionConfig": {
+            "title": "Button interaction",
+            "desc": "Set the action for the custom button"
+        }
     }
-  },
-  "editor": {
-    "entityConfig": {
-      "desc": "Vyberte entity a název karty.",
-      "title": "Entity a název karty"
-    },
-    "buttonConfig": {
-      "desc": "Nakonfigurujte podkarty pro jednotlivá tlačítka.",
-      "title": "Konfigurace tlačítek",
-      "defaultCards": "Výchozí karty",
-      "customCards": "Vlastní karty",
-      "addNewCard": "Přidat novou kartu",
-      "hideButton": "Skrýt tlačítko na kartě",
-      "useCustomButton": "Použít vlastní tlačítko",
-      "useCustomCard": "Použít vlastní kartu",
-      "showButton": "Zobrazit tlačítko",
-      "preview": "Náhled",
-      "hidePreview": "Skrýt náhled",
-      "secondaryInfo": "Sekundární informace",
-      "secondaryInfoDesc": "To bude zobrazeno pod názvem karty.",
-      "secondaryInfoHelper": "Použijte šablonu Jinja2 pro zobrazení sekundárních informací",
-      "notifyInfo": "Konfigurace oznámení",
-      "notifyInfoHelper": "Výsledek musí vrátit hodnotu 'True' pro zobrazení oznámení.",
-      "deleteConfirm": "Jste si jisti, že chcete tuto kartu smazat?",
-      "toastNewCard": "Přidána nová karta!",
-      "buttonGridSwipe": "Konfigurace mřížky tlačítek",
-      "swipeRows": "Řádky na slide",
-      "useButtonSwipe": "Použít swipe pro tlačítka",
-      "iconInfo": "Šablona ikony",
-      "iconInfoHelper": "Použijte šablonu Jinja2 k zobrazení ikony",
-      "colorInfo": "Šablona barvy",
-      "colorInfoHelper": "Použijte šablonu Jinja2 ke změně barvy ikony",
-      "pictureInfo": "Obrázek (nahradí ikonu)",
-      "pictureInfoHelper": "Můžete použít šablonu k zobrazení obrázku nebo URL k souboru obrázku"
-    },
-    "common": {
-      "checkAll": "Vyrat vše",
-      "infoButton": "Vyberte kartu, kterou chcete nakonfigurovat.",
-      "infoImages": "Není potřeba přidávat '-' pro každý řádek. Každý řádek bude automaticky považován za samostatnou URL adresu.",
-      "infoMap": "Toto je konfigurace pro mapové vyskakovací okno.",
-      "infoServices": "Vyberte, které služby chcete povolit. Pokud je služba deaktivována, nebude v kartě zobrazena.",
-      "uncheckAll": "Zrušit vše"
-    },
-    "imagesConfig": {
-      "desc": "Přidejte URL adresy obrázků.",
-      "title": "Konfigurace obrázků",
-      "selectAll": "Vybrat vše",
-      "deselectAll": "Zrušit výběr",
-      "deleteSelected": "Smazat vybrané"
-    },
-    "mapConfig": {
-      "desc": "Vyberte konfiguraci pro mapu",
-      "title": "Konfigurace mapy"
-    },
-    "servicesConfig": {
-      "desc": "Vyberte služby, které chcete povolit.",
-      "title": "Konfigurace služeb"
-    },
-    "showConfig": {
-      "desc": "Vyberte položky, které chcete zobrazit.",
-      "title": "Konfigurace zobrazení"
-    },
-    "showOpts": {
-      "enable_map_popup": "Povolit vyskakovací okno mapy",
-      "enable_services_control": "Povolit ovládání služeb",
-      "show_background": "Zobrazit pozadí",
-      "show_buttons": "Zobrazit tlačítka",
-      "show_error_notify": "Zobrazit oznámení o chybě",
-      "show_map": "Zobrazit mapu",
-      "show_slides": "Zobrazit snímky"
-    },
-    "themeLangConfig": {
-      "desc": "Vyberte téma a jazyk.",
-      "title": "Témata a jazyk"
-    },
-    "customButtonConfig": {
-      "title": "Vlastní tlačítko",
-      "desc": "Nastavte hodnotu pro vlastní tlačítko",
-      "info": "Přidat nový nebo upravit existující vlastní tlačítko"
-    },
-    "customCardConfig": {
-      "title": "Vlastní karta",
-      "desc": "Konfigurace YAML pro kartu lovelace"
-    },
-    "customTireBackground": {
-      "title": "Vlastní pozadí pneumatik",
-      "desc": "Nahrajte obrázek pro změnu výchozího pozadí.",
-      "info": "Obrázek by měl být čtvercový s maximálním rozlišením 450x450 pixelů. Doporučuje se průhledné pozadí."
-    },
-    "customActionConfig": {
-      "title": "Button interaction",
-      "desc": "Set the action for the custom button"
-    }
-  }
 }

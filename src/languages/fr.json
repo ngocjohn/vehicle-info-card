@@ -95,7 +95,8 @@
             "labelWindowRearLeft": "Arrière gauche",
             "labelWindowRearRight": "Arrière droit",
             "labelSeatConfig": "Enregistrer la position des sièges",
-            "labelSetTempZone": "Enregistrer la zone de température"
+            "labelSetTempZone": "Enregistrer la zone de température",
+            "labelPreclimateStatus": "Situation préclimatique"
         },
         "servicesCtrl": {
             "auxheat": "Chauffage auxiliaire",
@@ -205,6 +206,10 @@
         }
     },
     "editor": {
+        "entityConfig": {
+            "desc": "Choisissez l’entité et le nom de la carte.",
+            "title": "Entité et nom de la carte"
+        },
         "buttonConfig": {
             "desc": "Configurer les cartes secondaires pour chaque bouton.",
             "title": "Configuration des boutons",
@@ -230,7 +235,9 @@
             "iconInfo": "Modèle d'icône",
             "iconInfoHelper": "Utiliser un modèle Jinja2 pour afficher l'icône",
             "colorInfo": "Modèle de couleur",
-            "colorInfoHelper": "Utiliser un modèle Jinja2 pour modifier la couleur de l'icône"
+            "colorInfoHelper": "Utiliser un modèle Jinja2 pour modifier la couleur de l'icône",
+            "pictureInfo": "Image (remplacera l’icône)",
+            "pictureInfoHelper": "Vous pouvez utiliser un modèle pour afficher une image ou une URL vers un fichier image"
         },
         "common": {
             "checkAll": "Tout cocher",
