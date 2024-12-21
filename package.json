@@ -64,7 +64,7 @@
   "scripts": {
     "dev": "rollup -c --watch",
     "build": "npm run import-lang && npm run lint && npm run rollup",
-    "lint": "eslint src/**/*.ts",
+    "lint": "eslint src/**/*.ts --no-warn-ignored",
     "rollup": "rollup -c",
     "update-lang": "node scripts/update-languages",
     "import-lang": "node scripts/generate-lang-imports.js",

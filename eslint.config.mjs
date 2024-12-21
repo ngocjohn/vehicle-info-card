@@ -31,7 +31,6 @@ export default [
           type: 'alphabetical',
           order: 'asc',
           ignoreCase: true,
-          internalPattern: ['~/**'],
           newlinesBetween: 'always',
           maxLineLength: undefined,
           groups: [
