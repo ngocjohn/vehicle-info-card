@@ -7,7 +7,7 @@ import { customElement, state, property } from 'lit/decorators.js';
 import { ControlServiceData, tempSelectOptions } from '../../const/remote-control-keys';
 import styles from '../../css/remote-control.css';
 import mainstyle from '../../css/styles.css';
-import { cloneDeep, convertToMinutes } from '../../utils';
+import { convertToMinutes } from '../../utils';
 import { VehicleCard } from '../../vehicle-info-card';
 
 const enum PRECOND {
@@ -30,11 +30,11 @@ export class RemoteControl extends LitElement {
   }
 
   private initializeServiceData() {
-    this.serviceData = cloneDeep(ControlServiceData(this.card.userLang));
+    this.serviceData = structuredClone(ControlServiceData(this.card.userLang));
   }
 
   private resetConfig(): void {
-    this.serviceData = cloneDeep(ControlServiceData(this.card.userLang));
+    this.serviceData = structuredClone(ControlServiceData(this.card.userLang));
     this.requestUpdate(); // Trigger re-render to update UI after reset
   }
 
