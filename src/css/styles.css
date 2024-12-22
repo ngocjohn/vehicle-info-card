@@ -10,6 +10,12 @@
   outline: none;
 }
 
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+}
+
 ha-card {
   position: relative;
   overflow: hidden;
@@ -67,11 +73,13 @@ header h1 {
 
 #map-box {
   position: relative;
+  min-width: var(--vic-card-full-width) !important;
   width: 100%;
-  height: 150px;
+  height: 100%;
   margin: 0;
   padding: 0;
   overflow: hidden;
+  place-self: center;
 }
 
 .header-info-box {
