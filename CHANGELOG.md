@@ -1,3 +1,20 @@
+<a id="v1.6.1-beta.1"></a>
+# [v1.6.1-beta.1](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.6.1-beta.1) - 2024-12-12
+
+<!-- Release notes generated using configuration in .github/release.yml at v1.6.1-beta.1 -->
+
+## What's Changed
+### New Features 🎉
+* Add 'Target temperature configure (precond/auxheat)' & "Preconditioning configure seats" services by [@ngocjohn](https://github.com/ngocjohn) in [#89](https://github.com/ngocjohn/vehicle-info-card/pull/89)
+### Other Changes
+* Add picture template to Button config by [@ngocjohn](https://github.com/ngocjohn) in [#92](https://github.com/ngocjohn/vehicle-info-card/pull/92)
+
+
+**Full Changelog**: https://github.com/ngocjohn/vehicle-info-card/compare/v1.6.0...v1.6.1-beta.1
+
+[Changes][v1.6.1-beta.1]
+
+
 <a id="v1.6.0"></a>
 # [v1.6.0](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.6.0) - 2024-11-27
 
@@ -381,6 +398,7 @@ This update enhances the usability and accuracy of our custom card, providing cl
 [Changes][v1.0.0]
 
 
+[v1.6.1-beta.1]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.6.0...v1.6.1-beta.1
 [v1.6.0]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.5.0...v1.6.0
 [v1.5.0]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.4.0...v1.5.0
 [v1.4.0]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.3.1...v1.4.0
