@@ -131,13 +131,10 @@ export class VehicleCard extends LitElement {
 
   delayedAttachResizeObserver(): void {
     // wait for loading to finish before attaching resize observer
-    setTimeout(
-      () => {
-        this.attachResizeObserver();
-        this._resizeInitiated = true;
-      },
-      this._loading ? 2000 : 0
-    );
+    setTimeout(() => {
+      this.attachResizeObserver();
+      this._resizeInitiated = true;
+    }, 0);
   }
 
   attachResizeObserver(): void {
@@ -386,23 +383,28 @@ export class VehicleCard extends LitElement {
     if (this._entityNotFound) {
       return this._showWarning('Entity not found');
     }
-
-    if (this._loading) {
-      return this._renderLoading();
-    }
-
     if (this._currentPreviewType !== null && this.isEditorPreview) {
       return this._renderCardPreview();
     }
+    const cardHeight = this.getGridRowSize() * 56;
+    const loadingEl = html`
+      <div class="loading-image" style="height: ${cardHeight}px">
+        <img src="${IMAGE.LOADING}" alt="Loading" />
+      </div>
+    `;
 
     const name = this.config.name || '';
     return html`
       <ha-card style=${this._computeCardStyles()}>
-        ${this._renderHeaderBackground()}
-        <header>
-          <h1>${name}</h1>
-        </header>
-        ${this._currentCardType ? this._renderCustomCard() : this._renderMainCard()}
+        ${this._loading
+          ? loadingEl
+          : html`
+              ${this._renderHeaderBackground()}
+              <header>
+                <h1>${name}</h1>
+              </header>
+              ${this._currentCardType ? this._renderCustomCard() : this._renderMainCard()}
+            `}
       </ha-card>
     `;
   }
@@ -417,18 +419,6 @@ export class VehicleCard extends LitElement {
     };
 
     return typeMap[type];
-  }
-
-  // Render loading template
-  private _renderLoading(): TemplateResult {
-    const cardHeight = this.getGridRowSize() * 56;
-    return html`
-      <ha-card>
-        <div class="loading-image" style="height: ${cardHeight}px">
-          <img src="${IMAGE.LOADING}" alt="Loading" />
-        </div>
-      </ha-card>
-    `;
   }
 
   private _renderHeaderBackground(): TemplateResult | typeof nothing {

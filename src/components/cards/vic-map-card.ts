@@ -1,13 +1,15 @@
+import { LovelaceCardConfig } from 'custom-card-helpers';
 // Leaflet imports
 import L from 'leaflet';
 import mapstyle from 'leaflet/dist/leaflet.css';
+import 'leaflet-providers';
+// Lit imports
 import { LitElement, html, css, TemplateResult, PropertyValues, CSSResultGroup, unsafeCSS } from 'lit';
 import { customElement, state, property } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import 'leaflet-providers/leaflet-providers.js';
 
 import { MapData } from '../../types';
-import { isEmpty } from '../../utils';
+import { createMapPopup, isEmpty } from '../../utils';
 import { createCloseHeading } from '../../utils/create';
 import { VehicleCard } from '../../vehicle-info-card';
 
@@ -16,20 +18,28 @@ export class VehicleMap extends LitElement {
   @property({ attribute: false }) private mapData!: MapData;
   @property({ attribute: false }) private card!: VehicleCard;
   @property({ type: Boolean }) private isDark!: boolean;
+  @property({ type: Boolean }) open!: boolean;
 
   @state() private map: L.Map | null = null;
+  @state() private latLon: L.LatLng | null = null;
   @state() private marker: L.Marker | null = null;
   @state() private zoom = 17;
 
-  @property({ type: Boolean }) open!: boolean;
+  @state() private mapCardPopup?: LovelaceCardConfig[];
 
   private get mapPopup(): boolean {
     return this.card.config.enable_map_popup;
   }
 
-  protected firstUpdated(changedProperties: PropertyValues): void {
+  protected async firstUpdated(changedProperties: PropertyValues): Promise<void> {
     super.firstUpdated(changedProperties);
-    this.initMap();
+  }
+
+  protected updated(changedProperties: PropertyValues): void {
+    super.updated(changedProperties);
+    if (changedProperties.has('mapData') && this.mapData && this.mapData !== undefined) {
+      this.initMap();
+    }
   }
 
   private _computeMapStyle() {
@@ -53,45 +63,54 @@ export class VehicleMap extends LitElement {
       scrollWheelZoom: true,
     };
 
-    this.map = L.map(this.shadowRoot?.getElementById('map') as HTMLElement, mapOptions).setView([lat, lon], this.zoom);
+    const mapContainer = this.shadowRoot?.getElementById('map') as HTMLElement;
+    if (!mapContainer) return;
+    this.map = L.map(mapContainer, mapOptions).setView([lat, lon], this.zoom);
     const offset: [number, number] = this.calculateLatLngOffset(this.map, lat, lon, this.map.getSize().x / 5, 3);
-    this.map.setView(offset, this.zoom);
 
-    L.tileLayer
-      .provider('CartoDB.Positron', {
-        maxNativeZoom: 18,
-        maxZoom: 18,
-        minZoom: 14,
-        tileSize: 256,
-        className: 'map-tiles',
-      })
-      .addTo(this.map);
+    this.latLon = L.latLng(offset[0], offset[1]);
+    this.map.setView(this.latLon, this.zoom);
 
-    // Define custom icon for marker
+    // Add tile layer to map
+    this._createTileLayer(this.map);
+    // Add marker to map
+    this._createMarker(this.map);
+  }
+
+  private _createTileLayer(map: L.Map): L.TileLayer {
+    console.log('Creating tile layer');
+    const tileOpts = {
+      tileSize: 256,
+      className: 'map-tiles',
+    };
+
+    const tileLayer = L.tileLayer.provider('CartoDB.Positron', tileOpts).addTo(map);
+    return tileLayer;
+  }
+
+  private _createMarker(map: L.Map): L.Marker {
+    console.log('Creating marker');
+    const { lat, lon } = this.mapData;
     const customIcon = L.divIcon({
       html: `<div class="marker">
-              <div class="dot"></div>
-              <div class="shadow"></div>
             </div>`,
       iconSize: [24, 24],
-      iconAnchor: [12, 12],
       className: 'marker',
     });
 
     // Add marker to map
-    this.marker = L.marker([lat, lon], { icon: customIcon }).addTo(this.map);
+    const marker = L.marker([lat, lon], { icon: customIcon }).addTo(map);
     // Add click event listener to marker
-    if (this.mapPopup) {
-      this.marker.on('click', () => {
-        this.open = true;
-      });
-    }
+    marker.on('click', () => {
+      this._toggleMapDialog();
+    });
+
+    return (this.marker = marker);
   }
 
   private resetMap(): void {
-    if (!this.map || !this.marker) return;
-    const latLon = this.marker.getLatLng();
-    this.map.flyTo(latLon, this.zoom);
+    if (!this.map || !this.latLon) return;
+    this.map.flyTo(this.latLon, this.zoom);
   }
 
   private calculateLatLngOffset(
@@ -150,10 +169,11 @@ export class VehicleMap extends LitElement {
     const styles = html`
       <style>
         ha-dialog {
-          --mdc-dialog-min-width: 560px;
+          --mdc-dialog-min-width: 500px;
           --mdc-dialog-max-width: 600px;
+          --dialog-backdrop-filter: blur(2px);
         }
-        @media all and (max-width: 450px), all and (max-height: 500px) {
+        @media all and (max-width: 600px), all and (max-height: 500px) {
           ha-dialog {
             --mdc-dialog-min-width: 100vw;
             --mdc-dialog-max-width: 100vw;
@@ -169,18 +189,30 @@ export class VehicleMap extends LitElement {
       <ha-dialog
         open
         .heading=${createCloseHeading(this.card._hass, 'Map')}
-        @closed=${() => this._closeDialog()}
+        @closed=${() => (this.open = false)}
         hideActions
         flexContent
       >
         ${styles}
-        <div class="container">${this.mapData.popUpCard}</div>
+        <div class="container">${this.mapCardPopup}</div>
       </ha-dialog>
     `;
   }
 
-  private _closeDialog() {
-    this.open = false;
+  async _toggleMapDialog() {
+    if (!this.mapPopup) return;
+    if (this.mapCardPopup !== undefined) {
+      this.open = !this.open;
+      return;
+    }
+    try {
+      const popupCard = await createMapPopup(this.card._hass, this.card.config);
+      this.mapCardPopup = popupCard;
+      this.open = true;
+    } catch (error) {
+      console.error('Error creating map popup', error);
+      this.open = false;
+    }
   }
 
   static get styles(): CSSResultGroup {
@@ -191,7 +223,7 @@ export class VehicleMap extends LitElement {
           outline: none;
         }
         :host {
-          --vic-map-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%),
+          --vic-map-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%),
             linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
         }
         .map-wrapper {
@@ -210,14 +242,15 @@ export class VehicleMap extends LitElement {
           left: 0;
           width: 100%;
           height: 100%;
-          background-color: var(--ha-card-background, var(--card-background-color));
+          /* background-color: var(--ha-card-background, var(--card-background-color)); */
           opacity: 0.6; /* Adjust the opacity as needed */
           pointer-events: none; /* Ensure the overlay does not interfere with map interactions */
         }
+
         #map {
           height: 100%;
           width: 100%;
-          background: transparent !important;
+          background-color: transparent !important;
           mask-image: var(--vic-map-mask-image);
           mask-composite: intersect;
         }
@@ -231,15 +264,34 @@ export class VehicleMap extends LitElement {
 
         .marker {
           position: relative;
-          width: 46px;
-          height: 46px;
-          filter: var(--vic-marker-filter);
+          width: 24px;
+          height: 24px;
+          /* filter: var(--vic-marker-filter); */
         }
 
-        .dot {
+        .marker::before {
+          content: '';
           position: absolute;
-          width: 14px;
-          height: 14px;
+          width: calc(100% + 1rem);
+          height: calc(100% + 1rem);
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background-image: radial-gradient(
+            circle,
+            transparent 0%,
+            rgb(from var(--vic-map-marker-color) r g b / 35%) 100%
+          );
+          border-radius: 50%;
+          border: none !important;
+          /* opacity: 0.6; */
+        }
+
+        .marker::after {
+          content: '';
+          position: absolute;
+          width: calc(50% + 1px);
+          height: calc(50% + 1px);
           background-color: var(--vic-map-marker-color);
           border-radius: 50%;
           top: 50%;
@@ -247,25 +299,17 @@ export class VehicleMap extends LitElement {
           border: 1px solid white;
           transform: translate(-50%, -50%);
           opacity: 1;
+          transition: all 0.2s ease;
         }
-        .shadow {
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          background-image: radial-gradient(circle, var(--vic-map-marker-color) 0%, transparent 100%);
-          border-radius: 50%;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          border: none !important;
-          opacity: 0.6;
+        .marker:hover::after {
+          width: calc(60% + 1px);
+          height: calc(60% + 1px);
         }
-        .marker:hover .dot {
-          filter: brightness(1.2);
-        }
+
         .leaflet-control-container {
           display: none;
         }
+
         .reset-button {
           position: absolute;
           top: 1em;
@@ -290,7 +334,7 @@ export class VehicleMap extends LitElement {
           flex-direction: column;
           gap: 0.5rem;
           color: var(--primary-text-color);
-          backdrop-filter: blur(1px);
+          backdrop-filter: blur(2px);
           .address-line {
             display: flex;
             gap: 0.5rem;

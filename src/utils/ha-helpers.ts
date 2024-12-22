@@ -362,7 +362,8 @@ async function getMapData(hass: HomeAssistant, deviceTracker: string, apiKey: st
   return { lat: latitude, lon: longitude, address };
 }
 
-async function createMapPopup(hass: HomeAssistant, config: VehicleCardConfig): Promise<LovelaceCardConfig[]> {
+export async function createMapPopup(hass: HomeAssistant, config: VehicleCardConfig): Promise<LovelaceCardConfig[]> {
+  console.log('Creating map popup');
   const { default_zoom, hours_to_show, theme_mode } = config.map_popup_config || {};
   const haMapConfig = [
     {
@@ -381,7 +382,7 @@ async function createMapPopup(hass: HomeAssistant, config: VehicleCardConfig): P
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function handleCardFirstUpdated(component: any): Promise<void> {
+export async function handleCardFirstUpdated(component: VehicleCard): Promise<void> {
   const hass = component._hass as HomeAssistant;
   const config = component.config as VehicleCardConfig;
   const card = component as VehicleCard;
@@ -390,11 +391,6 @@ export async function handleCardFirstUpdated(component: any): Promise<void> {
   if (config.show_map && config.device_tracker && card._currentPreviewType === null) {
     console.log('Fetching map data...');
     card.MapData = await getMapData(hass, config.device_tracker, config.google_api_key || '');
-    if (config.enable_map_popup) {
-      card.MapData.popUpCard = await createMapPopup(hass, config);
-    } else {
-      return;
-    }
   }
 
   if (!card.vehicleEntities) {
