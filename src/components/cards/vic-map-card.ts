@@ -1,25 +1,187 @@
+// Leaflet imports
+import L from 'leaflet';
+import mapstyle from 'leaflet/dist/leaflet.css';
 import { LitElement, html, css, TemplateResult, PropertyValues, CSSResultGroup, unsafeCSS } from 'lit';
 import { customElement, state, property } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
+import 'leaflet-providers/leaflet-providers.js';
 
 import { MapData } from '../../types';
-
-// Leaflet imports
-import L from 'leaflet';
-import 'leaflet-providers/leaflet-providers.js';
-import mapstyle from 'leaflet/dist/leaflet.css';
-
 import { isEmpty } from '../../utils';
+import { createCloseHeading } from '../../utils/create';
 import { VehicleCard } from '../../vehicle-info-card';
 
 @customElement('vehicle-map')
 export class VehicleMap extends LitElement {
   @property({ attribute: false }) private mapData!: MapData;
   @property({ attribute: false }) private card!: VehicleCard;
+  @property({ type: Boolean }) private isDark!: boolean;
 
   @state() private map: L.Map | null = null;
   @state() private marker: L.Marker | null = null;
-  @state() private zoom = 16;
+  @state() private zoom = 17;
+
+  @property({ type: Boolean }) open!: boolean;
+
+  private get mapPopup(): boolean {
+    return this.card.config.enable_map_popup;
+  }
+
+  protected firstUpdated(changedProperties: PropertyValues): void {
+    super.firstUpdated(changedProperties);
+    this.initMap();
+  }
+
+  private _computeMapStyle() {
+    const markerColor = this.isDark ? 'var(--accent-color)' : 'var(--primary-color)';
+    const markerFilter = this.isDark ? 'contrast(1.2) saturate(6) brightness(1.3)' : 'none';
+    const tileFilter = this.isDark
+      ? 'brightness(0.6) invert(1) contrast(6) saturate(0.3) brightness(0.7) opacity(.25)'
+      : 'grayscale(1) contrast(1.1) opacity(0.7)';
+    return styleMap({
+      '--vic-map-marker-color': markerColor,
+      '--vic-marker-filter': markerFilter,
+      '--vic-map-tiles-filter': tileFilter,
+    });
+  }
+
+  initMap(): void {
+    const { lat, lon } = this.mapData;
+    const mapOptions = {
+      dragging: true,
+      zoomControl: false,
+      scrollWheelZoom: true,
+    };
+
+    this.map = L.map(this.shadowRoot?.getElementById('map') as HTMLElement, mapOptions).setView([lat, lon], this.zoom);
+    const offset: [number, number] = this.calculateLatLngOffset(this.map, lat, lon, this.map.getSize().x / 5, 3);
+    this.map.setView(offset, this.zoom);
+
+    L.tileLayer
+      .provider('CartoDB.Positron', {
+        maxNativeZoom: 18,
+        maxZoom: 18,
+        minZoom: 14,
+        tileSize: 256,
+        className: 'map-tiles',
+      })
+      .addTo(this.map);
+
+    // Define custom icon for marker
+    const customIcon = L.divIcon({
+      html: `<div class="marker">
+              <div class="dot"></div>
+              <div class="shadow"></div>
+            </div>`,
+      iconSize: [24, 24],
+      iconAnchor: [12, 12],
+      className: 'marker',
+    });
+
+    // Add marker to map
+    this.marker = L.marker([lat, lon], { icon: customIcon }).addTo(this.map);
+    // Add click event listener to marker
+    if (this.mapPopup) {
+      this.marker.on('click', () => {
+        this.open = true;
+      });
+    }
+  }
+
+  private resetMap(): void {
+    if (!this.map || !this.marker) return;
+    const latLon = this.marker.getLatLng();
+    this.map.flyTo(latLon, this.zoom);
+  }
+
+  private calculateLatLngOffset(
+    map: L.Map,
+    lat: number,
+    lng: number,
+    xOffset: number,
+    yOffset: number
+  ): [number, number] {
+    // Convert the lat/lng to a point
+    const point = map.latLngToContainerPoint([lat, lng]);
+    // Apply the offset
+    const newPoint = L.point(point.x - xOffset, point.y - yOffset);
+    // Convert the point back to lat/lng
+    const newLatLng = map.containerPointToLatLng(newPoint);
+    return [newLatLng.lat, newLatLng.lng];
+  }
+
+  render(): TemplateResult {
+    if (!this.mapData) return html`<div class="map-wrapper loading"><span class="loader"></span></div>`;
+    return html`
+      <div class="map-wrapper" style=${this._computeMapStyle()}>
+        <div class="map-overlay"></div>
+        <div id="map"></div>
+        <div class="reset-button" @click=${this.resetMap}>
+          <ha-icon icon="mdi:compass"></ha-icon>
+        </div>
+        ${this._renderAddress()}
+      </div>
+      ${this._renderMapDialog()}
+    `;
+  }
+
+  private _renderAddress(): TemplateResult {
+    if (!this.mapData.address || isEmpty(this.mapData.address)) {
+      return html`<div class="address" style="left: 10%;"><span class="loader"></span></div>`;
+    }
+    const address = this.mapData?.address || {};
+    return html`
+      <div class="address">
+        <div class="address-line">
+          <ha-icon icon="mdi:map-marker"></ha-icon>
+          <div>
+            <span>${address.streetNumber} ${address.streetName}</span><br /><span
+              style="text-transform: uppercase; opacity: 0.8; letter-spacing: 1px"
+              >${!address.sublocality ? address.city : address.sublocality}</span
+            >
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  private _renderMapDialog() {
+    if (!this.open) return html``;
+    const styles = html`
+      <style>
+        ha-dialog {
+          --mdc-dialog-min-width: 560px;
+          --mdc-dialog-max-width: 600px;
+        }
+        @media all and (max-width: 450px), all and (max-height: 500px) {
+          ha-dialog {
+            --mdc-dialog-min-width: 100vw;
+            --mdc-dialog-max-width: 100vw;
+            --mdc-dialog-min-height: 100%;
+            --mdc-dialog-max-height: 100%;
+            --vertical-align-dialog: flex-end;
+            --ha-dialog-border-radius: 0;
+          }
+        }
+      </style>
+    `;
+    return html`
+      <ha-dialog
+        open
+        .heading=${createCloseHeading(this.card._hass, 'Map')}
+        @closed=${() => this._closeDialog()}
+        hideActions
+        flexContent
+      >
+        ${styles}
+        <div class="container">${this.mapData.popUpCard}</div>
+      </ha-dialog>
+    `;
+  }
+
+  private _closeDialog() {
+    this.open = false;
+  }
 
   static get styles(): CSSResultGroup {
     return [
@@ -29,21 +191,13 @@ export class VehicleMap extends LitElement {
           outline: none;
         }
         :host {
-          --vic-map-marker-color: var(--primary-color);
-          --vic-map-tiles-light-filter: none;
-          --vic-map-tiles-dark-filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3)
-            brightness(0.7);
-          --vic-map-tiles-filter: var(--vic-map-tiles-light-filter);
-          --vic-marker-dark-filter: brightness(1) contrast(1.2) saturate(6) brightness(1.3);
-          --vic-marker-light-filter: none;
-          --vic-maker-filter: var(--vic-marker-light-filter);
           --vic-map-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%),
-            linear-gradient(to bottom, transparent 10%, black 20%, black 90%, transparent 100%);
+            linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
         }
         .map-wrapper {
           position: relative;
           width: 100%;
-          height: 100%;
+          height: 150px;
         }
         .map-wrapper.loading {
           display: flex;
@@ -56,7 +210,7 @@ export class VehicleMap extends LitElement {
           left: 0;
           width: 100%;
           height: 100%;
-          background-color: var(--card-background-color);
+          background-color: var(--ha-card-background, var(--card-background-color));
           opacity: 0.6; /* Adjust the opacity as needed */
           pointer-events: none; /* Ensure the overlay does not interfere with map interactions */
         }
@@ -70,6 +224,9 @@ export class VehicleMap extends LitElement {
 
         .map-tiles {
           filter: var(--vic-map-tiles-filter, none);
+          position: relative;
+          width: 100%;
+          height: 100%;
         }
 
         .marker {
@@ -111,8 +268,8 @@ export class VehicleMap extends LitElement {
         }
         .reset-button {
           position: absolute;
-          top: 15%;
-          right: 1rem;
+          top: 1em;
+          right: 1em;
           z-index: 2;
           cursor: pointer;
           opacity: 0.5;
@@ -180,160 +337,10 @@ export class VehicleMap extends LitElement {
       `,
     ];
   }
+}
 
-  private get darkMode(): boolean {
-    return this.card.isDark;
-  }
-
-  private get mapPopup(): boolean {
-    return this.card.config.enable_map_popup;
-  }
-
-  protected firstUpdated(changedProperties: PropertyValues): void {
-    super.firstUpdated(changedProperties);
-    this._handleTouchEvent();
-  }
-
-  protected updated(changedProperties: PropertyValues): void {
-    super.updated(changedProperties);
-    if (changedProperties.has('mapData')) {
-      this.initMap();
-    }
-  }
-
-  private _computeMapStyle() {
-    return styleMap({
-      '--vic-map-marker-color': this.darkMode ? 'var(--accent-color)' : 'var(--primary-color)',
-      '--vic-marker-filter': this.darkMode ? 'var(--vic-marker-dark-filter)' : 'var(--vic-marker-light-filter)',
-      '--vic-map-tiles-filter': this.darkMode
-        ? 'var(--vic-map-tiles-dark-filter)'
-        : 'var(--vic-map-tiles-light-filter)',
-    });
-  }
-
-  private _handleTouchEvent(): void {
-    const map = this.shadowRoot?.getElementById('map') as HTMLElement;
-    if (!map) return;
-    ['touchstart', 'touchmove', 'touchend', 'touchcancel'].forEach((event) => {
-      map.addEventListener(
-        event,
-        (e) => {
-          e.preventDefault();
-        },
-        { passive: false }
-      );
-    });
-  }
-
-  initMap(): void {
-    const { lat, lon } = this.mapData;
-    const mapOptions = {
-      dragging: true,
-      zoomControl: false,
-      scrollWheelZoom: true,
-    };
-
-    this.map = L.map(this.shadowRoot?.getElementById('map') as HTMLElement, mapOptions).setView([lat, lon], this.zoom);
-
-    const mapboxToken = `pk.eyJ1IjoiZW1rYXkyazkiLCJhIjoiY2xrcHo5NzJwMXJ3MDNlbzM1bWJhcGx6eiJ9.kyNZp2l02lfkNlD2svnDsg`;
-    const tileUrl = `https://api.mapbox.com/styles/v1/emkay2k9/clyd2zi0o00mu01pgfm6f6cie/tiles/{z}/{x}/{y}@2x?access_token=${mapboxToken}`;
-
-    L.tileLayer(tileUrl, {
-      maxZoom: 18,
-      tileSize: 512,
-      zoomOffset: -1,
-      className: 'map-tiles',
-    }).addTo(this.map);
-
-    // Define custom icon for marker
-    const customIcon = L.divIcon({
-      html: `<div class="marker">
-              <div class="dot"></div>
-              <div class="shadow"></div>
-            </div>`,
-      iconSize: [24, 24],
-      iconAnchor: [12, 12],
-      className: 'marker',
-    });
-
-    // Add marker to map
-    this.marker = L.marker([lat, lon], { icon: customIcon }).addTo(this.map);
-    // Add click event listener to marker
-    if (this.mapPopup) {
-      this.marker.on('click', () => {
-        this.togglePopup();
-      });
-    }
-
-    this.updateComplete.then(() => {
-      this.updateMap();
-    });
-  }
-
-  private togglePopup(): void {
-    const event = new CustomEvent('toggle-map-popup', {
-      detail: {},
-      bubbles: true,
-      composed: true,
-    });
-    this.dispatchEvent(event);
-  }
-
-  private updateMap(): void {
-    if (!this.map || !this.marker) return;
-    const { lat, lon } = this.mapData;
-    const offset: [number, number] = this.calculateLatLngOffset(this.map, lat, lon, this.map.getSize().x / 5, 3);
-    this.map.setView(offset, this.zoom);
-    this.marker.setLatLng([lat, lon]);
-  }
-
-  private calculateLatLngOffset(
-    map: L.Map,
-    lat: number,
-    lng: number,
-    xOffset: number,
-    yOffset: number
-  ): [number, number] {
-    // Convert the lat/lng to a point
-    const point = map.latLngToContainerPoint([lat, lng]);
-    // Apply the offset
-    const newPoint = L.point(point.x - xOffset, point.y - yOffset);
-    // Convert the point back to lat/lng
-    const newLatLng = map.containerPointToLatLng(newPoint);
-    return [newLatLng.lat, newLatLng.lng];
-  }
-
-  render(): TemplateResult {
-    if (!this.mapData) return html`<div class="map-wrapper loading"><span class="loader"></span></div>`;
-    return html`
-      <div class="map-wrapper" style=${this._computeMapStyle()}>
-        <div id="map"></div>
-        <div class="map-overlay"></div>
-        <div class="reset-button" @click=${this.updateMap}>
-          <ha-icon icon="mdi:compass"></ha-icon>
-        </div>
-        ${this._renderAddress()}
-      </div>
-    `;
-  }
-
-  private _renderAddress(): TemplateResult {
-    if (!this.mapData.address || isEmpty(this.mapData.address)) {
-      return html`<div class="address" style="left: 10%;"><span class="loader"></span></div>`;
-    }
-    const address = this.mapData?.address || {};
-    return html`
-      <div class="address">
-        <div class="address-line">
-          <ha-icon icon="mdi:map-marker"></ha-icon>
-          <div>
-            <span>${address.streetNumber} ${address.streetName}</span><br /><span
-              style="text-transform: uppercase; opacity: 0.8; letter-spacing: 1px"
-              >${!address.sublocality ? address.city : address.sublocality}</span
-            >
-          </div>
-        </div>
-      </div>
-    `;
+declare global {
+  interface HTMLElementTagNameMap {
+    'vehicle-map': VehicleMap;
   }
 }
