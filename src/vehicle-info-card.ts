@@ -63,7 +63,7 @@ export class VehicleCard extends LitElement {
   }
 
   @state() _hass!: HomeAssistant;
-  @property({ type: Object }) public config!: VehicleCardConfig;
+  @property({ attribute: false }) public config!: VehicleCardConfig;
   @property({ type: Boolean }) public editMode = false;
 
   // Vehicle entities and attributes
@@ -86,6 +86,13 @@ export class VehicleCard extends LitElement {
   @state() private _loading = true;
   @state() private _buttonReady = false;
   @state() _currentSwipeIndex?: number;
+  // Resize observer
+  @state() _resizeInitiated = false;
+  @state() _connected = false;
+  @state() private _resizeObserver: ResizeObserver | null = null;
+  @state() private _resizeEntries: ResizeObserverEntry[] = [];
+  @state() private _cardWidth: number = 0;
+  @state() private _cardHeight: number = 0;
 
   // Components
   @query('vehicle-buttons') vehicleButtons!: VehicleButtons;
@@ -96,6 +103,69 @@ export class VehicleCard extends LitElement {
   constructor() {
     super();
     this.handleEditorEvents = this.handleEditorEvents.bind(this);
+  }
+  connectedCallback(): void {
+    super.connectedCallback();
+
+    if (process.env.ROLLUP_WATCH === 'true') {
+      window.BenzCard = this;
+    }
+    this._connected = true;
+    if (this.editMode) {
+      this._loading = false;
+      window.addEventListener('editor-event', this.handleEditorEvents);
+    }
+
+    if (!this._resizeInitiated && !this._resizeObserver) {
+      this.delayedAttachResizeObserver();
+    }
+  }
+
+  disconnectedCallback(): void {
+    window.removeEventListener('editor-event', this.handleEditorEvents);
+    this.detachResizeObserver();
+    this._connected = false;
+    this._resizeInitiated = false;
+    super.disconnectedCallback();
+  }
+
+  delayedAttachResizeObserver(): void {
+    // wait for loading to finish before attaching resize observer
+    setTimeout(
+      () => {
+        this.attachResizeObserver();
+        this._resizeInitiated = true;
+      },
+      this._loading ? 2000 : 0
+    );
+  }
+
+  attachResizeObserver(): void {
+    const ro = new ResizeObserver((entries: ResizeObserverEntry[]) => {
+      this._resizeEntries = entries;
+      this.measureCard();
+    });
+
+    const card = this.shadowRoot?.querySelector('ha-card') as HTMLElement;
+    if (card) {
+      ro.observe(card);
+      this._resizeObserver = ro;
+    }
+  }
+
+  detachResizeObserver(): void {
+    if (this._resizeObserver) {
+      this._resizeObserver.disconnect();
+      this._resizeObserver = null;
+    }
+  }
+
+  private measureCard(): void {
+    if (this._resizeEntries.length > 0) {
+      const entry = this._resizeEntries[0];
+      this._cardWidth = entry.borderBoxSize[0].inlineSize;
+      this._cardHeight = entry.borderBoxSize[0].blockSize;
+    }
   }
 
   get userLang(): string {
@@ -169,9 +239,11 @@ export class VehicleCard extends LitElement {
 
   protected async firstUpdated(_changedProperties: PropertyValues): Promise<void> {
     super.firstUpdated(_changedProperties);
+    await new Promise((resolve) => setTimeout(resolve, 0));
     handleCardFirstUpdated(this);
     this.setUpButtonCards();
     this._setUpPreview();
+    this.measureCard();
   }
 
   protected updated(changedProps: PropertyValues): void {
@@ -207,22 +279,6 @@ export class VehicleCard extends LitElement {
     }
 
     return hasConfigOrEntityChanged(this, _changedProps, true);
-  }
-
-  connectedCallback(): void {
-    super.connectedCallback();
-    window.addEventListener('editor-event', this.handleEditorEvents);
-    if (process.env.ROLLUP_WATCH === 'true') {
-      window.BenzCard = this;
-    }
-    if (this.editMode) {
-      this._loading = false;
-    }
-  }
-
-  disconnectedCallback(): void {
-    window.removeEventListener('editor-event', this.handleEditorEvents);
-    super.disconnectedCallback();
   }
 
   private async setUpButtonCards(): Promise<void> {
@@ -323,7 +379,7 @@ export class VehicleCard extends LitElement {
   /* -------------------------------------------------------------------------- */
 
   // https://lit.dev/docs/components/rendering/
-  protected render(): TemplateResult | void {
+  protected render(): TemplateResult {
     if (!this.config || !this._hass || !this.config.entity) {
       return this._showWarning('No entity provided');
     }
@@ -341,7 +397,7 @@ export class VehicleCard extends LitElement {
 
     const name = this.config.name || '';
     return html`
-      <ha-card>
+      <ha-card style=${this._computeCardStyles()}>
         ${this._renderHeaderBackground()}
         <header>
           <h1>${name}</h1>
@@ -545,11 +601,7 @@ export class VehicleCard extends LitElement {
     }
     return html`
       <div id="map-box">
-        <vehicle-map
-          .mapData=${this.MapData}
-          .card=${this}
-          @toggle-map-popup=${() => (this._currentCardType = 'mapDialog')}
-        ></vehicle-map>
+        <vehicle-map .mapData=${this.MapData} .card=${this} .isDark=${this.isDark}></vehicle-map>
       </div>
     `;
   }
@@ -608,13 +660,12 @@ export class VehicleCard extends LitElement {
       ecoCards: this._renderDefaultEcoCard(),
       tyreCards: this._renderDefaultTyreCard(),
       servicesCard: this._renderServiceControl(),
-      mapDialog: this.MapData?.popUpCard,
       emptyCustom: this._showWarning('No custom card provided'),
     };
 
     const key = this._currentCardType;
     let renderCard: TemplateResult | LovelaceCardConfig[] | void;
-    if (key === 'mapDialog' || key === 'servicesCard') {
+    if (key === 'servicesCard') {
       renderCard = cardConfigMap[key];
     } else {
       const selectedCard = this.buttonCards[key];
@@ -1476,6 +1527,18 @@ export class VehicleCard extends LitElement {
       default:
         return false;
     }
+  }
+
+  /* ---------------------------- COMPUTE CARD STYLES --------------------------- */
+  private _computeCardStyles() {
+    if (!this._resizeInitiated) return;
+
+    const fullCardWidth = this._cardWidth;
+    const fullCardHeight = this._cardHeight;
+    return styleMap({
+      '--vic-card-full-width': `${fullCardWidth}px`,
+      '--vic-card-full-height': `${fullCardHeight}px`,
+    });
   }
 
   /* --------------------------- CONFIGURATION METHODS -------------------------- */
