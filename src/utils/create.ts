@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { mdiClose } from '@mdi/js';
 import { html, TemplateResult } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined';
 
@@ -321,3 +322,15 @@ export const BtnPreview = (btn: CustomButtonEntity, hass: HomeAssistant): Templa
     </ha-card>
   `;
 };
+
+export const createCloseHeading = (hass: HomeAssistant | undefined, title: string | TemplateResult) => html`
+  <div class="header_title">
+    <span>${title}</span>
+    <ha-icon-button
+      .label=${hass?.localize('ui.dialogs.generic.close') ?? 'Close'}
+      .path=${mdiClose}
+      dialogAction="close"
+      class="header_button"
+    ></ha-icon-button>
+  </div>
+`;
