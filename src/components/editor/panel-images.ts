@@ -1,6 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
-import { fireEvent } from 'custom-card-helpers';
 import { debounce } from 'es-toolkit';
 import { LitElement, html, TemplateResult, CSSResultGroup, PropertyValues, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
@@ -10,6 +8,7 @@ import Sortable from 'sortablejs';
 import editorcss from '../../css/editor.css';
 import { VehicleCardEditor } from '../../editor';
 import { ImageConfig, VehicleCardConfig } from '../../types';
+import { fireEvent } from '../../types/ha-frontend/fire-event';
 import { imageInputChange, handleFilePicked } from '../../utils';
 import { Picker } from '../../utils/create';
 

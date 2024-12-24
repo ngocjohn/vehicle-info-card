@@ -1,4 +1,3 @@
-import { LovelaceCardConfig } from 'custom-card-helpers';
 // Leaflet imports
 import L from 'leaflet';
 import mapstyle from 'leaflet/dist/leaflet.css';
@@ -8,8 +7,9 @@ import { LitElement, html, css, TemplateResult, PropertyValues, CSSResultGroup, 
 import { customElement, state, property } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
-import { MapData } from '../../types';
-import { createMapPopup, isEmpty } from '../../utils';
+import { MapData, SECTION } from '../../types';
+import { LovelaceCardConfig } from '../../types/ha-frontend/lovelace/lovelace';
+import { createMapPopup } from '../../utils';
 import { createCloseHeading } from '../../utils/create';
 import { VehicleCard } from '../../vehicle-info-card';
 
@@ -23,23 +23,30 @@ export class VehicleMap extends LitElement {
   @state() private map: L.Map | null = null;
   @state() private latLon: L.LatLng | null = null;
   @state() private marker: L.Marker | null = null;
-  @state() private zoom = 17;
+  @state() private zoom = 16;
 
   @state() private mapCardPopup?: LovelaceCardConfig[];
+  @state() private _addressReady = false;
 
   private get mapPopup(): boolean {
     return this.card.config.enable_map_popup;
   }
 
-  protected async firstUpdated(changedProperties: PropertyValues): Promise<void> {
-    super.firstUpdated(changedProperties);
-  }
-
-  protected updated(changedProperties: PropertyValues): void {
+  protected async updated(changedProperties: PropertyValues): Promise<void> {
     super.updated(changedProperties);
     if (changedProperties.has('mapData') && this.mapData && this.mapData !== undefined) {
       this.initMap();
+      if (this.mapData.address !== undefined) {
+        this._addressReady = true;
+      }
     }
+  }
+
+  protected shouldUpdate(_changedProperties: PropertyValues): boolean {
+    if (_changedProperties.has('mapData') && this.mapData.address === undefined) {
+      return false;
+    }
+    return true;
   }
 
   private _computeMapStyle() {
@@ -48,10 +55,21 @@ export class VehicleMap extends LitElement {
     const tileFilter = this.isDark
       ? 'brightness(0.6) invert(1) contrast(6) saturate(0.3) brightness(0.7) opacity(.25)'
       : 'grayscale(1) contrast(1.1) opacity(0.7)';
+    const defaultMaskImage =
+      'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%)';
+    const minimapHeight = this.card.config.extra_configs?.mini_map_height;
     return styleMap({
       '--vic-map-marker-color': markerColor,
       '--vic-marker-filter': markerFilter,
       '--vic-map-tiles-filter': tileFilter,
+      '--vic-map-mask-image':
+        this.card.mainSectionItems?.last.id === SECTION.MINI_MAP
+          ? 'linear-gradient(to bottom, transparent 0%, black 10%)'
+          : this.card.mainSectionItems?.first.id === SECTION.MINI_MAP
+          ? 'linear-gradient(to bottom, black 90%, transparent 100%)'
+          : defaultMaskImage,
+      '--vic-map-height': minimapHeight ? `${minimapHeight}px` : `150px`,
+      height: minimapHeight ? `${minimapHeight}px` : `150px`,
     });
   }
 
@@ -74,11 +92,10 @@ export class VehicleMap extends LitElement {
     // Add tile layer to map
     this._createTileLayer(this.map);
     // Add marker to map
-    this._createMarker(this.map);
+    this.marker = this._createMarker(this.map);
   }
 
   private _createTileLayer(map: L.Map): L.TileLayer {
-    console.log('Creating tile layer');
     const tileOpts = {
       tileSize: 256,
       className: 'map-tiles',
@@ -89,7 +106,6 @@ export class VehicleMap extends LitElement {
   }
 
   private _createMarker(map: L.Map): L.Marker {
-    console.log('Creating marker');
     const { lat, lon } = this.mapData;
     const customIcon = L.divIcon({
       html: `<div class="marker">
@@ -105,7 +121,7 @@ export class VehicleMap extends LitElement {
       this._toggleMapDialog();
     });
 
-    return (this.marker = marker);
+    return marker;
   }
 
   private resetMap(): void {
@@ -129,8 +145,7 @@ export class VehicleMap extends LitElement {
     return [newLatLng.lat, newLatLng.lng];
   }
 
-  render(): TemplateResult {
-    if (!this.mapData) return html`<div class="map-wrapper loading"><span class="loader"></span></div>`;
+  protected render(): TemplateResult {
     return html`
       <div class="map-wrapper" style=${this._computeMapStyle()}>
         <div class="map-overlay"></div>
@@ -145,10 +160,9 @@ export class VehicleMap extends LitElement {
   }
 
   private _renderAddress(): TemplateResult {
-    if (!this.mapData.address || isEmpty(this.mapData.address)) {
-      return html`<div class="address" style="left: 10%;"><span class="loader"></span></div>`;
-    }
-    const address = this.mapData?.address || {};
+    if (!this._addressReady) return html` <div class="address loading"><span class="loader"></span></div> `;
+
+    const { address } = this.mapData;
     return html`
       <div class="address">
         <div class="address-line">
@@ -199,19 +213,18 @@ export class VehicleMap extends LitElement {
     `;
   }
 
-  async _toggleMapDialog() {
+  private async _toggleMapDialog() {
     if (!this.mapPopup) return;
     if (this.mapCardPopup !== undefined) {
       this.open = !this.open;
       return;
-    }
-    try {
-      const popupCard = await createMapPopup(this.card._hass, this.card.config);
-      this.mapCardPopup = popupCard;
-      this.open = true;
-    } catch (error) {
-      console.error('Error creating map popup', error);
-      this.open = false;
+    } else {
+      createMapPopup(this.card._hass, this.card.config).then((popup) => {
+        this.mapCardPopup = popup;
+        setTimeout(() => {
+          this.open = true;
+        }, 50);
+      });
     }
   }
 
@@ -222,20 +235,20 @@ export class VehicleMap extends LitElement {
         *:focus {
           outline: none;
         }
-        :host {
-          --vic-map-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%),
-            linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
-        }
         .map-wrapper {
           position: relative;
           width: 100%;
-          height: 150px;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
         .map-wrapper.loading {
           display: flex;
           align-items: center;
           justify-content: center;
         }
+
         .map-overlay {
           position: absolute;
           top: 0;
@@ -290,13 +303,13 @@ export class VehicleMap extends LitElement {
         .marker::after {
           content: '';
           position: absolute;
-          width: calc(50% + 1px);
-          height: calc(50% + 1px);
+          width: 50%;
+          height: 50%;
           background-color: var(--vic-map-marker-color);
           border-radius: 50%;
           top: 50%;
           left: 50%;
-          border: 1px solid white;
+          /* border: 1px solid white; */
           transform: translate(-50%, -50%);
           opacity: 1;
           transition: all 0.2s ease;
@@ -325,7 +338,7 @@ export class VehicleMap extends LitElement {
           position: absolute;
           width: max-content;
           height: fit-content;
-          top: 50%;
+          bottom: 15%;
           left: 1rem;
           z-index: 2;
           display: flex;
@@ -350,6 +363,7 @@ export class VehicleMap extends LitElement {
           height: 48px;
           display: inline-block;
           position: relative;
+          place-self: center;
         }
         .loader::after,
         .loader::before {

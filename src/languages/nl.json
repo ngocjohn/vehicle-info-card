@@ -273,7 +273,8 @@
             "show_buttons": "Knoppen weergeven",
             "show_error_notify": "Foutmelding weergeven",
             "show_map": "Kaart weergeven",
-            "show_slides": "Slides weergeven"
+            "show_slides": "Slides weergeven",
+            "show_header_info": "Koptekstinformatie weergeven"
         },
         "themeLangConfig": {
             "desc": "Kies het thema en de taal.",

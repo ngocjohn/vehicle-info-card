@@ -1,11 +1,11 @@
-import { fireEvent } from 'custom-card-helpers';
 // Lit
 import { LitElement, html, CSSResultGroup, nothing, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
 import editorcss from '../../css/editor.css';
 import { VehicleCardEditor } from '../../editor';
-import { HA as HomeAssistant, VehicleCardConfig } from '../../types';
+import { HomeAssistant, VehicleCardConfig } from '../../types';
+import { fireEvent } from '../../types/ha-frontend/fire-event';
 
 @customElement('custom-yaml-editor')
 export class CustomYamlEditor extends LitElement {

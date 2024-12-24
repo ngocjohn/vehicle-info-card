@@ -21,7 +21,7 @@ ha-card {
   overflow: hidden;
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
   padding: var(--vic-card-padding);
   background-color: var(--card-background-color);
 }
@@ -35,6 +35,36 @@ ha-card.preview-card {
   background: none;
 }
 
+ha-card.__background::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  max-height: 250px;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%);
+  background-image: var(--vic-background-image);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.1;
+  z-index: 0;
+  mask-image: linear-gradient(transparent 0%, black 40%, black 70%, transparent 100%);
+}
+
+ha-card.__mapLast {
+  padding-bottom: 0;
+}
+
+ha-card.__mapFirst {
+  padding-top: 0;
+}
+
+ha-card.__mapLast #buttons {
+  margin-top: var(--vic-card-padding);
+}
+
 .fade-in {
   animation: fadeIn 0.5s ease-in;
 }
@@ -42,36 +72,19 @@ ha-card.preview-card {
 header h1 {
   color: var(--ha-card-header-color, --primary-text-color);
   font-family: serif !important;
+  font-size: 24px;
   font-size: var(--ha-card-header-font-size, 24px);
-  letter-spacing: -0.012em;
-  line-height: 48px;
+  /* letter-spacing: -0.012em; */
+  line-height: 2rem;
   display: block;
-  margin-block-start: 0px;
-  margin-block-end: 0px;
+  margin-top: 0px;
+  margin-bottom: 0px;
   font-weight: 400;
   text-align: center;
+  padding-bottom: 0.67em;
 }
 
-.header-background {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  max-height: 250px;
-  top: 0px;
-  left: 50%;
-  opacity: 0.1;
-  z-index: 0;
-  mask-image: linear-gradient(transparent 0%, black 40%, black 70%, transparent 100%);
-  transform: translate(-50%);
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-}
-
-#map-box {
+#mini_map {
   position: relative;
   min-width: var(--vic-card-full-width) !important;
   width: 100%;
@@ -93,7 +106,7 @@ header h1 {
   gap: var(--vic-gutter-gap);
   flex-wrap: wrap;
   transition: all 0.5s ease;
-  margin-bottom: var(--vic-card-padding);
+  padding-bottom: var(--vic-card-padding);
 
 }
 
@@ -676,13 +689,14 @@ dialog::backdrop {
   justify-content: center;
   align-items: center;
   width: 100%;
-  max-height: 500px;
+  height: 100%;
+  z-index: 1;
 }
 
 .loading-image img {
-  width: 100px;
-  height: 100px;
-  object-fit: cover;
+  width: 50%;
+  height: 50%;
+  object-fit: contain;
   animation: zoomRotate 2s linear infinite;
 }
 

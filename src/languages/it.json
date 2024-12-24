@@ -273,7 +273,8 @@
             "show_buttons": "Mosta pulsanti",
             "show_error_notify": "Mostra notifiche di errore",
             "show_map": "Mostra mappa",
-            "show_slides": "Mostra immagini"
+            "show_slides": "Mostra immagini",
+            "show_header_info": "Mostra informazioni intestazione"
         },
         "themeLangConfig": {
             "desc": "Scegli il tema e la lingua.",

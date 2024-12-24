@@ -273,7 +273,8 @@
             "show_buttons": "Rodyti mygtukus",
             "show_error_notify": "Rodyti pranešimą apie klaidą",
             "show_map": "Rodyti žemėlapį",
-            "show_slides": "Parodyti skaidres"
+            "show_slides": "Parodyti skaidres",
+            "show_header_info": "Rodyti antraštės informaciją"
         },
         "themeLangConfig": {
             "desc": "Pasirinkite temą ir kalbą.",

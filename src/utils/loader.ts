@@ -38,3 +38,7 @@ export const stickyPreview = () => {
     justifyItems: 'center',
   });
 };
+
+export function isEditorMode(card: HTMLElement) {
+  return card.offsetParent?.classList.contains('element-preview');
+}

@@ -1,3 +1,5 @@
+// Custom helpers
+import { UnsubscribeFunc } from 'home-assistant-js-websocket';
 // Lit
 import { LitElement, css, html, TemplateResult, PropertyValues, CSSResultGroup, unsafeCSS } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
@@ -6,17 +8,15 @@ import { when } from 'lit/directives/when.js';
 import Swiper from 'swiper';
 import { Pagination } from 'swiper/modules';
 import swipercss from 'swiper/swiper-bundle.css';
-// Custom helpers
-import { UnsubscribeFunc } from 'home-assistant-js-websocket';
 import tinycolor from 'tinycolor2';
-// Local imports
-import { ButtonCardEntity, HA as HomeAssistant, VehicleCardConfig } from '../../types';
-import { addActions } from '../../utils';
-import { RenderTemplateResult, subscribeRenderTemplate } from '../../utils/ws-templates';
-import { VehicleCard } from '../../vehicle-info-card';
 
 // Styles
 import mainstyle from '../../css/styles.css';
+// Local imports
+import { ButtonCardEntity, HomeAssistant, VehicleCardConfig } from '../../types';
+import { RenderTemplateResult, subscribeRenderTemplate } from '../../types/ha-frontend/data/ws-templates';
+import { addActions } from '../../utils';
+import { VehicleCard } from '../../vehicle-info-card';
 
 const TEMPLATE_KEYS = ['secondary', 'notify', 'icon_template', 'color_template', 'picture_template'] as const;
 type TemplateKey = (typeof TEMPLATE_KEYS)[number];

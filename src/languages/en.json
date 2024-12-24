@@ -273,7 +273,8 @@
             "show_buttons": "Show buttons",
             "show_error_notify": "Show error notification",
             "show_map": "Show map",
-            "show_slides": "Show slides"
+            "show_slides": "Show slides",
+            "show_header_info": "Show header info"
         },
         "themeLangConfig": {
             "desc": "Choose the theme and language.",

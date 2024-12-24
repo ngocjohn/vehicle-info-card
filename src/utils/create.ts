@@ -3,13 +3,13 @@ import { mdiClose } from '@mdi/js';
 import { html, TemplateResult } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined';
 
-import { HA as HomeAssistant, CustomButtonEntity } from '../types';
+import { HomeAssistant, CustomButtonEntity } from '../types';
 
 interface PickerOptions {
   cardIndex?: number;
   component: any;
-  configIndex: number | string;
-  configType: string;
+  configIndex?: number | string;
+  configType?: string;
   configValue?: string;
   itemIndex?: number;
   items?: { label: string; value: boolean | string }[]; // Only for AttributePicker

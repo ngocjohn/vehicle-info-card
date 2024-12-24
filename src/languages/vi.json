@@ -273,7 +273,8 @@
             "show_buttons": "Hiển thị nút",
             "show_error_notify": "Hiển thị thông báo lỗi",
             "show_map": "Hiển thị bản đồ",
-            "show_slides": "Hiển thị slide"
+            "show_slides": "Hiển thị slide",
+            "show_header_info": "Hiển thị thông tin tiêu đề"
         },
         "themeLangConfig": {
             "desc": "Chọn chủ đề và ngôn ngữ.",

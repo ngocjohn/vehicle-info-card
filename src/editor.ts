@@ -1,36 +1,45 @@
 import { mdiArrowLeft, mdiDrag } from '@mdi/js';
+// Custom card helpers
+import { debounce } from 'es-toolkit';
 import { LitElement, html, TemplateResult, CSSResultGroup, PropertyValues, nothing } from 'lit';
 import { repeat } from 'lit-html/directives/repeat.js';
 import { customElement, property, query, state } from 'lit/decorators.js';
-// Custom card helpers
-import { fireEvent, LovelaceCardConfig, LovelaceCardEditor, LovelaceConfig } from 'custom-card-helpers';
-import { debounce } from 'es-toolkit';
 import Sortable from 'sortablejs';
-// Local types
+
+import { PanelImages } from './components/editor';
+import { CARD_VERSION, PREVIEW_CONFIG_TYPES } from './const/const';
+// Import the custom card components
+import './components/editor';
+import { cardTypes, editorShowOpts } from './const/data-keys';
+import './components/editor/custom-card-ui-editor';
+import { servicesCtrl } from './const/remote-control-keys';
+import editorcss from './css/editor.css';
+import { languageOptions, localize } from './localize/localize';
 import {
-  HA as HomeAssistant,
+  HomeAssistant,
   VehicleCardConfig,
   CardTypeConfig,
   BaseButtonConfig,
   ExtendedButtonConfigItem,
+  SECTION_DEFAULT_ORDER,
 } from './types';
+// Local types
+import { fireEvent } from './types/ha-frontend/fire-event';
+import { LovelaceCardEditor, LovelaceConfig, LovelaceCardConfig } from './types/ha-frontend/lovelace/lovelace';
 import { Create, handleFirstUpdated, compareVersions, uploadImage, stickyPreview, loadHaComponents } from './utils';
-
-// Import the custom card components
-import './components/editor';
-import { PanelImages } from './components/editor';
-import './components/editor/custom-card-ui-editor';
-import { CARD_VERSION, PREVIEW_CONFIG_TYPES } from './const/const';
-import { cardTypes, editorShowOpts } from './const/data-keys';
-import { servicesCtrl } from './const/remote-control-keys';
-import editorcss from './css/editor.css';
-import { languageOptions, localize } from './localize/localize';
+import { Picker } from './utils/create';
 
 const latestRelease: { version: string; hacs: boolean; updated: boolean } = {
   version: '',
   hacs: false,
   updated: false,
 };
+
+function s4() {
+  return Math.floor((1 + Math.random()) * 0x10000)
+    .toString(16)
+    .substring(1);
+}
 
 @customElement('vehicle-info-card-editor')
 export class VehicleCardEditor extends LitElement implements LovelaceCardEditor {
@@ -49,9 +58,13 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   @state() private _confirmDeleteType: string | null = null;
   @state() private _selectedLanguage: string = 'system';
   @state() _cardSortable: Sortable | null = null;
+  @state() _sectionSortable: Sortable | null = null;
 
   @state() _latestRelease = latestRelease;
+  @state() _cardId: string = `vic-${s4()}`;
+
   private _toastDissmissed: boolean = false;
+  @state() private _reloadSectionList: boolean = false;
 
   @state() private _visiblePanel: Set<string> = new Set();
   @state() private _newCardType: Map<string, string> = new Map();
@@ -64,15 +77,25 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   connectedCallback() {
     super.connectedCallback();
+    console.log('VehicleCardEditor connected');
     void loadHaComponents();
     void stickyPreview();
     if (process.env.ROLLUP_WATCH === 'true') {
       window.BenzEditor = this;
     }
+    if (!sessionStorage.getItem('cardInEditor')) {
+      sessionStorage.setItem('cardInEditor', this._cardId);
+      console.log(`Card ${this._cardId} is now in editor`);
+    }
     this._cleanConfig();
   }
 
   disconnectedCallback(): void {
+    console.log('VehicleCardEditor disconnected');
+    if (sessionStorage.getItem('cardInEditor')) {
+      sessionStorage.removeItem('cardInEditor');
+      console.log('Removing cardInEditor from sessionStorage');
+    }
     super.disconnectedCallback();
   }
 
@@ -227,6 +250,47 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     this.getBaseCardTypes();
     this.requestUpdate();
     this._handleSwipeToButton(buttonId);
+  }
+
+  private _initSectionSortable(): void {
+    this.updateComplete.then(() => {
+      const sectionList = this.shadowRoot?.getElementById('section-list') as HTMLElement;
+      if (sectionList) {
+        this._sectionSortable = new Sortable(sectionList, {
+          animation: 150,
+          handle: '.handle',
+          ghostClass: 'ghost',
+          onEnd: (evt) => {
+            this._handleSectionSort(evt);
+          },
+        });
+      }
+    });
+    console.log('Section sortable initialized');
+  }
+
+  private _handleSectionSort(evt: Sortable.SortableEvent): void {
+    if (!this._config) return;
+    evt.preventDefault();
+    const oldIndex = evt.oldIndex as number;
+    const newIndex = evt.newIndex as number;
+    const sectionOrder = [...(this._config.extra_configs?.section_order || [...SECTION_DEFAULT_ORDER])];
+    const [removed] = sectionOrder.splice(oldIndex, 1);
+    sectionOrder.splice(newIndex, 0, removed);
+
+    this._config = { ...this._config, extra_configs: { ...this._config.extra_configs, section_order: sectionOrder } };
+    this.configChanged();
+
+    this._reloadSectionList = true;
+    setTimeout(() => {
+      if (this._sectionSortable) {
+        this._sectionSortable.destroy();
+        this._reloadSectionList = false;
+        setTimeout(() => {
+          this._initSectionSortable();
+        }, 50);
+      }
+    }, 50);
   }
 
   private _handleSwipeToButton(buttonId: string): void {
@@ -479,15 +543,19 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     let showOptions = editorShowOpts(this._selectedLanguage);
     // Filter out the enable_map_popup option
     showOptions = showOptions.filter((option) => option.configKey !== 'enable_map_popup');
+    const maxButtons =
+      this.baseCardTypes.length % 2 === 0 ? this.baseCardTypes.length / 2 : this.baseCardTypes.length / 2 + 1;
     const buttonGridSwipe = html`
       <div class="card-type-item">
         <div class="card-type-content">
           <ha-textfield
+            .type=${'number'}
             .label=${this.localize('editor.buttonConfig.swipeRows')}
             .configValue=${'rows_size'}
             .configBtnType=${'button_grid'}
             .value=${this._config.button_grid?.rows_size || ''}
             .min=${1}
+            .max=${maxButtons}
             @input=${this._valueChanged}
           ></ha-textfield>
         </div>
@@ -503,6 +571,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         </div>
       </div>
     `;
+
     return html`
       <div class="switches">
         ${showOptions.map((option) => {
@@ -510,7 +579,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           return html`
             <ha-formfield .label=${label}>
               <ha-checkbox
-                .checked=${this._config[configKey]}
+                .checked=${this._config[configKey] ?? true}
                 .configValue=${configKey}
                 @change=${this._showValueChanged}
               ></ha-checkbox>
@@ -518,8 +587,58 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           `;
         })}
       </div>
-      ${buttonGridSwipe}
+      ${buttonGridSwipe} ${this._renderSectionOrder()}
     `;
+  }
+
+  private _renderSectionOrder(): TemplateResult {
+    if (this._reloadSectionList) return html`<div>....</div>`;
+    const sectionOrder = this._config.extra_configs?.section_order || [...SECTION_DEFAULT_ORDER];
+    const header = html`
+      <div class="header-sm">
+        <span>Section order</span>
+      </div>
+    `;
+
+    const isHidden = (section: string): boolean => {
+      const sectionConfig = {
+        header_info: this._config.show_header_info ?? true,
+        images_slider: this._config.show_slides ?? true,
+        mini_map: this._config.show_map ?? true,
+        buttons: this._config.show_buttons ?? true,
+      };
+
+      return !sectionConfig[section];
+    };
+
+    const _renderSectionItem = (section: string, index: number): TemplateResult => {
+      const disabled = isHidden(section);
+      return html`
+        <div class="card-type-item" data-id=${section} ?disabled=${disabled}>
+          <div class="handle">
+            <ha-icon-button .path=${mdiDrag}> </ha-icon-button>
+          </div>
+          <div class="card-type-row">
+            <div class="card-type-icon">
+              <div class="icon-background">
+                <ha-icon icon="mdi:numeric-${index + 1}-circle"></ha-icon>
+              </div>
+            </div>
+            <div class="card-type-content">
+              <span class="primary">${section.replace(/_/g, ' ').toUpperCase()}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    };
+    return html`${header}
+      <div class="sub-card-rows">
+        <div id="section-list">
+          ${sectionOrder.map((section, index) => {
+            return _renderSectionItem(section, index);
+          })}
+        </div>
+      </div>`;
   }
 
   private _renderThemesConfig(): TemplateResult {
@@ -589,6 +708,24 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       { key: 'light', name: 'Light' },
     ];
 
+    const maxMiniMapHeight = {
+      label: 'Mini Map Height',
+      value: this._config.extra_configs?.mini_map_height || 150,
+      configValue: 'mini_map_height',
+      pickerType: 'number' as 'number',
+      options: { selector: { number: { max: 500, min: 150, mode: 'slider', step: 10 } } },
+      component: this,
+    };
+
+    const deviceTracker = {
+      label: 'Device Tracker (Optional)',
+      value: this._config?.device_tracker || '',
+      configValue: 'device_tracker',
+      pickerType: 'entity' as 'entity',
+      component: this,
+      options: { includeDomains: ['device_tracker'] },
+    };
+
     const mapPopupConfig = html`
       <ha-alert alert-type="info">${infoAlert}</ha-alert>
       <div class="switches">
@@ -620,16 +757,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     `;
 
     const mapConfig = html`
-      <ha-entity-picker
-        .hass=${this.hass}
-        .value=${this._config?.device_tracker}
-        .required=${false}
-        .configValue=${'device_tracker'}
-        @value-changed=${this._valueChanged}
-        allow-custom-entity
-        .includeDomains=${['device_tracker']}
-        .label=${'Device Tracker (Optional)'}
-      ></ha-entity-picker>
+      ${Picker(deviceTracker)}
       <div class="flex-col">
         <ha-textfield
           style="flex: 1 1 30%;"
@@ -647,7 +775,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           ></ha-checkbox>
         </ha-formfield>
       </div>
-      ${mapPopupConfig}
+      ${Picker(maxMiniMapHeight)} ${mapPopupConfig}
     `;
 
     return mapConfig;
@@ -1242,6 +1370,10 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       this._initCardSortable('customButtonConfig');
     }
 
+    if (titleKey === 'showConfig' && (panel as any).expanded) {
+      this._initSectionSortable();
+    }
+
     // Get all panels
     const panels = this.shadowRoot?.querySelectorAll('ha-expansion-panel') as NodeListOf<HTMLElement>;
 
@@ -1364,6 +1496,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _showValueChanged(ev: any): void {
+    ev.stopPropagation();
     if (!this._config || !this.hass) {
       return;
     }
@@ -1371,18 +1504,27 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const target = ev.target;
     const configValue = target.configValue;
 
-    if (this._config[configValue] === target.checked) {
-      return;
-    }
-
     this._config = {
       ...this._config,
       [configValue]: target.checked,
     };
+
     this.configChanged();
+    console.log('Config changed:', configValue, target.checked);
+    this._reloadSectionList = true;
+    setTimeout(() => {
+      if (this._sectionSortable) {
+        this._sectionSortable.destroy();
+        this._reloadSectionList = false;
+        setTimeout(() => {
+          this._initSectionSortable();
+        }, 0);
+      }
+    }, 0);
   }
 
   public _valueChanged(ev: any): void {
+    ev.stopPropagation();
     if (!this._config || !this.hass) {
       return;
     }
@@ -1421,6 +1563,10 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     } else if (configBtnType === 'button_grid') {
       newValue = target.checked !== undefined ? target.checked : newValue;
       const key = configValue as keyof VehicleCardConfig['button_grid'];
+      if (key === 'rows_size' && newValue > this.baseCardTypes.length / 2 + 1) {
+        return;
+      }
+
       updates.button_grid = {
         ...this._config.button_grid,
         [key]: parseInt(newValue) || newValue,
@@ -1436,6 +1582,16 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           [key]: parseInt(newValue) || newValue,
         },
       };
+    } else if (configValue === 'device_tracker') {
+      updates.device_tracker = newValue;
+      console.log('Device tracker changed:', newValue);
+    } else if (configValue === 'mini_map_height') {
+      newValue = ev.detail.value;
+      updates.extra_configs = {
+        ...this._config.extra_configs,
+        mini_map_height: parseInt(newValue) || newValue,
+      };
+      console.log('Mini map height changed:', newValue);
     } else {
       newValue = target.checked !== undefined ? target.checked : ev.detail.value;
       updates[configValue] = newValue;

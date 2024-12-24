@@ -273,7 +273,8 @@
             "show_buttons": "Zobrazit tlačítka",
             "show_error_notify": "Zobrazit oznámení o chybě",
             "show_map": "Zobrazit mapu",
-            "show_slides": "Zobrazit snímky"
+            "show_slides": "Zobrazit snímky",
+            "show_header_info": "Zobrazit informace v záhlaví"
         },
         "themeLangConfig": {
             "desc": "Vyberte téma a jazyk.",

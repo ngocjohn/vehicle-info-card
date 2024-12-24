@@ -273,7 +273,8 @@
             "show_buttons": "Pokaż przyciski",
             "show_error_notify": "Pokaż powiadomienie o błędzie",
             "show_map": "Pokaż mapę",
-            "show_slides": "Pokaż slajdy"
+            "show_slides": "Pokaż slajdy",
+            "show_header_info": "Pokaż informacje nagłówka"
         },
         "themeLangConfig": {
             "desc": "Wybierz temat i język.",

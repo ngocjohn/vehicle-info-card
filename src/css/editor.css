@@ -161,6 +161,10 @@ h3 {
   align-items: center;
 }
 
+.card-type-item[disabled] {
+  opacity: 0.5;
+}
+
 .card-types:last-child,
 .card-type-item:last-child {
   border-bottom: none;
@@ -436,12 +440,15 @@ h3 {
 }
 
 .version {
-  margin-top: 2rem;
+  /* margin-top: 2rem; */
   color: var(--secondary-text-color);
   align-items: stretch;
   display: flex;
   gap: 8px;
   justify-content: flex-end;
+  position: sticky;
+  bottom: 0;
+  margin-block: 1rem;
 }
 
 .version .update {

@@ -273,7 +273,8 @@
             "show_buttons": "Zobraziť tlačidlá",
             "show_error_notify": "Zobraziť upozornenie na chybu",
             "show_map": "Zobraziť mapu",
-            "show_slides": "Zobraziť snímky"
+            "show_slides": "Zobraziť snímky",
+            "show_header_info": "Zobraziť informácie o hlavičke"
         },
         "themeLangConfig": {
             "desc": "Vyberte tému a jazyk.",

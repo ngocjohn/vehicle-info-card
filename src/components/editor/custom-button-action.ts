@@ -3,7 +3,7 @@ import { LitElement, html, TemplateResult, CSSResultGroup, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
 import editorcss from '../../css/editor.css';
-import { ExtendedButtonConfigItem, CardTypeConfig, HA as HomeAssistant, VehicleCardConfig } from '../../types';
+import { ExtendedButtonConfigItem, CardTypeConfig, HomeAssistant, VehicleCardConfig } from '../../types';
 
 const ACTIONSELECTOR = [
   {

@@ -1,12 +1,11 @@
 // eslint-disable-next-line
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
-import { LovelaceCardConfig } from 'custom-card-helpers';
 
 import { combinedFilters, CARD_UPADE_SENSOR, CARD_VERSION, REPOSITORY } from '../const/const';
 import { baseDataKeys } from '../const/data-keys';
 import { VehicleCardEditor } from '../editor';
 import {
-  HA as HomeAssistant,
+  HomeAssistant,
   VehicleEntities,
   VehicleEntity,
   VehicleCardConfig,
@@ -17,6 +16,7 @@ import {
   AddedCards,
   MapData,
 } from '../types';
+import { LovelaceCardConfig } from '../types/ha-frontend/lovelace/lovelace';
 import { VehicleCard } from '../vehicle-info-card';
 
 /**
@@ -350,20 +350,22 @@ async function getMapData(hass: HomeAssistant, deviceTracker: string, apiKey: st
   const deviceStateObj = hass.states[deviceTracker];
   if (!deviceStateObj) {
     return { lat: 0, lon: 0, address: {} };
+    console.log(`Device tracker '${deviceTracker}' not found.`);
   }
   const { latitude, longitude } = deviceStateObj.attributes;
   const address = apiKey
     ? await getAddressFromGoggle(latitude, longitude, apiKey)
     : await getAddressFromOpenStreet(latitude, longitude);
-
+  // console.log(`Address for device tracker '${deviceTracker}':`, address);
   if (!address) {
+    console.log('Address not found.');
     return { lat: latitude, lon: longitude, address: {} };
   }
+  // console.log('Map data:', { lat: latitude, lon: longitude, address });
   return { lat: latitude, lon: longitude, address };
 }
 
 export async function createMapPopup(hass: HomeAssistant, config: VehicleCardConfig): Promise<LovelaceCardConfig[]> {
-  console.log('Creating map popup');
   const { default_zoom, hours_to_show, theme_mode } = config.map_popup_config || {};
   const haMapConfig = [
     {
@@ -378,6 +380,7 @@ export async function createMapPopup(hass: HomeAssistant, config: VehicleCardCon
       ],
     },
   ];
+
   return await createCardElement(hass, haMapConfig);
 }
 
@@ -388,20 +391,25 @@ export async function handleCardFirstUpdated(component: VehicleCard): Promise<vo
   const card = component as VehicleCard;
   card.vehicleEntities = await getVehicleEntities(hass, config, component);
   card.DataKeys = baseDataKeys(card.userLang);
+
   if (config.show_map && config.device_tracker && card._currentPreviewType === null) {
-    console.log('Fetching map data...');
+    // console.log('Fetching map data...');
+
     card.MapData = await getMapData(hass, config.device_tracker, config.google_api_key || '');
   }
 
   if (!card.vehicleEntities) {
     console.log('Vehicle entities not found, fetching...');
-
     console.log('No vehicle entities found');
     card._entityNotFound = true;
   }
 }
 
-async function getAddressFromGoggle(lat: number, lon: number, apiKey: string) {
+async function getAddressFromGoggle(
+  lat: number,
+  lon: number,
+  apiKey: string
+): Promise<Partial<MapData['address']> | undefined> {
   console.log('getAddressFromGoggle');
   const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${apiKey}`;
 
@@ -451,7 +459,7 @@ async function getAddressFromGoggle(lat: number, lon: number, apiKey: string) {
   }
 }
 
-async function getAddressFromOpenStreet(lat: number, lon: number) {
+async function getAddressFromOpenStreet(lat: number, lon: number): Promise<Partial<MapData['address']> | undefined> {
   const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=jsonv2`;
   try {
     const response = await fetch(url);
@@ -460,13 +468,13 @@ async function getAddressFromOpenStreet(lat: number, lon: number) {
     if (response.ok) {
       // Extract address components from the response
       const address = {
-        streetNumber: data.address.house_number || '', // Retrieve street number
-        streetName: data.address.road || '',
-        sublocality: data.address.suburb || data.address.village || '',
-        city: data.address.city || data.address.town || '',
-        state: data.address.state || data.address.county || '',
-        country: data.address.country || '',
-        postcode: data.address.postcode || '',
+        streetNumber: data.address.house_number ?? '',
+        streetName: data.address.road ?? '',
+        sublocality: data.address.suburb ?? data.address.village ?? '',
+        city: data.address.city ?? data.address.town ?? '',
+        state: data.address.state ?? data.address.county ?? '',
+        country: data.address.country ?? '',
+        postcode: data.address.postcode ?? '',
       };
 
       return address;

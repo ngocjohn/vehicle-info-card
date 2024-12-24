@@ -273,7 +273,8 @@
             "show_buttons": "Schaltflächen anzeigen",
             "show_error_notify": "Fehlermeldung anzeigen",
             "show_map": "Karte anzeigen",
-            "show_slides": "Dias anzeigen"
+            "show_slides": "Dias anzeigen",
+            "show_header_info": "Header-Info anzeigen"
         },
         "themeLangConfig": {
             "desc": "Wählen Sie das Thema und die Sprache.",

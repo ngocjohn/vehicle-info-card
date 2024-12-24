@@ -1,5 +1,5 @@
 import { VehicleCardEditor } from '../editor';
-import { HA as HomeAssistant } from '../types';
+import { HomeAssistant } from '../types';
 /**
  * Upload a file to the server
  * @param hass
