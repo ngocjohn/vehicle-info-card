@@ -45,7 +45,7 @@ export interface ecoChartModel {
   }[];
 }
 
-interface Address {
+type Address = {
   streetNumber: string;
   streetName: string;
   sublocality: string;
@@ -53,12 +53,12 @@ interface Address {
   state: string;
   country: string;
   postcode: string;
-}
+};
 
 export interface MapData {
   lat: number;
   lon: number;
-  address?: Partial<Address>;
+  address: Partial<Address>;
   popUpCard?: LovelaceCardConfig[];
 }
 

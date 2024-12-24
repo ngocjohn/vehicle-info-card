@@ -1,18 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { mdiChevronLeft, mdiChevronRight, mdiClose } from '@mdi/js';
-import {
-  fireEvent,
-  formatDateTime,
-  forwardHaptic,
-  hasConfigOrEntityChanged,
-  LovelaceCardConfig,
-  LovelaceCardEditor,
-  applyThemesOnElement,
-  FrontendLocaleData,
-} from 'custom-card-helpers';
+import { formatDateTime, applyThemesOnElement, forwardHaptic, hasConfigOrEntityChanged } from 'custom-card-helpers';
 import { LitElement, html, TemplateResult, PropertyValues, CSSResultGroup, nothing } from 'lit';
 import { styleMap } from 'lit-html/directives/style-map.js';
 import { customElement, property, state, query } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
 
 import './components';
 import { EcoChart, RemoteControl, VehicleButtons, VehicleMap } from './components/cards';
@@ -23,7 +15,7 @@ import * as StateMapping from './const/state-mapping';
 import styles from './css/styles.css';
 import { localize } from './localize/localize';
 import {
-  HA as HomeAssistant,
+  HomeAssistant,
   VehicleCardConfig,
   EntityConfig,
   VehicleEntity,
@@ -34,10 +26,21 @@ import {
   BaseButtonConfig,
   VehicleEntities,
   ecoChartModel,
+  SECTION_DEFAULT_ORDER,
 } from './types';
-import { HEADER_ACTION, PreviewCard, MapData } from './types';
+import { HEADER_ACTION, PreviewCard, MapData, SECTION } from './types';
+import { FrontendLocaleData } from './types/ha-frontend/data/frontend-local-data';
+import { fireEvent } from './types/ha-frontend/fire-event';
+import {
+  LovelaceCardEditor,
+  LovelaceCardConfig,
+  getLovelace,
+  findCardIndex,
+} from './types/ha-frontend/lovelace/lovelace';
 import { handleCardFirstUpdated, getCarEntity, handleCardSwipe, convertMinutes, isEmpty, Create } from './utils';
 import { getAddedButton, getDefaultButton, createCardElement, createCustomButtons } from './utils';
+
+const ROWPX = 58;
 
 @customElement('vehicle-info-card')
 export class VehicleCard extends LitElement {
@@ -64,7 +67,7 @@ export class VehicleCard extends LitElement {
 
   @state() _hass!: HomeAssistant;
   @property({ attribute: false }) public config!: VehicleCardConfig;
-  @property({ type: Boolean }) public editMode = false;
+  @property({ type: Boolean }) public editMode: boolean = false;
 
   // Vehicle entities and attributes
   @state() vehicleEntities: VehicleEntities = {};
@@ -94,6 +97,10 @@ export class VehicleCard extends LitElement {
   @state() private _cardWidth: number = 0;
   @state() private _cardHeight: number = 0;
 
+  // Misc
+  @state() mainSectionItems: Record<string, HTMLElement> = {};
+  @state() _cardPreviewId?: string;
+  @state() _cardId?: string | null;
   // Components
   @query('vehicle-buttons') vehicleButtons!: VehicleButtons;
   @query('vehicle-map') vehicleMap!: VehicleMap;
@@ -104,9 +111,9 @@ export class VehicleCard extends LitElement {
     super();
     this.handleEditorEvents = this.handleEditorEvents.bind(this);
   }
+
   connectedCallback(): void {
     super.connectedCallback();
-
     if (process.env.ROLLUP_WATCH === 'true') {
       window.BenzCard = this;
     }
@@ -126,6 +133,7 @@ export class VehicleCard extends LitElement {
     this.detachResizeObserver();
     this._connected = false;
     this._resizeInitiated = false;
+
     super.disconnectedCallback();
   }
 
@@ -163,6 +171,13 @@ export class VehicleCard extends LitElement {
       this._cardWidth = entry.borderBoxSize[0].inlineSize;
       this._cardHeight = entry.borderBoxSize[0].blockSize;
     }
+  }
+
+  private _getElementsList(): void {
+    const card = this.shadowRoot?.querySelector('ha-card') as HTMLElement;
+    const mainWrapper = card.querySelector('#main-wrapper') as HTMLElement;
+    const { firstElementChild, lastElementChild } = mainWrapper;
+    this.mainSectionItems = { first: firstElementChild as HTMLElement, last: lastElementChild as HTMLElement };
   }
 
   get userLang(): string {
@@ -241,16 +256,24 @@ export class VehicleCard extends LitElement {
     this.setUpButtonCards();
     this._setUpPreview();
     this.measureCard();
+    if (this.editMode && !this._loading) {
+      setTimeout(() => {
+        this._getElementsList();
+      }, 0);
+    }
+  }
+
+  private async findCard() {
+    return await findCardIndex(this);
+  }
+
+  private getLovelace() {
+    return getLovelace();
   }
 
   protected updated(changedProps: PropertyValues): void {
     super.updated(changedProps);
-    if (
-      changedProps.has('_currentCardType') &&
-      this._currentCardType !== 'mapDialog' &&
-      this._currentCardType !== null &&
-      !this.editMode
-    ) {
+    if (changedProps.has('_currentCardType') && this._currentCardType !== null && !this.editMode) {
       const cardElement = this.shadowRoot?.querySelector('.card-element');
       if (cardElement) {
         handleCardSwipe(cardElement, this.toggleCard.bind(this));
@@ -258,6 +281,7 @@ export class VehicleCard extends LitElement {
     }
     if (changedProps.has('_loading') && !this._loading) {
       this._setUpButtonAnimation();
+      this._getElementsList();
     }
   }
 
@@ -304,8 +328,6 @@ export class VehicleCard extends LitElement {
     setTimeout(() => {
       this._loading = false;
     }, 2000);
-
-    this.requestUpdate();
   }
 
   private async _setUpPreview(): Promise<void> {
@@ -377,34 +399,29 @@ export class VehicleCard extends LitElement {
 
   // https://lit.dev/docs/components/rendering/
   protected render(): TemplateResult {
-    if (!this.config || !this._hass || !this.config.entity) {
+    if (!this.config || !this._hass || !this.config.entity || this._entityNotFound) {
       return this._showWarning('No entity provided');
     }
-    if (this._entityNotFound) {
-      return this._showWarning('Entity not found');
-    }
+
     if (this._currentPreviewType !== null && this.isEditorPreview) {
       return this._renderCardPreview();
     }
-    const cardHeight = this.getGridRowSize() * 56;
+
+    const cardHeight = this.getGridRowSize() * ROWPX;
     const loadingEl = html`
       <div class="loading-image" style="height: ${cardHeight}px">
         <img src="${IMAGE.LOADING}" alt="Loading" />
       </div>
     `;
 
-    const name = this.config.name || '';
+    const headerTitle = this.config.name?.trim() !== '' ? nothing : html`<header><h1>${this.config.name}</h1></header>`;
+
+    const mainContent = html`${headerTitle}
+    ${this._currentCardType !== null ? this._renderCustomCard() : this._renderMainCard()}`;
+
     return html`
-      <ha-card style=${this._computeCardStyles()}>
-        ${this._loading
-          ? loadingEl
-          : html`
-              ${this._renderHeaderBackground()}
-              <header>
-                <h1>${name}</h1>
-              </header>
-              ${this._currentCardType ? this._renderCustomCard() : this._renderMainCard()}
-            `}
+      <ha-card style=${this._computeCardStyles()} class=${this._computeClasses()}>
+        ${this._loading ? loadingEl : mainContent}
       </ha-card>
     `;
   }
@@ -421,21 +438,35 @@ export class VehicleCard extends LitElement {
     return typeMap[type];
   }
 
-  private _renderHeaderBackground(): TemplateResult | typeof nothing {
-    if (!this.config.show_background || this._currentCardType !== null) return nothing;
-    const background = this.isDark ? IMAGE.BACK_WHITE : IMAGE.BACK_DARK;
-
-    return html` <div class="header-background" style="background-image: url(${background})"></div> `;
-  }
-
   private _renderMainCard(): TemplateResult {
+    const sectionToRender = this.config.extra_configs.section_order || [...SECTION_DEFAULT_ORDER];
+    // render by config order or default order
     return html`
       <main id="main-wrapper">
-        <div class="header-info-box">
-          ${this._renderInfoBox()} ${this._renderChargingInfo()} ${this._renderRangeInfo()}
-        </div>
-        ${this._renderHeaderSlides()} ${this._renderMap()} ${this._renderButtons()}
+        ${sectionToRender.map((section) => {
+          switch (section) {
+            case SECTION.HEADER_INFO:
+              return this._renderHeaderInfo();
+            case SECTION.IMAGES_SLIDER:
+              return this._renderHeaderSlides();
+            case SECTION.MINI_MAP:
+              return this._renderMap();
+            case SECTION.BUTTONS:
+              return this._renderButtons();
+            default:
+              return nothing;
+          }
+        })}
       </main>
+    `;
+  }
+
+  private _renderHeaderInfo(): TemplateResult {
+    if (this.config.show_header_info === false) return html``;
+    return html`
+      <div id=${SECTION.HEADER_INFO} class="header-info-box">
+        ${this._renderInfoBox()} ${this._renderChargingInfo()} ${this._renderRangeInfo()}
+      </div>
     `;
   }
 
@@ -578,7 +609,11 @@ export class VehicleCard extends LitElement {
   private _renderHeaderSlides(): TemplateResult {
     if (!this.config.images || !this.config.show_slides) return html``;
 
-    return html`<header-slide .config=${this.config} .editMode=${this.editMode}></header-slide>`;
+    return html`
+      <div id=${SECTION.IMAGES_SLIDER}>
+        <header-slide .config=${this.config} .editMode=${this.editMode}></header-slide>
+      </div>
+    `;
   }
 
   private _renderMap(): TemplateResult | void {
@@ -590,7 +625,7 @@ export class VehicleCard extends LitElement {
       return this._showWarning('No device_tracker entity provided.');
     }
     return html`
-      <div id="map-box">
+      <div id=${SECTION.MINI_MAP}>
         <vehicle-map .mapData=${this.MapData} .card=${this} .isDark=${this.isDark}></vehicle-map>
       </div>
     `;
@@ -631,13 +666,15 @@ export class VehicleCard extends LitElement {
     const buttonCards = Object.fromEntries(notHidden);
     const config = this.config;
     return html`
-      <vehicle-buttons
-        .hass=${this._hass}
-        .component=${this}
-        ._config=${config}
-        ._buttons=${buttonCards}
-        ._cardCurrentSwipeIndex=${this._currentSwipeIndex}
-      ></vehicle-buttons>
+      <div id=${SECTION.BUTTONS}>
+        <vehicle-buttons
+          .hass=${this._hass}
+          .component=${this}
+          ._config=${config}
+          ._buttons=${buttonCards}
+          ._cardCurrentSwipeIndex=${this._currentSwipeIndex}
+        ></vehicle-buttons>
+      </div>
     `;
   }
 
@@ -992,8 +1029,8 @@ export class VehicleCard extends LitElement {
               <div>
                 <ha-icon
                   class="data-icon"
-                  ?warning=${!active}
                   .icon="${icon}"
+                  ?warning=${!active}
                   @click=${() => toggleMoreInfo(key)}
                 ></ha-icon>
                 <span class="data-label">${name}</span>
@@ -1519,21 +1556,33 @@ export class VehicleCard extends LitElement {
     }
   }
 
-  /* ---------------------------- COMPUTE CARD STYLES --------------------------- */
+  /* ---------------------------- COMPUTE CARD STYLES & CLASSES ---------------------------- */
   private _computeCardStyles() {
     if (!this._resizeInitiated) return;
-
     const fullCardWidth = this._cardWidth;
     const fullCardHeight = this._cardHeight;
+    const backgroundUrl = this.isDark ? IMAGE.BACK_WHITE : IMAGE.BACK_DARK;
     return styleMap({
       '--vic-card-full-width': `${fullCardWidth}px`,
       '--vic-card-full-height': `${fullCardHeight}px`,
+      '--vic-background-image': this.config.show_background ? `url(${backgroundUrl})` : 'none',
+    });
+  }
+
+  private _computeClasses() {
+    if (this._loading) return;
+    const showBackground = this.config.show_background && !this._loading;
+    return classMap({
+      __background: showBackground,
+      __mapLast: this.mainSectionItems.last?.id === SECTION.MINI_MAP,
+      __mapFirst:
+        this.mainSectionItems.first?.id === SECTION.MINI_MAP && (this.config.name?.trim() === '' || !this.config.name),
     });
   }
 
   /* --------------------------- CONFIGURATION METHODS -------------------------- */
   private _setUpButtonAnimation = (): void => {
-    if (this.isEditorPreview) return;
+    if (this.isEditorPreview || this.vehicleButtons === null) return;
     setTimeout(() => {
       const gridItems = this.vehicleButtons.shadowRoot?.querySelectorAll('.grid-item');
       if (!gridItems) return;
@@ -1543,8 +1592,9 @@ export class VehicleCard extends LitElement {
           item.classList.remove('zoom-in');
         });
       });
-    }, 0);
+    }, 50);
   };
+
   /* ----------------------------- EVENTS HANDLERS ---------------------------- */
 
   private handleEditorEvents(e: Event): void {
@@ -1579,12 +1629,35 @@ export class VehicleCard extends LitElement {
   }
 
   private getGridRowSize(): number {
-    const { show_slides, show_map, show_buttons } = this.config;
+    const { show_slides = true, show_map = true, show_buttons = true, show_header_info = true } = this.config;
 
-    let gridRowSize = 2;
-    if (show_slides) gridRowSize += 2;
-    if (show_map) gridRowSize += 2;
-    if (show_buttons) gridRowSize += 2;
+    // Header Name
+    const configName = this.config.name?.trim() === '';
+    const name = configName ? ROWPX / 44 : 0;
+    // Mini map height
+    const mini_map_height = this.config.extra_configs?.mini_map_height;
+    const minimapHeight = mini_map_height ? mini_map_height / ROWPX : 150 / ROWPX;
+
+    // Grid buttons height
+    const visibleButtons = Object.values(this.buttonCards).filter((card) => !card.button.hidden).length;
+    const rows_size = this.config.button_grid.rows_size || 2;
+    const possibleRows = visibleButtons / 2;
+    const buttonRows = rows_size > possibleRows ? possibleRows : rows_size;
+    const gridButtonsHeight = (buttonRows * 62 + 12) / ROWPX;
+
+    // Images height
+    const configImgMaxHeight = this.config.extra_configs?.images_swipe.max_height;
+    const imagesHeight = configImgMaxHeight / ROWPX;
+
+    const headerInfoHeight = 70 / ROWPX;
+
+    let gridRowSize = 0; // 58px
+    if (show_slides) gridRowSize += imagesHeight;
+    if (show_map) gridRowSize += minimapHeight;
+    if (show_buttons) gridRowSize += gridButtonsHeight;
+    if (show_header_info) gridRowSize += headerInfoHeight;
+    if (configName) gridRowSize += name;
+
     return gridRowSize;
   }
 

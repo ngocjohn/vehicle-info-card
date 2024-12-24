@@ -1,37 +1,8 @@
 // Cutom card helpers:
-import { ActionConfig, LovelaceCardConfig, Themes, HomeAssistant, Theme } from 'custom-card-helpers';
-import { HassEntity, Connection } from 'home-assistant-js-websocket';
+import { ActionConfig } from 'custom-card-helpers';
 
-interface ModeSpecificTheme {
-  light: Partial<Theme>;
-  dark: Partial<Theme>;
-}
+import { LovelaceCardConfig } from './ha-frontend/lovelace/lovelace';
 
-interface ExtendedTheme extends Theme {
-  modes?: ModeSpecificTheme;
-}
-
-interface ExtendedThemes extends Themes {
-  darkMode: boolean;
-  themes: {
-    [key: string]: ExtendedTheme;
-  };
-}
-export interface GUIModeChangedEvent {
-  guiMode: boolean;
-  guiModeAvailable: boolean;
-}
-/**
- * HomeAssistantExtended extends the existing HomeAssistant interface with additional properties.
- */
-
-export type HA = HomeAssistant & {
-  themes: ExtendedThemes;
-  formatEntityState: (stateObj: HassEntity) => string;
-  formatAttributeName: (entityId: string, attribute: string) => string;
-  formatEntityAttributeValue: (entityId: HassEntity, attribute: string) => string;
-  connection: Connection;
-};
 /**
  * Configuration interface for the Vehicle Card.
  */
@@ -41,6 +12,15 @@ enum THEME_MODE {
   Light = 'light',
   Dark = 'dark',
 }
+
+export const enum SECTION {
+  HEADER_INFO = 'header_info',
+  IMAGES_SLIDER = 'images_slider',
+  MINI_MAP = 'mini_map',
+  BUTTONS = 'buttons',
+}
+
+export const SECTION_DEFAULT_ORDER = [SECTION.HEADER_INFO, SECTION.IMAGES_SLIDER, SECTION.MINI_MAP, SECTION.BUTTONS];
 
 export type Services = {
   auxheat: boolean;
@@ -130,6 +110,8 @@ type ExtraConfigs = {
     speed: number;
     effect: 'slide' | 'fade' | 'coverflow';
   };
+  section_order?: SECTION[];
+  mini_map_height?: number;
 };
 
 export interface VehicleCardConfig extends LovelaceCardConfig {
@@ -163,6 +145,7 @@ export interface VehicleCardConfig extends LovelaceCardConfig {
   enable_map_popup: boolean;
   enable_services_control: boolean;
   show_error_notify: boolean;
+  show_header_info: boolean;
 }
 
 export type ButtonCardEntity = {
@@ -223,6 +206,7 @@ export const defaultConfig: Partial<VehicleCardConfig> = {
   enable_map_popup: false,
   enable_services_control: false,
   show_error_notify: false,
+  show_header_info: true,
   device_tracker: '',
   map_popup_config: {
     hours_to_show: 0,
@@ -251,6 +235,7 @@ export const defaultConfig: Partial<VehicleCardConfig> = {
       speed: 500,
       effect: 'slide',
     },
+    section_order: [SECTION.HEADER_INFO, SECTION.IMAGES_SLIDER, SECTION.MINI_MAP, SECTION.BUTTONS],
   },
   button_grid: {
     use_swiper: false,
