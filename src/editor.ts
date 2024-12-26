@@ -22,6 +22,7 @@ import {
   BaseButtonConfig,
   ExtendedButtonConfigItem,
   SECTION_DEFAULT_ORDER,
+  SECTION,
 } from './types';
 // Local types
 import { fireEvent } from './types/ha-frontend/fire-event';
@@ -35,16 +36,10 @@ const latestRelease: { version: string; hacs: boolean; updated: boolean } = {
   updated: false,
 };
 
-function s4() {
-  return Math.floor((1 + Math.random()) * 0x10000)
-    .toString(16)
-    .substring(1);
-}
-
 @customElement('vehicle-info-card-editor')
 export class VehicleCardEditor extends LitElement implements LovelaceCardEditor {
   @property({ attribute: false }) public hass!: HomeAssistant;
-  @property({ attribute: false }) public _config!: VehicleCardConfig;
+  @property({ attribute: false }) _config!: VehicleCardConfig;
   @property({ attribute: false }) private baseCardTypes: CardTypeConfig[] = [];
 
   @property({ attribute: false }) public lovelace?: LovelaceConfig;
@@ -61,7 +56,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   @state() _sectionSortable: Sortable | null = null;
 
   @state() _latestRelease = latestRelease;
-  @state() _cardId: string = `vic-${s4()}`;
 
   private _toastDissmissed: boolean = false;
   @state() private _reloadSectionList: boolean = false;
@@ -72,7 +66,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   @query('panel-images') private _panelImages!: PanelImages;
 
   public async setConfig(config: VehicleCardConfig): Promise<void> {
-    this._config = config;
+    this._config = structuredClone(config);
   }
 
   connectedCallback() {
@@ -83,19 +77,11 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     if (process.env.ROLLUP_WATCH === 'true') {
       window.BenzEditor = this;
     }
-    if (!sessionStorage.getItem('cardInEditor')) {
-      sessionStorage.setItem('cardInEditor', this._cardId);
-      console.log(`Card ${this._cardId} is now in editor`);
-    }
     this._cleanConfig();
   }
 
   disconnectedCallback(): void {
     console.log('VehicleCardEditor disconnected');
-    if (sessionStorage.getItem('cardInEditor')) {
-      sessionStorage.removeItem('cardInEditor');
-      console.log('Removing cardInEditor from sessionStorage');
-    }
     super.disconnectedCallback();
   }
 
@@ -288,7 +274,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         this._reloadSectionList = false;
         setTimeout(() => {
           this._initSectionSortable();
-        }, 50);
+        }, 0);
       }
     }, 50);
   }
@@ -543,6 +529,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     let showOptions = editorShowOpts(this._selectedLanguage);
     // Filter out the enable_map_popup option
     showOptions = showOptions.filter((option) => option.configKey !== 'enable_map_popup');
+    // console.log('showOptions', showOptions);
     const maxButtons =
       this.baseCardTypes.length % 2 === 0 ? this.baseCardTypes.length / 2 : this.baseCardTypes.length / 2 + 1;
     const buttonGridSwipe = html`
@@ -594,48 +581,30 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   private _renderSectionOrder(): TemplateResult {
     if (this._reloadSectionList) return html`<div>....</div>`;
     const sectionOrder = this._config.extra_configs?.section_order || [...SECTION_DEFAULT_ORDER];
-    const header = html`
-      <div class="header-sm">
+
+    return html`<div class="header-sm">
         <span>Section order</span>
       </div>
-    `;
-
-    const isHidden = (section: string): boolean => {
-      const sectionConfig = {
-        header_info: this._config.show_header_info ?? true,
-        images_slider: this._config.show_slides ?? true,
-        mini_map: this._config.show_map ?? true,
-        buttons: this._config.show_buttons ?? true,
-      };
-
-      return !sectionConfig[section];
-    };
-
-    const _renderSectionItem = (section: string, index: number): TemplateResult => {
-      const disabled = isHidden(section);
-      return html`
-        <div class="card-type-item" data-id=${section} ?disabled=${disabled}>
-          <div class="handle">
-            <ha-icon-button .path=${mdiDrag}> </ha-icon-button>
-          </div>
-          <div class="card-type-row">
-            <div class="card-type-icon">
-              <div class="icon-background">
-                <ha-icon icon="mdi:numeric-${index + 1}-circle"></ha-icon>
-              </div>
-            </div>
-            <div class="card-type-content">
-              <span class="primary">${section.replace(/_/g, ' ').toUpperCase()}</span>
-            </div>
-          </div>
-        </div>
-      `;
-    };
-    return html`${header}
       <div class="sub-card-rows">
         <div id="section-list">
           ${sectionOrder.map((section, index) => {
-            return _renderSectionItem(section, index);
+            return html`
+              <div class="card-type-item" data-id=${section}>
+                <div class="handle">
+                  <ha-icon-button .path=${mdiDrag}> </ha-icon-button>
+                </div>
+                <div class="card-type-row">
+                  <div class="card-type-icon">
+                    <div class="icon-background">
+                      <ha-icon icon="mdi:numeric-${index + 1}-circle"></ha-icon>
+                    </div>
+                  </div>
+                  <div class="card-type-content">
+                    <span class="primary">${section.replace(/_/g, ' ').toUpperCase()}</span>
+                  </div>
+                </div>
+              </div>
+            `;
           })}
         </div>
       </div>`;
@@ -1464,37 +1433,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     this._debouncedCustomBtnChanged();
   }
 
-  private _customCardChange(ev: any): void {
-    ev.stopPropagation();
-    const { configKey, value } = ev.detail;
-
-    if (this._config.card_preview && this._cardPreview) {
-      this._config = {
-        ...this._config,
-        card_preview: value,
-      };
-    }
-    if (this._config.added_cards?.hasOwnProperty(configKey)) {
-      this._config = {
-        ...this._config,
-        added_cards: {
-          ...this._config.added_cards,
-          [configKey]: {
-            ...this._config.added_cards[configKey],
-            cards: value, // Ensure 'cards' remains an array of objects
-          },
-        },
-      };
-    } else {
-      this._config = {
-        ...this._config,
-        [configKey]: value,
-      };
-    }
-
-    this._debouncedCustomBtnChanged();
-  }
-
   private _showValueChanged(ev: any): void {
     ev.stopPropagation();
     if (!this._config || !this.hass) {
@@ -1504,25 +1442,38 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const target = ev.target;
     const configValue = target.configValue;
 
+    const section = {
+      show_header_info: SECTION.HEADER_INFO,
+      show_slides: SECTION.IMAGES_SLIDER,
+      show_map: SECTION.MINI_MAP,
+      show_buttons: SECTION.BUTTONS,
+    };
+
+    let sectionOrder = [...(this._config.extra_configs?.section_order || [...SECTION_DEFAULT_ORDER])];
+
+    // Update the section order if the checkbox is checked
+    if (configValue in section) {
+      if (target.checked) {
+        sectionOrder.push(section[configValue]); // Add the section
+      } else {
+        sectionOrder = sectionOrder.filter((s) => s !== section[configValue]); // Remove the section
+      }
+    }
+
+    sectionOrder = [...new Set(sectionOrder)]; // Remove duplicates
+
+    // Update the config
     this._config = {
       ...this._config,
       [configValue]: target.checked,
+      extra_configs: {
+        ...this._config.extra_configs,
+        section_order: sectionOrder,
+      },
     };
 
     this.configChanged();
-    console.log('Config changed:', configValue, target.checked);
-    this._reloadSectionList = true;
-    setTimeout(() => {
-      if (this._sectionSortable) {
-        this._sectionSortable.destroy();
-        this._reloadSectionList = false;
-        setTimeout(() => {
-          this._initSectionSortable();
-        }, 0);
-      }
-    }, 0);
   }
-
   public _valueChanged(ev: any): void {
     ev.stopPropagation();
     if (!this._config || !this.hass) {

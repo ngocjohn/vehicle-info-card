@@ -9,11 +9,11 @@ export const editorShowOpts = (lang: string) => [
   createShowOpts('editor.showOpts.show_slides', lang, 'show_slides'),
   createShowOpts('editor.showOpts.show_buttons', lang, 'show_buttons'),
   createShowOpts('editor.showOpts.show_map', lang, 'show_map'),
+  createShowOpts('editor.showOpts.show_header_info', lang, 'show_header_info'),
   createShowOpts('editor.showOpts.show_background', lang, 'show_background'),
   createShowOpts('editor.showOpts.enable_map_popup', lang, 'enable_map_popup'),
   createShowOpts('editor.showOpts.enable_services_control', lang, 'enable_services_control'),
   createShowOpts('editor.showOpts.show_error_notify', lang, 'show_error_notify'),
-  createShowOpts('editor.showOpts.show_header_info', lang, 'show_header_info'),
 ];
 
 const createCard = (key: string, icon: string, config: string, button: string, lang: string): CardTypeConfig => ({
