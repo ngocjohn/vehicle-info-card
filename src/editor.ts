@@ -1476,15 +1476,25 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
     sectionOrder = [...new Set(sectionOrder)]; // Remove duplicates
 
-    // Update the config
-    this._config = {
-      ...this._config,
-      [configValue]: target.checked,
-      extra_configs: {
-        ...this._config.extra_configs,
-        section_order: sectionOrder,
-      },
-    };
+    if (configValue === 'show_address') {
+      this._config = {
+        ...this._config,
+        extra_configs: {
+          ...this._config.extra_configs,
+          show_address: target.checked,
+        },
+      };
+    } else {
+      // Update the config
+      this._config = {
+        ...this._config,
+        [configValue]: target.checked,
+        extra_configs: {
+          ...this._config.extra_configs,
+          section_order: sectionOrder,
+        },
+      };
+    }
 
     this.configChanged();
   }
@@ -1558,9 +1568,10 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       };
       console.log('Mini map height changed:', newValue);
     } else if (configValue === 'show_address') {
+      newValue = target.checked !== undefined ? target.checked : ev.detail.value;
       updates.extra_configs = {
         ...this._config.extra_configs,
-        show_address: target.checked,
+        show_address: newValue,
       };
       console.log('Show address changed:', target.checked);
     } else {
