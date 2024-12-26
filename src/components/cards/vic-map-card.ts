@@ -161,7 +161,7 @@ export class VehicleMap extends LitElement {
   }
 
   private _renderAddress(): TemplateResult {
-    if (!this.card.config.extra_configs?.show_address) return html``;
+    if (this.card.config.extra_configs?.show_address === false) return html``;
     if (!this._addressReady) return html` <div class="address loading"><span class="loader"></span></div> `;
 
     const { address } = this.mapData;
