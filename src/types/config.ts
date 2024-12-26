@@ -13,7 +13,7 @@ enum THEME_MODE {
   Dark = 'dark',
 }
 
-export const enum SECTION {
+export enum SECTION {
   HEADER_INFO = 'header_info',
   IMAGES_SLIDER = 'images_slider',
   MINI_MAP = 'mini_map',
@@ -206,7 +206,6 @@ export const defaultConfig: Partial<VehicleCardConfig> = {
   enable_map_popup: false,
   enable_services_control: false,
   show_error_notify: false,
-  show_header_info: true,
   device_tracker: '',
   map_popup_config: {
     hours_to_show: 0,
@@ -235,7 +234,6 @@ export const defaultConfig: Partial<VehicleCardConfig> = {
       speed: 500,
       effect: 'slide',
     },
-    section_order: [SECTION.HEADER_INFO, SECTION.IMAGES_SLIDER, SECTION.MINI_MAP, SECTION.BUTTONS],
   },
   button_grid: {
     use_swiper: false,
