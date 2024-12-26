@@ -31,12 +31,7 @@ import {
 import { HEADER_ACTION, PreviewCard, MapData, SECTION } from './types';
 import { FrontendLocaleData } from './types/ha-frontend/data/frontend-local-data';
 import { fireEvent } from './types/ha-frontend/fire-event';
-import {
-  LovelaceCardEditor,
-  LovelaceCardConfig,
-  getLovelace,
-  findCardIndex,
-} from './types/ha-frontend/lovelace/lovelace';
+import { LovelaceCardEditor, LovelaceCardConfig } from './types/ha-frontend/lovelace/lovelace';
 import { handleCardFirstUpdated, getCarEntity, handleCardSwipe, convertMinutes, isEmpty, Create } from './utils';
 import { getAddedButton, getDefaultButton, createCardElement, createCustomButtons } from './utils';
 
@@ -263,14 +258,6 @@ export class VehicleCard extends LitElement {
     }
   }
 
-  private async findCard() {
-    return await findCardIndex(this);
-  }
-
-  private getLovelace() {
-    return getLovelace();
-  }
-
   protected updated(changedProps: PropertyValues): void {
     super.updated(changedProps);
     if (changedProps.has('_currentCardType') && this._currentCardType !== null && !this.editMode) {
@@ -414,7 +401,10 @@ export class VehicleCard extends LitElement {
       </div>
     `;
 
-    const headerTitle = this.config.name?.trim() !== '' ? nothing : html`<header><h1>${this.config.name}</h1></header>`;
+    const headerTitle =
+      this.config.name?.trim() === '' || this.config.name === undefined
+        ? nothing
+        : html`<header><h1>${this.config.name}</h1></header>`;
 
     const mainContent = html`${headerTitle}
     ${this._currentCardType !== null ? this._renderCustomCard() : this._renderMainCard()}`;
@@ -1576,7 +1566,8 @@ export class VehicleCard extends LitElement {
       __background: showBackground,
       __mapLast: this.mainSectionItems.last?.id === SECTION.MINI_MAP,
       __mapFirst:
-        this.mainSectionItems.first?.id === SECTION.MINI_MAP && (this.config.name?.trim() === '' || !this.config.name),
+        this.mainSectionItems.first?.id === SECTION.MINI_MAP &&
+        (this.config.name?.trim() === '' || this.config.name === undefined),
     });
   }
 
@@ -1640,7 +1631,8 @@ export class VehicleCard extends LitElement {
 
     // Grid buttons height
     const visibleButtons = Object.values(this.buttonCards).filter((card) => !card.button.hidden).length;
-    const rows_size = this.config.button_grid.rows_size || 2;
+    const rows_size = this.config.button_grid?.rows_size === undefined ? 2 : this.config.button_grid?.rows_size;
+
     const possibleRows = visibleButtons / 2;
     const buttonRows = rows_size > possibleRows ? possibleRows : rows_size;
     const gridButtonsHeight = (buttonRows * 62 + 12) / ROWPX;
