@@ -274,7 +274,8 @@
             "show_error_notify": "Hiển thị thông báo lỗi",
             "show_map": "Hiển thị bản đồ",
             "show_slides": "Hiển thị slide",
-            "show_header_info": "Hiển thị thông tin tiêu đề"
+            "show_header_info": "Hiển thị thông tin tiêu đề",
+            "show_address": "Hiển thị địa chỉ"
         },
         "themeLangConfig": {
             "desc": "Chọn chủ đề và ngôn ngữ.",

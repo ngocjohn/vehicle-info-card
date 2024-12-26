@@ -274,7 +274,8 @@
             "show_error_notify": "Afficher les notifications d'erreurs",
             "show_map": "Afficher la carte",
             "show_slides": "Afficher le slide",
-            "show_header_info": "Afficher les informations d’en-tête"
+            "show_header_info": "Afficher les informations d’en-tête",
+            "show_address": "Afficher l’adresse"
         },
         "themeLangConfig": {
             "desc": "Choisir le thème et la langue.",

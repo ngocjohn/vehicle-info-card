@@ -274,7 +274,8 @@
             "show_error_notify": "Mostrar notificación de error",
             "show_map": "Mostrar mapa",
             "show_slides": "Mostrar diapositivas",
-            "show_header_info": "Mostrar información de encabezado"
+            "show_header_info": "Mostrar información de encabezado",
+            "show_address": "Mostrar dirección"
         },
         "themeLangConfig": {
             "desc": "Elija el tema y el idioma.",

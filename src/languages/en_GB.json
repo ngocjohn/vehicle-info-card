@@ -274,7 +274,8 @@
             "show_error_notify": "Show error notification",
             "show_map": "Show map",
             "show_slides": "Show slides",
-            "show_header_info": "Show header info"
+            "show_header_info": "Show header info",
+            "show_address": "Show address"
         },
         "themeLangConfig": {
             "desc": "Choose the theme and language.",

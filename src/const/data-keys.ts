@@ -12,6 +12,7 @@ export const editorShowOpts = (lang: string) => [
   createShowOpts('editor.showOpts.show_header_info', lang, 'show_header_info'),
   createShowOpts('editor.showOpts.show_background', lang, 'show_background'),
   createShowOpts('editor.showOpts.enable_map_popup', lang, 'enable_map_popup'),
+  createShowOpts('editor.showOpts.show_address', lang, 'show_address'),
   createShowOpts('editor.showOpts.enable_services_control', lang, 'enable_services_control'),
   createShowOpts('editor.showOpts.show_error_notify', lang, 'show_error_notify'),
 ];

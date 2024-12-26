@@ -65,7 +65,8 @@ export class VehicleMap extends LitElement {
       '--vic-map-mask-image':
         this.card.mainSectionItems?.last.id === SECTION.MINI_MAP
           ? 'linear-gradient(to bottom, transparent 0%, black 10%)'
-          : this.card.mainSectionItems?.first.id === SECTION.MINI_MAP
+          : this.card.mainSectionItems?.first.id === SECTION.MINI_MAP &&
+            (this.card.config.name?.trim() === '' || this.card.config.name === undefined)
           ? 'linear-gradient(to bottom, black 90%, transparent 100%)'
           : defaultMaskImage,
       '--vic-map-height': minimapHeight ? `${minimapHeight}px` : `150px`,
@@ -160,6 +161,7 @@ export class VehicleMap extends LitElement {
   }
 
   private _renderAddress(): TemplateResult {
+    if (!this.card.config.extra_configs?.show_address) return html``;
     if (!this._addressReady) return html` <div class="address loading"><span class="loader"></span></div> `;
 
     const { address } = this.mapData;

@@ -346,23 +346,33 @@ async function installedByHACS(hass: HomeAssistant): Promise<boolean> {
   return !!hacsEntity;
 }
 
-async function getMapData(hass: HomeAssistant, deviceTracker: string, apiKey: string): Promise<MapData> {
+async function getMapData(
+  hass: HomeAssistant,
+  deviceTracker: string,
+  apiKey: string,
+  showAddres: boolean
+): Promise<MapData> {
   const deviceStateObj = hass.states[deviceTracker];
   if (!deviceStateObj) {
     return { lat: 0, lon: 0, address: {} };
-    console.log(`Device tracker '${deviceTracker}' not found.`);
   }
   const { latitude, longitude } = deviceStateObj.attributes;
-  const address = apiKey
-    ? await getAddressFromGoggle(latitude, longitude, apiKey)
-    : await getAddressFromOpenStreet(latitude, longitude);
-  // console.log(`Address for device tracker '${deviceTracker}':`, address);
-  if (!address) {
-    console.log('Address not found.');
+  if (showAddres) {
+    const address = apiKey
+      ? await getAddressFromGoggle(latitude, longitude, apiKey)
+      : await getAddressFromOpenStreet(latitude, longitude);
+    // console.log(`Address for device tracker '${deviceTracker}':`, address);
+    if (!address) {
+      console.log('Address not found.');
+      return { lat: latitude, lon: longitude, address: {} };
+    }
+    // console.log('Map data:', { lat: latitude, lon: longitude, address });
+    return { lat: latitude, lon: longitude, address };
+  } else {
+    // console.log('Map data:', { lat: latitude, lon: longitude });
+    console.log('map address is disabled');
     return { lat: latitude, lon: longitude, address: {} };
   }
-  // console.log('Map data:', { lat: latitude, lon: longitude, address });
-  return { lat: latitude, lon: longitude, address };
 }
 
 export async function createMapPopup(hass: HomeAssistant, config: VehicleCardConfig): Promise<LovelaceCardConfig[]> {
@@ -394,8 +404,8 @@ export async function handleCardFirstUpdated(component: VehicleCard): Promise<vo
 
   if (config.show_map && config.device_tracker && card._currentPreviewType === null) {
     // console.log('Fetching map data...');
-
-    card.MapData = await getMapData(hass, config.device_tracker, config.google_api_key || '');
+    const showAddress = config.extra_configs.show_address ?? true;
+    card.MapData = await getMapData(hass, config.device_tracker, config.google_api_key || '', showAddress);
   }
 
   if (!card.vehicleEntities) {

@@ -274,7 +274,8 @@
             "show_error_notify": "Foutmelding weergeven",
             "show_map": "Kaart weergeven",
             "show_slides": "Slides weergeven",
-            "show_header_info": "Koptekstinformatie weergeven"
+            "show_header_info": "Koptekstinformatie weergeven",
+            "show_address": "Toon adres"
         },
         "themeLangConfig": {
             "desc": "Kies het thema en de taal.",

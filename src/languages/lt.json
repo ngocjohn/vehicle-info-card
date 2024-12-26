@@ -274,7 +274,8 @@
             "show_error_notify": "Rodyti pranešimą apie klaidą",
             "show_map": "Rodyti žemėlapį",
             "show_slides": "Parodyti skaidres",
-            "show_header_info": "Rodyti antraštės informaciją"
+            "show_header_info": "Rodyti antraštės informaciją",
+            "show_address": "Rodyti adresą"
         },
         "themeLangConfig": {
             "desc": "Pasirinkite temą ir kalbą.",

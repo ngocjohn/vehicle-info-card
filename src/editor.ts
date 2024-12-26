@@ -669,7 +669,26 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private _renderMapPopupConfig(): TemplateResult {
     const infoAlert = this.localize('editor.common.infoMap');
-    const mapPopUp = editorShowOpts(this._selectedLanguage).find((option) => option.configKey === 'enable_map_popup');
+    const showOpts = editorShowOpts(this._selectedLanguage);
+    const mapPopUp = showOpts.find((option) => option.configKey === 'enable_map_popup');
+    const showAddress = showOpts.find((option) => option.configKey === 'show_address');
+
+    const sharedConfig = {
+      component: this,
+      pickerType: 'boolean' as 'boolean',
+    };
+    const mapBoolean = [
+      {
+        label: mapPopUp?.label,
+        value: this._config[mapPopUp!.configKey],
+        configValue: mapPopUp?.configKey,
+      },
+      {
+        label: showAddress?.label,
+        value: this._config.extra_configs[showAddress!.configKey] ?? true,
+        configValue: showAddress?.configKey,
+      },
+    ];
 
     const themeMode = [
       { key: 'auto', name: 'Auto' },
@@ -727,22 +746,17 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
     const mapConfig = html`
       ${Picker(deviceTracker)}
-      <div class="flex-col">
-        <ha-textfield
-          style="flex: 1 1 30%;"
-          label="Google API Key (Optional)"
-          type="password"
-          .value=${this._config?.google_api_key}
-          .configValue=${'google_api_key'}
-          @input=${this._valueChanged}
-        ></ha-textfield>
-        <ha-formfield style="flex: 1;" .label=${mapPopUp?.label}>
-          <ha-checkbox
-            .checked=${this._config[mapPopUp!.configKey]}
-            .configValue=${mapPopUp?.configKey}
-            @change=${this._showValueChanged}
-          ></ha-checkbox>
-        </ha-formfield>
+      <ha-textfield
+        label="Google API Key (Optional)"
+        type="password"
+        .value=${this._config?.google_api_key}
+        .configValue=${'google_api_key'}
+        @input=${this._valueChanged}
+      ></ha-textfield>
+      <div class="switches">
+        ${mapBoolean.map((item) => {
+          return Picker({ ...sharedConfig, ...item });
+        })}
       </div>
       ${Picker(maxMiniMapHeight)} ${mapPopupConfig}
     `;
@@ -1543,6 +1557,12 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         mini_map_height: parseInt(newValue) || newValue,
       };
       console.log('Mini map height changed:', newValue);
+    } else if (configValue === 'show_address') {
+      updates.extra_configs = {
+        ...this._config.extra_configs,
+        show_address: target.checked,
+      };
+      console.log('Show address changed:', target.checked);
     } else {
       newValue = target.checked !== undefined ? target.checked : ev.detail.value;
       updates[configValue] = newValue;

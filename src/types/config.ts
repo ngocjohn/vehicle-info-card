@@ -112,6 +112,7 @@ type ExtraConfigs = {
   };
   section_order?: SECTION[];
   mini_map_height?: number;
+  show_address?: boolean;
 };
 
 export interface VehicleCardConfig extends LovelaceCardConfig {
@@ -202,6 +203,7 @@ export const defaultConfig: Partial<VehicleCardConfig> = {
   show_slides: false,
   show_map: false,
   show_buttons: true,
+  show_header_info: true,
   show_background: true,
   enable_map_popup: false,
   enable_services_control: false,
@@ -234,6 +236,8 @@ export const defaultConfig: Partial<VehicleCardConfig> = {
       speed: 500,
       effect: 'slide',
     },
+    mini_map_height: 150,
+    show_address: true,
   },
   button_grid: {
     use_swiper: false,

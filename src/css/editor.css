@@ -446,8 +446,6 @@ h3 {
   display: flex;
   gap: 8px;
   justify-content: flex-end;
-  position: sticky;
-  bottom: 0;
   margin-block: 1rem;
 }
 

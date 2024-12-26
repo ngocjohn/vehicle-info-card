@@ -274,7 +274,8 @@
             "show_error_notify": "Zobrazit oznámení o chybě",
             "show_map": "Zobrazit mapu",
             "show_slides": "Zobrazit snímky",
-            "show_header_info": "Zobrazit informace v záhlaví"
+            "show_header_info": "Zobrazit informace v záhlaví",
+            "show_address": "Zobrazit adresu"
         },
         "themeLangConfig": {
             "desc": "Vyberte téma a jazyk.",
