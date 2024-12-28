@@ -674,7 +674,7 @@ export class VehicleCard extends LitElement {
     };
 
     const key = this._currentCardType;
-    const defaultCard = this.buttonCards[key].card_type === 'default';
+    const defaultType = (key: string) => this.buttonCards[key]?.card_type ?? 'default';
     let renderCard: TemplateResult | LovelaceCardConfig[] | void;
     if (key === 'servicesCard') {
       renderCard = cardConfigMap[key];
@@ -715,10 +715,12 @@ export class VehicleCard extends LitElement {
       <main id="cards-wrapper">
         ${!['servicesCard'].includes(key) ? cardHeaderBox : nothing}
         <section class="card-element">${renderCard}</section>
-        ${defaultCard
-          ? html` <div class="last-update">
-              <span>${this.localize('card.common.lastUpdate')}: ${formattedDate}</span>
-            </div>`
+        ${defaultType(key) === 'default'
+          ? html`
+              <div class="last-update">
+                <span>${this.localize('card.common.lastUpdate')}: ${formattedDate}</span>
+              </div>
+            `
           : nothing}
       </main>
     `;

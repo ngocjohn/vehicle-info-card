@@ -345,7 +345,7 @@ async function installedByHACS(hass: HomeAssistant): Promise<boolean> {
   const hacsEntity = hacsEntities.find((entity) => entity.entity_id === CARD_UPADE_SENSOR);
   return !!hacsEntity;
 }
-
+/* eslint-disable-next-line */
 async function getMapData(
   hass: HomeAssistant,
   deviceTracker: string,
