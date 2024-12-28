@@ -23,7 +23,6 @@ export class VehicleMap extends LitElement {
   @state() private map: L.Map | null = null;
   @state() private latLon: L.LatLng | null = null;
   @state() private marker: L.Marker | null = null;
-  @state() private zoom = 16;
 
   @state() private mapCardPopup?: LovelaceCardConfig[];
   @state() private _addressReady = false;
@@ -32,6 +31,10 @@ export class VehicleMap extends LitElement {
 
   private get mapPopup(): boolean {
     return this.card.config.enable_map_popup;
+  }
+
+  private get zoom(): number {
+    return this.card.config.map_popup_config.default_zoom ?? 14;
   }
 
   protected async updated(changedProperties: PropertyValues): Promise<void> {
