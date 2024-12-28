@@ -53,16 +53,20 @@ ha-card.__background::before {
   mask-image: linear-gradient(transparent 0%, black 40%, black 70%, transparent 100%);
 }
 
-ha-card.__mapLast {
+ha-card.__map_last {
   padding-bottom: 0;
 }
 
-ha-card.__mapFirst {
+ha-card.__map_first {
   padding-top: 0;
 }
 
-ha-card.__mapLast #buttons {
+ha-card.__map_last #buttons {
   margin-top: var(--vic-card-padding);
+}
+
+ha-card[no-header].__map_single {
+  padding-block: 0;
 }
 
 .fade-in {

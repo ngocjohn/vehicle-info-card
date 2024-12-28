@@ -176,13 +176,6 @@ export class VehicleCard extends LitElement {
     }
   }
 
-  private _getElementsList(): void {
-    const card = this.shadowRoot?.querySelector('ha-card') as HTMLElement;
-    const mainWrapper = card.querySelector('#main-wrapper') as HTMLElement;
-    const { firstElementChild, lastElementChild } = mainWrapper;
-    this.mainSectionItems = { first: firstElementChild as HTMLElement, last: lastElementChild as HTMLElement };
-  }
-
   get userLang(): string {
     if (!this.config.selected_language || this.config.selected_language === 'system') {
       return this._hass.language;
@@ -259,11 +252,6 @@ export class VehicleCard extends LitElement {
     this.setUpButtonCards();
     this._setUpPreview();
     this.measureCard();
-    if (this.editMode && !this._loading) {
-      setTimeout(() => {
-        this._getElementsList();
-      }, 0);
-    }
   }
 
   protected updated(changedProps: PropertyValues): void {
@@ -276,7 +264,6 @@ export class VehicleCard extends LitElement {
     }
     if (changedProps.has('_loading') && !this._loading) {
       this._setUpButtonAnimation();
-      this._getElementsList();
     }
   }
 
@@ -409,16 +396,14 @@ export class VehicleCard extends LitElement {
       </div>
     `;
 
-    const headerTitle =
-      this.config.name?.trim() === '' || this.config.name === undefined
-        ? nothing
-        : html`<header><h1>${this.config.name}</h1></header>`;
+    const noHeader = this.config.name?.trim() === '' || this.config.name === undefined;
+    const headerTitle = noHeader ? nothing : html`<header><h1>${this.config.name}</h1></header>`;
 
     const mainContent = html`${headerTitle}
     ${this._currentCardType !== null ? this._renderCustomCard() : this._renderMainCard()}`;
 
     return html`
-      <ha-card style=${this._computeCardStyles()} class=${this._computeClasses()}>
+      <ha-card style=${this._computeCardStyles()} class=${this._computeClasses()} ?no-header=${noHeader}>
         ${this._loading ? loadingEl : mainContent}
       </ha-card>
     `;
@@ -1575,14 +1560,17 @@ export class VehicleCard extends LitElement {
   }
 
   private _computeClasses() {
-    if (this._loading) return;
+    // if (this._loading) return;
     const showBackground = this.config.show_background && !this._loading;
+    const sectionOrder = this.config.extra_configs?.section_order ?? [...SECTION_DEFAULT_ORDER];
+    const lastItem = sectionOrder[sectionOrder.length - 1];
+    const firstItem = sectionOrder[0];
+    const mapSingle = sectionOrder.includes(SECTION.MINI_MAP) && sectionOrder.length === 1;
     return classMap({
       __background: showBackground,
-      __mapLast: this.mainSectionItems.last?.id === SECTION.MINI_MAP,
-      __mapFirst:
-        this.mainSectionItems.first?.id === SECTION.MINI_MAP &&
-        (this.config.name?.trim() === '' || this.config.name === undefined),
+      __map_last: lastItem === SECTION.MINI_MAP && firstItem !== SECTION.MINI_MAP,
+      __map_first: firstItem === SECTION.MINI_MAP && lastItem !== SECTION.MINI_MAP,
+      __map_single: mapSingle,
     });
   }
 
