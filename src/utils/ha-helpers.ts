@@ -401,18 +401,40 @@ export async function handleCardFirstUpdated(component: VehicleCard): Promise<vo
   const card = component as VehicleCard;
   card.vehicleEntities = await getVehicleEntities(hass, config, component);
   card.DataKeys = baseDataKeys(card.userLang);
-
-  if (config.show_map && config.device_tracker && card._currentPreviewType === null) {
-    // console.log('Fetching map data...');
-    const showAddress = config.extra_configs.show_address ?? true;
-    card.MapData = await getMapData(hass, config.device_tracker, config.google_api_key || '', showAddress);
-  }
-
   if (!card.vehicleEntities) {
     console.log('Vehicle entities not found, fetching...');
     console.log('No vehicle entities found');
     card._entityNotFound = true;
   }
+
+  _getMapDat(card);
+}
+
+export async function _getMapDat(card: VehicleCard): Promise<void> {
+  const config = card.config as VehicleCardConfig;
+  if (!config.show_map || !config.device_tracker || card._currentPreviewType !== null) return;
+
+  console.log('Fetching map data...');
+  const hass = card._hass as HomeAssistant;
+  const deviceTracker = config.device_tracker;
+  const mapData = {} as MapData;
+  const deviceStateObj = hass.states[deviceTracker];
+  if (!deviceStateObj) return;
+  const { latitude, longitude } = deviceStateObj.attributes;
+  mapData.lat = latitude;
+  mapData.lon = longitude;
+  card.MapData = mapData;
+}
+
+export async function _getMapAddress(card: VehicleCard, lat: number, lon: number) {
+  if (card.config.extra_configs.show_address === false) return;
+  const apiKey = card.config?.google_api_key;
+  console.log('Getting address from map data');
+  const adress = apiKey ? await getAddressFromGoggle(lat, lon, apiKey) : await getAddressFromOpenStreet(lat, lon);
+  if (!adress) {
+    return;
+  }
+  return adress;
 }
 
 async function getAddressFromGoggle(

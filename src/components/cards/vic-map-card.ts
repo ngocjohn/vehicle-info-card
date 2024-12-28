@@ -7,9 +7,9 @@ import { LitElement, html, css, TemplateResult, PropertyValues, CSSResultGroup, 
 import { customElement, state, property } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
-import { MapData, SECTION } from '../../types';
+import { MapData, SECTION, SECTION_DEFAULT_ORDER } from '../../types';
 import { LovelaceCardConfig } from '../../types/ha-frontend/lovelace/lovelace';
-import { createMapPopup } from '../../utils';
+import { _getMapAddress, createMapPopup } from '../../utils';
 import { createCloseHeading } from '../../utils/create';
 import { VehicleCard } from '../../vehicle-info-card';
 
@@ -28,6 +28,8 @@ export class VehicleMap extends LitElement {
   @state() private mapCardPopup?: LovelaceCardConfig[];
   @state() private _addressReady = false;
 
+  @state() private _address: Partial<MapData['address']> | null = null;
+
   private get mapPopup(): boolean {
     return this.card.config.enable_map_popup;
   }
@@ -36,39 +38,47 @@ export class VehicleMap extends LitElement {
     super.updated(changedProperties);
     if (changedProperties.has('mapData') && this.mapData && this.mapData !== undefined) {
       this.initMap();
-      if (this.mapData.address !== undefined) {
-        this._addressReady = true;
-      }
+      this._getAddress();
     }
   }
 
-  protected shouldUpdate(_changedProperties: PropertyValues): boolean {
-    if (_changedProperties.has('mapData') && this.mapData.address === undefined) {
-      return false;
+  private async _getAddress(): Promise<void> {
+    if (!this.mapData || this.mapData.lat === undefined || this.mapData.lon === undefined) return;
+    const address = await _getMapAddress(this.card, this.mapData.lat, this.mapData.lon);
+    if (address) {
+      this._address = address;
+      this._addressReady = true;
     }
-    return true;
   }
 
   private _computeMapStyle() {
+    const sectionOrder = this.card.config.extra_configs?.section_order ?? [...SECTION_DEFAULT_ORDER];
+    const noHeader = this.card.config.name?.trim() === '' || this.card.config.name === undefined;
+    const firstItem = sectionOrder[0] === SECTION.MINI_MAP && noHeader;
+    const lastItem = sectionOrder[sectionOrder.length - 1] === SECTION.MINI_MAP;
+    const mapSingle = sectionOrder.includes(SECTION.MINI_MAP) && sectionOrder.length === 1;
+
+    let maskImage = 'linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%)';
+
+    if (lastItem && !firstItem) {
+      maskImage = 'linear-gradient(to bottom, transparent 0%, black 10%)';
+    } else if (firstItem && !lastItem) {
+      maskImage = 'linear-gradient(to bottom, black 90%, transparent 100%)';
+    } else if (mapSingle) {
+      maskImage = 'linear-gradient(to bottom, transparent 0%, black 0%, black 100%, transparent 100%)';
+    }
+
     const markerColor = this.isDark ? 'var(--accent-color)' : 'var(--primary-color)';
     const markerFilter = this.isDark ? 'contrast(1.2) saturate(6) brightness(1.3)' : 'none';
     const tileFilter = this.isDark
       ? 'brightness(0.6) invert(1) contrast(6) saturate(0.3) brightness(0.7) opacity(.25)'
       : 'grayscale(1) contrast(1.1) opacity(0.7)';
-    const defaultMaskImage =
-      'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%)';
     const minimapHeight = this.card.config.extra_configs?.mini_map_height;
     return styleMap({
       '--vic-map-marker-color': markerColor,
       '--vic-marker-filter': markerFilter,
       '--vic-map-tiles-filter': tileFilter,
-      '--vic-map-mask-image':
-        this.card.mainSectionItems?.last.id === SECTION.MINI_MAP
-          ? 'linear-gradient(to bottom, transparent 0%, black 10%)'
-          : this.card.mainSectionItems?.first.id === SECTION.MINI_MAP &&
-            (this.card.config.name?.trim() === '' || this.card.config.name === undefined)
-          ? 'linear-gradient(to bottom, black 90%, transparent 100%)'
-          : defaultMaskImage,
+      '--vic-map-mask-image': maskImage,
       '--vic-map-height': minimapHeight ? `${minimapHeight}px` : `150px`,
       height: minimapHeight ? `${minimapHeight}px` : `150px`,
     });
@@ -149,12 +159,13 @@ export class VehicleMap extends LitElement {
   protected render(): TemplateResult {
     return html`
       <div class="map-wrapper" style=${this._computeMapStyle()}>
-        <div class="map-overlay"></div>
-        <div id="map"></div>
-        <div class="reset-button" @click=${this.resetMap}>
-          <ha-icon icon="mdi:compass"></ha-icon>
+        <div id="overlay-container">
+          <div class="reset-button" @click=${this.resetMap}>
+            <ha-icon icon="mdi:compass"></ha-icon>
+          </div>
+          ${this._renderAddress()}
         </div>
-        ${this._renderAddress()}
+        <div id="map"></div>
       </div>
       ${this._renderMapDialog()}
     `;
@@ -164,7 +175,7 @@ export class VehicleMap extends LitElement {
     if (this.card.config.extra_configs?.show_address === false) return html``;
     if (!this._addressReady) return html` <div class="address loading"><span class="loader"></span></div> `;
 
-    const { address } = this.mapData;
+    const address = this._address || {};
     return html`
       <div class="address">
         <div class="address-line">
@@ -251,15 +262,14 @@ export class VehicleMap extends LitElement {
           justify-content: center;
         }
 
-        .map-overlay {
+        #overlay-container {
           position: absolute;
           top: 0;
           left: 0;
           width: 100%;
           height: 100%;
           /* background-color: var(--ha-card-background, var(--card-background-color)); */
-          opacity: 0.6; /* Adjust the opacity as needed */
-          pointer-events: none; /* Ensure the overlay does not interfere with map interactions */
+          /* opacity: 0.6;  */
         }
 
         #map {
