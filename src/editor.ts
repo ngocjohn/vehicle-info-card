@@ -1459,47 +1459,45 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const target = ev.target;
     const configValue = target.configValue;
 
-    const section = {
-      show_header_info: SECTION.HEADER_INFO,
-      show_slides: SECTION.IMAGES_SLIDER,
-      show_map: SECTION.MINI_MAP,
-      show_buttons: SECTION.BUTTONS,
-    };
+    const updates: Partial<VehicleCardConfig> = {};
 
-    let sectionOrder = [...(this._config.extra_configs?.section_order || [...SECTION_DEFAULT_ORDER])];
-
-    // Update the section order if the checkbox is checked
-    if (configValue in section) {
-      if (target.checked) {
-        sectionOrder.push(section[configValue]); // Add the section
-      } else {
-        sectionOrder = sectionOrder.filter((s) => s !== section[configValue]); // Remove the section
-      }
-    }
-
-    sectionOrder = SECTION_DEFAULT_ORDER.filter((s) => sectionOrder.includes(s)); // Remove duplicates
+    let extraConfig = { ...(this._config.extra_configs || {}) };
 
     if (configValue === 'show_address') {
-      this._config = {
-        ...this._config,
-        extra_configs: {
-          ...this._config.extra_configs,
-          show_address: target.checked,
-        },
-      };
+      extraConfig.show_address = target.checked;
+      updates.extra_configs = extraConfig;
     } else {
-      // Update the config
+      updates[configValue] = target.checked;
+      if (['show_header_info', 'show_slides', 'show_map', 'show_buttons'].includes(configValue)) {
+        let sectionOrder = [...(this._config.extra_configs.section_order || [...SECTION_DEFAULT_ORDER])];
+        const section = {
+          show_header_info: SECTION.HEADER_INFO,
+          show_slides: SECTION.IMAGES_SLIDER,
+          show_map: SECTION.MINI_MAP,
+          show_buttons: SECTION.BUTTONS,
+        };
+        for (const sectionKey of Object.keys(section)) {
+          if (updates[sectionKey] === true) {
+            sectionOrder.push(section[sectionKey]);
+          } else if (updates[sectionKey] === false) {
+            sectionOrder = sectionOrder.filter((s) => s !== section[sectionKey]);
+          }
+        }
+        sectionOrder = SECTION_DEFAULT_ORDER.filter((s) => sectionOrder.includes(s));
+        updates.extra_configs = {
+          ...extraConfig,
+          section_order: sectionOrder,
+        };
+        console.log('Section order changed:', sectionOrder);
+      }
+    }
+    if (Object.keys(updates).length > 0) {
       this._config = {
         ...this._config,
-        [configValue]: target.checked,
-        extra_configs: {
-          ...this._config.extra_configs,
-          section_order: sectionOrder,
-        },
+        ...updates,
       };
+      fireEvent(this, 'config-changed', { config: this._config });
     }
-
-    this.configChanged();
   }
   public _valueChanged(ev: any): void {
     ev.stopPropagation();
