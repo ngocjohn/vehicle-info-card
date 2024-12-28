@@ -110,7 +110,7 @@ type ExtraConfigs = {
     speed: number;
     effect: 'slide' | 'fade' | 'coverflow';
   };
-  section_order?: SECTION[];
+  section_order?: string[];
   mini_map_height?: number;
   show_address?: boolean;
 };

@@ -580,32 +580,35 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private _renderSectionOrder(): TemplateResult {
     if (this._reloadSectionList) return html`<div>....</div>`;
-    const sectionOrder = this._config.extra_configs?.section_order || [...SECTION_DEFAULT_ORDER];
+    const sectionOrder = this._config.extra_configs.section_order || [...SECTION_DEFAULT_ORDER];
 
     return html`<div class="header-sm">
         <span>Section order</span>
       </div>
       <div class="sub-card-rows">
         <div id="section-list">
-          ${sectionOrder.map((section, index) => {
-            return html`
-              <div class="card-type-item" data-id=${section}>
-                <div class="handle">
-                  <ha-icon-button .path=${mdiDrag}> </ha-icon-button>
-                </div>
-                <div class="card-type-row">
-                  <div class="card-type-icon">
-                    <div class="icon-background">
-                      <ha-icon icon="mdi:numeric-${index + 1}-circle"></ha-icon>
+          ${repeat(
+            sectionOrder,
+            (section) => section,
+            (section, index) =>
+              html`
+                <div class="card-type-item" data-id=${section}>
+                  <div class="handle">
+                    <ha-icon-button .path=${mdiDrag}> </ha-icon-button>
+                  </div>
+                  <div class="card-type-row">
+                    <div class="card-type-icon">
+                      <div class="icon-background">
+                        <ha-icon icon="mdi:numeric-${index + 1}-circle"></ha-icon>
+                      </div>
+                    </div>
+                    <div class="card-type-content">
+                      <span class="primary">${section.replace(/_/g, ' ').toUpperCase()}</span>
                     </div>
                   </div>
-                  <div class="card-type-content">
-                    <span class="primary">${section.replace(/_/g, ' ').toUpperCase()}</span>
-                  </div>
                 </div>
-              </div>
-            `;
-          })}
+              `
+          )}
         </div>
       </div>`;
   }
@@ -1474,7 +1477,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       }
     }
 
-    sectionOrder = [...new Set(sectionOrder)]; // Remove duplicates
+    sectionOrder = SECTION_DEFAULT_ORDER.filter((s) => sectionOrder.includes(s)); // Remove duplicates
 
     if (configValue === 'show_address') {
       this._config = {
