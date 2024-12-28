@@ -674,6 +674,7 @@ export class VehicleCard extends LitElement {
     };
 
     const key = this._currentCardType;
+    const defaultCard = this.buttonCards[key].card_type === 'default';
     let renderCard: TemplateResult | LovelaceCardConfig[] | void;
     if (key === 'servicesCard') {
       renderCard = cardConfigMap[key];
@@ -688,40 +689,37 @@ export class VehicleCard extends LitElement {
     }
 
     const lastCarUpdate = this.config.entity ? this._hass.states[this.config.entity].last_changed : '';
-
     const formattedDate = formatDateTime(new Date(lastCarUpdate), this._locale);
 
     const cardHeaderBox = html`<div class="added-card-header">
       <ha-icon-button .label=${'Close'} .path=${mdiClose} class="click-shrink" @click=${() => this.toggleCard('close')}>
       </ha-icon-button>
-      ${key !== 'mapDialog'
-        ? html`
-            <div class="card-toggle">
-              <ha-icon-button
-                .label=${'Previous'}
-                .path=${mdiChevronLeft}
-                @click=${() => this.toggleCard('prev')}
-                class="click-shrink"
-              ></ha-icon-button>
+      <div class="card-toggle">
+        <ha-icon-button
+          .label=${'Previous'}
+          .path=${mdiChevronLeft}
+          @click=${() => this.toggleCard('prev')}
+          class="click-shrink"
+        ></ha-icon-button>
 
-              <ha-icon-button
-                .label=${'Next'}
-                .path=${mdiChevronRight}
-                @click=${() => this.toggleCard('next')}
-                class="click-shrink"
-              ></ha-icon-button>
-            </div>
-          `
-        : nothing}
+        <ha-icon-button
+          .label=${'Next'}
+          .path=${mdiChevronRight}
+          @click=${() => this.toggleCard('next')}
+          class="click-shrink"
+        ></ha-icon-button>
+      </div>
     </div>`;
 
     return html`
       <main id="cards-wrapper">
         ${!['servicesCard'].includes(key) ? cardHeaderBox : nothing}
         <section class="card-element">${renderCard}</section>
-        <div class="last-update">
-          <span>${this.localize('card.common.lastUpdate')}: ${formattedDate}</span>
-        </div>
+        ${defaultCard
+          ? html` <div class="last-update">
+              <span>${this.localize('card.common.lastUpdate')}: ${formattedDate}</span>
+            </div>`
+          : nothing}
       </main>
     `;
   }
