@@ -32,7 +32,15 @@ import { HEADER_ACTION, PreviewCard, MapData, SECTION } from './types';
 import { FrontendLocaleData } from './types/ha-frontend/data/frontend-local-data';
 import { fireEvent } from './types/ha-frontend/fire-event';
 import { LovelaceCardEditor, LovelaceCardConfig } from './types/ha-frontend/lovelace/lovelace';
-import { handleCardFirstUpdated, getCarEntity, handleCardSwipe, convertMinutes, isEmpty, Create } from './utils';
+import {
+  handleCardFirstUpdated,
+  getCarEntity,
+  handleCardSwipe,
+  convertMinutes,
+  isEmpty,
+  Create,
+  isDarkColor,
+} from './utils';
 import { getAddedButton, getDefaultButton, createCardElement, createCustomButtons } from './utils';
 
 const ROWPX = 58;
@@ -202,7 +210,7 @@ export class VehicleCard extends LitElement {
     } else if (this.config?.selected_theme?.mode === 'light') {
       return false;
     }
-    return this._hass.themes.darkMode;
+    return this._hass.selectedTheme?.dark ?? this._isDarkTheme();
   }
 
   get _locale(): FrontendLocaleData {
@@ -932,6 +940,13 @@ export class VehicleCard extends LitElement {
       );
     }
   };
+
+  private _isDarkTheme(): boolean {
+    const css = getComputedStyle(this);
+    const primaryTextColor = css.getPropertyValue('--primary-text-color');
+    const isDark = isDarkColor(primaryTextColor);
+    return isDark;
+  }
 
   /* -------------------------------------------------------------------------- */
   /* ADDED CARD FUNCTIONALITY                                                   */

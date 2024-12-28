@@ -1,3 +1,4 @@
+import tinycolor from 'tinycolor2';
 export function cloneDeep<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj));
 }
@@ -76,3 +77,9 @@ export function isEmpty(input: any): boolean {
     return true;
   }
 }
+
+export const isDarkColor = (color: string): boolean => {
+  const colorObj = tinycolor(color);
+  // console.log('colorObj', colorObj);
+  return colorObj.isLight();
+};
