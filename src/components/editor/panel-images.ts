@@ -82,7 +82,7 @@ export class PanelImages extends LitElement {
   }
 
   private _renderSwiperConfig(): TemplateResult {
-    const image = this.config?.extra_configs?.images_swipe || {};
+    const image = this.config.extra_configs?.images_swipe || {};
     const sharedConfig = {
       component: this,
       configType: 'images_swipe',

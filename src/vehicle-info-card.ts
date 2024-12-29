@@ -422,8 +422,9 @@ export class VehicleCard extends LitElement {
   }
 
   private _renderMainCard(): TemplateResult {
-    const sectionToRender = this.config.extra_configs.section_order || [...SECTION_DEFAULT_ORDER];
+    const sectionToRender = this.config.extra_configs?.section_order ?? [...SECTION_DEFAULT_ORDER];
     // render by config order or default order
+    // console.log('sectionToRender', sectionToRender);
     return html`
       <main id="main-wrapper">
         ${sectionToRender.map((section) => {
@@ -437,7 +438,7 @@ export class VehicleCard extends LitElement {
             case SECTION.BUTTONS:
               return this._renderButtons();
             default:
-              return nothing;
+              return '';
           }
         })}
       </main>
@@ -445,7 +446,7 @@ export class VehicleCard extends LitElement {
   }
 
   private _renderHeaderInfo(): TemplateResult {
-    if (this.config.show_header_info === false) return html``;
+    if (!this.config?.show_header_info && this.config?.show_header_info !== undefined) return html``;
     return html`
       <div id=${SECTION.HEADER_INFO} class="header-info-box">
         ${this._renderInfoBox()} ${this._renderChargingInfo()} ${this._renderRangeInfo()}
@@ -590,7 +591,7 @@ export class VehicleCard extends LitElement {
   }
 
   private _renderHeaderSlides(): TemplateResult {
-    if (!this.config.images || !this.config.show_slides) return html``;
+    if (!this.config.images || (!this.config?.show_slides && this.config.show_slides !== undefined)) return html``;
 
     return html`
       <div id=${SECTION.IMAGES_SLIDER}>
@@ -643,8 +644,7 @@ export class VehicleCard extends LitElement {
   }
 
   private _renderButtons(): TemplateResult {
-    if (!this.config.show_buttons) return html``;
-    if (!this._buttonReady) return html``;
+    if (this.config?.show_buttons === false || !this._buttonReady) return html``;
     const notHidden = Object.entries(this.buttonCards).filter(([, value]) => !value.button.hidden);
     const buttonCards = Object.fromEntries(notHidden);
     const config = this.config;
@@ -1634,14 +1634,14 @@ export class VehicleCard extends LitElement {
 
     // Grid buttons height
     const visibleButtons = Object.values(this.buttonCards).filter((card) => !card.button.hidden).length;
-    const rows_size = this.config.button_grid?.rows_size === undefined ? 2 : this.config.button_grid?.rows_size;
+    const rows_size = this.config.button_grid?.rows_size === undefined ? 2 : this.config.button_grid.rows_size;
 
     const possibleRows = visibleButtons / 2;
     const buttonRows = rows_size > possibleRows ? possibleRows : rows_size;
     const gridButtonsHeight = (buttonRows * 62 + 12) / ROWPX;
 
     // Images height
-    const configImgMaxHeight = this.config.extra_configs?.images_swipe.max_height;
+    const configImgMaxHeight = this.config.extra_configs?.images_swipe?.max_height ?? 150;
     const imagesHeight = configImgMaxHeight / ROWPX;
 
     const headerInfoHeight = 70 / ROWPX;
@@ -1658,7 +1658,7 @@ export class VehicleCard extends LitElement {
 
   public getCardSize() {
     // console.log('mansory', this.getGridRowSize());
-    return 5;
+    return 3;
   }
 
   public getLayoutOptions() {

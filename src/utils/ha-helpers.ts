@@ -15,6 +15,8 @@ import {
   ButtonCardEntity,
   AddedCards,
   MapData,
+  SECTION,
+  defaultConfig,
 } from '../types';
 import { LovelaceCardConfig } from '../types/ha-frontend/lovelace/lovelace';
 import { VehicleCard } from '../vehicle-info-card';
@@ -305,12 +307,11 @@ export async function handleFirstUpdated(editor: VehicleCardEditor): Promise<voi
     editor._latestRelease.updated = latestVersion === CARD_VERSION;
   } else {
     console.log('Latest release already fetched');
-    return;
   }
 
   const updates: Partial<VehicleCardConfig> = {};
 
-  if (!editor._config.entity || editor._config.entity === '') {
+  if (!editor._config?.entity || editor._config.entity === '') {
     console.log('Entity not found, fetching...');
     updates.entity = getCarEntity(editor.hass as HomeAssistant);
   }
@@ -325,12 +326,40 @@ export async function handleFirstUpdated(editor: VehicleCardEditor): Promise<voi
     updates.selected_language = editor.hass.language;
     console.log('Selected language:', updates.selected_language);
   }
+  let extraConfig = { ...(editor._config.extra_configs || {}) };
+  if (editor._config.extra_configs?.section_order === undefined) {
+    console.log('Section order not found, creating default...');
+    const section = {
+      show_header_info: SECTION.HEADER_INFO,
+      show_slides: SECTION.IMAGES_SLIDER,
+      show_map: SECTION.MINI_MAP,
+      show_buttons: SECTION.BUTTONS,
+    };
+
+    let sectionOrder: string[] = [];
+    for (const sectionKey in section) {
+      if (editor._config[sectionKey] === undefined || editor._config[sectionKey] === true) {
+        sectionOrder.push(section[sectionKey]);
+      }
+    }
+
+    extraConfig.section_order = sectionOrder;
+    updates.extra_configs = extraConfig;
+
+    console.log('Section order:', updates.extra_configs?.section_order);
+  }
+  if (editor._config?.extra_configs?.images_swipe === undefined) {
+    console.log('Images swipe not found, creating default...');
+    const defaultImageSwipe = defaultConfig.extra_configs.images_swipe;
+    extraConfig.images_swipe = defaultImageSwipe;
+    updates.extra_configs = extraConfig;
+    console.log('Images swipe:', updates.extra_configs?.images_swipe);
+  }
 
   if (Object.keys(updates).length > 0) {
     console.log('Updating config with:', updates);
     editor._config = { ...editor._config, ...updates };
     console.log('New config:', editor._config);
-    editor._config = { ...editor._config, ...updates };
     editor.configChanged();
   }
 }
@@ -427,7 +456,7 @@ export async function _getMapDat(card: VehicleCard): Promise<void> {
 }
 
 export async function _getMapAddress(card: VehicleCard, lat: number, lon: number) {
-  if (card.config.extra_configs.show_address === false) return;
+  if (card.config.extra_configs?.show_address === false) return;
   const apiKey = card.config?.google_api_key;
   console.log('Getting address from map data');
   const adress = apiKey ? await getAddressFromGoggle(lat, lon, apiKey) : await getAddressFromOpenStreet(lat, lon);

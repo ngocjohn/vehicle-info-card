@@ -194,7 +194,7 @@ export type ExtendedButtonConfigItem = BaseButtonConfig & {
 
 // Default configuration for the Vehicle Card.
 
-export const defaultConfig: Partial<VehicleCardConfig> = {
+export const defaultConfig = {
   type: 'custom:vehicle-info-card',
   name: 'Mercedes Vehicle Card',
   entity: '',
@@ -234,7 +234,7 @@ export const defaultConfig: Partial<VehicleCardConfig> = {
       loop: true,
       delay: 5000,
       speed: 500,
-      effect: 'slide',
+      effect: 'slide' as 'slide',
     },
     mini_map_height: 150,
     show_address: true,

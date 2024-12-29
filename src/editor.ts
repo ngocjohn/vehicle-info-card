@@ -91,12 +91,16 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       return;
     }
 
-    if (PREVIEW_CONFIG_TYPES.some((key) => this._config.hasOwnProperty(key) && this._config[key] !== null)) {
+    if (
+      PREVIEW_CONFIG_TYPES.some(
+        (key) => this._config.hasOwnProperty(key) && (this._config[key] === null || this._config[key] !== null)
+      )
+    ) {
       console.log('Cleaning config of preview keys');
       this._config = {
         ...this._config,
         ...PREVIEW_CONFIG_TYPES.reduce((acc: any, key: string) => {
-          acc[key] = null;
+          acc[key] = undefined;
           return acc;
         }, {}),
       };
@@ -266,17 +270,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
     this._config = { ...this._config, extra_configs: { ...this._config.extra_configs, section_order: sectionOrder } };
     this.configChanged();
-
-    this._reloadSectionList = true;
-    setTimeout(() => {
-      if (this._sectionSortable) {
-        this._sectionSortable.destroy();
-        this._reloadSectionList = false;
-        setTimeout(() => {
-          this._initSectionSortable();
-        }, 0);
-      }
-    }, 50);
   }
 
   private _handleSwipeToButton(buttonId: string): void {
@@ -540,16 +533,17 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
             .label=${this.localize('editor.buttonConfig.swipeRows')}
             .configValue=${'rows_size'}
             .configBtnType=${'button_grid'}
-            .value=${this._config.button_grid?.rows_size || ''}
+            .value=${this._config.button_grid?.rows_size ?? 2}
             .min=${1}
             .max=${maxButtons}
+            .disabled=${!this._config.button_grid.use_swiper}
             @input=${this._valueChanged}
           ></ha-textfield>
         </div>
         <div class="card-type-content">
           <ha-formfield .label=${this.localize('editor.buttonConfig.useButtonSwipe')}>
             <ha-checkbox
-              .checked=${this._config.button_grid?.use_swiper}
+              .checked=${this._config.button_grid?.use_swiper ?? true}
               .configValue=${'use_swiper'}
               .configBtnType=${'button_grid'}
               @change=${this._valueChanged}
@@ -580,7 +574,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private _renderSectionOrder(): TemplateResult {
     if (this._reloadSectionList) return html`<div>....</div>`;
-    const sectionOrder = this._config.extra_configs.section_order || [...SECTION_DEFAULT_ORDER];
+    const sectionOrder = this._config.extra_configs?.section_order || [];
 
     return html`<div class="header-sm">
         <span>Section order</span>
@@ -683,12 +677,12 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const mapBoolean = [
       {
         label: mapPopUp?.label,
-        value: this._config[mapPopUp!.configKey],
+        value: this._config.enable_map_popup ?? false,
         configValue: mapPopUp?.configKey,
       },
       {
         label: showAddress?.label,
-        value: this._config.extra_configs[showAddress!.configKey] ?? true,
+        value: this._config.extra_configs?.show_address ?? true,
         configValue: showAddress?.configKey,
       },
     ];
@@ -1407,7 +1401,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   private _handleToastUpdateDismissed(): void {
     const toast = this.shadowRoot?.getElementById('toast-update') as HTMLElement;
     if (toast) {
-      toast.classList.add('hidden');
+      toast.remove();
       this._toastDissmissed = true;
     }
   }
@@ -1462,14 +1456,14 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const updates: Partial<VehicleCardConfig> = {};
 
     let extraConfig = { ...(this._config.extra_configs || {}) };
-
+    let sectionOrderChanged = false;
     if (configValue === 'show_address') {
       extraConfig.show_address = target.checked;
       updates.extra_configs = extraConfig;
     } else {
       updates[configValue] = target.checked;
       if (['show_header_info', 'show_slides', 'show_map', 'show_buttons'].includes(configValue)) {
-        let sectionOrder = [...(this._config.extra_configs.section_order || [...SECTION_DEFAULT_ORDER])];
+        let sectionOrder = [...(this._config.extra_configs?.section_order || [])];
         const section = {
           show_header_info: SECTION.HEADER_INFO,
           show_slides: SECTION.IMAGES_SLIDER,
@@ -1483,11 +1477,12 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
             sectionOrder = sectionOrder.filter((s) => s !== section[sectionKey]);
           }
         }
-        sectionOrder = SECTION_DEFAULT_ORDER.filter((s) => sectionOrder.includes(s));
+        sectionOrder = [...new Set(sectionOrder)];
         updates.extra_configs = {
           ...extraConfig,
           section_order: sectionOrder,
         };
+        sectionOrderChanged = true;
         console.log('Section order changed:', sectionOrder);
       }
     }
@@ -1497,6 +1492,19 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         ...updates,
       };
       fireEvent(this, 'config-changed', { config: this._config });
+      if (sectionOrderChanged) {
+        this._reloadSectionList = true;
+
+        setTimeout(() => {
+          if (this._sectionSortable) {
+            this._sectionSortable.destroy();
+            this._reloadSectionList = false;
+            setTimeout(() => {
+              this._initSectionSortable();
+            }, 0);
+          }
+        }, 50);
+      }
     }
   }
   public _valueChanged(ev: any): void {
