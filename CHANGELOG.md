@@ -1,3 +1,51 @@
+<a id="v1.6.1"></a>
+# [v1.6.1](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.6.1) - 2024-12-29
+
+<!-- Release notes generated using configuration in .github/release.yml at v1.6.1 -->
+
+## What's Changed
+This release introduces exciting new features, including section order customization, enhanced map functionality with address display, and support for picture templates in button configurations. Additionally, it includes key improvements to map tile handling, a redesigned map popup, and updated French translations for a more localized experience.
+
+If you find this card helpful, please consider giving the repository a ⭐! 
+
+## 🎉 New Features
+- **Target Temperature and Preconditioning Configuration**:  
+  Added services for configuring target temperature (preconditioning/auxiliary heating) and preconditioning seat settings. [#89](https://github.com/ngocjohn/vehicle-info-card/pull/89)
+- **Section Order Customization**:  
+  Introduced the ability to define the order of sections in the card, providing greater flexibility in customizing the layout.
+- **Show Address on Mini Map**:  
+  Added an option to display the address directly on the mini map for enhanced usability.
+- **Picture Template for Buttons**:  
+  Added support for a picture template, allowing users to use custom images instead of icons in button configurations.
+
+![benz-section-order2](https://github.com/user-attachments/assets/610bd5e8-1ddb-4be2-a34c-acceb4efb439)
+![benz-section](https://github.com/user-attachments/assets/af1ca788-0a00-45e4-9f84-19c9d7a44c08)
+![benz-map-anim](https://github.com/user-attachments/assets/db730a3e-9d76-49d6-a0c5-39e2ca0c04e6)
+
+
+## 🛠️ Improvements
+- **Map Tile Provider Fixes**:  
+  Resolved issues with map tile providers. [#99](https://github.com/ngocjohn/vehicle-info-card/pull/99)
+- **Map Popup Redesign**:  
+  Changed the map popup functionality from an in-card display to a dialog for improved usability and better integration with Home Assistant's UI.
+
+
+## 🌍 Translations
+- **French Translation Update**:  
+  Improved French translations for a more localized experience. Thanks to [@Joebar16](https://github.com/Joebar16)! [#95](https://github.com/ngocjohn/vehicle-info-card/pull/95)
+
+## 📦 Other Changes
+- **Dependency Updates**:  
+  Updated `eslint-plugin-perfectionist` from `v3.9.1` to `v4.3.0` for improved code linting and development tooling. [#97](https://github.com/ngocjohn/vehicle-info-card/pull/97)
+
+
+Enjoy the new features and improvements! 🚀
+
+**Full Changelog**: https://github.com/ngocjohn/vehicle-info-card/compare/v1.6.0...v1.6.1
+
+[Changes][v1.6.1]
+
+
 <a id="v1.6.0"></a>
 # [v1.6.0](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.6.0) - 2024-11-27
 
@@ -381,6 +429,7 @@ This update enhances the usability and accuracy of our custom card, providing cl
 [Changes][v1.0.0]
 
 
+[v1.6.1]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.6.0...v1.6.1
 [v1.6.0]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.5.0...v1.6.0
 [v1.5.0]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.4.0...v1.5.0
 [v1.4.0]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.3.1...v1.4.0
