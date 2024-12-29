@@ -75,7 +75,7 @@ export class VehicleMap extends LitElement {
     const markerFilter = this.isDark ? 'contrast(1.2) saturate(6) brightness(1.3)' : 'none';
     const tileFilter = this.isDark
       ? 'brightness(0.6) invert(1) contrast(6) saturate(0.3) brightness(0.7) opacity(.25)'
-      : 'grayscale(1) contrast(1.1) opacity(0.7)';
+      : 'grayscale(1) contrast(1.1) opacity(1)';
     const minimapHeight = this.card.config.extra_configs?.mini_map_height;
     return styleMap({
       '--vic-map-marker-color': markerColor,
@@ -308,7 +308,7 @@ export class VehicleMap extends LitElement {
           background-image: radial-gradient(
             circle,
             transparent 0%,
-            rgb(from var(--vic-map-marker-color) r g b / 35%) 100%
+            rgb(from var(--vic-map-marker-color) r g b / 25%) 100%
           );
           border-radius: 50%;
           border: none !important;
