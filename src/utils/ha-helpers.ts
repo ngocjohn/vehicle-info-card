@@ -16,6 +16,7 @@ import {
   MapData,
   SECTION,
   defaultConfig,
+  Address,
 } from '../types';
 import { LovelaceCardConfig } from '../types/ha-frontend/lovelace/lovelace';
 import { VehicleCard } from '../vehicle-info-card';
@@ -464,85 +465,68 @@ export async function _getMapAddress(card: VehicleCard, lat: number, lon: number
   return adress;
 }
 
-async function getAddressFromGoggle(
-  lat: number,
-  lon: number,
-  apiKey: string
-): Promise<Partial<MapData['address']> | undefined> {
-  console.log('getAddressFromGoggle');
+async function getAddressFromGoggle(lat: number, lon: number, apiKey: string): Promise<Address | null> {
+  // console.log('getAddressFromGoggle');
+
   const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${apiKey}`;
 
   try {
     const response = await fetch(url);
     const data = await response.json();
-
-    if (data.status === 'OK') {
-      const addressComponents = data.results[0].address_components;
-      const adress = {
-        streetNumber: '',
-        streetName: '',
-        sublocality: '',
-        city: '',
-      };
-
-      addressComponents.forEach((component) => {
-        if (component.types.includes('street_number')) {
-          adress.streetNumber = component.long_name;
-        }
-        if (component.types.includes('route')) {
-          adress.streetName = component.long_name;
-        }
-        if (component.types.includes('sublocality')) {
-          adress.sublocality = component.short_name;
-        }
-
-        if (component.types.includes('locality')) {
-          adress.city = component.long_name;
-        }
-        // Sometimes city might be under 'administrative_area_level_2' or 'administrative_area_level_1'
-        if (!adress.city && component.types.includes('administrative_area_level_2')) {
-          adress.city = component.short_name;
-        }
-        if (!adress.city && component.types.includes('administrative_area_level_1')) {
-          adress.city = component.short_name;
-        }
-      });
-
-      return adress;
-    } else {
+    // console.log('Google address data:', data);
+    if (data.status !== 'OK') {
       throw new Error('No results found');
     }
+    const addressComponents = data.results[0].address_components;
+    let address: Partial<Address> = {};
+
+    addressComponents.forEach((comp) => {
+      if (comp.types.includes('street_number')) {
+        address.streetNumber = comp.short_name;
+      }
+      if (comp.types.includes('route')) {
+        address.streetName = comp.short_name;
+      }
+      if (comp.types.includes('neighborhood')) {
+        address.sublocality = comp.short_name;
+      }
+      if (
+        ['locality', 'administrative_area_level_2', 'administrative_area_level_1'].some((type) =>
+          comp.types.includes(type)
+        ) &&
+        !address.city
+      ) {
+        address.city = comp.short_name;
+      }
+    });
+    return address as Address;
   } catch (error) {
-    console.error('Error fetching address:', error);
-    return;
+    console.warn('Failed to fetch address from Google:', error);
+    return null;
   }
 }
 
-async function getAddressFromOpenStreet(lat: number, lon: number): Promise<Partial<MapData['address']> | undefined> {
-  const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=jsonv2`;
+async function getAddressFromOpenStreet(lat: number, lon: number): Promise<Address | null> {
   try {
-    const response = await fetch(url);
-    const data = await response.json();
+    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=jsonv2`);
 
-    if (response.ok) {
-      // Extract address components from the response
-      const address = {
-        streetNumber: data.address.house_number ?? '',
-        streetName: data.address.road ?? '',
-        sublocality: data.address.suburb ?? data.address.village ?? '',
-        city: data.address.city ?? data.address.town ?? '',
-        state: data.address.state ?? data.address.county ?? '',
-        country: data.address.country ?? '',
-        postcode: data.address.postcode ?? '',
-      };
-
-      return address;
-    } else {
-      throw new Error('Failed to fetch address OpenStreetMap');
+    if (!response.ok) {
+      throw new Error('Failed to fetch address from OpenStreetMap');
     }
+
+    const data = await response.json();
+    const { house_number, road, suburb, village, city, town, neighbourhood } = data.address;
+    console.log('Address:', data.address);
+
+    return {
+      streetNumber: house_number || '',
+      streetName: road || '',
+      sublocality: neighbourhood || village || '',
+      city: suburb || city || town || '',
+    };
   } catch (error) {
-    console.error('Error fetching address:', error);
-    return;
+    console.warn('Error fetching address:', error);
+    return null;
   }
 }
 

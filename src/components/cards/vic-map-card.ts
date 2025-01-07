@@ -46,10 +46,13 @@ export class VehicleMap extends LitElement {
   }
 
   private async _getAddress(): Promise<void> {
-    if (!this.mapData || this.mapData.lat === undefined || this.mapData.lon === undefined) return;
+    const { lat, lon } = this.mapData;
+    if (!lat || !lon) return;
     const address = await _getMapAddress(this.card, this.mapData.lat, this.mapData.lon);
     if (address) {
       this._address = address;
+      this._addressReady = true;
+    } else if (!address) {
       this._addressReady = true;
     }
   }
@@ -160,8 +163,9 @@ export class VehicleMap extends LitElement {
   }
 
   protected render(): TemplateResult {
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     return html`
-      <div class="map-wrapper" style=${this._computeMapStyle()}>
+      <div class="map-wrapper" ?safari=${isSafari} style=${this._computeMapStyle()}>
         <div id="overlay-container">
           <div class="reset-button" @click=${this.resetMap}>
             <ha-icon icon="mdi:compass"></ha-icon>
@@ -176,19 +180,15 @@ export class VehicleMap extends LitElement {
 
   private _renderAddress(): TemplateResult {
     if (this.card.config.extra_configs?.show_address === false) return html``;
-    if (!this._addressReady) return html` <div class="address loading"><span class="loader"></span></div> `;
+    if (!this._addressReady) return html` <div class="address-line loading"><span class="loader"></span></div> `;
 
     const address = this._address || {};
     return html`
-      <div class="address">
-        <div class="address-line">
-          <ha-icon icon="mdi:map-marker"></ha-icon>
-          <div>
-            <span>${address.streetNumber} ${address.streetName}</span><br /><span
-              style="text-transform: uppercase; opacity: 0.8; letter-spacing: 1px"
-              >${!address.sublocality ? address.city : address.sublocality}</span
-            >
-          </div>
+      <div class="address-line">
+        <ha-icon icon="mdi:map-marker"></ha-icon>
+        <div class="address-info">
+          <span class="secondary">${address.streetNumber} ${address.streetName}</span>
+          <span class="primary">${!address.sublocality ? address.city : address.sublocality}</span>
         </div>
       </div>
     `;
@@ -259,6 +259,12 @@ export class VehicleMap extends LitElement {
           align-items: center;
           justify-content: center;
         }
+
+        .map-wrapper[safari] {
+          width: calc(100% + 0.6rem);
+          left: -0.5rem;
+        }
+
         .map-wrapper.loading {
           display: flex;
           align-items: center;
@@ -349,28 +355,36 @@ export class VehicleMap extends LitElement {
             opacity: 1;
           }
         }
-        .address {
+        .address-line {
           position: absolute;
           width: max-content;
           height: fit-content;
-          bottom: 15%;
+          bottom: 1rem;
           left: 1rem;
           z-index: 2;
           display: flex;
-          align-items: flex-start;
-          justify-content: center;
-          flex-direction: column;
+          align-items: center;
           gap: 0.5rem;
           color: var(--primary-text-color);
           backdrop-filter: blur(2px);
-          .address-line {
+          text-shadow: 0 0 black;
+          ha-icon {
+            color: var(--secondary-text-color);
+          }
+          .address-info {
             display: flex;
-            gap: 0.5rem;
-            align-items: center;
-            text-shadow: 0 0 black;
-            span {
-              font-size: 0.9rem;
-            }
+            flex-direction: column;
+          }
+          .address-info span {
+            font-weight: 400;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            line-height: 16px;
+          }
+          span.primary {
+            text-transform: uppercase;
+            opacity: 0.8;
+            letter-spacing: 1px;
           }
         }
         .loader {

@@ -45,15 +45,12 @@ export interface ecoChartModel {
   }[];
 }
 
-type Address = {
+export interface Address {
   streetNumber: string;
   streetName: string;
   sublocality: string;
   city: string;
-  state: string;
-  country: string;
-  postcode: string;
-};
+}
 
 export interface MapData {
   lat: number;
