@@ -1,4 +1,3 @@
-// eslint-disable-next-line
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
 
 import { combinedFilters, CARD_UPADE_SENSOR, CARD_VERSION, REPOSITORY } from '../const/const';
@@ -167,9 +166,8 @@ export async function createCardElement(
   // Load the helpers and ensure they are available
   let helpers;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if ((window as any).loadCardHelpers) {
-    helpers = await (window as any).loadCardHelpers(); // eslint-disable-line
+    helpers = await (window as any).loadCardHelpers();
   } else if (HELPERS) {
     helpers = HELPERS;
   }
@@ -222,6 +220,7 @@ async function getBooleanTemplate(hass: HomeAssistant, templateConfig: string): 
     }
     return false;
   } catch (error) {
+    console.error(`Error evaluating template: ${error}`);
     return false;
   }
 }
@@ -423,7 +422,6 @@ export async function createMapPopup(hass: HomeAssistant, config: VehicleCardCon
   return await createCardElement(hass, haMapConfig);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function handleCardFirstUpdated(component: VehicleCard): Promise<void> {
   const hass = component._hass as HomeAssistant;
   const config = component.config as VehicleCardConfig;
@@ -443,7 +441,7 @@ export async function _getMapDat(card: VehicleCard): Promise<void> {
   const config = card.config as VehicleCardConfig;
   if (!config.show_map || !config.device_tracker || card._currentPreviewType !== null) return;
 
-  console.log('Fetching map data...');
+  // console.log('Fetching map data...');
   const hass = card._hass as HomeAssistant;
   const deviceTracker = config.device_tracker;
   const mapData = {} as MapData;
@@ -458,7 +456,7 @@ export async function _getMapDat(card: VehicleCard): Promise<void> {
 export async function _getMapAddress(card: VehicleCard, lat: number, lon: number) {
   if (card.config.extra_configs?.show_address === false) return;
   const apiKey = card.config?.google_api_key;
-  console.log('Getting address from map data');
+  // console.log('Getting address from map data');
   const adress = apiKey ? await getAddressFromGoggle(lat, lon, apiKey) : await getAddressFromOpenStreet(lat, lon);
   if (!adress) {
     return;
@@ -543,7 +541,7 @@ async function getAddressFromOpenStreet(lat: number, lon: number): Promise<Parti
       throw new Error('Failed to fetch address OpenStreetMap');
     }
   } catch (error) {
-    // console.error('Error fetching address:', error);
+    console.error('Error fetching address:', error);
     return;
   }
 }

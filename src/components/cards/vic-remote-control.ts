@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// eslint-disable @typescript-eslint/no-explicit-any */
 import { mdiClose } from '@mdi/js';
 import { fireEvent, forwardHaptic } from 'custom-card-helpers';
 import { LitElement, html, TemplateResult, CSSResultGroup, nothing } from 'lit';
