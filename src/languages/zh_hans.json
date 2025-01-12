@@ -1,6 +1,6 @@
 {
-  "name": "zh",
-  "nativeName": "繁体中文",
+  "name": "zh_hans",
+  "nativeName": "简体中文",
   "card": {
     "common": {
       "lastUpdate": "最后更新",
