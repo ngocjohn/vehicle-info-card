@@ -1,0 +1,303 @@
+{
+  "name": "zh-hant",
+  "nativeName": "繁體中文",
+  "card": {
+    "common": {
+      "lastUpdate": "最後更新",
+      "stateCharging": "收費",
+      "stateClosed": "關閉",
+      "stateLocked": "鎖定",
+      "stateLockedInt": "鎖定整數",
+      "stateNotExisting": "不存在",
+      "stateOpen": "啟動",
+      "stateParkBrakeOff": "駐車煞車OFF",
+      "stateParkBrakeOn": "駐車煞車ON",
+      "statePartlyUnlocked": "部分解鎖",
+      "stateUnknown": "未知",
+      "stateUnlocked": "解鎖",
+      "statePressed": "按下",
+      "titleRemoteControl": "遙控",
+      "titleServices": "服務",
+      "toastCommandSent": "命令發送成功！",
+      "toastImageError": "上傳圖片時出錯，僅允許 PNG 和 JPEG 檔案。",
+      "toastCardAlreadyExists": "卡已存在"
+    },
+    "cardType": {
+      "ecoCards": "生態展示",
+      "tripCards": "行程數據",
+      "tyreCards": "輪胎氣壓",
+      "vehicleCards": "車輛狀態"
+    },
+    "chargingOverview": {
+      "chargingPower": "力量",
+      "maxSoc": "最大限度",
+      "selectedProgram": "程式",
+      "soc": "目前狀態"
+    },
+    "doorAttributes": {
+      "decklidstatus": "行李艙",
+      "doorstatusfrontleft": "門左前",
+      "doorstatusfrontright": "門前右",
+      "doorstatusrearleft": "車門左後側",
+      "doorstatusrearright": "車門右後側",
+      "enginehoodstatus": "引擎罩",
+      "sunroofstatus": "天窗",
+      "chargeflapdcstatus": "充電插座蓋"
+    },
+    "ecoCard": {
+      "ecoDisplay": "生態展示",
+      "ecoScore": "分數",
+      "ecoScoreAcceleraion": "加速",
+      "ecoScoreBonusRange": "獎金範圍",
+      "ecoScoreConstant": "持續的",
+      "ecoScoreFreeWheel": "自由輪"
+    },
+    "lockAttributes": {
+      "doorlockstatusfrontleft": "門鎖左前",
+      "doorlockstatusfrontright": "門鎖右前",
+      "doorlockstatusgas": "氣帽鎖",
+      "doorlockstatusrearleft": "門鎖左後側",
+      "doorlockstatusrearright": "右後門鎖"
+    },
+    "serviceData": {
+      "labelChargeProgram": "收費方案",
+      "labelCity": "城市",
+      "labelClose": "關閉",
+      "labelDepartureTime": "出發時間",
+      "labelDurationTime": "持續時間",
+      "labelLatitude": "緯度",
+      "labelLockCar": "鎖車",
+      "labelLongitude": "經度",
+      "labelMaxStateOfCharge": "最大充電狀態",
+      "labelMoreInfo": "更多資訊",
+      "labelMove": "移動",
+      "labelNoSelection": "沒有選擇",
+      "labelOpen": "打開",
+      "labelPostCode": "郵遞區號",
+      "labelSave": "節省",
+      "labelSend": "傳送",
+      "labelSetMaxSoc": "設定最大值",
+      "labelSetProgram": "設定程式",
+      "labelStart": "開始",
+      "labelStartTime": "開始時間",
+      "labelStop": "停止",
+      "labelStopTime": "停止時間",
+      "labelStreet": "街道",
+      "labelTilt": "傾斜",
+      "labelTime1": "時間1",
+      "labelTime2": "時間2",
+      "labelTime3": "時間3",
+      "labelTimeSelection": "時間選擇",
+      "labelTitle": "標題",
+      "labelUnlockCar": "解鎖汽車",
+      "labelWindowFrontLeft": "左前",
+      "labelWindowFrontRight": "右前",
+      "labelWindowRearLeft": "左後",
+      "labelWindowRearRight": "右後",
+      "labelSeatConfig": "儲存座位配置",
+      "labelSetTempZone": "保存溫區",
+      "labelPreclimateStatus": "預氣候狀態"
+    },
+    "servicesCtrl": {
+      "auxheat": "輔助加熱",
+      "charge": "收費",
+      "doorsLock": "安全",
+      "engine": "引擎控制",
+      "preheat": "預調節",
+      "sendRoute": "發送路線",
+      "sigPos": "訊號位置",
+      "sunroof": "天窗",
+      "windows": "視窗"
+    },
+    "starterBattery": {
+      "notAvailable": "無法使用",
+      "partlyCharged": "部分收費",
+      "remoteServiceDisabled": "遠端服務已停用",
+      "stateOk": "好的",
+      "vehicleNoLongerAvailable": "車輛不再可用"
+    },
+    "sunroofState": {
+      "antiBoomingLifting": "防震舉升",
+      "antiBoomingPosition": "防轟位置",
+      "closing": "閉幕式",
+      "closingLifting": "關閉提升",
+      "intermediatePosition": "中間位置",
+      "liftingIntermediate": "起重中間體",
+      "liftingOpen": "升降開啟",
+      "opening": "開幕",
+      "openingLifting": "開口升降",
+      "running": "跑步",
+      "slidingIntermediate": "滑動中間體",
+      "stateClosed": "關閉",
+      "stateOpen": "打開"
+    },
+    "tripCard": {
+      "adBlueLevel": "AdBlue 液位",
+      "averageSpeedReset": "平均速度",
+      "averageSpeedStart": "平均速度",
+      "distanceReset": "行駛距離",
+      "distanceStart": "行駛距離",
+      "distanceZEReset": "零排放行駛距離",
+      "distanceZEStart": "零排放行駛距離",
+      "drivenTimeReset": "行駛時間",
+      "drivenTimeStart": "行駛時間",
+      "drivenTimeZEReset": "駕駛時間零排放",
+      "drivenTimeZEStart": "駕駛時間零排放",
+      "electricConsumptionReset": "平均消費",
+      "electricConsumptionStart": "平均消費",
+      "fromReset": "從重置開始",
+      "fromStart": "從開始",
+      "fuelLevel": "燃油油位",
+      "liquidConsumptionReset": "平均消費",
+      "liquidConsumptionStart": "平均消費",
+      "maxSoc": "最大充電狀態",
+      "odometer": "里程表",
+      "overview": "概述",
+      "rangeElectric": "範圍",
+      "rangeLiquid": "範圍",
+      "soc": "充電狀態"
+    },
+    "tyreCard": {
+      "tirePressureFrontLeft": "左前",
+      "tirePressureFrontRight": "右前",
+      "tirePressureRearLeft": "左後",
+      "tirePressureRearRight": "右後",
+      "tireWarningOk": "未檢測到壓力損失",
+      "tireWarningProblem": "檢測到壓力損失。檢查輪胎。",
+      "tyrePressure": "輪胎氣壓"
+    },
+    "vehicleCard": {
+      "doorStatusOverall": "門",
+      "engineLight": "引擎燈",
+      "ignitionState": "點火狀態",
+      "lockSensor": "鎖定狀態",
+      "lowBrakeFluid": "煞車油",
+      "lowCoolantLevel": "冷卻液",
+      "lowWashWater": "清洗液",
+      "parkBrake": "駐車制動",
+      "starterBatteryState": "啟動電池",
+      "tirePressureWarning": "輪胎氣壓",
+      "vehicleStatus": "車輛狀態",
+      "vehicleWarnings": "警告",
+      "windowsClosed": "視窗"
+    },
+    "windowAttributes": {
+      "windowstatusfrontleft": "左前窗",
+      "windowstatusfrontleftblind": "左前窗百葉窗",
+      "windowstatusfrontright": "車窗右前方",
+      "windowstatusfrontrightblind": "右前窗百葉窗",
+      "windowstatusrearleft": "車窗左後",
+      "windowstatusrearleftblind": "左後窗百葉窗",
+      "windowstatusrearright": "車窗右後",
+      "windowstatusrearrightblind": "右後車窗百葉窗"
+    },
+    "ignitionState": {
+      "ignitionLock": "鎖",
+      "ignitionOff": "離開",
+      "ignitionAccessory": "配件",
+      "ignitionOn": "在",
+      "ignitionStart": "開始"
+    },
+    "precondSeatTemp": {
+      "frontLeft": "左前",
+      "frontRight": "右前",
+      "rearLeft": "左後",
+      "rearRight": "右後"
+    }
+  },
+  "editor": {
+    "entityConfig": {
+      "desc": "選擇實體和卡名稱。",
+      "title": "實體及卡名"
+    },
+    "buttonConfig": {
+      "desc": "為各個按鈕配置子卡。",
+      "title": "按鍵配置",
+      "defaultCards": "預設卡",
+      "customCards": "客製化卡",
+      "addNewCard": "新增卡",
+      "hideButton": "隱藏卡片上的按鈕",
+      "useCustomButton": "使用自訂按鈕",
+      "useCustomCard": "使用客製化卡",
+      "showButton": "顯示按鈕",
+      "preview": "預覽",
+      "hidePreview": "隱藏預覽",
+      "secondaryInfo": "次要訊息",
+      "secondaryInfoDesc": "這將顯示在卡片標題下方。",
+      "secondaryInfoHelper": "使用Jinja2模板顯示輔助訊息",
+      "notifyInfo": "通知配置",
+      "notifyInfoHelper": "結果必須傳回“True”布林值才能顯示通知。",
+      "deleteConfirm": "您確定要刪除這張卡嗎？",
+      "toastNewCard": "新增了新卡！",
+      "buttonGridSwipe": "按鈕網格配置",
+      "swipeRows": "每張投影片的行數",
+      "useButtonSwipe": "使用滑動按鈕",
+      "iconInfo": "圖示模板",
+      "iconInfoHelper": "使用Jinja2模板顯示圖標",
+      "colorInfo": "顏色模板",
+      "colorInfoHelper": "使用Jinja2模板更改圖示顏色",
+      "pictureInfo": "圖片（將替換圖示）",
+      "pictureInfoHelper": "您可以使用模板來顯示圖片或圖像檔案的 url"
+    },
+    "common": {
+      "checkAll": "檢查全部",
+      "infoButton": "選擇您要配置的卡片。",
+      "infoImages": "無需為每行添加“-”。每一行將自動被視為一個單獨的 URL。",
+      "infoMap": "這是地圖彈出視窗的配置。",
+      "infoServices": "選擇您要啟用的服務。如果某項服務已停用，該服務將不會顯示在卡片中。",
+      "uncheckAll": "全部取消勾選"
+    },
+    "imagesConfig": {
+      "desc": "新增圖像的 URL。",
+      "title": "影像配置",
+      "selectAll": "選擇全部",
+      "deselectAll": "取消全選",
+      "deleteSelected": "刪除所選內容"
+    },
+    "mapConfig": {
+      "desc": "選擇地圖的配置",
+      "title": "地圖配置"
+    },
+    "servicesConfig": {
+      "desc": "選擇您要啟用的服務。",
+      "title": "服務配置"
+    },
+    "showConfig": {
+      "desc": "選擇您要顯示的項目。",
+      "title": "顯示配置"
+    },
+    "showOpts": {
+      "enable_map_popup": "啟用地圖彈出視窗",
+      "enable_services_control": "啟用服務控制",
+      "show_background": "顯示背景",
+      "show_buttons": "顯示按鈕",
+      "show_error_notify": "顯示錯誤通知",
+      "show_map": "顯示地圖",
+      "show_slides": "顯示幻燈片",
+      "show_header_info": "顯示標題訊息",
+      "show_address": "顯示地址"
+    },
+    "themeLangConfig": {
+      "desc": "選擇主題和語言。",
+      "title": "主題和語言"
+    },
+    "customButtonConfig": {
+      "title": "自訂按鈕",
+      "desc": "設定自訂按鈕的值",
+      "info": "新增的或編輯現有的自訂按鈕"
+    },
+    "customCardConfig": {
+      "title": "客製化卡",
+      "desc": "lovelace 卡的 Yaml 配置"
+    },
+    "customTireBackground": {
+      "title": "客製化輪胎背景",
+      "desc": "上傳圖像以替換預設背景。",
+      "info": "影像應為正方形，最大解析度為 450x450 像素。建議使用透明背景。"
+    },
+    "customActionConfig": {
+      "title": "按鈕交互",
+      "desc": "設定自訂按鈕的操作"
+    }
+  }
+}
