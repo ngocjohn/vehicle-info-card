@@ -187,7 +187,7 @@ export class VehicleMap extends LitElement {
       <div class="address-line">
         <ha-icon icon="mdi:map-marker"></ha-icon>
         <div class="address-info">
-          <span class="secondary">${address.streetNumber} ${address.streetName}</span>
+          <span class="secondary">${address.streetName} ${address.streetNumber}</span>
           <span class="primary">${!address.sublocality ? address.city : address.sublocality}</span>
         </div>
       </div>
@@ -392,7 +392,6 @@ export class VehicleMap extends LitElement {
           height: 48px;
           display: inline-block;
           position: relative;
-          place-self: center;
         }
         .loader::after,
         .loader::before {
@@ -401,11 +400,12 @@ export class VehicleMap extends LitElement {
           width: 48px;
           height: 48px;
           border-radius: 50%;
-          border: 2px solid #fff;
+          border: 2px solid var(--primary-text-color);
           position: absolute;
           left: 0;
           top: 0;
           animation: animloader 2s linear infinite;
+          opacity: 0;
         }
         .loader::after {
           animation-delay: 1s;
@@ -414,7 +414,7 @@ export class VehicleMap extends LitElement {
         @keyframes animloader {
           0% {
             transform: scale(0);
-            opacity: 1;
+            opacity: 0.5;
           }
           100% {
             transform: scale(1);

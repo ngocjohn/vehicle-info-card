@@ -179,6 +179,17 @@ header h1 {
   cursor: pointer;
 }
 
+.item.active-btn:hover,
+.item.active-btn[active] {
+  color: var(--primary-color);
+}
+
+
+
+/* .item.active-btn>ha-icon {
+  color: var(--primary-color);
+} */
+
 .info-box.charge {
   overflow: hidden;
   justify-content: space-evenly;
