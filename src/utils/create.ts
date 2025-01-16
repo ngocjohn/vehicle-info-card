@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { mdiClose } from '@mdi/js';
 import { html, TemplateResult } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined';
@@ -27,8 +26,7 @@ interface PickerOptions {
     | 'selectorBoolean'
     | 'template'
     | 'textfield'
-    | 'theme'
-    | 'new_template';
+    | 'theme';
   value: boolean | number | string;
 }
 
@@ -155,27 +153,6 @@ export const Picker = ({
         .required=${false}
       ></ha-selector>
     `,
-    new_template: html`
-      <div class="template-ui">
-        <p>${options?.label}</p>
-        <ha-code-editor
-          .hass=${hass}
-          .mode=${'jinja2'}
-          .dir=${'ltr'}
-          .value=${value}
-          .configValue=${configValue}
-          .configType=${configType}
-          .configIndex=${configIndex}
-          .index=${configIndex}
-          @value-changed=${handleValueChange}
-          .linewrap=${false}
-          .autofocus=${true}
-          .autocompleteEntities=${true}
-          .autocompleteIcons=${true}
-        ></ha-code-editor>
-        <ha-input-helper-text>${options?.helperText}</ha-input-helper-text>
-      </div>
-    `,
     template: html`
       <ha-selector
         .hass=${hass}
@@ -195,7 +172,6 @@ export const Picker = ({
 
     textfield: html`
       <ha-textfield
-        class="form-text"
         .label=${label}
         .placeholder=${label}
         .configValue=${configValue}
@@ -237,7 +213,7 @@ export const TabBar = ({
   tabs: { content: TemplateResult; icon?: string; key: string; label: string; stacked?: boolean }[];
 }): TemplateResult => {
   return html`
-    <mwc-tab-bar class="vic-tabbar" @MDCTabBar:activated=${(e: Event) => onTabChange((e.target as any).activeIndex)}>
+    <mwc-tab-bar @MDCTabBar:activated=${(e: Event) => onTabChange((e.target as any).activeIndex)}>
       ${tabs.map(
         (tab) => html`<mwc-tab label=${tab.label} icon=${tab.icon || ''} ?stacked=${tab.stacked || false}></mwc-tab>`
       )}
@@ -310,7 +286,7 @@ export const BtnPreview = (btn: CustomButtonEntity, hass: HomeAssistant): Templa
               .icon=${icon}
             ></ha-state-icon>
           </div>
-          <div class="item-notify ${notify ? '' : 'hidden'}">
+          <div class="item-notify" ?hidden=${!notify}>
             <ha-icon icon="mdi:alert-circle"></ha-icon>
           </div>
         </div>
@@ -325,12 +301,12 @@ export const BtnPreview = (btn: CustomButtonEntity, hass: HomeAssistant): Templa
 
 export const createCloseHeading = (hass: HomeAssistant | undefined, title: string | TemplateResult) => html`
   <div class="header_title">
-    <span>${title}</span>
     <ha-icon-button
       .label=${hass?.localize('ui.dialogs.generic.close') ?? 'Close'}
       .path=${mdiClose}
       dialogAction="close"
       class="header_button"
     ></ha-icon-button>
+    <span>${title}</span>
   </div>
 `;

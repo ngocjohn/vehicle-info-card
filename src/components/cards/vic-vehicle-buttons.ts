@@ -168,6 +168,7 @@ export class VehicleButtons extends LitElement {
       this._unsubRenderTemplates[key].set(templateKey, sub);
       await sub; // Ensure subscription completes
     } catch (_err) {
+      console.error('Error subscribing to template', _err);
       const result = {
         result: button[templateKey] ?? '',
         listeners: {
@@ -222,30 +223,6 @@ export class VehicleButtons extends LitElement {
     }
   }
 
-  private _getCustomState(key: string, templateKey: string) {
-    const button = this._buttons[key].button;
-    switch (templateKey) {
-      case 'secondary':
-        const state = button.secondary
-          ? this._templateResults[key]?.secondary?.result ?? button.secondary
-          : button.attribute
-          ? this.component.getFormattedAttributeState(button.entity, button.attribute)
-          : this.component.getStateDisplay(button.entity);
-        return state;
-      case 'notify':
-        return this._templateResults[key]?.notify?.result ?? '';
-      case 'icon_template':
-        const icon = button.icon_template
-          ? this._templateResults[key]?.icon_template?.result.toString() ?? button.icon
-          : button.icon;
-        return icon.includes('mdi:') ? icon : '';
-      case 'color_template':
-        return this._templateResults[key]?.color_template?.result ?? '';
-      case 'picture_template':
-        return this._templateResults[key]?.picture_template?.result ?? '';
-    }
-  }
-
   private initSwiper(): void {
     const swiperCon = this.shadowRoot?.querySelector('.swiper-container');
     if (!swiperCon) return;
@@ -276,6 +253,30 @@ export class VehicleButtons extends LitElement {
       this._cardCurrentSwipeIndex !== this.activeSlideIndex
     ) {
       this.swiper.slideTo(this._cardCurrentSwipeIndex, 0, false);
+    }
+  }
+
+  private _getCustomState(key: string, templateKey: string) {
+    const button = this._buttons[key].button;
+    switch (templateKey) {
+      case 'secondary':
+        const state = button.secondary
+          ? this._templateResults[key]?.secondary?.result ?? button.secondary
+          : button.attribute
+          ? this.component.getFormattedAttributeState(button.entity, button.attribute)
+          : this.component.getStateDisplay(button.entity);
+        return state;
+      case 'notify':
+        return this._templateResults[key]?.notify?.result ?? '';
+      case 'icon_template':
+        const icon = button.icon_template
+          ? this._templateResults[key]?.icon_template?.result.toString() ?? button.icon
+          : button.icon;
+        return icon.includes('mdi:') ? icon : '';
+      case 'color_template':
+        return this._templateResults[key]?.color_template?.result ?? '';
+      case 'picture_template':
+        return this._templateResults[key]?.picture_template?.result ?? '';
     }
   }
 

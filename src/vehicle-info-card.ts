@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { mdiChevronLeft, mdiChevronRight, mdiClose } from '@mdi/js';
 import { formatDateTime, applyThemesOnElement, forwardHaptic, hasConfigOrEntityChanged } from 'custom-card-helpers';
 import { LitElement, html, TemplateResult, PropertyValues, CSSResultGroup, nothing } from 'lit';
