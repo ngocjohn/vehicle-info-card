@@ -207,7 +207,7 @@ export class VehicleCard extends LitElement {
 
   get _locale(): FrontendLocaleData {
     const locale = this._hass.locale;
-    const language = this.userLang;
+    const language = this.userLang.includes('_') ? this.userLang.replace('_', '-') : this.userLang;
     const newLocale = {
       ...locale,
       language,
@@ -462,7 +462,7 @@ export class VehicleCard extends LitElement {
 
     // Helper function to render items
     const renderItem = (icon: string, label: string, onClick: () => void, isActive: boolean = false) => html`
-      <div class="item active-btn" @click=${onClick}>
+      <div class="item active-btn" @click=${onClick} ?active=${isActive}>
         <ha-icon icon=${icon}></ha-icon>
         <div class="added-item-arrow">
           <span>${label}</span>
@@ -476,7 +476,7 @@ export class VehicleCard extends LitElement {
     // Render default indicators
     const defaultIndicators = defaultIndicData.map(
       ({ state, icon, key }) => html`
-        <div class="item" @click=${() => this.toggleMoreInfo(this.vehicleEntities[key]?.entity_id)}>
+        <div class="item active-btn" @click=${() => this.toggleMoreInfo(this.vehicleEntities[key]?.entity_id)}>
           <ha-icon .icon=${icon}></ha-icon>
           <span>${state}</span>
         </div>

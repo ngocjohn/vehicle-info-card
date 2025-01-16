@@ -1,303 +1,303 @@
 {
-  "name": "zh_hans",
-  "nativeName": "简体中文",
-  "card": {
-    "common": {
-      "lastUpdate": "最后更新",
-      "stateCharging": "收费",
-      "stateClosed": "关闭",
-      "stateLocked": "锁定",
-      "stateLockedInt": "锁定整数",
-      "stateNotExisting": "不存在",
-      "stateOpen": "启动",
-      "stateParkBrakeOff": "驻车制动器OFF",
-      "stateParkBrakeOn": "驻车制动器ON",
-      "statePartlyUnlocked": "部分解锁",
-      "stateUnknown": "未知",
-      "stateUnlocked": "解锁",
-      "statePressed": "按下",
-      "titleRemoteControl": "遥控",
-      "titleServices": "服务",
-      "toastCommandSent": "命令发送成功！",
-      "toastImageError": "上传图片时出错，仅允许 PNG 和 JPEG 文件。",
-      "toastCardAlreadyExists": "卡已存在"
+    "name": "zh_hans",
+    "nativeName": "简体中文",
+    "card": {
+        "common": {
+            "lastUpdate": "最后更新",
+            "stateCharging": "收费",
+            "stateClosed": "关闭",
+            "stateLocked": "锁定",
+            "stateLockedInt": "锁定整数",
+            "stateNotExisting": "不存在",
+            "stateOpen": "启动",
+            "stateParkBrakeOff": "驻车制动器OFF",
+            "stateParkBrakeOn": "驻车制动器ON",
+            "statePartlyUnlocked": "部分解锁",
+            "stateUnknown": "未知",
+            "stateUnlocked": "解锁",
+            "statePressed": "按下",
+            "titleRemoteControl": "遥控",
+            "titleServices": "服务",
+            "toastCommandSent": "命令发送成功！",
+            "toastImageError": "上传图片时出错，仅允许 PNG 和 JPEG 文件。",
+            "toastCardAlreadyExists": "卡已存在"
+        },
+        "cardType": {
+            "ecoCards": "生态展示",
+            "tripCards": "行程数据",
+            "tyreCards": "轮胎气压",
+            "vehicleCards": "车辆状态"
+        },
+        "chargingOverview": {
+            "chargingPower": "力量",
+            "maxSoc": "最大限度",
+            "selectedProgram": "程序",
+            "soc": "目前状态"
+        },
+        "doorAttributes": {
+            "decklidstatus": "行李舱",
+            "doorstatusfrontleft": "门左前",
+            "doorstatusfrontright": "门前右",
+            "doorstatusrearleft": "车门左后侧",
+            "doorstatusrearright": "车门右后侧",
+            "enginehoodstatus": "发动机罩",
+            "sunroofstatus": "天窗",
+            "chargeflapdcstatus": "充电插座盖"
+        },
+        "ecoCard": {
+            "ecoDisplay": "生态展示",
+            "ecoScore": "分数",
+            "ecoScoreAcceleraion": "加速",
+            "ecoScoreBonusRange": "奖金范围",
+            "ecoScoreConstant": "持续的",
+            "ecoScoreFreeWheel": "自由轮"
+        },
+        "lockAttributes": {
+            "doorlockstatusfrontleft": "门锁左前",
+            "doorlockstatusfrontright": "门锁右前",
+            "doorlockstatusgas": "气帽锁",
+            "doorlockstatusrearleft": "门锁左后侧",
+            "doorlockstatusrearright": "右后门锁"
+        },
+        "serviceData": {
+            "labelChargeProgram": "收费方案",
+            "labelCity": "城市",
+            "labelClose": "关闭",
+            "labelDepartureTime": "出发时间",
+            "labelDurationTime": "持续时间",
+            "labelLatitude": "纬度",
+            "labelLockCar": "锁车",
+            "labelLongitude": "经度",
+            "labelMaxStateOfCharge": "最大充电状态",
+            "labelMoreInfo": "更多信息",
+            "labelMove": "移动",
+            "labelNoSelection": "没有选择",
+            "labelOpen": "打开",
+            "labelPostCode": "邮政编码",
+            "labelSave": "节省",
+            "labelSend": "发送",
+            "labelSetMaxSoc": "设置最大值",
+            "labelSetProgram": "设定程序",
+            "labelStart": "开始",
+            "labelStartTime": "开始时间",
+            "labelStop": "停止",
+            "labelStopTime": "停止时间",
+            "labelStreet": "街道",
+            "labelTilt": "倾斜",
+            "labelTime1": "时间1",
+            "labelTime2": "时间2",
+            "labelTime3": "时间3",
+            "labelTimeSelection": "时间选择",
+            "labelTitle": "标题",
+            "labelUnlockCar": "解锁汽车",
+            "labelWindowFrontLeft": "左前",
+            "labelWindowFrontRight": "右前",
+            "labelWindowRearLeft": "左后",
+            "labelWindowRearRight": "右后",
+            "labelSeatConfig": "保存座位配置",
+            "labelSetTempZone": "保存温区",
+            "labelPreclimateStatus": "预气候状态"
+        },
+        "servicesCtrl": {
+            "auxheat": "辅助加热",
+            "charge": "收费",
+            "doorsLock": "安全",
+            "engine": "发动机控制",
+            "preheat": "预调节",
+            "sendRoute": "发送路线",
+            "sigPos": "信号位置",
+            "sunroof": "天窗",
+            "windows": "视窗"
+        },
+        "starterBattery": {
+            "notAvailable": "无法使用",
+            "partlyCharged": "部分收费",
+            "remoteServiceDisabled": "远程服务已禁用",
+            "stateOk": "好的",
+            "vehicleNoLongerAvailable": "车辆不再可用"
+        },
+        "sunroofState": {
+            "antiBoomingLifting": "防震举升",
+            "antiBoomingPosition": "防轰位置",
+            "closing": "闭幕式",
+            "closingLifting": "关闭提升",
+            "intermediatePosition": "中间位置",
+            "liftingIntermediate": "起重中间体",
+            "liftingOpen": "升降开启",
+            "opening": "开幕",
+            "openingLifting": "开口升降",
+            "running": "跑步",
+            "slidingIntermediate": "滑动中间体",
+            "stateClosed": "关闭",
+            "stateOpen": "打开"
+        },
+        "tripCard": {
+            "adBlueLevel": "AdBlue 液位",
+            "averageSpeedReset": "平均速度",
+            "averageSpeedStart": "平均速度",
+            "distanceReset": "行驶距离",
+            "distanceStart": "行驶距离",
+            "distanceZEReset": "零排放行驶距离",
+            "distanceZEStart": "零排放行驶距离",
+            "drivenTimeReset": "行驶时间",
+            "drivenTimeStart": "行驶时间",
+            "drivenTimeZEReset": "驾驶时间零排放",
+            "drivenTimeZEStart": "驾驶时间零排放",
+            "electricConsumptionReset": "平均消费",
+            "electricConsumptionStart": "平均消费",
+            "fromReset": "从重置开始",
+            "fromStart": "从开始",
+            "fuelLevel": "燃油油位",
+            "liquidConsumptionReset": "平均消费",
+            "liquidConsumptionStart": "平均消费",
+            "maxSoc": "最大充电状态",
+            "odometer": "里程表",
+            "overview": "概述",
+            "rangeElectric": "范围",
+            "rangeLiquid": "范围",
+            "soc": "充电状态"
+        },
+        "tyreCard": {
+            "tirePressureFrontLeft": "左前",
+            "tirePressureFrontRight": "右前",
+            "tirePressureRearLeft": "左后",
+            "tirePressureRearRight": "右后",
+            "tireWarningOk": "未检测到压力损失",
+            "tireWarningProblem": "检测到压力损失。检查轮胎。",
+            "tyrePressure": "轮胎气压"
+        },
+        "vehicleCard": {
+            "doorStatusOverall": "门",
+            "engineLight": "发动机灯",
+            "ignitionState": "点火状态",
+            "lockSensor": "锁定状态",
+            "lowBrakeFluid": "制动液",
+            "lowCoolantLevel": "冷却液",
+            "lowWashWater": "清洗液",
+            "parkBrake": "驻车制动",
+            "starterBatteryState": "启动电池",
+            "tirePressureWarning": "轮胎气压",
+            "vehicleStatus": "车辆状态",
+            "vehicleWarnings": "警告",
+            "windowsClosed": "视窗"
+        },
+        "windowAttributes": {
+            "windowstatusfrontleft": "左前窗",
+            "windowstatusfrontleftblind": "左前窗百叶窗",
+            "windowstatusfrontright": "车窗右前方",
+            "windowstatusfrontrightblind": "右前窗百叶窗",
+            "windowstatusrearleft": "车窗左后",
+            "windowstatusrearleftblind": "左后窗百叶窗",
+            "windowstatusrearright": "车窗右后",
+            "windowstatusrearrightblind": "右后车窗百叶窗"
+        },
+        "ignitionState": {
+            "ignitionLock": "锁",
+            "ignitionOff": "离开",
+            "ignitionAccessory": "配饰",
+            "ignitionOn": "在",
+            "ignitionStart": "开始"
+        },
+        "precondSeatTemp": {
+            "frontLeft": "左前",
+            "frontRight": "右前",
+            "rearLeft": "左后",
+            "rearRight": "右后"
+        }
     },
-    "cardType": {
-      "ecoCards": "生态展示",
-      "tripCards": "行程数据",
-      "tyreCards": "轮胎气压",
-      "vehicleCards": "车辆状态"
-    },
-    "chargingOverview": {
-      "chargingPower": "力量",
-      "maxSoc": "最大限度",
-      "selectedProgram": "程序",
-      "soc": "目前状态"
-    },
-    "doorAttributes": {
-      "decklidstatus": "行李舱",
-      "doorstatusfrontleft": "门左前",
-      "doorstatusfrontright": "门前右",
-      "doorstatusrearleft": "车门左后侧",
-      "doorstatusrearright": "车门右后侧",
-      "enginehoodstatus": "发动机罩",
-      "sunroofstatus": "天窗",
-      "chargeflapdcstatus": "充电插座盖"
-    },
-    "ecoCard": {
-      "ecoDisplay": "生态展示",
-      "ecoScore": "分数",
-      "ecoScoreAcceleraion": "加速",
-      "ecoScoreBonusRange": "奖金范围",
-      "ecoScoreConstant": "持续的",
-      "ecoScoreFreeWheel": "自由轮"
-    },
-    "lockAttributes": {
-      "doorlockstatusfrontleft": "门锁左前",
-      "doorlockstatusfrontright": "门锁右前",
-      "doorlockstatusgas": "气帽锁",
-      "doorlockstatusrearleft": "门锁左后侧",
-      "doorlockstatusrearright": "右后门锁"
-    },
-    "serviceData": {
-      "labelChargeProgram": "收费方案",
-      "labelCity": "城市",
-      "labelClose": "关闭",
-      "labelDepartureTime": "出发时间",
-      "labelDurationTime": "持续时间",
-      "labelLatitude": "纬度",
-      "labelLockCar": "锁车",
-      "labelLongitude": "经度",
-      "labelMaxStateOfCharge": "最大充电状态",
-      "labelMoreInfo": "更多信息",
-      "labelMove": "移动",
-      "labelNoSelection": "没有选择",
-      "labelOpen": "打开",
-      "labelPostCode": "邮政编码",
-      "labelSave": "节省",
-      "labelSend": "发送",
-      "labelSetMaxSoc": "设置最大值",
-      "labelSetProgram": "设定程序",
-      "labelStart": "开始",
-      "labelStartTime": "开始时间",
-      "labelStop": "停止",
-      "labelStopTime": "停止时间",
-      "labelStreet": "街道",
-      "labelTilt": "倾斜",
-      "labelTime1": "时间1",
-      "labelTime2": "时间2",
-      "labelTime3": "时间3",
-      "labelTimeSelection": "时间选择",
-      "labelTitle": "标题",
-      "labelUnlockCar": "解锁汽车",
-      "labelWindowFrontLeft": "左前",
-      "labelWindowFrontRight": "右前",
-      "labelWindowRearLeft": "左后",
-      "labelWindowRearRight": "右后",
-      "labelSeatConfig": "保存座位配置",
-      "labelSetTempZone": "保存温区",
-      "labelPreclimateStatus": "预气候状态"
-    },
-    "servicesCtrl": {
-      "auxheat": "辅助加热",
-      "charge": "收费",
-      "doorsLock": "安全",
-      "engine": "发动机控制",
-      "preheat": "预调节",
-      "sendRoute": "发送路线",
-      "sigPos": "信号位置",
-      "sunroof": "天窗",
-      "windows": "视窗"
-    },
-    "starterBattery": {
-      "notAvailable": "无法使用",
-      "partlyCharged": "部分收费",
-      "remoteServiceDisabled": "远程服务已禁用",
-      "stateOk": "好的",
-      "vehicleNoLongerAvailable": "车辆不再可用"
-    },
-    "sunroofState": {
-      "antiBoomingLifting": "防震举升",
-      "antiBoomingPosition": "防轰位置",
-      "closing": "闭幕式",
-      "closingLifting": "关闭提升",
-      "intermediatePosition": "中间位置",
-      "liftingIntermediate": "起重中间体",
-      "liftingOpen": "升降开启",
-      "opening": "开幕",
-      "openingLifting": "开口升降",
-      "running": "跑步",
-      "slidingIntermediate": "滑动中间体",
-      "stateClosed": "关闭",
-      "stateOpen": "打开"
-    },
-    "tripCard": {
-      "adBlueLevel": "AdBlue 液位",
-      "averageSpeedReset": "平均速度",
-      "averageSpeedStart": "平均速度",
-      "distanceReset": "行驶距离",
-      "distanceStart": "行驶距离",
-      "distanceZEReset": "零排放行驶距离",
-      "distanceZEStart": "零排放行驶距离",
-      "drivenTimeReset": "行驶时间",
-      "drivenTimeStart": "行驶时间",
-      "drivenTimeZEReset": "驾驶时间零排放",
-      "drivenTimeZEStart": "驾驶时间零排放",
-      "electricConsumptionReset": "平均消费",
-      "electricConsumptionStart": "平均消费",
-      "fromReset": "从重置开始",
-      "fromStart": "从开始",
-      "fuelLevel": "燃油油位",
-      "liquidConsumptionReset": "平均消费",
-      "liquidConsumptionStart": "平均消费",
-      "maxSoc": "最大充电状态",
-      "odometer": "里程表",
-      "overview": "概述",
-      "rangeElectric": "范围",
-      "rangeLiquid": "范围",
-      "soc": "充电状态"
-    },
-    "tyreCard": {
-      "tirePressureFrontLeft": "左前",
-      "tirePressureFrontRight": "右前",
-      "tirePressureRearLeft": "左后",
-      "tirePressureRearRight": "右后",
-      "tireWarningOk": "未检测到压力损失",
-      "tireWarningProblem": "检测到压力损失。检查轮胎。",
-      "tyrePressure": "轮胎气压"
-    },
-    "vehicleCard": {
-      "doorStatusOverall": "门",
-      "engineLight": "发动机灯",
-      "ignitionState": "点火状态",
-      "lockSensor": "锁定状态",
-      "lowBrakeFluid": "制动液",
-      "lowCoolantLevel": "冷却液",
-      "lowWashWater": "清洗液",
-      "parkBrake": "驻车制动",
-      "starterBatteryState": "启动电池",
-      "tirePressureWarning": "轮胎气压",
-      "vehicleStatus": "车辆状态",
-      "vehicleWarnings": "警告",
-      "windowsClosed": "视窗"
-    },
-    "windowAttributes": {
-      "windowstatusfrontleft": "左前窗",
-      "windowstatusfrontleftblind": "左前窗百叶窗",
-      "windowstatusfrontright": "车窗右前方",
-      "windowstatusfrontrightblind": "右前窗百叶窗",
-      "windowstatusrearleft": "车窗左后",
-      "windowstatusrearleftblind": "左后窗百叶窗",
-      "windowstatusrearright": "车窗右后",
-      "windowstatusrearrightblind": "右后车窗百叶窗"
-    },
-    "ignitionState": {
-      "ignitionLock": "锁",
-      "ignitionOff": "离开",
-      "ignitionAccessory": "配饰",
-      "ignitionOn": "在",
-      "ignitionStart": "开始"
-    },
-    "precondSeatTemp": {
-      "frontLeft": "左前",
-      "frontRight": "右前",
-      "rearLeft": "左后",
-      "rearRight": "右后"
+    "editor": {
+        "entityConfig": {
+            "desc": "选择实体和卡名称。",
+            "title": "实体及卡名"
+        },
+        "buttonConfig": {
+            "desc": "为各个按钮配置子卡。",
+            "title": "按键配置",
+            "defaultCards": "默认卡",
+            "customCards": "定制卡",
+            "addNewCard": "添加新卡",
+            "hideButton": "隐藏卡片上的按钮",
+            "useCustomButton": "使用自定义按钮",
+            "useCustomCard": "使用定制卡",
+            "showButton": "显示按钮",
+            "preview": "预览",
+            "hidePreview": "隐藏预览",
+            "secondaryInfo": "次要信息",
+            "secondaryInfoDesc": "这将显示在卡片标题下方。",
+            "secondaryInfoHelper": "使用Jinja2模板显示辅助信息",
+            "notifyInfo": "通知配置",
+            "notifyInfoHelper": "结果必须返回“True”布尔值才能显示通知。",
+            "deleteConfirm": "您确定要删除这张卡吗？",
+            "toastNewCard": "添加了新卡！",
+            "buttonGridSwipe": "按钮网格配置",
+            "swipeRows": "每张幻灯片的行数",
+            "useButtonSwipe": "使用滑动按钮",
+            "iconInfo": "图标模板",
+            "iconInfoHelper": "使用Jinja2模板显示图标",
+            "colorInfo": "颜色模板",
+            "colorInfoHelper": "使用Jinja2模板更改图标颜色",
+            "pictureInfo": "图片（将替换图标）",
+            "pictureInfoHelper": "您可以使用模板来显示图片或图像文件的 url"
+        },
+        "common": {
+            "checkAll": "检查全部",
+            "infoButton": "选择您要配置的卡。",
+            "infoImages": "无需为每行添加“-”。每一行将自动被视为一个单独的 URL。",
+            "infoMap": "这是地图弹出窗口的配置。",
+            "infoServices": "选择您要启用的服务。如果某项服务被禁用，该服务将不会显示在卡中。",
+            "uncheckAll": "全部取消勾选"
+        },
+        "imagesConfig": {
+            "desc": "添加图像的 URL。",
+            "title": "图像配置",
+            "selectAll": "选择全部",
+            "deselectAll": "取消全选",
+            "deleteSelected": "删除所选内容"
+        },
+        "mapConfig": {
+            "desc": "选择地图的配置",
+            "title": "地图配置"
+        },
+        "servicesConfig": {
+            "desc": "选择您要启用的服务。",
+            "title": "服务配置"
+        },
+        "showConfig": {
+            "desc": "选择您要显示的项目。",
+            "title": "显示配置"
+        },
+        "showOpts": {
+            "enable_map_popup": "启用地图弹出窗口",
+            "enable_services_control": "启用服务控制",
+            "show_background": "显示背景",
+            "show_buttons": "显示按钮",
+            "show_error_notify": "显示错误通知",
+            "show_map": "显示地图",
+            "show_slides": "显示幻灯片",
+            "show_header_info": "显示标题信息",
+            "show_address": "显示地址"
+        },
+        "themeLangConfig": {
+            "desc": "选择主题和语言。",
+            "title": "主题和语言"
+        },
+        "customButtonConfig": {
+            "title": "自定义按钮",
+            "desc": "设置自定义按钮的值",
+            "info": "添加新的或编辑现有的自定义按钮"
+        },
+        "customCardConfig": {
+            "title": "定制卡",
+            "desc": "lovelace 卡的 Yaml 配置"
+        },
+        "customTireBackground": {
+            "title": "定制轮胎背景",
+            "desc": "上传图像以替换默认背景。",
+            "info": "图像应为正方形，最大分辨率为 450x450 像素。建议使用透明背景。"
+        },
+        "customActionConfig": {
+            "title": "按钮交互",
+            "desc": "设置自定义按钮的操作"
+        }
     }
-  },
-  "editor": {
-    "entityConfig": {
-      "desc": "选择实体和卡名称。",
-      "title": "实体及卡名"
-    },
-    "buttonConfig": {
-      "desc": "为各个按钮配置子卡。",
-      "title": "按键配置",
-      "defaultCards": "默认卡",
-      "customCards": "定制卡",
-      "addNewCard": "添加新卡",
-      "hideButton": "隐藏卡片上的按钮",
-      "useCustomButton": "使用自定义按钮",
-      "useCustomCard": "使用定制卡",
-      "showButton": "显示按钮",
-      "preview": "预览",
-      "hidePreview": "隐藏预览",
-      "secondaryInfo": "次要信息",
-      "secondaryInfoDesc": "这将显示在卡片标题下方。",
-      "secondaryInfoHelper": "使用Jinja2模板显示辅助信息",
-      "notifyInfo": "通知配置",
-      "notifyInfoHelper": "结果必须返回“True”布尔值才能显示通知。",
-      "deleteConfirm": "您确定要删除这张卡吗？",
-      "toastNewCard": "添加了新卡！",
-      "buttonGridSwipe": "按钮网格配置",
-      "swipeRows": "每张幻灯片的行数",
-      "useButtonSwipe": "使用滑动按钮",
-      "iconInfo": "图标模板",
-      "iconInfoHelper": "使用Jinja2模板显示图标",
-      "colorInfo": "颜色模板",
-      "colorInfoHelper": "使用Jinja2模板更改图标颜色",
-      "pictureInfo": "图片（将替换图标）",
-      "pictureInfoHelper": "您可以使用模板来显示图片或图像文件的 url"
-    },
-    "common": {
-      "checkAll": "检查全部",
-      "infoButton": "选择您要配置的卡。",
-      "infoImages": "无需为每行添加“-”。每一行将自动被视为一个单独的 URL。",
-      "infoMap": "这是地图弹出窗口的配置。",
-      "infoServices": "选择您要启用的服务。如果某项服务被禁用，该服务将不会显示在卡中。",
-      "uncheckAll": "全部取消勾选"
-    },
-    "imagesConfig": {
-      "desc": "添加图像的 URL。",
-      "title": "图像配置",
-      "selectAll": "选择全部",
-      "deselectAll": "取消全选",
-      "deleteSelected": "删除所选内容"
-    },
-    "mapConfig": {
-      "desc": "选择地图的配置",
-      "title": "地图配置"
-    },
-    "servicesConfig": {
-      "desc": "选择您要启用的服务。",
-      "title": "服务配置"
-    },
-    "showConfig": {
-      "desc": "选择您要显示的项目。",
-      "title": "显示配置"
-    },
-    "showOpts": {
-      "enable_map_popup": "启用地图弹出窗口",
-      "enable_services_control": "启用服务控制",
-      "show_background": "显示背景",
-      "show_buttons": "显示按钮",
-      "show_error_notify": "显示错误通知",
-      "show_map": "显示地图",
-      "show_slides": "显示幻灯片",
-      "show_header_info": "显示标题信息",
-      "show_address": "显示地址"
-    },
-    "themeLangConfig": {
-      "desc": "选择主题和语言。",
-      "title": "主题和语言"
-    },
-    "customButtonConfig": {
-      "title": "自定义按钮",
-      "desc": "设置自定义按钮的值",
-      "info": "添加新的或编辑现有的自定义按钮"
-    },
-    "customCardConfig": {
-      "title": "定制卡",
-      "desc": "lovelace 卡的 Yaml 配置"
-    },
-    "customTireBackground": {
-      "title": "定制轮胎背景",
-      "desc": "上传图像以替换默认背景。",
-      "info": "图像应为正方形，最大分辨率为 450x450 像素。建议使用透明背景。"
-    },
-    "customActionConfig": {
-      "title": "按钮交互",
-      "desc": "设置自定义按钮的操作"
-    }
-  }
 }

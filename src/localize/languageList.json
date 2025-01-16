@@ -10,5 +10,7 @@
   "nl.json",
   "pl.json",
   "sk.json",
-  "vi.json"
+  "vi.json",
+  "zh_Hans.json",
+  "zh_Hant.json"
 ]
