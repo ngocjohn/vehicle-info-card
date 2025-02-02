@@ -116,9 +116,7 @@ export class VehicleCard extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
-    if (process.env.ROLLUP_WATCH === 'true') {
-      window.BenzCard = this;
-    }
+    window.BenzCard = this;
     this._connected = true;
     if (this.editMode) {
       this._loading = false;

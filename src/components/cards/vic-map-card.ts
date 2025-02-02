@@ -12,6 +12,7 @@ import { LovelaceCardConfig } from '../../types/ha-frontend/lovelace/lovelace';
 import { _getMapAddress, createMapPopup } from '../../utils';
 import { createCloseHeading } from '../../utils/create';
 import { VehicleCard } from '../../vehicle-info-card';
+import './vic-maptiler-popup';
 
 @customElement('vehicle-map')
 export class VehicleMap extends LitElement {
@@ -199,8 +200,8 @@ export class VehicleMap extends LitElement {
     const styles = html`
       <style>
         ha-dialog {
-          --mdc-dialog-min-width: 500px;
-          --mdc-dialog-max-width: 600px;
+          --mdc-dialog-min-width: 75vw;
+          --mdc-dialog-max-width: 100vw;
           --dialog-backdrop-filter: blur(2px);
         }
         @media all and (max-width: 600px), all and (max-height: 500px) {
@@ -224,10 +225,46 @@ export class VehicleMap extends LitElement {
         flexContent
       >
         ${styles}
-        <div class="container">${this.mapCardPopup}</div>
+        <div class="container">
+          <vic-maptiler-popup .mapData=${this.mapData} .card=${this.card}></vic-maptiler-popup>
+        </div>
       </ha-dialog>
     `;
   }
+  // private _renderMapDialog() {
+  //   if (!this.open) return html``;
+  //   const styles = html`
+  //     <style>
+  //       ha-dialog {
+  //         --mdc-dialog-min-width: 500px;
+  //         --mdc-dialog-max-width: 600px;
+  //         --dialog-backdrop-filter: blur(2px);
+  //       }
+  //       @media all and (max-width: 600px), all and (max-height: 500px) {
+  //         ha-dialog {
+  //           --mdc-dialog-min-width: 100vw;
+  //           --mdc-dialog-max-width: 100vw;
+  //           --mdc-dialog-min-height: 100%;
+  //           --mdc-dialog-max-height: 100%;
+  //           --vertical-align-dialog: flex-end;
+  //           --ha-dialog-border-radius: 0;
+  //         }
+  //       }
+  //     </style>
+  //   `;
+  //   return html`
+  //     <ha-dialog
+  //       open
+  //       .heading=${createCloseHeading(this.card._hass, 'Map')}
+  //       @closed=${() => (this.open = false)}
+  //       hideActions
+  //       flexContent
+  //     >
+  //       ${styles}
+  //       <div class="container">${this.mapCardPopup}</div>
+  //     </ha-dialog>
+  //   `;
+  // }
 
   private async _toggleMapDialog() {
     if (!this.mapPopup) return;
