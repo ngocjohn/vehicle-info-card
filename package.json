@@ -23,6 +23,7 @@
     "@maptiler/sdk": "^3.0.1",
     "@mdi/js": "^7.4.47",
     "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-commonjs": "^28.0.2",
     "custom-card-helpers": "^1.9.0",
     "dotenv": "^16.4.7",
     "home-assistant-js-websocket": "^9.4.0",
@@ -31,7 +32,6 @@
     "tinycolor2": "^1.6.0"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^28.0.2",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.0",
     "@rollup/plugin-replace": "^6.0.2",
