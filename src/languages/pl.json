@@ -47,7 +47,7 @@
         "ecoCard": {
             "ecoDisplay": "Status ECO",
             "ecoScore": "Wynik",
-            "ecoScoreAcceleraion": "Przyspieszenie",
+            "ecoScoreAcceleration": "Przyspieszenie",
             "ecoScoreBonusRange": "Dodatkowy zasięg",
             "ecoScoreConstant": "Stała",
             "ecoScoreFreeWheel": "Jazda bezwładnościowa"

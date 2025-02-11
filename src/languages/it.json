@@ -47,7 +47,7 @@
         "ecoCard": {
             "ecoDisplay": "Eco",
             "ecoScore": "Punteggio",
-            "ecoScoreAcceleraion": "Accellerazione",
+            "ecoScoreAcceleration": "Accellerazione",
             "ecoScoreBonusRange": "Bonus distanza",
             "ecoScoreConstant": "Costante",
             "ecoScoreFreeWheel": "Ruota libera"

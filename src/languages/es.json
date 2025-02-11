@@ -47,7 +47,7 @@
         "ecoCard": {
             "ecoDisplay": "Pantalla Eco",
             "ecoScore": "Puntuaciones",
-            "ecoScoreAcceleraion": "Aceleración",
+            "ecoScoreAcceleration": "Aceleración",
             "ecoScoreBonusRange": "Rango adicional",
             "ecoScoreConstant": "Constante",
             "ecoScoreFreeWheel": "Punto muerto"

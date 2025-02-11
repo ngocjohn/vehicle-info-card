@@ -40,7 +40,7 @@ const sensorDeviceFilters: {
   distanceStart: { suffix: '_distancestart' },
   distanceZEReset: { suffix: '_distancezereset' },
   distanceZEStart: { suffix: '_distancezestart' },
-  ecoScoreAcceleraion: { suffix: '_ecoscoreaccel' },
+  ecoScoreAcceleration: { suffix: '_ecoscoreaccel' },
   ecoScoreBonusRange: { suffix: '_ecoscorebonusrange' },
   ecoScoreConstant: { suffix: '_ecoscoreconst' },
   ecoScoreFreeWheel: { suffix: '_ecoscorefreewhl' },

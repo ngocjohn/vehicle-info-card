@@ -47,7 +47,7 @@
         "ecoCard": {
             "ecoDisplay": "Affichage ECO",
             "ecoScore": "Résultats",
-            "ecoScoreAcceleraion": "Accélération",
+            "ecoScoreAcceleration": "Accélération",
             "ecoScoreBonusRange": "Autonomie bonus",
             "ecoScoreConstant": "Régularité",
             "ecoScoreFreeWheel": "Décélérer"

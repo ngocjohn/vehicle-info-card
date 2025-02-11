@@ -47,7 +47,7 @@
         "ecoCard": {
             "ecoDisplay": "Ukazovateľ ECO",
             "ecoScore": "Skóre",
-            "ecoScoreAcceleraion": "Zrýchlenie",
+            "ecoScoreAcceleration": "Zrýchlenie",
             "ecoScoreBonusRange": "Bonusový dojazd",
             "ecoScoreConstant": "Konštanta",
             "ecoScoreFreeWheel": "Voľnobeh"

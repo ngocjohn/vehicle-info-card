@@ -47,7 +47,7 @@
         "ecoCard": {
             "ecoDisplay": "Hiển thị Eco",
             "ecoScore": "Điểm số",
-            "ecoScoreAcceleraion": "Gia tốc",
+            "ecoScoreAcceleration": "Gia tốc",
             "ecoScoreBonusRange": "Phạm vi thưởng",
             "ecoScoreConstant": "Ổn định",
             "ecoScoreFreeWheel": "Bánh tự do"
