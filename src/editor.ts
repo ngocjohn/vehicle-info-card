@@ -74,9 +74,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     console.log('VehicleCardEditor connected');
     void loadHaComponents();
     void stickyPreview();
-    if (process.env.ROLLUP_WATCH === 'true') {
-      window.BenzEditor = this;
-    }
+    window.BenzEditor = this;
     this._cleanConfig();
   }
 
@@ -1821,6 +1819,14 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     return editorcss;
   }
 }
+(window as any).customCards = (window as any).customCards || [];
+(window as any).customCards.push({
+  type: 'vehicle-info-card',
+  name: 'Vehicle Info Card',
+  preview: true,
+  description: 'A custom card to display vehicle data with a map and additional cards.',
+  documentationURL: 'https://github.com/ngocjohn/vehicle-info-card?tab=readme-ov-file#configuration',
+});
 
 declare global {
   interface Window {
