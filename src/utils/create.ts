@@ -1,6 +1,6 @@
 import { mdiClose } from '@mdi/js';
 import { html, TemplateResult } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined';
+import { ifDefined } from 'lit/directives/if-defined.js';
 
 import { HomeAssistant, CustomButtonEntity } from '../types';
 

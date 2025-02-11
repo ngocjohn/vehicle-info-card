@@ -12,6 +12,7 @@ import { LovelaceCardConfig } from '../../types/ha-frontend/lovelace/lovelace';
 import { _getMapAddress, createMapPopup } from '../../utils';
 import { createCloseHeading } from '../../utils/create';
 import { VehicleCard } from '../../vehicle-info-card';
+import './vic-maptiler-popup';
 
 @customElement('vehicle-map')
 export class VehicleMap extends LitElement {
@@ -163,6 +164,7 @@ export class VehicleMap extends LitElement {
   }
 
   protected render(): TemplateResult {
+    const maptiler_api_key = this.card.config.extra_configs?.maptiler_api_key;
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     return html`
       <div class="map-wrapper" ?safari=${isSafari} style=${this._computeMapStyle()}>
@@ -174,7 +176,8 @@ export class VehicleMap extends LitElement {
         </div>
         <div id="map"></div>
       </div>
-      ${this._renderMapDialog()}
+
+      ${maptiler_api_key ? this._renderMaptilerDialog() : this._renderMapDialog()}
     `;
   }
 
@@ -191,6 +194,48 @@ export class VehicleMap extends LitElement {
           <span class="primary">${!address.sublocality ? address.city : address.sublocality}</span>
         </div>
       </div>
+    `;
+  }
+
+  private _renderMaptilerDialog() {
+    const maptiler_api_key = this.card.config.extra_configs?.maptiler_api_key;
+    if (!this.open || !maptiler_api_key) return html``;
+    const styles = html`
+      <style>
+        ha-dialog {
+          --mdc-dialog-min-width: 85vw;
+          --mdc-dialog-max-width: 85vw;
+          --dialog-backdrop-filter: blur(2px);
+        }
+        @media all and (max-width: 600px), all and (max-height: 500px) {
+          ha-dialog {
+            --mdc-dialog-min-width: 100vw;
+            --mdc-dialog-max-width: 100vw;
+            --mdc-dialog-min-height: 100%;
+            --mdc-dialog-max-height: 100%;
+            --vertical-align-dialog: flex-end;
+            --ha-dialog-border-radius: 0;
+            --dialog-content-padding: 0;
+          }
+          .mdc-dialog .mdc-dialog__content {
+            padding: 0;
+          }
+        }
+      </style>
+    `;
+    return html`
+      <ha-dialog
+        open
+        .heading=${createCloseHeading(this.card._hass, 'Map')}
+        @closed=${() => (this.open = false)}
+        hideActions
+        flexContent
+      >
+        ${styles}
+        <div class="container">
+          <vic-maptiler-popup .mapData=${this.mapData} .card=${this.card}></vic-maptiler-popup>
+        </div>
+      </ha-dialog>
     `;
   }
 

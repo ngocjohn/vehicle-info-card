@@ -57,6 +57,7 @@ export interface MapData {
   lon: number;
   address: Partial<Address>;
   popUpCard?: LovelaceCardConfig[];
+  entityPic?: string;
 }
 
 export interface PreviewCard {

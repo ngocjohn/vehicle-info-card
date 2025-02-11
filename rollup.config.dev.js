@@ -1,6 +1,6 @@
 import typescript from 'rollup-plugin-typescript2';
-import commonjs from 'rollup-plugin-commonjs';
-import nodeResolve from 'rollup-plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs';
+import { nodeResolve } from '@rollup/plugin-node-resolve';
 import { babel } from '@rollup/plugin-babel';
 import terser from '@rollup/plugin-terser';
 import serve from 'rollup-plugin-serve';
@@ -12,6 +12,7 @@ import replace from '@rollup/plugin-replace';
 import json from '@rollup/plugin-json';
 import { version } from './package.json';
 import { logCardInfo } from './rollup.config.helper.mjs';
+import nodePolyfills from 'rollup-plugin-polyfill-node';
 
 const dev = process.env.ROLLUP_WATCH;
 const port = process.env.PORT || 8235;
@@ -42,6 +43,7 @@ const terserOpt = {
 
 const plugins = [
   nodeResolve({}),
+  nodePolyfills(),
   commonjs(),
   typescript(),
   babel({

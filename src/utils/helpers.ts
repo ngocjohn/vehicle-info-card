@@ -64,7 +64,7 @@ export function compareVersions(version1, version2) {
   return 0; // Versions are equal
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 export function isEmpty(input: any): boolean {
   if (Array.isArray(input)) {
     // Check if array is empty
