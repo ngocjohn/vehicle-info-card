@@ -59,7 +59,7 @@
     "rollup-plugin-polyfill-node": "^0.13.0",
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-postcss-lit": "^2.1.0",
-    "rollup-plugin-serve": "^1.1.1",
+    "rollup-plugin-serve": "^3.0.0",
     "rollup-plugin-typescript2": "^0.36.0",
     "sortablejs": "^1.15.6",
     "swiper": "^11.2.0",
