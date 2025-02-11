@@ -669,11 +669,13 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const showOpts = editorShowOpts(this._selectedLanguage);
     const mapPopUp = showOpts.find((option) => option.configKey === 'enable_map_popup');
     const showAddress = showOpts.find((option) => option.configKey === 'show_address');
+    const maptilerApiKey = this._config?.extra_configs?.maptiler_api_key || '';
 
     const sharedConfig = {
       component: this,
       pickerType: 'boolean' as 'boolean',
     };
+
     const mapBoolean = [
       {
         label: mapPopUp?.label,
@@ -748,6 +750,13 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         type="password"
         .value=${this._config?.google_api_key}
         .configValue=${'google_api_key'}
+        @input=${this._valueChanged}
+      ></ha-textfield>
+      <ha-textfield
+        label="Maptiler API Key (Optional)"
+        type="password"
+        .value=${maptilerApiKey}
+        .configValue=${'maptiler_api_key'}
         @input=${this._valueChanged}
       ></ha-textfield>
       <div class="switches">
@@ -1583,6 +1592,13 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         show_address: newValue,
       };
       console.log('Show address changed:', target.checked);
+    } else if (configValue === 'maptiler_api_key') {
+      newValue = target.value;
+      updates.extra_configs = {
+        ...this._config.extra_configs,
+        maptiler_api_key: newValue,
+      };
+      console.log('Maptiler API key changed:', newValue);
     } else {
       newValue = target.checked !== undefined ? target.checked : ev.detail.value;
       updates[configValue] = newValue;

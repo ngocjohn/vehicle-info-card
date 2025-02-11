@@ -113,6 +113,7 @@ type ExtraConfigs = {
   section_order?: string[];
   mini_map_height?: number;
   show_address?: boolean;
+  maptiler_api_key?: string;
 };
 
 export interface VehicleCardConfig extends LovelaceCardConfig {

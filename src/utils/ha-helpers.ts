@@ -439,6 +439,7 @@ export async function handleCardFirstUpdated(component: VehicleCard): Promise<vo
 }
 
 export async function _getMapDat(card: VehicleCard): Promise<void> {
+  console.log('Getting map data...');
   const config = card.config as VehicleCardConfig;
   if (!config.show_map || !config.device_tracker || card._currentPreviewType !== null) return;
 
@@ -448,10 +449,12 @@ export async function _getMapDat(card: VehicleCard): Promise<void> {
   const mapData = {} as MapData;
   const deviceStateObj = hass.states[deviceTracker];
   if (!deviceStateObj) return;
-  const { latitude, longitude } = deviceStateObj.attributes;
+  const { latitude, longitude, entity_picture } = deviceStateObj.attributes;
   mapData.lat = latitude;
   mapData.lon = longitude;
+  mapData.entityPic = entity_picture ?? undefined;
   card.MapData = mapData;
+  // console.log('Map data:', mapData);
 }
 
 export async function _getMapAddress(card: VehicleCard, lat: number, lon: number) {
