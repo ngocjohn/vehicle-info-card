@@ -47,7 +47,7 @@
         "ecoCard": {
             "ecoDisplay": "Ukazatel ECO",
             "ecoScore": "Skóre",
-            "ecoScoreAcceleraion": "Zrychlení",
+            "ecoScoreAcceleration": "Zrychlení",
             "ecoScoreBonusRange": "Bonusový dojezd",
             "ecoScoreConstant": "Konstanta",
             "ecoScoreFreeWheel": "Volnoběh"

@@ -47,7 +47,7 @@
         "ecoCard": {
             "ecoDisplay": "ECO-aanduiding",
             "ecoScore": "ECO score",
-            "ecoScoreAcceleraion": "Accelereren",
+            "ecoScoreAcceleration": "Accelereren",
             "ecoScoreBonusRange": "Bonusactieradius",
             "ecoScoreConstant": "Gelijkmatig",
             "ecoScoreFreeWheel": "Uitrollen"

@@ -92,7 +92,7 @@ const vehicleWarnings = (lang: string): CardItem[] => [
 
 const ecoScores = (lang: string): CardItem[] => [
   createItem('ecoScoreBonusRange', 'ecoCard.ecoScoreBonusRange', lang),
-  createItem('ecoScoreAcceleraion', 'ecoCard.ecoScoreAcceleraion', lang),
+  createItem('ecoScoreAcceleration', 'ecoCard.ecoScoreAcceleration', lang),
   createItem('ecoScoreConstant', 'ecoCard.ecoScoreConstant', lang),
   createItem('ecoScoreFreeWheel', 'ecoCard.ecoScoreFreeWheel', lang),
 ];
