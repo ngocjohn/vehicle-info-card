@@ -206,7 +206,9 @@ export class VehicleMap extends LitElement {
           --mdc-dialog-min-width: 85vw;
           --mdc-dialog-max-width: 85vw;
           --dialog-backdrop-filter: blur(2px);
+          --dialog-content-padding: 0;
         }
+
         @media all and (max-width: 600px), all and (max-height: 500px) {
           ha-dialog {
             --mdc-dialog-min-width: 100vw;
@@ -224,16 +226,16 @@ export class VehicleMap extends LitElement {
       </style>
     `;
     return html`
-      <ha-dialog
-        open
-        .heading=${createCloseHeading(this.card._hass, 'Map')}
-        @closed=${() => (this.open = false)}
-        hideActions
-        flexContent
-      >
+      <ha-dialog open @closed=${() => (this.open = false)} hideActions flexContent>
         ${styles}
         <div class="container">
-          <vic-maptiler-popup .mapData=${this.mapData} .card=${this.card}></vic-maptiler-popup>
+          <vic-maptiler-popup
+            .mapData=${this.mapData}
+            .card=${this.card}
+            @close-dialog=${() => {
+              this.open = false;
+            }}
+          ></vic-maptiler-popup>
         </div>
       </ha-dialog>
     `;

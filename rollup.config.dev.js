@@ -8,7 +8,6 @@ import postcss from 'rollup-plugin-postcss';
 import postcssPresetEnv from 'postcss-preset-env';
 import postcssLit from 'rollup-plugin-postcss-lit';
 import filesize from 'rollup-plugin-filesize';
-import replace from '@rollup/plugin-replace';
 import json from '@rollup/plugin-json';
 import { version } from './package.json';
 import { logCardInfo } from './rollup.config.helper.mjs';
@@ -18,11 +17,6 @@ const dev = process.env.ROLLUP_WATCH;
 const port = process.env.PORT || 8235;
 const currentVersion = dev ? 'DEVELOPMENT' : `v${version}`;
 const custombanner = logCardInfo(currentVersion);
-
-const replaceOpts = {
-  'process.env.ROLLUP_WATCH': JSON.stringify(dev),
-  preventAssignment: true,
-};
 
 const serveopts = {
   contentBase: ['./dist'],
@@ -42,7 +36,7 @@ const terserOpt = {
 };
 
 const plugins = [
-  nodeResolve({}),
+  nodeResolve({ preferBuiltins: false }),
   nodePolyfills(),
   commonjs(),
   typescript(),
@@ -63,7 +57,6 @@ const plugins = [
     extract: false,
     inject: false,
   }),
-  replace(replaceOpts),
   postcssLit(),
   dev && serve(serveopts),
   !dev && terser(terserOpt),
@@ -77,14 +70,12 @@ export default [
       {
         dir: './dist',
         format: 'es',
-        sourcemap: dev ? true : false,
+        sourcemap: true,
         inlineDynamicImports: true,
         banner: custombanner,
       },
     ],
-    watch: {
-      exclude: 'node_modules/**',
-    },
+
     plugins: [...plugins],
     moduleContext: (id) => {
       const thisAsWindowForModules = [

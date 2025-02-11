@@ -41,7 +41,7 @@ const terserOpt = {
 };
 
 const plugins = [
-  nodeResolve({}),
+  nodeResolve({ preferBuiltins: false }),
   commonjs(),
   typescript(),
   babel({
