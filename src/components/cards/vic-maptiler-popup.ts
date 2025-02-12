@@ -129,6 +129,7 @@ export class VicMaptilerPopup extends LitElement {
       hash: false,
       style: this.getStyleByMode(mode),
       geolocateControl: true,
+      fullscreenControl: true,
       canvasContextAttributes: { antialias: true },
     };
 
@@ -373,8 +374,7 @@ export class VicMaptilerPopup extends LitElement {
     return html`
       <div class="tiler-map" style="${this._computeMapStyle()}">
         ${loadError}
-        <div id="map"></div>
-        ${haButtons}
+        <div id="map">${haButtons}</div>
       </div>
     `;
   }
@@ -555,7 +555,11 @@ export class VicMaptilerPopup extends LitElement {
         .maplibregl-ctrl-bottom-right > details {
           display: none;
         }
-
+        @media all and (max-width: 600px), all and (max-height: 500px) {
+          .maplibregl-ctrl-top-right .maplibregl-ctrl.maplibregl-ctrl-group .maplibregl-ctrl-fullscreen {
+            display: none !important;
+          }
+        }
         @keyframes fadeIn {
           from {
             opacity: 0;
