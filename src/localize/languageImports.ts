@@ -12,8 +12,8 @@ import * as nl from '../languages/nl.json';
 import * as pl from '../languages/pl.json';
 import * as sk from '../languages/sk.json';
 import * as vi from '../languages/vi.json';
-import * as zh_Hans from '../languages/zh_Hans.json';
-import * as zh_Hant from '../languages/zh_Hant.json';
+import * as zh_hans from '../languages/zh_hans.json';
+import * as zh_hant from '../languages/zh_hant.json';
 
 const languages: any = {
   cs: cs,
@@ -28,8 +28,8 @@ const languages: any = {
   pl: pl,
   sk: sk,
   vi: vi,
-  zh_Hans: zh_Hans,
-  zh_Hant: zh_Hant,
+  zh_hans: zh_hans,
+  zh_hant: zh_hant,
 };
 
 export const languageOptions = [
@@ -45,8 +45,8 @@ export const languageOptions = [
   { key: 'pl', name: pl.name, nativeName: pl.nativeName },
   { key: 'sk', name: sk.name, nativeName: sk.nativeName },
   { key: 'vi', name: vi.name, nativeName: vi.nativeName },
-  { key: 'zh_Hans', name: zh_Hans.name, nativeName: zh_Hans.nativeName },
-  { key: 'zh_Hant', name: zh_Hant.name, nativeName: zh_Hant.nativeName },
+  { key: 'zh_hans', name: zh_hans.name, nativeName: zh_hans.nativeName },
+  { key: 'zh_hant', name: zh_hant.name, nativeName: zh_hant.nativeName },
 ];
 
 export { languages };
