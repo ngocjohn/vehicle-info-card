@@ -1,7 +1,7 @@
 import * as maptilersdk from '@maptiler/sdk';
 import mapstyle from '@maptiler/sdk/dist/maptiler-sdk.css';
 import { mdiClose, mdiThemeLightDark } from '@mdi/js';
-import { LitElement, html, css, TemplateResult, unsafeCSS, CSSResultGroup, PropertyValues } from 'lit';
+import { LitElement, html, css, TemplateResult, unsafeCSS, CSSResultGroup, nothing, PropertyValues } from 'lit';
 import { styleMap } from 'lit-html/directives/style-map.js';
 import { customElement, property, state } from 'lit/decorators.js';
 
@@ -11,12 +11,12 @@ import { VehicleCard } from '../../vehicle-info-card';
 
 const themeColors = {
   backgroundColor: {
-    light: 'rgb(255, 255, 255)',
+    light: '#fff',
     dark: '#222222',
   },
   fill: {
-    light: '#222222',
-    dark: '#FFFFFF',
+    light: '#333',
+    dark: '#c1c1c1',
   },
   boxShadow: {
     light: '0 0 0 2px rgba(0, 0, 0, 0.1)',
@@ -28,122 +28,206 @@ const themeColors = {
   },
 };
 
-function getStyleByMode(mode: string) {
-  return mode == 'dark' ? maptilersdk.MapStyle.STREETS.DARK : maptilersdk.MapStyle.STREETS.PASTEL;
-}
-
 @customElement('vic-maptiler-popup')
 export class VicMaptilerPopup extends LitElement {
   @property({ attribute: false }) private mapData!: MapData;
   @property({ attribute: false }) private card!: VehicleCard;
-
   @state() private _themeMode?: 'dark' | 'light';
   @state() private map?: maptilersdk.Map | null;
-  @state() private _mapInitialized: boolean = false;
+
+  private _loadError: boolean = false;
+  private observer?: MutationObserver | null;
+  private _observerReady = false;
 
   connectedCallback(): void {
     super.connectedCallback();
     window.maptiler = this;
-    this._themeMode =
-      localStorage.getItem('darkMap') === 'true' && localStorage.getItem('darkMap') !== null ? 'dark' : 'light';
+    const mapConfigMode = this.card.config.map_popup_config.theme_mode;
+    if (mapConfigMode === 'auto') {
+      this._themeMode = this.card.isDark ? 'dark' : 'light';
+    } else {
+      this._themeMode = mapConfigMode as 'dark' | 'light';
+    }
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
+    localStorage.removeItem('darkMap');
+    if (this.observer) {
+      this.observer.disconnect();
+      this.observer = null;
+      this._observerReady = false;
+    }
   }
 
   protected async firstUpdated(): Promise<void> {
     await new Promise((resolve) => setTimeout(resolve, 0));
     this.initMap();
+    if (this.map && !this._observerReady) {
+      this._addObserver();
+    }
   }
 
-  updated(changedProperties: PropertyValues) {
-    if (changedProperties.has('_themeMode') && this._themeMode !== undefined) {
-      const oldMode = changedProperties.get('_themeMode') as 'dark' | 'light';
-      const newMode = this._themeMode as 'dark' | 'light';
-      if (oldMode !== undefined && oldMode !== newMode) {
-        console.log('updated', newMode, oldMode);
-        this._changeControlTheme(newMode);
+  private async _addObserver() {
+    if (this._observerReady) return;
+    // Initialize the MutationObserver to observe changes in the map controls
+    this.observer = new MutationObserver((mutations) => {
+      let themeChangeRequired = false;
+
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'childList') {
+          themeChangeRequired = true; // Only change theme if childList mutations are detected
+        }
+      });
+
+      if (themeChangeRequired) {
+        // Use requestAnimationFrame to debounce the theme change if multiple mutations occur
+        requestAnimationFrame(() => {
+          this._changeControlTheme(this._themeMode as 'dark' | 'light');
+        });
+      }
+    });
+    // Wait for the map container to be available and observe changes in the controls
+    const mapContainer = this.shadowRoot?.querySelector('#map') as HTMLElement;
+    if (mapContainer) {
+      const controlContainer = mapContainer.querySelector('.maplibregl-control-container') as HTMLElement;
+      if (controlContainer) {
+        console.log('controlContainer found');
+        this.observer.observe(controlContainer, { childList: true, subtree: true });
+        console.log('Observer added');
+        this._observerReady = true; // Mark the observer as ready
+      } else {
+        console.log('controlContainer not found. Delaying observer addition.');
+        // Retry observing after a small delay if controlContainer isn't available
+        setTimeout(() => this._addObserver(), 500); // Adjust delay as needed
       }
     }
   }
 
   protected shouldUpdate(_changedProperties: PropertyValues): boolean {
-    if (_changedProperties.has('_mapInitialized') && this._mapInitialized) {
-      setTimeout(() => {
-        this._changeControlTheme(this._themeMode as 'dark' | 'light');
-      }, 1500);
+    if (_changedProperties.has('_themeMode')) {
+      const oldMode = _changedProperties.get('_themeMode') as 'dark' | 'light';
+      const newMode = this._themeMode as 'dark' | 'light';
+      if (oldMode !== undefined && oldMode !== newMode) {
+        console.log('Theme mode changed:', newMode);
+        return true;
+      }
     }
     return true;
   }
 
   initMap() {
-    if (!this.mapData || this._mapInitialized || !this._themeMode) return;
-    const apiKey = this.card.config.extra_configs?.maptiler_api_key;
-    if (!apiKey) {
-      console.error('MapTiler API key is missing');
-      return;
-    }
-
-    const mode = this._themeMode as 'dark' | 'light';
+    const demoStyle = 'https://demotiles.maplibre.org/style.json';
+    const apiKey = this.card.config.extra_configs.maptiler_api_key!;
+    const mapConfig = this.card.config.map_popup_config;
+    const mode = this._themeMode!;
     const mapEl = this.shadowRoot?.getElementById('map') as HTMLElement;
     maptilersdk.config.apiKey = apiKey;
     const mapOptions: maptilersdk.MapOptions = {
       container: mapEl,
-      zoom: 13.5,
+      zoom: mapConfig.default_zoom || 13.5,
       hash: false,
-      pitch: 0,
-      style: getStyleByMode(mode),
+      style: this.getStyleByMode(mode),
       geolocateControl: true,
-      fullscreenControl: true,
+      canvasContextAttributes: { antialias: true },
     };
 
     this.map = new maptilersdk.Map(mapOptions);
     this.map.setCenter([this.mapData.lon, this.mapData.lat]);
-
+    this.map.on('error', (e) => {
+      console.log('Map error:', e.error);
+      this._loadError = true;
+      this.map?.setStyle(demoStyle);
+      this.map?.setZoom(5);
+    });
     this.map.on('load', () => {
       this.addMarker();
+      this._addFindCarControl();
     });
 
-    this.map.addControl(
+    this.map.on('styleimagemissing', (e) => {
+      this.map?.addImage(e.id, {
+        width: 0,
+        height: 0,
+        data: new Uint8Array(0),
+      });
+    });
+  }
+
+  private getStyleByMode(mode: string) {
+    return mode == 'dark' ? maptilersdk.MapStyle.STREETS.DARK : maptilersdk.MapStyle.STREETS;
+  }
+
+  private _addBuildings() {
+    const apiKey = this.card.config.extra_configs?.maptiler_api_key;
+    const layers = this.map?.getStyle().layers;
+    if (!layers) return;
+    let labelLayerId;
+    for (let i = 0; i < layers.length; i++) {
+      if (layers[i].type === 'symbol' && layers[i].layout?.['text-field']) {
+        labelLayerId = layers[i].id;
+        console.log('labelLayerId', labelLayerId);
+        break;
+      }
+    }
+
+    this.map?.addSource('openmaptiles', {
+      url: `https://api.maptiler.com/tiles/v3/tiles.json?key=${apiKey}`,
+      type: 'vector',
+    });
+
+    this.map?.addLayer(
       {
-        onAdd: (map) => {
-          this.map = map as maptilersdk.Map;
-          const geolocateCar = this._geolocateCar();
-          geolocateCar.addEventListener('click', () => {
-            this.map?.easeTo({ center: [this.mapData.lon, this.mapData.lat], zoom: 17.5, pitch: 60, bearing: 0 });
-          });
-          return geolocateCar;
-        },
-        onRemove: () => {
-          // Nothing to do here
+        id: '3d-buildings',
+        source: 'openmaptiles',
+        'source-layer': 'building',
+        type: 'fill-extrusion',
+        minzoom: 15,
+        filter: ['!=', ['get', 'hide_3d'], true],
+        paint: {
+          'fill-extrusion-color': [
+            'interpolate',
+            ['linear'],
+            ['get', 'render_height'],
+            0,
+            'lightblue',
+            30,
+            'royalblue',
+            100,
+            'blue',
+          ],
+          'fill-extrusion-height': ['interpolate', ['linear'], ['zoom'], 15, 0, 16, ['get', 'render_height']],
+          'fill-extrusion-base': ['case', ['>=', ['get', 'zoom'], 16], ['get', 'render_min_height'], 0],
         },
       },
-      'top-right'
+      labelLayerId
     );
-
-    this.map.on('error', (e) => {
-      console.warn('Map error:', e.error);
-    });
-    this._mapInitialized = true;
   }
 
   private async addMarker() {
     const popUp = await this._markerPopup();
-    const pictureUrl = this.mapData.entityPic;
-    const markerEl = document.createElement('div');
-    markerEl.id = 'marker';
-    const pulse = document.createElement('div');
-    pulse.classList.add('pulse');
-    markerEl.appendChild(pulse);
-    const marker = document.createElement('div');
-    marker.id = 'marker-pic';
-    marker.style.backgroundImage = pictureUrl ? `url(${pictureUrl})` : 'none';
-    markerEl.appendChild(marker);
+    const markerEl = this._createMarker();
+
     new maptilersdk.Marker({ element: markerEl })
       .setLngLat([this.mapData.lon, this.mapData.lat])
       .setPopup(popUp)
       .addTo(this.map!);
+
+    markerEl.addEventListener('dblclick', (ev: MouseEvent) => {
+      ev.stopPropagation();
+      ev.preventDefault();
+    });
+  }
+
+  private _createMarker(): HTMLElement {
+    const pictureUrl = this.mapData.entityPic;
+    const markerEl = document.createElement('div');
+    markerEl.id = 'marker';
+    markerEl.innerHTML = `
+        <div class="pulse"></div>
+        <div id="marker-pic" style="background-image: url(${pictureUrl || 'none'})"></div>
+    `;
+    return markerEl;
   }
 
   private async _markerPopup() {
@@ -187,108 +271,122 @@ export class VicMaptilerPopup extends LitElement {
     }
   };
 
-  _geolocateCar(): HTMLElement {
-    const iconStyle = `background-image: url(${carLocationIcon}); background-size: 60%;`;
-    const findCar = document.createElement('div');
-    findCar.className = 'maplibregl-ctrl maplibregl-ctrl-group';
-    findCar.innerHTML = `
-      <button class="maplibregl-ctrl-find-car" type="button" title="Find Car">
-        <span class="maplibregl-ctrl-icon" style="${iconStyle}"></span>
-      </button>
-      `;
+  private _addFindCarControl() {
+    this.map?.addControl(
+      {
+        onAdd: () => {
+          const iconStyle = `background-image: url(${carLocationIcon}); background-size: 60%;`;
+          const findCar = document.createElement('div');
+          findCar.className = 'maplibregl-ctrl maplibregl-ctrl-group';
+          findCar.innerHTML = `
+            <button class="maplibregl-ctrl-find-car" type="button" title="Find Car">
+              <span class="maplibregl-ctrl-icon" style="${iconStyle}"></span>
+            </button>
+          `;
+          findCar.addEventListener('click', () => {
+            this.map?.flyTo({ center: [this.mapData.lon, this.mapData.lat], zoom: 17.5, pitch: 60, bearing: 0 });
+          });
 
-    return findCar;
+          return findCar;
+        },
+        onRemove: () => {},
+      },
+      'top-right'
+    );
   }
 
   private _handleThemeToggle() {
-    const mode = localStorage.getItem('darkMap') === 'true' ? 'dark' : 'light';
+    const mode = this._themeMode;
     if (mode === 'dark') {
-      this.map?.setStyle(getStyleByMode('light'), { diff: false });
+      this.map?.setStyle(this.getStyleByMode('light'), { diff: false });
       this._themeMode = 'light';
       localStorage.removeItem('darkMap');
     } else {
-      this.map?.setStyle(getStyleByMode('dark'), { diff: false });
+      this.map?.setStyle(this.getStyleByMode('dark'), { diff: false });
       this._themeMode = 'dark';
       localStorage.setItem('darkMap', 'true');
     }
   }
 
+  // Your existing change control theme logic here
   _changeControlTheme(mode: 'dark' | 'light') {
+    // Your existing implementation for applying themes to the controls
     const setTheme = (key: string) => {
       return mode === 'dark' ? themeColors[key].dark : themeColors[key].light;
     };
 
     const mapContainer = this.shadowRoot?.querySelector('#map') as HTMLElement;
-
     const controlContainer = mapContainer.querySelector('.maplibregl-control-container') as HTMLElement;
-    if (!controlContainer) return;
-    let ready = false;
-    // Select the container with the control buttons
 
-    // Select both top-right and bottom-right containers (instead of using `||`)
-    const controlButtons = [
-      controlContainer?.querySelector('.maplibregl-ctrl-top-left'),
-      controlContainer?.querySelector('.maplibregl-ctrl-top-right'),
-      controlContainer?.querySelector('.maplibregl-ctrl-bottom-right'),
-    ].filter(Boolean); // Filter out null values
+    if (controlContainer) {
+      const controlButtons = [
+        controlContainer?.querySelector('.maplibregl-ctrl-top-left'),
+        controlContainer?.querySelector('.maplibregl-ctrl-top-right'),
+        controlContainer?.querySelector('.maplibregl-ctrl-bottom-right'),
+      ].filter(Boolean) as HTMLElement[];
 
-    if (!controlButtons || controlButtons.length === 0) return;
+      if (!controlButtons.length || controlButtons.length === 0) return;
+      // Apply styles to control buttons
+      for (const controlButtonGroup of controlButtons) {
+        const controlGroups = Array.from(
+          controlButtonGroup!.querySelectorAll('.maplibregl-ctrl.maplibregl-ctrl-group')
+        );
+        for (const controlGroup of controlGroups) {
+          const element = controlGroup as HTMLElement;
+          element.style.backgroundColor = setTheme('backgroundColor') as string;
+          element.style.boxShadow = setTheme('boxShadow') as string;
 
-    // Iterate through all control button groups (top-right, bottom-right)
-    for (const controlButtonGroup of controlButtons) {
-      const controlGroups = Array.from(controlButtonGroup!.querySelectorAll('.maplibregl-ctrl.maplibregl-ctrl-group'));
-      // Iterate through each control group
-      for (const controlGroup of controlGroups) {
-        const element = controlGroup as HTMLElement;
-        element.style.backgroundColor = setTheme('backgroundColor') as string;
-        element.style.boxShadow = setTheme('boxShadow') as string;
+          const buttons = Array.from(controlGroup.querySelectorAll('button'));
+          for (const button of buttons) {
+            const buttonEl = button as HTMLButtonElement;
 
-        // Select all buttons within the control group
-        const buttons = Array.from(controlGroup.querySelectorAll('button'));
-        // console.log('buttons', buttons);
-        // Iterate through each button
-        for (const button of buttons) {
-          const buttonEl = button as HTMLButtonElement;
-          // buttonEl.style.backgroundColor = setTheme('backgroundColor') as string;
-          buttonEl.setAttribute('mode', mode);
-          buttonEl.style.borderTop = setTheme('borderTop');
+            const spanEl = button?.querySelector('span') as HTMLSpanElement;
+            if (spanEl) {
+              const computedStyle = window.getComputedStyle(spanEl);
+              const backgroundImage = computedStyle.backgroundImage;
+              if (backgroundImage.startsWith('url("data:image/svg+xml')) {
+                const fillColor = setTheme('fill') as string;
+                const svgUri = backgroundImage.slice(5, -2);
+                const decodedSvg = decodeURIComponent(svgUri.split(',')[1]);
+
+                const updatedSvg = decodedSvg
+                  .replace(/fill:[^;"]*/g, `fill:${fillColor}`)
+                  .replace(/fill="[^"]*"/g, `fill="${fillColor}"`);
+
+                const encodedSvg = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(updatedSvg)}`;
+                spanEl.style.backgroundImage = `url("${encodedSvg}")`;
+              }
+            }
+            const prevButton = button?.previousElementSibling as HTMLButtonElement;
+            if (prevButton && prevButton.type === 'button') {
+              buttonEl.style.borderTop = setTheme('borderTop') as string;
+            }
+          }
         }
-
-        // const buttonsWithIcons = Array.from(controlGroup.querySelectorAll('button > span'));
-        // // Iterate through each button with an icon
-        // for (const spanEl of buttonsWithIcons) {
-        //   const span = spanEl as HTMLSpanElement;
-        //   const computedStyle = window.getComputedStyle(span);
-
-        //   if (computedStyle.backgroundImage) {
-        //     const newFillColor = setTheme('fill');
-
-        //     // Try replacing without encoding
-        //     span.style.backgroundImage = computedStyle.backgroundImage.replace('controlButtonsIconColor', newFillColor);
-        //   }
-        // }
       }
-
-      ready = true;
-    }
-    if (ready) {
-      controlContainer.classList.toggle('ready', ready);
     }
   }
 
   render(): TemplateResult {
     const haButtons = this._renderHaButtons();
-
+    const loadError = this._renderLoadError();
     return html`
       <div class="tiler-map" style="${this._computeMapStyle()}">
+        ${loadError}
         <div id="map"></div>
         ${haButtons}
       </div>
     `;
   }
 
-  private _renderHaButtons() {
-    if (!this._mapInitialized) return html``;
+  private _renderLoadError(): TemplateResult | typeof nothing {
+    if (!this._loadError) return nothing;
+    return html`<div id="error">
+      <ha-alert alert-type="error">Error fetching the map. Please verify your API key and try again.</ha-alert>
+    </div>`;
+  }
+
+  private _renderHaButtons(): TemplateResult {
     return html`
       <ha-icon-button
         id="ha-button"
@@ -350,6 +448,18 @@ export class VicMaptilerPopup extends LitElement {
           }
         }
 
+        #error {
+          position: absolute;
+          top: 0.5rem;
+          left: 50%;
+          transform: translateX(-50%);
+          background: var(--card-background-color);
+          height: fit-content;
+          display: flex;
+          justify-content: center;
+          z-index: 100;
+        }
+
         #ha-button {
           position: absolute;
           z-index: 100;
@@ -358,6 +468,8 @@ export class VicMaptilerPopup extends LitElement {
           box-shadow: var(--vic-map-button-shadow);
           border-radius: 50%;
           animation: fadeIn 600ms;
+          --mdc-icon-button-size: 33px;
+          margin: 10px;
         }
         .close-btn {
           top: 0.5rem;
@@ -406,29 +518,20 @@ export class VicMaptilerPopup extends LitElement {
           color: white;
         }
 
-        .maplibregl-control-container {
+        /* .maplibregl-control-container {
           opacity: 0;
         }
 
         .maplibregl-control-container.ready {
           opacity: 1;
           transition: opacity 0.5s;
-        }
+        } */
 
         .maplibregl-ctrl-bottom-left,
         .maplibregl-ctrl-bottom-right,
         .maplibregl-ctrl-top-left,
         .maplibregl-ctrl-top-right {
           padding: 0.5rem;
-        }
-        button[mode='dark'] > span {
-          filter: invert(1);
-        }
-
-        button > span:focus,
-        button > span:hover,
-        button > span:active {
-          filter: none;
         }
 
         .maplibregl-popup {
