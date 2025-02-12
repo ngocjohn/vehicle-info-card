@@ -664,10 +664,14 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private _renderMapPopupConfig(): TemplateResult {
     const infoAlert = this.localize('editor.common.infoMap');
+    const maptilerInfo = `How to get Maptiler API Key?`;
+    const docLink = 'https://github.com/ngocjohn/vehicle-info-card/blob/main/docs/Maptiler.md';
+
     const showOpts = editorShowOpts(this._selectedLanguage);
     const mapPopUp = showOpts.find((option) => option.configKey === 'enable_map_popup');
     const showAddress = showOpts.find((option) => option.configKey === 'show_address');
     const maptilerApiKey = this._config?.extra_configs?.maptiler_api_key || '';
+    const googleApiKey = this._config?.google_api_key || '';
 
     const sharedConfig = {
       component: this,
@@ -746,10 +750,14 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       <ha-textfield
         label="Google API Key (Optional)"
         type="password"
-        .value=${this._config?.google_api_key}
+        .value=${googleApiKey}
         .configValue=${'google_api_key'}
         @input=${this._valueChanged}
       ></ha-textfield>
+      <ha-alert alert-type="info">
+        ${maptilerInfo}
+        <mwc-button slot="action" @click="${() => window.open(docLink)}" label="More"></mwc-button>
+      </ha-alert>
       <ha-textfield
         label="Maptiler API Key (Optional)"
         type="password"
@@ -1597,6 +1605,10 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         maptiler_api_key: newValue,
       };
       console.log('Maptiler API key changed:', newValue);
+    } else if (configValue === 'google_api_key') {
+      newValue = target.value;
+      updates.google_api_key = newValue;
+      console.log('Google API key changed:', newValue);
     } else {
       newValue = target.checked !== undefined ? target.checked : ev.detail.value;
       updates[configValue] = newValue;
