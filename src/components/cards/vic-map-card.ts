@@ -30,6 +30,7 @@ export class VehicleMap extends LitElement {
 
   @state() private _address: Partial<MapData['address']> | null = null;
 
+  @state() private _locateIconVisible = false;
   private get mapPopup(): boolean {
     return this.card.config.enable_map_popup;
   }
@@ -111,16 +112,13 @@ export class VehicleMap extends LitElement {
     this._createTileLayer(this.map);
     // Add marker to map
     this.marker = this._createMarker(this.map);
-  }
 
-  private _createTileLayer(map: L.Map): L.TileLayer {
-    const tileOpts = {
-      tileSize: 256,
-      className: 'map-tiles',
-    };
-
-    const tileLayer = L.tileLayer.provider('CartoDB.Positron', tileOpts).addTo(map);
-    return tileLayer;
+    this.map.on('moveend zoomend', () => {
+      // check visibility of marker icon on view
+      const bounds = this.map!.getBounds();
+      const isMarkerVisible = bounds.contains(this.marker!.getLatLng());
+      this._locateIconVisible = isMarkerVisible;
+    });
   }
 
   private _createMarker(map: L.Map): L.Marker {
@@ -140,6 +138,16 @@ export class VehicleMap extends LitElement {
     });
 
     return marker;
+  }
+
+  private _createTileLayer(map: L.Map): L.TileLayer {
+    const tileOpts = {
+      tileSize: 256,
+      className: 'map-tiles',
+    };
+
+    const tileLayer = L.tileLayer.provider('CartoDB.Positron', tileOpts).addTo(map);
+    return tileLayer;
   }
 
   private resetMap(): void {
@@ -169,7 +177,7 @@ export class VehicleMap extends LitElement {
     return html`
       <div class="map-wrapper" ?safari=${isSafari} style=${this._computeMapStyle()}>
         <div id="overlay-container">
-          <div class="reset-button" @click=${this.resetMap}>
+          <div class="reset-button" @click=${this.resetMap} .hidden=${this._locateIconVisible}>
             <ha-icon icon="mdi:compass"></ha-icon>
           </div>
           ${this._renderAddress()}
