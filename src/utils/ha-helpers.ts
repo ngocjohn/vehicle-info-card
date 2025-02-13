@@ -461,18 +461,19 @@ export async function _getMapAddress(card: VehicleCard, lat: number, lon: number
   const apiKey = card.config?.google_api_key || '';
   const maptilerKey = card.config.extra_configs?.maptiler_api_key || '';
   // console.log('Getting address from map data');
-  const adress = apiKey
-    ? await getAddressFromGoggle(lat, lon, apiKey)
-    : maptilerKey
+  const adress = maptilerKey
     ? await getAddressFromMapTiler(lat, lon, maptilerKey)
+    : apiKey
+    ? await getAddressFromGoggle(lat, lon, apiKey)
     : await getAddressFromOpenStreet(lat, lon);
   if (!adress) {
     return;
   }
+
   return adress;
 }
 
-async function getAddressFromMapTiler(lat: number, lon: number, apiKey: string): Promise<Address | null> {
+export async function getAddressFromMapTiler(lat: number, lon: number, apiKey: string): Promise<Address | null> {
   console.log('Getting address from MapTiler');
   const filterParams: Record<string, keyof Address> = {
     address: 'streetName', // Street name

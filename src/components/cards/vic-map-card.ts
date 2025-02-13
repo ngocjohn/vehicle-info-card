@@ -53,6 +53,7 @@ export class VehicleMap extends LitElement {
     const address = await _getMapAddress(this.card, this.mapData.lat, this.mapData.lon);
     if (address) {
       this._address = address;
+      this.card.MapData!.address = address;
       this._addressReady = true;
     } else if (!address) {
       this._addressReady = true;

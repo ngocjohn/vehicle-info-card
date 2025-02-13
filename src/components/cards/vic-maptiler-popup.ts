@@ -7,6 +7,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 
 import { carLocationIcon } from '../../const/imgconst';
 import { MapData } from '../../types';
+import { getAddressFromMapTiler } from '../../utils';
 import { VehicleCard } from '../../vehicle-info-card';
 
 const themeColors = {
@@ -34,6 +35,7 @@ export class VicMaptilerPopup extends LitElement {
   @property({ attribute: false }) private card!: VehicleCard;
   @state() private _themeMode?: 'dark' | 'light';
   @state() private map?: maptilersdk.Map | null;
+  @state() private _popup?: maptilersdk.Popup | null;
 
   private _loadError: boolean = false;
   private observer?: MutationObserver | null;
@@ -118,8 +120,10 @@ export class VicMaptilerPopup extends LitElement {
 
   initMap() {
     const demoStyle = 'https://demotiles.maplibre.org/style.json';
+
     const apiKey = this.card.config.extra_configs.maptiler_api_key!;
     const mapConfig = this.card.config.map_popup_config;
+
     const mode = this._themeMode!;
     const mapEl = this.shadowRoot?.getElementById('map') as HTMLElement;
     maptilersdk.config.apiKey = apiKey;
@@ -135,15 +139,18 @@ export class VicMaptilerPopup extends LitElement {
 
     this.map = new maptilersdk.Map(mapOptions);
     this.map.setCenter([this.mapData.lon, this.mapData.lat]);
+
+    this.map.on('load', () => {
+      const markerEl = this.addMarker() as HTMLElement;
+      new maptilersdk.Marker({ element: markerEl }).setLngLat([this.mapData.lon, this.mapData.lat]).addTo(this.map!);
+      this._addFindCarControl();
+    });
+
     this.map.on('error', (e) => {
       console.log('Map error:', e.error);
       this._loadError = true;
       this.map?.setStyle(demoStyle);
       this.map?.setZoom(5);
-    });
-    this.map.on('load', () => {
-      this.addMarker();
-      this._addFindCarControl();
     });
 
     this.map.on('styleimagemissing', (e) => {
@@ -152,6 +159,10 @@ export class VicMaptilerPopup extends LitElement {
         height: 0,
         data: new Uint8Array(0),
       });
+    });
+
+    this.map.on('dblclick', (e) => {
+      console.log('Double-click event detected:', e);
     });
   }
 
@@ -205,49 +216,101 @@ export class VicMaptilerPopup extends LitElement {
     );
   }
 
-  private async addMarker() {
-    const popUp = await this._markerPopup();
-    const markerEl = this._createMarker();
+  private addMarker(): HTMLElement {
+    console.log('Adding marker');
+    const pictureUrl = this.mapData.entityPic;
+    const markerEl = document.createElement('div');
 
-    new maptilersdk.Marker({ element: markerEl })
-      .setLngLat([this.mapData.lon, this.mapData.lat])
-      .setPopup(popUp)
-      .addTo(this.map!);
+    markerEl.id = 'marker-container';
+    markerEl.innerHTML = `
+    <div class="pulse"></div>
+    <button id="marker" style="background-image: url(${pictureUrl || 'none'})"></button>
+  `;
+
+    // Variables to manage the click and double-click events
+    let clickTimeout: NodeJS.Timeout | null = null;
+    let isDoubleClick = false; // Variable to track if a double-click event is detected
 
     markerEl.addEventListener('dblclick', (ev: MouseEvent) => {
       ev.stopPropagation();
-      ev.preventDefault();
-    });
-  }
 
-  private _createMarker(): HTMLElement {
-    const pictureUrl = this.mapData.entityPic;
-    const markerEl = document.createElement('div');
-    markerEl.id = 'marker';
-    markerEl.innerHTML = `
-        <div class="pulse"></div>
-        <div id="marker-pic" style="background-image: url(${pictureUrl || 'none'})"></div>
-    `;
+      isDoubleClick = true;
+      // If a click event is in progress, clear it (to avoid popup conflict)
+      if (clickTimeout) {
+        clearTimeout(clickTimeout);
+        clickTimeout = null;
+      }
+
+      // Handle double-click event (if necessary)
+      console.log('Double-click event detected.');
+    });
+
+    markerEl.addEventListener('click', (ev: MouseEvent) => {
+      ev.stopPropagation();
+      ev.preventDefault();
+
+      // Set a small delay to differentiate between click and double-click
+      clickTimeout = setTimeout(() => {
+        // Handle single-click event
+        if (!isDoubleClick) {
+          if (this._popup?.isOpen()) {
+            this._popup.remove();
+            this._popup = null;
+          } else {
+            this._renderPopup();
+          }
+        }
+        isDoubleClick = false;
+      }, 250); // 250ms delay to distinguish between click and dblclick
+    });
+
     return markerEl;
   }
 
-  private async _markerPopup() {
+  private async _renderPopup() {
+    this._popup = new maptilersdk.Popup({ offset: 32, closeButton: false, closeOnMove: true }).setLngLat([
+      this.mapData.lon,
+      this.mapData.lat,
+    ]);
     const deviceTracker = this.card.config.device_tracker!;
     const deviceName = this.card.getFormattedAttributeState(deviceTracker, 'friendly_name');
     const deviceState = this.card.getStateDisplay(deviceTracker);
     let popupContent = `
-      ${deviceName}<br />
-      ${deviceState} <br />
+      <div class="popup-content primary">
+        <span>${deviceName}</span>
+        <span>${deviceState}</span>
+      </div>
     `;
-    // Wait for the address to be fetched
-    const address = await this._getAddress();
 
-    if (address) {
-      popupContent += `<br />${address}`;
+    this._popup.setHTML(popupContent).addTo(this.map!);
+
+    const mapAddress =
+      this.mapData?.address ||
+      (await getAddressFromMapTiler(
+        this.mapData.lat,
+        this.mapData.lon,
+        this.card.config.extra_configs.maptiler_api_key!
+      )) ||
+      null;
+
+    if (mapAddress) {
+      const { streetName, sublocality, city } = mapAddress;
+      const addressLine = `
+        <div class="popup-content">
+          <span>${streetName}</span>
+          <span>${sublocality}, ${city}</span>
+        </div>
+      `;
+
+      const updatedContent = `${popupContent}${addressLine}`;
+      if (this._popup.isOpen()) {
+        this._popup.setHTML(updatedContent);
+      }
     }
 
-    const popUp = new maptilersdk.Popup({ offset: 32, closeButton: false, closeOnMove: true }).setHTML(popupContent);
-    return popUp;
+    this._popup.on('close', () => {
+      this._popup = null;
+    });
   }
 
   _getAddress = async () => {
@@ -421,6 +484,7 @@ export class VicMaptilerPopup extends LitElement {
     const buttonBg = getStyle('backgroundColor');
     const buttonColor = getStyle('fill');
     const boxShadow = getStyle('boxShadow');
+    const buttonBorder = getStyle('borderTop');
 
     return styleMap({
       '--vic-map-marker-color': markerColor,
@@ -429,6 +493,7 @@ export class VicMaptilerPopup extends LitElement {
       '--vic-map-button-bg': buttonBg,
       '--vic-map-button-color': buttonColor,
       '--vic-map-button-shadow': boxShadow,
+      '--vic-map-button-border': buttonBorder,
     });
   }
 
@@ -491,12 +556,12 @@ export class VicMaptilerPopup extends LitElement {
           width: 100%;
         }
 
-        #marker {
+        #marker-container {
           position: relative;
           width: var(--vic-map-marker-size);
           height: var(--vic-map-marker-size);
         }
-        #marker .pulse {
+        #marker-container .pulse {
           position: absolute;
           width: 100%;
           height: 100%;
@@ -506,7 +571,7 @@ export class VicMaptilerPopup extends LitElement {
           animation: pulse 5s infinite;
         }
 
-        #marker-pic {
+        button#marker {
           position: absolute;
           width: 100%;
           height: 100%;
@@ -518,15 +583,6 @@ export class VicMaptilerPopup extends LitElement {
           color: white;
         }
 
-        /* .maplibregl-control-container {
-          opacity: 0;
-        }
-
-        .maplibregl-control-container.ready {
-          opacity: 1;
-          transition: opacity 0.5s;
-        } */
-
         .maplibregl-ctrl-bottom-left,
         .maplibregl-ctrl-bottom-right,
         .maplibregl-ctrl-top-left,
@@ -534,18 +590,33 @@ export class VicMaptilerPopup extends LitElement {
           padding: 0.5rem;
         }
 
-        .maplibregl-popup {
-          max-width: 200px;
-        }
         .maplibregl-popup-content {
-          background-color: var(--vic-map-button-bg);
+          background-color: rgb(from var(--vic-map-button-bg) r g b / 80%);
           color: var(--vic-map-button-color);
           border-radius: 0.5rem;
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+          animation: fadeIn 0.5s;
+          backdrop-filter: blur(5px);
+          border: var(--vic-map-button-border);
+          box-shadow: var(--vic-map-button-shadow);
           font-size: 1rem;
+          letter-spacing: 0.5px;
+        }
+
+        .maplibregl-popup-content .popup-content {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .popup-content.primary > span:first-child {
+          font-size: 1.1rem;
+          font-weight: 500;
         }
 
         .maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
-          border-top-color: var(--vic-map-button-bg);
+          border-top-color: rgb(from var(--vic-map-button-bg) r g b / 80%);
         }
 
         .maplibregl-ctrl-bottom-left > .maplibregl-ctrl:not(.maplibregl-map) {
