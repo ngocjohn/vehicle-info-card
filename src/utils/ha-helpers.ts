@@ -374,35 +374,6 @@ async function installedByHACS(hass: HomeAssistant): Promise<boolean> {
   const hacsEntity = hacsEntities.find((entity) => entity.entity_id === CARD_UPADE_SENSOR);
   return !!hacsEntity;
 }
-/* eslint-disable-next-line */
-async function getMapData(
-  hass: HomeAssistant,
-  deviceTracker: string,
-  apiKey: string,
-  showAddres: boolean
-): Promise<MapData> {
-  const deviceStateObj = hass.states[deviceTracker];
-  if (!deviceStateObj) {
-    return { lat: 0, lon: 0, address: {} };
-  }
-  const { latitude, longitude } = deviceStateObj.attributes;
-  if (showAddres) {
-    const address = apiKey
-      ? await getAddressFromGoggle(latitude, longitude, apiKey)
-      : await getAddressFromOpenStreet(latitude, longitude);
-    // console.log(`Address for device tracker '${deviceTracker}':`, address);
-    if (!address) {
-      console.log('Address not found.');
-      return { lat: latitude, lon: longitude, address: {} };
-    }
-    // console.log('Map data:', { lat: latitude, lon: longitude, address });
-    return { lat: latitude, lon: longitude, address };
-  } else {
-    // console.log('Map data:', { lat: latitude, lon: longitude });
-    console.log('map address is disabled');
-    return { lat: latitude, lon: longitude, address: {} };
-  }
-}
 
 export async function createMapPopup(hass: HomeAssistant, config: VehicleCardConfig): Promise<LovelaceCardConfig[]> {
   const { default_zoom, hours_to_show, theme_mode } = config.map_popup_config || {};
@@ -461,16 +432,17 @@ export async function _getMapAddress(card: VehicleCard, lat: number, lon: number
   const apiKey = card.config?.google_api_key || '';
   const maptilerKey = card.config.extra_configs?.maptiler_api_key || '';
   // console.log('Getting address from map data');
-  const adress = maptilerKey
+  const address = maptilerKey
     ? await getAddressFromMapTiler(lat, lon, maptilerKey)
     : apiKey
     ? await getAddressFromGoggle(lat, lon, apiKey)
     : await getAddressFromOpenStreet(lat, lon);
-  if (!adress) {
+  if (!address) {
     return;
   }
 
-  return adress;
+  // console.log('\x1B[93mvehicle-info-card\x1B[m\n', 'address:', address);
+  return address;
 }
 
 export async function getAddressFromMapTiler(lat: number, lon: number, apiKey: string): Promise<Address | null> {

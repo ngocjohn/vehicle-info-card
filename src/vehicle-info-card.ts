@@ -2,10 +2,12 @@ import { mdiChevronLeft, mdiChevronRight, mdiClose } from '@mdi/js';
 import { formatDateTime, applyThemesOnElement, forwardHaptic, hasConfigOrEntityChanged } from 'custom-card-helpers';
 import { LitElement, html, TemplateResult, PropertyValues, CSSResultGroup, nothing } from 'lit';
 import { styleMap } from 'lit-html/directives/style-map.js';
+
+import './components';
+
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
-import './components';
 import { EcoChart, RemoteControl, VehicleButtons, VehicleMap } from './components/cards';
 import { CardItem, cardTypes } from './const/data-keys';
 import { IMAGE } from './const/imgconst';
@@ -302,7 +304,7 @@ export class VehicleCard extends LitElement {
       }
     }
 
-    // console.log('Button Cards ready:', logging);
+    // console.log('%cButton ready: %O', 'color: #bada55', logging);
     this._buttonReady = true;
     setTimeout(() => {
       this._loading = false;
