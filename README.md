@@ -68,12 +68,12 @@
    https://github.com/ngocjohn/vehicle-info-card
    ```
 
-3. Select `Lovelace`
+3. Select `Dashboard`
 
 4. Press add icon and search for `Vehicle Info Card`
 5. Select Vehicle Info Card repo and install
 6. Force refresh the Home Assistant page `Ctrl` + `F5` / `Shift` + `⌘` + `R`
-7. Add vehicle-info-card to your page
+7. Add vehicle-info-card to your dashboard
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=ngocjohn&repository=vehicle-info-card&category=plugin)
 
