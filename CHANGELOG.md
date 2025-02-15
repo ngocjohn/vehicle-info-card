@@ -1,3 +1,31 @@
+<a id="v1.7.0"></a>
+# [v1.7.0](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.7.0) - 2025-02-15
+
+<!-- Release notes generated using configuration in .github/release.yml at v1.7.0 -->
+
+## What's Changed
+This release introduces support for the MapTiler API key, providing a new popup map design and improved mapping functionality. Additionally, Simplified and Traditional Chinese translations have been added.
+
+If you find this card helpful, please consider giving the repository a ⭐! 
+
+## New Features 🎉
+- **New Popup Map Design**: Added MapTiler API key support to enhance the mapping functionality. [#106](https://github.com/ngocjohn/vehicle-info-card/pull/106) 
+![maptiler-map](https://github.com/user-attachments/assets/8237e1f2-5d27-4c48-a612-73fffa20208d)
+
+## Fixes 🐛
+- Corrected the spelling of "Acceleration" in ecoScore localization files. [#109](https://github.com/ngocjohn/vehicle-info-card/pull/109) 
+
+## Translations 🌍
+- Added Simplified and Traditional Chinese translations. [#103](https://github.com/ngocjohn/vehicle-info-card/pull/103) by [@knoop7](https://github.com/knoop7)
+
+## New Contributors
+* [@knoop7](https://github.com/knoop7) made their first contribution in [#103](https://github.com/ngocjohn/vehicle-info-card/pull/103)
+
+**Full Changelog**: https://github.com/ngocjohn/vehicle-info-card/compare/v1.6.1...v1.7.0
+
+[Changes][v1.7.0]
+
+
 <a id="v1.6.1"></a>
 # [v1.6.1](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.6.1) - 2024-12-29
 
@@ -429,6 +457,7 @@ This update enhances the usability and accuracy of our custom card, providing cl
 [Changes][v1.0.0]
 
 
+[v1.7.0]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.6.1...v1.7.0
 [v1.6.1]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.6.0...v1.6.1
 [v1.6.0]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.5.0...v1.6.0
 [v1.5.0]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.4.0...v1.5.0
