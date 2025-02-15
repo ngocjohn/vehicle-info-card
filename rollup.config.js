@@ -3,7 +3,6 @@ import commonjs from '@rollup/plugin-commonjs';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import { babel } from '@rollup/plugin-babel';
 import terser from '@rollup/plugin-terser';
-import serve from 'rollup-plugin-serve';
 import postcss from 'rollup-plugin-postcss';
 import postcssPresetEnv from 'postcss-preset-env';
 import postcssLit from 'rollup-plugin-postcss-lit';
@@ -63,7 +62,6 @@ const plugins = [
   }),
   replace(replaceOpts),
   postcssLit(),
-  dev && serve(serveopts),
   !dev && terser(terserOpt),
   !dev && filesize(),
 ];
