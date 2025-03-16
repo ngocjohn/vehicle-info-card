@@ -19,17 +19,18 @@
   "module": "vehicle-info-card.js",
   "license": "MIT",
   "dependencies": {
-    "custom-card-helpers": "^1.9.0",
-    "dotenv": "^16.4.7",
-    "home-assistant-js-websocket": "^9.4.0",
-    "lit-html": "^3.2.1",
-    "lit": "^3.2.1",
-    "tinycolor2": "^1.6.0",
     "@dotenvx/dotenvx": "^1.36.0",
     "@maptiler/sdk": "^3.0.1",
     "@mdi/js": "^7.4.47",
     "@rollup/plugin-babel": "^6.0.4",
-    "@rollup/plugin-commonjs": "^28.0.2"
+    "@rollup/plugin-commonjs": "^28.0.2",
+    "apexcharts": "^3.52.0",
+    "custom-card-helpers": "^1.9.0",
+    "dotenv": "^16.4.7",
+    "home-assistant-js-websocket": "^9.4.0",
+    "lit": "^3.2.1",
+    "lit-html": "^3.2.1",
+    "tinycolor2": "^1.6.0"
   },
   "devDependencies": {
     "@rollup/plugin-json": "^6.1.0",
@@ -42,7 +43,6 @@
     "@types/sortablejs": "^1.15.8",
     "@typescript-eslint/eslint-plugin": "^8.24.0",
     "@typescript-eslint/parser": "^8.24.0",
-    "apexcharts": "^4.4.0",
     "axios": "^1.7.9",
     "es-toolkit": "^1.32.0",
     "eslint": "^9.20.1",

@@ -83,7 +83,6 @@ export class EcoChart extends LitElement {
               useSeriesColors: true,
               offsetX: -20,
               fontSize: '16px',
-              /* eslint-disable-next-line */
               formatter: (seriesName: string, opts: any) => {
                 return `${seriesName}:  ${opts.w.globals.series[opts.seriesIndex]}`;
               },
@@ -130,4 +129,10 @@ export class EcoChart extends LitElement {
       opacity: 0.2;
     }
   `;
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'eco-chart': EcoChart;
+  }
 }
