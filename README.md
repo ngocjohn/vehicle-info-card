@@ -21,11 +21,7 @@
 - **Individual Sub-Card Customization**: Allows customization for each individual sub-card to suit specific needs and preferences.
 - **Multilingual Support**: The card includes various translations, making it accessible in multiple languages.
 
-
-
-
-
-
+<!--LOCALIZATION-CONTENT-START-->
 ### Supported Localization
 
 <details>
@@ -49,6 +45,7 @@
 | `zh_hant`     | zh-hant          | 繁體中文          |
 
 </details>
+<!--LOCALIZATION-CONTENT-END-->
 
 ### View options
 
