@@ -26,7 +26,8 @@ interface PickerOptions {
     | 'selectorBoolean'
     | 'template'
     | 'textfield'
-    | 'theme';
+    | 'theme'
+    | 'baseSelector';
   value: boolean | number | string;
 }
 
@@ -197,6 +198,19 @@ export const Picker = ({
         @closed="${(ev: Event) => ev.stopPropagation()}"
       >
       </ha-theme-picker>
+    `,
+    baseSelector: html`
+      <ha-selector
+        .hass=${hass}
+        .value=${value}
+        .configValue=${configValue}
+        .configType=${configType}
+        .configIndex=${configIndex}
+        .label=${label}
+        .selector=${options?.selector}
+        @value-changed=${handleValueChange}
+        .required=${false}
+      ></ha-selector>
     `,
   };
 

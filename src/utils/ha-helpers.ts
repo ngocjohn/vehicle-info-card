@@ -390,7 +390,7 @@ export async function createMapPopup(hass: HomeAssistant, config: VehicleCardCon
       ],
     },
   ];
-
+  console.log('Creating map popup:', haMapConfig);
   return await createCardElement(hass, haMapConfig);
 }
 
@@ -446,7 +446,7 @@ export async function _getMapAddress(card: VehicleCard, lat: number, lon: number
 }
 
 export async function getAddressFromMapTiler(lat: number, lon: number, apiKey: string): Promise<Address | null> {
-  console.log('Getting address from MapTiler');
+  // console.log('Getting address from MapTiler');
   const filterParams: Record<string, keyof Address> = {
     address: 'streetName', // Street name
     locality: 'sublocality', // Sublocality

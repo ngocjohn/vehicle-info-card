@@ -38,6 +38,7 @@ type MapPopupConfig = {
   hours_to_show: number;
   default_zoom: number;
   theme_mode: THEME_MODE;
+  path_color?: string;
 };
 
 export type ImageConfig = {

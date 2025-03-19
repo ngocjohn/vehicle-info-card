@@ -1,4 +1,8 @@
 import tinycolor from 'tinycolor2';
+
+import { HistoryStates, VehicleCardConfig } from '../types';
+import { getAddressFromMapTiler } from './ha-helpers';
+
 export function cloneDeep<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj));
 }
@@ -64,7 +68,6 @@ export function compareVersions(version1, version2) {
   return 0; // Versions are equal
 }
 
- 
 export function isEmpty(input: any): boolean {
   if (Array.isArray(input)) {
     // Check if array is empty
@@ -82,4 +85,144 @@ export const isDarkColor = (color: string): boolean => {
   const colorObj = tinycolor(color);
   // console.log('colorObj', colorObj);
   return colorObj.isLight();
+};
+
+const formatTimestamp = (ts: number): string => {
+  const date = new Date(ts * 1000);
+  return date.toLocaleString();
+};
+
+export const _getHistoryPoints = async (
+  config: VehicleCardConfig,
+  history?: HistoryStates
+): Promise<any | undefined> => {
+  if (!history || !(config.map_popup_config.hours_to_show ?? 0)) {
+    return undefined;
+  }
+  console.log('history', history);
+  const paths = {};
+
+  // Get history for the device_tracker entity
+  const entityStates = history[config.device_tracker!];
+  if (!entityStates) {
+    return undefined;
+  }
+  // Filter out locations without coordinates
+  const locations = entityStates.filter((loc) => loc.a.latitude && loc.a.longitude);
+  if (locations.length < 2) {
+    return undefined;
+  }
+  const apiKey = config.extra_configs.maptiler_api_key!;
+
+  // Create source data for LineString and Point features
+  const totalPoints = locations.length;
+  const lineSegments: any[] = [];
+  const pointFeatures: any[] = [];
+  const multiLineSegments: any[] = [];
+
+  for (let i = 0; i < totalPoints - 1; i++) {
+    const start = locations[i];
+    const end = locations[i + 1];
+
+    const gradualOpacity = 0.8;
+    let opacityStep: number;
+    let baseOpacity: number;
+
+    opacityStep = gradualOpacity / (totalPoints - 2);
+    baseOpacity = 1 - gradualOpacity;
+
+    // Calculate opacity (higher at start, lower towards the end)
+    const opacity = baseOpacity + i * opacityStep;
+
+    lineSegments.push({
+      type: 'Feature',
+      id: `line-${i}`,
+      geometry: {
+        type: 'LineString',
+        coordinates: [
+          [start.a.longitude, start.a.latitude],
+          [end.a.longitude, end.a.latitude],
+        ],
+      },
+      properties: {
+        line_id: `line-${i}`,
+        order_id: i,
+        opacity: opacity, // Keep 2 decimal places for smoother transition
+      },
+    });
+
+    // Add multiLineSegments
+    multiLineSegments.push([
+      [start.a.longitude, start.a.latitude],
+      [end.a.longitude, end.a.latitude],
+    ]);
+
+    // **Wait for description before pushing to pointFeatures**
+    const address = (await getAddressFromMapTiler(start.a.latitude, start.a.longitude, apiKey)) ?? '';
+    const formatAddress = address ? `${address.streetName}` : '';
+
+    const description = `
+      <b>${start.a.friendly_name}</b>
+      <span>${formatAddress}</span>
+      <i>${formatTimestamp(start.lu)}</i>
+    `;
+
+    // Create Point features for each segment
+    pointFeatures.push({
+      type: 'Feature',
+      geometry: {
+        type: 'Point',
+        coordinates: [start.a.longitude, start.a.latitude],
+      },
+      properties: {
+        friendly_name: start.a.friendly_name,
+        last_updated: start.lu,
+        description: description,
+        opacity: opacity,
+      },
+    });
+  }
+
+  const pointSource = {
+    type: 'geojson',
+    data: {
+      type: 'FeatureCollection',
+      features: pointFeatures,
+    },
+  };
+
+  const routeSource = {
+    type: 'geojson',
+    data: {
+      type: 'FeatureCollection', // Instead of a single LineString, we now have multiple segments
+      features: lineSegments,
+    },
+  };
+
+  const multiLineSource = {
+    type: 'geojson',
+    data: {
+      type: 'Feature',
+      geometry: {
+        type: 'MultiLineString',
+        coordinates: multiLineSegments,
+      },
+    },
+  };
+
+  paths['route'] = routeSource;
+  paths['points'] = pointSource;
+  paths['multiLine'] = multiLineSource;
+
+  console.log('paths', paths);
+  return paths;
+};
+
+export const getInitials = (name: string): string => {
+  if (!name) return ''; // Handle empty or undefined names
+
+  return name
+    .split(' ')
+    .map((word) => word.charAt(0).toUpperCase())
+    .join('');
 };
