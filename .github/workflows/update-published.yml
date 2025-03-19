@@ -1,0 +1,37 @@
+name: Update README and Bug Report Template
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  update-files:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: npm install axios
+
+      - name: Update README.md
+        run: node scripts/update-readme.js
+
+      - name: Update Bug Report Template
+        run: node scripts/update-bug-template.js
+
+      - name: Push changes
+        run: |
+          git config --local user.name "GitHub Actions"
+          git config --local user.email "actions@github.com"
+          git add README.md .github/ISSUE_TEMPLATE/BUG_REPORT.yml
+          git commit -m "Update README.md and Bug Report Template" || echo "No changes to commit"
+          git push origin HEAD:${{ github.ref }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
