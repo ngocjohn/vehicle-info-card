@@ -1,3 +1,25 @@
+<a id="v1.8.0"></a>
+# [v1.8.0](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.8.0) - 2025-03-19
+
+## What's Changed
+
+### New Features 🎉
+
+- **Location History Tracking**: Added functionality to track historical GPS points with improved visualization, allowing users to see movement over time with fading opacity effects.
+- **Custom Map Styles**: Introduced the ability to customize map styles, enabling users to personalize their map appearance to match their preferences.
+
+![2025-03-19 22 23 45](https://github.com/user-attachments/assets/b364e2cf-68ef-4060-b764-8da3d0661f29)
+
+### 🛠️ Fixes & Performance Improvements
+
+- **Improved Code Efficiency**: Several functions have been optimized to reduce redundancy and improve performance.
+- **Better Handling of Asynchronous Data**: Ensured that popups and controls load correctly even when fetching data dynamically.
+
+🔗 **Full Changelog**: [v1.8.0...v1.8.1](https://github.com/ngocjohn/vehicle-info-card/compare/v1.8.0...v1.8.1)
+
+[Changes][v1.8.0]
+
+
 <a id="v1.7.0"></a>
 # [v1.7.0](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.7.0) - 2025-02-15
 
@@ -457,6 +479,7 @@ This update enhances the usability and accuracy of our custom card, providing cl
 [Changes][v1.0.0]
 
 
+[v1.8.0]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.7.0...v1.8.0
 [v1.7.0]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.6.1...v1.7.0
 [v1.6.1]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.6.0...v1.6.1
 [v1.6.0]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.5.0...v1.6.0
