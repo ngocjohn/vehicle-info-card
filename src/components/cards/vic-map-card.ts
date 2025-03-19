@@ -3,16 +3,34 @@ import L from 'leaflet';
 import mapstyle from 'leaflet/dist/leaflet.css';
 import 'leaflet-providers';
 // Lit imports
-import { LitElement, html, css, TemplateResult, PropertyValues, CSSResultGroup, unsafeCSS } from 'lit';
+import { LitElement, html, css, TemplateResult, PropertyValues, CSSResultGroup, unsafeCSS, nothing } from 'lit';
 import { customElement, state, property } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
-import { MapData, SECTION, SECTION_DEFAULT_ORDER } from '../../types';
+import { MAPTILER_DIALOG_STYLES, DEFAULT_DIALOG_STYLES, DEFAULT_HOURS_TO_SHOW } from '../../const/maptiler-const';
+import {
+  HistoryStates,
+  isComponentLoaded,
+  MapData,
+  SECTION,
+  SECTION_DEFAULT_ORDER,
+  subscribeHistoryStatesTimeWindow,
+} from '../../types';
 import { LovelaceCardConfig } from '../../types/ha-frontend/lovelace/lovelace';
-import { _getMapAddress, createMapPopup } from '../../utils';
+import { _getHistoryPoints, _getMapAddress, createMapPopup } from '../../utils';
 import { createCloseHeading } from '../../utils/create';
-import { VehicleCard } from '../../vehicle-info-card';
 import './vic-maptiler-popup';
+import { VehicleCard } from '../../vehicle-info-card';
+
+export type MapConfig = {
+  hours_to_show?: number;
+  default_zoom?: number;
+  theme_mode?: string;
+  device_tracker?: string;
+  google_api_key?: string;
+  maptiler_api_key?: string;
+  path_color?: string;
+};
 
 @customElement('vehicle-map')
 export class VehicleMap extends LitElement {
@@ -26,17 +44,76 @@ export class VehicleMap extends LitElement {
   @state() private marker: L.Marker | null = null;
 
   @state() private mapCardPopup?: LovelaceCardConfig[];
+  @state() private _locateIconVisible = false;
   @state() private _addressReady = false;
 
   @state() private _address: Partial<MapData['address']> | null = null;
 
-  @state() private _locateIconVisible = false;
+  private _subscribed?: Promise<(() => Promise<void>) | undefined>;
+  private _stateHistory?: HistoryStates;
+  private _historyPoints?: any | undefined;
+
   private get mapPopup(): boolean {
     return this.card.config.enable_map_popup;
   }
 
   private get zoom(): number {
     return this.card.config.map_popup_config.default_zoom ?? 14;
+  }
+
+  public get mapConfig(): MapConfig {
+    const { map_popup_config = {}, device_tracker = '', google_api_key = '' } = this.card.config;
+    const maptiler_api_key = this.card.config.extra_configs?.maptiler_api_key;
+    return { ...map_popup_config, device_tracker, google_api_key, maptiler_api_key };
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    console.log('Connected');
+    this._subscribeHistory();
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this._unsubscribeHistory();
+  }
+
+  private _subscribeHistory() {
+    const { hours_to_show } = this.card.config.map_popup_config!;
+    const device_tracker = this.card.config.device_tracker!;
+    const hass = this.card._hass;
+    if (!isComponentLoaded(hass!, 'history') || this._subscribed || !(hours_to_show ?? DEFAULT_HOURS_TO_SHOW)) {
+      console.log('Not subscribing to history', isComponentLoaded(hass!, 'history'), this._subscribed, hours_to_show);
+      return;
+    }
+
+    this._subscribed = subscribeHistoryStatesTimeWindow(
+      hass!,
+      (combinedHistory) => {
+        if (!this._subscribed) {
+          // Message came in before we had a chance to unload
+          return;
+        }
+        this._stateHistory = combinedHistory;
+        // console.log('History updated:', this._stateHistory);
+      },
+      hours_to_show ?? DEFAULT_HOURS_TO_SHOW,
+      [device_tracker],
+      false,
+      false,
+      false
+    ).catch((err) => {
+      this._subscribed = undefined;
+      console.error('Error subscribing to history', err);
+      return undefined;
+    });
+  }
+
+  private _unsubscribeHistory() {
+    if (this._subscribed) {
+      this._subscribed.then((unsub) => unsub?.());
+      this._subscribed = undefined;
+    }
   }
 
   protected async updated(changedProperties: PropertyValues): Promise<void> {
@@ -206,41 +283,18 @@ export class VehicleMap extends LitElement {
     `;
   }
 
-  private _renderMaptilerDialog() {
+  private _renderMaptilerDialog(): TemplateResult | typeof nothing {
     const maptiler_api_key = this.card.config.extra_configs?.maptiler_api_key;
-    if (!this.open || !maptiler_api_key) return html``;
-    const styles = html`
-      <style>
-        ha-dialog {
-          --mdc-dialog-min-width: 85vw;
-          --mdc-dialog-max-width: 85vw;
-          --dialog-backdrop-filter: blur(2px);
-          --dialog-content-padding: 0;
-        }
-
-        @media all and (max-width: 600px), all and (max-height: 500px) {
-          ha-dialog {
-            --mdc-dialog-min-width: 100vw;
-            --mdc-dialog-max-width: 100vw;
-            --mdc-dialog-min-height: 100%;
-            --mdc-dialog-max-height: 100%;
-            --vertical-align-dialog: flex-end;
-            --ha-dialog-border-radius: 0;
-            --dialog-content-padding: 0;
-          }
-          .mdc-dialog .mdc-dialog__content {
-            padding: 0;
-          }
-        }
-      </style>
-    `;
+    if (!this.open || !maptiler_api_key) return nothing;
     return html`
       <ha-dialog open @closed=${() => (this.open = false)} hideActions flexContent>
-        ${styles}
+        ${MAPTILER_DIALOG_STYLES}
         <div class="container">
           <vic-maptiler-popup
             .mapData=${this.mapData}
             .card=${this.card}
+            ._mapConfig=${this.mapConfig}
+            ._paths=${this._historyPoints}
             @close-dialog=${() => {
               this.open = false;
             }}
@@ -252,25 +306,6 @@ export class VehicleMap extends LitElement {
 
   private _renderMapDialog() {
     if (!this.open) return html``;
-    const styles = html`
-      <style>
-        ha-dialog {
-          --mdc-dialog-min-width: 500px;
-          --mdc-dialog-max-width: 600px;
-          --dialog-backdrop-filter: blur(2px);
-        }
-        @media all and (max-width: 600px), all and (max-height: 500px) {
-          ha-dialog {
-            --mdc-dialog-min-width: 100vw;
-            --mdc-dialog-max-width: 100vw;
-            --mdc-dialog-min-height: 100%;
-            --mdc-dialog-max-height: 100%;
-            --vertical-align-dialog: flex-end;
-            --ha-dialog-border-radius: 0;
-          }
-        }
-      </style>
-    `;
     return html`
       <ha-dialog
         open
@@ -279,7 +314,7 @@ export class VehicleMap extends LitElement {
         hideActions
         flexContent
       >
-        ${styles}
+        ${DEFAULT_DIALOG_STYLES}
         <div class="container">${this.mapCardPopup}</div>
       </ha-dialog>
     `;
@@ -287,9 +322,16 @@ export class VehicleMap extends LitElement {
 
   private async _toggleMapDialog() {
     if (!this.mapPopup) return;
-    if (this.mapCardPopup !== undefined) {
+    if (this.mapCardPopup !== undefined || this._historyPoints !== undefined) {
       this.open = !this.open;
       return;
+    } else if (this.mapConfig.maptiler_api_key !== undefined) {
+      _getHistoryPoints(this.card.config, this._stateHistory).then((pathData) => {
+        this._historyPoints = pathData;
+        setTimeout(() => {
+          this.open = true;
+        }, 50);
+      });
     } else {
       createMapPopup(this.card._hass, this.card.config).then((popup) => {
         this.mapCardPopup = popup;
