@@ -25,4 +25,5 @@ scripts/*
 !scripts/generate-lang-imports.js
 !scripts/generate-new-lang-file.js
 !scripts/update-languages.js
+!scripts/update-bug-template.js
 scripts/add-missing-translations.js
