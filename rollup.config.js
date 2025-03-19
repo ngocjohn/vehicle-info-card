@@ -1,16 +1,9 @@
-import typescript from 'rollup-plugin-typescript2';
-import commonjs from '@rollup/plugin-commonjs';
-import { nodeResolve } from '@rollup/plugin-node-resolve';
-import { babel } from '@rollup/plugin-babel';
 import terser from '@rollup/plugin-terser';
-import postcss from 'rollup-plugin-postcss';
-import postcssPresetEnv from 'postcss-preset-env';
-import postcssLit from 'rollup-plugin-postcss-lit';
+import serve from 'rollup-plugin-serve';
 import filesize from 'rollup-plugin-filesize';
 import replace from '@rollup/plugin-replace';
-import json from '@rollup/plugin-json';
 import { version } from './package.json';
-import { logCardInfo } from './rollup.config.helper.mjs';
+import { logCardInfo, defaultPlugins } from './rollup.config.helper.mjs';
 
 const dev = process.env.ROLLUP_WATCH;
 const port = process.env.PORT || 8235;
@@ -39,48 +32,16 @@ const terserOpt = {
   },
 };
 
-const plugins = [
-  nodeResolve({ preferBuiltins: false }),
-  commonjs(),
-  typescript(),
-  babel({
-    babelHelpers: 'bundled',
-    exclude: 'node_modules/**',
-  }),
-  json(),
-  postcss({
-    plugins: [
-      postcssPresetEnv({
-        stage: 1,
-        features: {
-          'nesting-rules': true,
-        },
-      }),
-    ],
-    extract: false,
-    inject: false,
-  }),
-  replace(replaceOpts),
-  postcssLit(),
-  !dev && terser(terserOpt),
-  !dev && filesize(),
-];
+const plugins = [replace(replaceOpts), dev && serve(serveopts), !dev && terser(terserOpt), !dev && filesize()];
 
 export default [
   {
     input: 'src/vehicle-info-card.ts',
     output: [
       {
-        dir: './dist',
+        file: dev ? 'dist/vehicle-info-card.js' : 'build/vehicle-info-card.js',
         format: 'es',
         sourcemap: dev ? true : false,
-        inlineDynamicImports: true,
-        banner: custombanner,
-      },
-      {
-        dir: './build',
-        format: 'es',
-        sourcemap: false,
         inlineDynamicImports: true,
         banner: custombanner,
       },
@@ -88,7 +49,7 @@ export default [
     watch: {
       exclude: 'node_modules/**',
     },
-    plugins: [...plugins],
+    plugins: [...plugins, ...defaultPlugins],
     moduleContext: (id) => {
       const thisAsWindowForModules = [
         'node_modules/@formatjs/intl-utils/lib/src/diff.js',
