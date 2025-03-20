@@ -13,12 +13,10 @@ const GITHUB_REPO = 'ngocjohn/vehicle-info-card'; // Replace with your GitHub re
 const getReleasesTags = async () => {
   try {
     const response = await axios.get(`https://api.github.com/repos/${GITHUB_REPO}/releases`);
-
-    const tags = response.data.map((release) => release.tag_name);
-    return tags;
+    return response.data.map((release) => release.tag_name);
   } catch (error) {
     console.error('Error fetching release tags:', error.message);
-    process.exit(1);
+    return null; // Return null instead of exiting
   }
 };
 
@@ -29,6 +27,12 @@ const updateBugTemplate = async () => {
 
     // Read the existing bug template content
     const bugTemplate = fs.readFileSync(bugTemplatePath, 'utf8');
+
+    // If fetching tags failed, skip updating the options
+    if (!tags) {
+      console.warn('Skipping bug report template update due to failed tag fetch.');
+      return;
+    }
 
     // Replace the existing dropdown options
     const updatedTemplate = bugTemplate.replace(
