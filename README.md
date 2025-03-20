@@ -22,12 +22,14 @@
 - **Multilingual Support**: The card includes various translations, making it accessible in multiple languages.
 
 <!--LOCALIZATION-CONTENT-START-->
+
+
 ### Supported Localization
 
 <details>
   <summary>The following languages are supported in this project</summary>
 
-| Language Code | Name                   | Native Name					  |
+| Language Code | Name                   | Native Name            |
 | ------------- | ---------------------- | ---------------------- |
 | `cs`     | Czech          | Čeština          |
 | `de`     | German          | Deutsch          |
@@ -45,6 +47,7 @@
 | `zh_hant`     | zh-hant          | 繁體中文          |
 
 </details>
+
 <!--LOCALIZATION-CONTENT-END-->
 
 ### View options
