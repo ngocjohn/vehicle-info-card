@@ -15,7 +15,7 @@ import {
   STYLE_SCHEMA,
 } from '../../const/maptiler-const';
 import { MapData } from '../../types';
-import { getInitials } from '../../utils';
+import { getAddressFromMapTiler, getInitials } from '../../utils';
 import { VehicleCard } from '../../vehicle-info-card';
 import { MapConfig } from './vic-map-card';
 
@@ -381,6 +381,7 @@ export class VicMaptilerPopup extends LitElement {
   }
 
   private _setupPointInteractions(): void {
+    const apiKey = this._mapConfig?.maptiler_api_key!;
     // Create a popup, but don't add it to the map yet.
     const pointPopup = new maptilersdk.Popup({
       closeButton: false,
@@ -389,7 +390,7 @@ export class VicMaptilerPopup extends LitElement {
 
     let currentFeatureCoordinates: string | undefined;
 
-    this.map.on('mousemove', 'points', (e: any) => {
+    this.map.on('mousemove', 'points', async (e: any) => {
       const feature = e.features?.[0];
       if (!feature) return;
 
@@ -407,6 +408,13 @@ export class VicMaptilerPopup extends LitElement {
         }
 
         pointPopup.setLngLat(coordinates).setHTML(description).addTo(this.map);
+        const formattedAddress = await getAddressFromMapTiler(coordinates[1], coordinates[0], apiKey);
+        if (formattedAddress) {
+          const updatedAddress = `${description}${formattedAddress.streetName}`;
+          if (pointPopup.isOpen()) {
+            pointPopup.setHTML(updatedAddress);
+          }
+        }
       }
     });
 

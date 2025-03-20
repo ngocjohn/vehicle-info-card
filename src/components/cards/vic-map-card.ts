@@ -325,13 +325,14 @@ export class VehicleMap extends LitElement {
     if (this.mapCardPopup !== undefined || this._historyPoints !== undefined) {
       this.open = !this.open;
       return;
-    } else if (this.mapConfig.maptiler_api_key !== undefined) {
-      _getHistoryPoints(this.card.config, this._stateHistory).then((pathData) => {
+    } else if (this.mapConfig.maptiler_api_key !== undefined && this._stateHistory) {
+      const pathData = _getHistoryPoints(this.card.config, this._stateHistory);
+      if (pathData) {
         this._historyPoints = pathData;
         setTimeout(() => {
           this.open = true;
         }, 50);
-      });
+      }
     } else {
       createMapPopup(this.card._hass, this.card.config).then((popup) => {
         this.mapCardPopup = popup;

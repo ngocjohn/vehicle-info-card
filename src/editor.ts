@@ -674,7 +674,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const showAddress = showOpts.find((option) => option.configKey === 'show_address');
     const maptilerApiKey = this._config?.extra_configs?.maptiler_api_key || '';
     const googleApiKey = this._config?.google_api_key || '';
-    const pathColor = this._config?.map_popup_config?.path_color || 'none';
 
     const sharedConfig = {
       component: this,
@@ -727,14 +726,14 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       {
         configValue: 'hours_to_show',
         label: 'Hours to show',
-        value: this._config.map_popup_config.hours_to_show,
+        value: this._config.map_popup_config.hours_to_show || 0,
         pickerType: 'number' as 'number',
         options: { selector: { number: { min: 0, mode: 'box' } } },
       },
       {
         configValue: 'default_zoom',
         label: 'Default Zoom',
-        value: this._config.map_popup_config.default_zoom,
+        value: this._config.map_popup_config.default_zoom || 14,
         pickerType: 'number' as 'number',
         options: { selector: { number: { min: 0, mode: 'box' } } },
       },
@@ -748,55 +747,11 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       {
         configValue: 'path_color',
         label: 'Path Color',
-        value: this._config.map_popup_config.path_color || 'none',
+        value: this._config.map_popup_config?.path_color,
         pickerType: 'baseSelector' as 'baseSelector',
-        options: { selector: { ui_color: { include_none: true, include_state: false } } },
+        options: { selector: { ui_color: { include_none: false, include_state: false } } },
       },
     ];
-    // const mapPopupConfig = html`
-    //   <ha-alert alert-type="info">${infoAlert}</ha-alert>
-    //   <div class="switches">
-    //     <ha-textfield
-    //       label="Hours to show"
-    //       .min=${0}
-    //       .value=${this._config.map_popup_config.hours_to_show}
-    //       .configValue=${'hours_to_show'}
-    //       .type=${'number'}
-    //       @input=${this._valueChanged}
-    //     ></ha-textfield>
-    //     <ha-textfield
-    //       .label=${'Default Zoom'}
-    //       .min=${0}
-    //       .value=${this._config.map_popup_config.default_zoom}
-    //       .configValue=${'default_zoom'}
-    //       .type=${'number'}
-    //       @input=${this._valueChanged}
-    //     ></ha-textfield>
-    //     <ha-select
-    //       .label=${'Theme mode'}
-    //       .value=${this._config.map_popup_config.theme_mode}
-    //       .configValue=${'theme_mode'}
-    //       @selected=${this._valueChanged}
-    //       @closed=${(ev: Event) => ev.stopPropagation()}
-    //       fixedMenuPosition
-    //     >
-    //       ${themeMode.map((mode) => html`<mwc-list-item value=${mode.key}>${mode.name}</mwc-list-item>`)}
-    //     </ha-select>
-    //     <ha-selector
-    //       .hass=${this.hass}
-    //       .label=${'Path Color'}
-    //       .selector=${{
-    //         ui_color: {
-    //           include_none: true,
-    //           include_state: false,
-    //         },
-    //       }}
-    //       .value=${pathColor}
-    //       .configValue=${'path_color'}
-    //       @value-changed=${this._valueChanged}
-    //     ></ha-selector>
-    //   </div>
-    // `;
 
     const mapPopupConfig = html`
       <ha-alert alert-type="info">${infoAlert}</ha-alert>
@@ -811,7 +766,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       ${Picker(deviceTracker)}
       <ha-textfield
         label="Google API Key (Optional)"
-        type="password"
         .value=${googleApiKey}
         .configValue=${'google_api_key'}
         @input=${this._valueChanged}
@@ -822,7 +776,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       </ha-alert>
       <ha-textfield
         label="Maptiler API Key (Optional)"
-        type="password"
         .value=${maptilerApiKey}
         .configValue=${'maptiler_api_key'}
         @input=${this._valueChanged}
@@ -1600,6 +1553,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
     if (configType === 'map_popup_config') {
       newValue = target.checked !== undefined ? target.checked : ev.detail.value;
+
       updates.map_popup_config = {
         ...this._config.map_popup_config,
         [configValue]: newValue,
@@ -1659,6 +1613,9 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       console.log('Show address changed:', target.checked);
     } else if (configValue === 'maptiler_api_key') {
       newValue = target.value;
+      if (newValue.trim() === '' || newValue === '') {
+        newValue = undefined;
+      }
       updates.extra_configs = {
         ...this._config.extra_configs,
         maptiler_api_key: newValue,
@@ -1666,6 +1623,9 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       console.log('Maptiler API key changed:', newValue);
     } else if (configValue === 'google_api_key') {
       newValue = target.value;
+      if (newValue.trim() === '' || newValue === '') {
+        newValue = undefined;
+      }
       updates.google_api_key = newValue;
       console.log('Google API key changed:', newValue);
     } else {

@@ -28,7 +28,7 @@ interface PickerOptions {
     | 'textfield'
     | 'theme'
     | 'baseSelector';
-  value: boolean | number | string;
+  value: boolean | number | string | undefined;
 }
 
 export const Picker = ({

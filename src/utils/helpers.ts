@@ -1,7 +1,6 @@
 import tinycolor from 'tinycolor2';
 
 import { HistoryStates, VehicleCardConfig } from '../types';
-import { getAddressFromMapTiler } from './ha-helpers';
 
 export function cloneDeep<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj));
@@ -92,10 +91,7 @@ const formatTimestamp = (ts: number): string => {
   return date.toLocaleString();
 };
 
-export const _getHistoryPoints = async (
-  config: VehicleCardConfig,
-  history?: HistoryStates
-): Promise<any | undefined> => {
+export const _getHistoryPoints = (config: VehicleCardConfig, history?: HistoryStates): any | undefined => {
   if (!history || !(config.map_popup_config.hours_to_show ?? 0)) {
     return undefined;
   }
@@ -112,7 +108,6 @@ export const _getHistoryPoints = async (
   if (locations.length < 2) {
     return undefined;
   }
-  const apiKey = config.extra_configs.maptiler_api_key!;
 
   // Create source data for LineString and Point features
   const totalPoints = locations.length;
@@ -157,15 +152,7 @@ export const _getHistoryPoints = async (
       [end.a.longitude, end.a.latitude],
     ]);
 
-    // **Wait for description before pushing to pointFeatures**
-    const address = (await getAddressFromMapTiler(start.a.latitude, start.a.longitude, apiKey)) ?? '';
-    const formatAddress = address ? `${address.streetName}` : '';
-
-    const description = `
-      <b>${start.a.friendly_name}</b>
-      <span>${formatAddress}</span>
-      <i>${formatTimestamp(start.lu)}</i>
-    `;
+    const description = `<b>${start.a.friendly_name}</b><i>${formatTimestamp(start.lu)}</i>`;
 
     // Create Point features for each segment
     pointFeatures.push({
