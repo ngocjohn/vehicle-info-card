@@ -1,9 +1,6 @@
 name: HACS
 
 on:
-  push:
-    paths:
-      - 'dist/**'
   release:
     types: [published]
   workflow_dispatch:
