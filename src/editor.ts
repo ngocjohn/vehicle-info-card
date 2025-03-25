@@ -68,7 +68,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   @query('panel-images') private _panelImages!: PanelImages;
 
   public async setConfig(config: VehicleCardConfig): Promise<void> {
-    this._config = structuredClone(config);
+    this._config = config;
   }
 
   connectedCallback() {
@@ -110,8 +110,8 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     }
   }
 
-  protected async firstUpdated(changedProperties: PropertyValues): Promise<void> {
-    super.firstUpdated(changedProperties);
+  protected async firstUpdated(): Promise<void> {
+    await new Promise((resolve) => setTimeout(resolve, 0));
     await handleFirstUpdated(this);
     this.getBaseCardTypes();
     // this._convertDefaultCardConfigs();
@@ -619,6 +619,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       { key: 'light', name: 'Light' },
     ];
 
+    const themeConfig = this._config.selected_theme || {};
     const themesConfig = html`
       <div class="switches">
         <ha-select
@@ -637,7 +638,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
         <ha-theme-picker
           .hass=${this.hass}
-          .value=${this._config.selected_theme.theme ?? 'default'}
+          .value=${themeConfig.theme ?? 'default'}
           .configValue=${'theme'}
           .includeDefault=${true}
           @selected=${this._valueChanged}
@@ -647,7 +648,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
         <ha-select
           label="Theme mode"
-          .value=${this._config.selected_theme.mode}
+          .value=${themeConfig.mode ?? 'auto'}
           .configValue=${'mode'}
           @selected=${this._valueChanged}
           @closed=${(ev: Event) => ev.stopPropagation()}
@@ -674,10 +675,11 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const showAddress = showOpts.find((option) => option.configKey === 'show_address');
     const maptilerApiKey = this._config?.extra_configs?.maptiler_api_key || '';
     const googleApiKey = this._config?.google_api_key || '';
+    const mapPopupConfig = this._config?.map_popup_config || {};
 
     const sharedConfig = {
       component: this,
-      pickerType: 'boolean' as 'boolean',
+      pickerType: 'selectorBoolean' as 'selectorBoolean',
     };
 
     const mapBoolean = [
@@ -690,6 +692,12 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         label: showAddress?.label,
         value: this._config.extra_configs?.show_address ?? true,
         configValue: showAddress?.configKey,
+      },
+      {
+        label: 'US Address Format',
+        value: mapPopupConfig?.us_format ?? false,
+        configValue: 'us_format',
+        configType: 'map_popup_config',
       },
     ];
 
@@ -726,34 +734,64 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       {
         configValue: 'hours_to_show',
         label: 'Hours to show',
-        value: this._config.map_popup_config.hours_to_show || 0,
+        value: mapPopupConfig.hours_to_show || 0,
         pickerType: 'number' as 'number',
         options: { selector: { number: { min: 0, mode: 'box' } } },
       },
       {
         configValue: 'default_zoom',
         label: 'Default Zoom',
-        value: this._config.map_popup_config.default_zoom || 14,
+        value: mapPopupConfig.default_zoom || 14,
         pickerType: 'number' as 'number',
         options: { selector: { number: { min: 0, mode: 'box' } } },
       },
       {
         configValue: 'theme_mode',
         label: 'Theme mode',
-        value: this._config.map_popup_config.theme_mode || 'auto',
+        value: mapPopupConfig.theme_mode ?? 'auto',
         pickerType: 'baseSelector' as 'baseSelector',
         options: { selector: { select: { mode: 'dropdown', options: themeMode } } },
+      },
+
+      {
+        configValue: 'auto_fit',
+        label: 'Auto Fit',
+        value: mapPopupConfig.auto_fit ?? false,
+        pickerType: 'selectorBoolean' as 'selectorBoolean',
       },
       {
         configValue: 'path_color',
         label: 'Path Color',
-        value: this._config.map_popup_config?.path_color,
+        value: mapPopupConfig?.path_color || undefined,
         pickerType: 'baseSelector' as 'baseSelector',
         options: { selector: { ui_color: { include_none: false, include_state: false } } },
       },
+      {
+        configValue: 'history_period',
+        label: 'History Period',
+        value: mapPopupConfig?.history_period || undefined,
+        pickerType: 'baseSelector' as 'baseSelector',
+        options: {
+          selector: {
+            select: {
+              mode: 'dropdown',
+              options: [
+                {
+                  value: 'today',
+                  label: 'Today',
+                },
+                {
+                  value: 'yesterday',
+                  label: 'Yesterday',
+                },
+              ],
+            },
+          },
+        },
+      },
     ];
 
-    const mapPopupConfig = html`
+    const mapPopupConfigEl = html`
       <ha-alert alert-type="info">${infoAlert}</ha-alert>
       <div class="switches">
         ${mapPopConfig.map((item) => {
@@ -761,6 +799,16 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         })}
       </div>
     `;
+
+    const minimapZoom = {
+      label: 'Mini Map Zoom',
+      value: mapPopupConfig.map_zoom || 14,
+      configValue: 'map_zoom',
+      pickerType: 'number' as 'number',
+      options: { selector: { number: { min: 0, mode: 'box' } }, helperText: 'Default zoom for minimap' },
+      configType: 'map_popup_config',
+      component: this,
+    };
 
     const mapConfig = html`
       ${Picker(deviceTracker)}
@@ -784,11 +832,11 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         ${mapBoolean.map((item) => {
           return Picker({ ...sharedConfig, ...item });
         })}
+        ${Picker(minimapZoom)} ${Picker(maxMiniMapHeight)}
       </div>
-      ${Picker(maxMiniMapHeight)} ${mapPopupConfig}
     `;
 
-    return mapConfig;
+    return html` ${mapConfig} ${mapPopupConfigEl} `;
   }
 
   private _renderServicesConfig(): TemplateResult {
@@ -1552,18 +1600,18 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const updates: Partial<VehicleCardConfig> = {};
 
     if (configType === 'map_popup_config') {
-      newValue = target.checked !== undefined ? target.checked : ev.detail.value;
-
-      updates.map_popup_config = {
-        ...this._config.map_popup_config,
-        [configValue]: newValue,
-      };
-      console.log('Map popup config changed:', configValue, newValue);
-    } else if (configValue in this._config.selected_theme) {
-      const key = configValue as keyof VehicleCardConfig['selected_theme'];
-      if (this._config.selected_theme[key] === newValue) {
+      const key = configValue as keyof VehicleCardConfig['map_popup_config'];
+      newValue = ev.detail.value;
+      if (this._config.map_popup_config![key] && this._config.map_popup_config[key] === newValue) {
         return;
       }
+      updates.map_popup_config = {
+        ...this._config.map_popup_config,
+        [key]: newValue,
+      };
+      console.log('Map popup config changed:', configValue, newValue);
+    } else if (['theme', 'mode'].includes(configValue)) {
+      const key = configValue as keyof VehicleCardConfig['selected_theme'];
       updates.selected_theme = {
         ...this._config.selected_theme,
         [key]: newValue,
@@ -1631,6 +1679,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     } else {
       newValue = target.checked !== undefined ? target.checked : ev.detail.value;
       updates[configValue] = newValue;
+      console.log('Config changed:', configValue, newValue);
     }
 
     if (Object.keys(updates).length > 0) {

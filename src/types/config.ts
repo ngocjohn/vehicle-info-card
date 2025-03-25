@@ -34,12 +34,18 @@ export type Services = {
   windows: boolean;
 };
 
-type MapPopupConfig = {
+type HISTORY_PERIOD = 'today' | 'yesterday' | undefined;
+
+export interface MapPopupConfig {
   hours_to_show: number;
   default_zoom: number;
   theme_mode: THEME_MODE;
-  path_color?: string;
-};
+  us_format?: boolean;
+  path_color?: string | undefined;
+  auto_fit?: boolean;
+  map_zoom?: number;
+  history_period?: HISTORY_PERIOD;
+}
 
 export type ImageConfig = {
   url: string;
@@ -124,7 +130,7 @@ export interface VehicleCardConfig extends LovelaceCardConfig {
   device_tracker?: string;
   google_api_key?: string;
   selected_language?: string | null;
-  model_name: string;
+  model_name?: string;
   images: ImageConfig[];
   services: Services;
   button_grid: ButtonGridConfig;

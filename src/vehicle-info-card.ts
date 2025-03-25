@@ -272,7 +272,7 @@ export class VehicleCard extends LitElement {
       return false;
     }
 
-    if (_changedProps.has('config') && this.config.selected_theme?.theme !== 'default') {
+    if (_changedProps.has('config') && this.config.selected_theme && this.config.selected_theme.theme) {
       this.applyTheme(this.config.selected_theme.theme);
     }
 
@@ -600,12 +600,14 @@ export class VehicleCard extends LitElement {
   }
 
   private _renderMap(): TemplateResult | void {
-    const { config } = this;
+    const config = this.config;
+    const deviceTracker = config.device_tracker;
+    const deviceState = this.getEntityState(deviceTracker);
     if (!config.show_map) {
       return;
     }
-    if (!config.device_tracker && config.show_map) {
-      return this._showWarning('No device_tracker entity provided.');
+    if ((!config.device_tracker || /(unknown|unavailable)/.test(deviceState) || !deviceState) && config.show_map) {
+      return this._showWarning('No device_tracker entity provided or entity is unavailable');
     }
     return html`
       <div id=${SECTION.MINI_MAP}>

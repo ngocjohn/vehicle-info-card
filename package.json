@@ -22,6 +22,7 @@
     "home-assistant-js-websocket": "^9.4.0",
     "lit": "^3.2.1",
     "lit-html": "^3.2.1",
+    "memoize-one": "^6.0.0",
     "tinycolor2": "^1.6.0"
   },
   "devDependencies": {
@@ -35,6 +36,7 @@
     "@rollup/plugin-node-resolve": "^16.0.0",
     "@rollup/plugin-replace": "^6.0.2",
     "@rollup/plugin-terser": "^0.4.4",
+    "@turf/turf": "^7.2.0",
     "@types/leaflet": "^1.9.16",
     "@types/leaflet-providers": "^1.2.4",
     "@types/node": "^22.13.1",

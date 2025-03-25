@@ -1,5 +1,7 @@
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
 
+import memoizeOne from 'memoize-one';
+
 import { combinedFilters, CARD_UPADE_SENSOR, CARD_VERSION, REPOSITORY } from '../const/const';
 import { baseDataKeys } from '../const/data-keys';
 import { VehicleCardEditor } from '../editor';
@@ -27,63 +29,62 @@ import { VehicleCard } from '../vehicle-info-card';
  * @returns
  */
 
-async function getVehicleEntities(
-  hass: HomeAssistant,
-  config: { entity: string },
-  component: VehicleCard
-): Promise<VehicleEntities> {
-  const entityState = hass.states[config.entity];
-  if (!entityState) {
-    component._entityNotFound = true;
-    console.log('Entity not found', component._entityNotFound);
-  }
+const getVehicleEntities = memoizeOne(
+  async (hass: HomeAssistant, config: { entity: string }, component: VehicleCard): Promise<VehicleEntities> => {
+    const entityState = hass.states[config.entity];
+    if (!entityState) {
+      component._entityNotFound = true;
+      console.log('Entity not found', component._entityNotFound);
+    }
 
-  const allEntities = await hass.callWS<Required<VehicleEntity>[]>({
-    type: 'config/entity_registry/list',
-  });
-  const carEntity = allEntities.find((e) => e.entity_id === config.entity);
-  if (!carEntity) {
-    console.log('Car entity not found');
-    return {};
-  }
+    const allEntities = await hass.callWS<Required<VehicleEntity>[]>({
+      type: 'config/entity_registry/list',
+    });
+    const carEntity = allEntities.find((e) => e.entity_id === config.entity);
+    if (!carEntity) {
+      console.log('Car entity not found');
+      return {};
+    }
 
-  const deviceEntities = allEntities
-    .filter((e) => e.device_id === carEntity.device_id && e.hidden_by === null && e.disabled_by === null)
-    .filter((e) => hass.states[e.entity_id] && !['unavailable', 'unknown'].includes(hass.states[e.entity_id].state));
+    const deviceEntities = allEntities
+      .filter((e) => e.device_id === carEntity.device_id && e.hidden_by === null && e.disabled_by === null)
+      .filter((e) => hass.states[e.entity_id] && !['unavailable', 'unknown'].includes(hass.states[e.entity_id].state));
 
-  const entityIds: VehicleEntities = {};
+    const entityIds: VehicleEntities = {};
 
-  for (const entityName of Object.keys(combinedFilters)) {
-    const { prefix, suffix } = combinedFilters[entityName];
+    for (const entityName of Object.keys(combinedFilters)) {
+      const { prefix, suffix } = combinedFilters[entityName];
 
-    if (entityName === 'soc' || entityName === 'maxSoc') {
-      const specialName = entityName === 'soc' ? 'State of Charge' : 'Max State of Charge';
-      const entity = deviceEntities.find((e) => e.original_name === specialName);
+      if (entityName === 'soc' || entityName === 'maxSoc') {
+        const specialName = entityName === 'soc' ? 'State of Charge' : 'Max State of Charge';
+        const entity = deviceEntities.find((e) => e.original_name === specialName);
+        if (entity) {
+          entityIds[entityName] = {
+            entity_id: entity.entity_id,
+            original_name: entity.original_name,
+          };
+        }
+        continue;
+      }
+
+      const entity = deviceEntities.find((e) => {
+        if (prefix) {
+          return e.entity_id.startsWith(prefix) && e.entity_id.endsWith(suffix);
+        }
+        return e.unique_id.endsWith(suffix) || e.entity_id.endsWith(suffix);
+      });
+
       if (entity) {
         entityIds[entityName] = {
           entity_id: entity.entity_id,
           original_name: entity.original_name,
         };
       }
-      continue;
     }
 
-    const entity = deviceEntities.find((e) => {
-      if (prefix) {
-        return e.entity_id.startsWith(prefix) && e.entity_id.endsWith(suffix);
-      }
-      return e.unique_id.endsWith(suffix) || e.entity_id.endsWith(suffix);
-    });
-
-    if (entity) {
-      entityIds[entityName] = {
-        entity_id: entity.entity_id,
-        original_name: entity.original_name,
-      };
-    }
+    return entityIds;
   }
-  return entityIds;
-}
+);
 
 async function getModelName(hass: HomeAssistant, entityCar: string): Promise<string> {
   // Fetch all entities
@@ -311,23 +312,17 @@ export async function handleFirstUpdated(editor: VehicleCardEditor): Promise<voi
 
   const updates: Partial<VehicleCardConfig> = {};
 
-  if (!editor._config?.entity || editor._config.entity === '') {
+  if (!editor._config.entity) {
     console.log('Entity not found, fetching...');
     updates.entity = getCarEntity(editor.hass as HomeAssistant);
-  }
-
-  // After setting the entity, fetch the model name
-  if (updates.entity || !editor._config.model_name) {
-    const entity = updates.entity || editor._config.entity;
+  } else if (!editor._config.model_name) {
+    const entity = editor._config.entity;
     updates.model_name = await getModelName(editor.hass as HomeAssistant, entity);
-  }
-
-  if (!editor._config.selected_language) {
+  } else if (!editor._config.selected_language) {
     updates.selected_language = editor.hass.language;
     console.log('Selected language:', updates.selected_language);
-  }
-  let extraConfig = { ...(editor._config.extra_configs || {}) };
-  if (editor._config.extra_configs?.section_order === undefined) {
+  } else if (editor._config.extra_configs?.section_order === undefined) {
+    let extraConfig = { ...(editor._config.extra_configs || {}) };
     console.log('Section order not found, creating default...');
     const section = {
       show_header_info: SECTION.HEADER_INFO,
@@ -347,8 +342,8 @@ export async function handleFirstUpdated(editor: VehicleCardEditor): Promise<voi
     updates.extra_configs = extraConfig;
 
     console.log('Section order:', updates.extra_configs?.section_order);
-  }
-  if (editor._config?.extra_configs?.images_swipe === undefined) {
+  } else if (editor._config?.extra_configs?.images_swipe === undefined) {
+    let extraConfig = { ...(editor._config.extra_configs || {}) };
     console.log('Images swipe not found, creating default...');
     const defaultImageSwipe = defaultConfig.extra_configs.images_swipe;
     extraConfig.images_swipe = defaultImageSwipe;
@@ -427,23 +422,38 @@ export async function _getMapDat(card: VehicleCard): Promise<void> {
   // console.log('Map data:', mapData);
 }
 
-export async function _getMapAddress(card: VehicleCard, lat: number, lon: number) {
-  if (card.config.extra_configs?.show_address === false) return;
-  const apiKey = card.config?.google_api_key || '';
-  const maptilerKey = card.config.extra_configs?.maptiler_api_key || '';
-  // console.log('Getting address from map data');
-  const address = maptilerKey
-    ? await getAddressFromMapTiler(lat, lon, maptilerKey)
-    : apiKey
-    ? await getAddressFromGoggle(lat, lon, apiKey)
-    : await getAddressFromOpenStreet(lat, lon);
-  if (!address) {
-    return;
-  }
+export const _getMapAddress = memoizeOne(
+  async (card: VehicleCard, lat: number, lon: number): Promise<Address | undefined> => {
+    if (card.config.extra_configs?.show_address === false) return undefined;
 
-  // console.log('\x1B[93mvehicle-info-card\x1B[m\n', 'address:', address);
-  return address;
-}
+    const apiKey = card.config?.google_api_key;
+    const maptilerKey = card.config.extra_configs?.maptiler_api_key;
+    const usFormat = card.config.map_popup_config?.us_format;
+    // console.log('Getting address from map data');
+    const address = maptilerKey
+      ? await getAddressFromMapTiler(lat, lon, maptilerKey)
+      : apiKey
+      ? await getAddressFromGoggle(lat, lon, apiKey)
+      : await getAddressFromOpenStreet(lat, lon);
+
+    if (!address) {
+      return undefined;
+    }
+
+    let formattedAddress: string;
+    if (usFormat) {
+      formattedAddress = `${address.streetNumber} ${address.streetName}`;
+    } else {
+      formattedAddress = `${address.streetName} ${address.streetNumber}`;
+    }
+
+    address.streetName = formattedAddress;
+    address.city = !address.sublocality ? address.city : address.sublocality;
+
+    // console.log('\x1B[93mvehicle-info-card\x1B[m\n', 'address:', address);
+    return address;
+  }
+);
 
 export async function getAddressFromMapTiler(lat: number, lon: number, apiKey: string): Promise<Address | null> {
   // console.log('Getting address from MapTiler');
@@ -471,10 +481,13 @@ export async function getAddressFromMapTiler(lat: number, lon: number, apiKey: s
         if (filterParams[placeType]) {
           const key = filterParams[placeType];
           const text = feature.text;
-          const addressNumber = feature.address ? ` ${feature.address}` : ''; // Optional address number
 
+          // Check if the place type is an address and street number is available
+          if (placeType === 'address') {
+            address.streetNumber = feature.address ? `${feature.address}` : '';
+          }
           // Assign filtered data to the corresponding property in the address object
-          address[key] = `${text}${addressNumber}`;
+          address[key] = `${text}`;
           // console.log(`Found ${key}:`, address[key], 'from', placeType);
         }
       });

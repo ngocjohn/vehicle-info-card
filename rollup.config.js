@@ -59,5 +59,9 @@ export default [
         return 'window';
       }
     },
+    onwarn(warning, warn) {
+      if (warning.code === 'CIRCULAR_DEPENDENCY') return; // Ignore circular dependency warnings
+      warn(warning); // Display other warnings
+    },
   },
 ];

@@ -1,6 +1,7 @@
 import * as maptilersdk from '@maptiler/sdk';
 import mapstyle from '@maptiler/sdk/dist/maptiler-sdk.css';
 import { mdiChevronRight, mdiClose } from '@mdi/js';
+import * as turf from '@turf/turf';
 import { LitElement, html, css, TemplateResult, unsafeCSS, CSSResultGroup, nothing } from 'lit';
 import { styleMap } from 'lit-html/directives/style-map.js';
 import { customElement, property, state } from 'lit/decorators.js';
@@ -15,7 +16,7 @@ import {
   STYLE_SCHEMA,
 } from '../../const/maptiler-const';
 import { MapData } from '../../types';
-import { getAddressFromMapTiler, getInitials } from '../../utils';
+import { getAddressFromMapTiler, getFormatedDateTime, getInitials } from '../../utils';
 import { VehicleCard } from '../../vehicle-info-card';
 import { MapConfig } from './vic-map-card';
 
@@ -23,11 +24,12 @@ enum THEME_MODE {
   DARK = 'dark',
   LIGHT = 'light',
 }
+type THEME = 'dark' | 'light';
 
 const BOUNDS_OPTS = {
   padding: 50,
   animate: true,
-  maxZoom: 15,
+  maxZoom: 14,
   pitch: 0,
   bearing: 0,
 };
@@ -45,14 +47,20 @@ export class VicMaptilerPopup extends LitElement {
   @property({ attribute: false }) _mapConfig?: MapConfig;
   @property({ attribute: false }) _paths?: any;
 
-  @state() private _themeMode?: THEME_MODE;
+  @state() private _themeMode?: THEME;
   @state() private _currentStyle?: string;
 
   @state() private map!: maptilersdk.Map;
   @state() private _popup: maptilersdk.Popup | null = null;
 
+  @state() private _loadError: boolean = false;
+  @state() private _markerFocus: boolean = false;
+
   private _bounds: maptilersdk.LngLatBounds | null = null;
-  private _loadError: boolean = false;
+
+  private get pathHidden(): boolean {
+    return localStorage.getItem(MAP_STORAGE.PATH_HIDDEN) === 'true';
+  }
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -84,27 +92,18 @@ export class VicMaptilerPopup extends LitElement {
   }
 
   private _handleInitialTheme() {
-    const mapDark = localStorage.getItem(MAP_STORAGE.DARK);
-    const mapSelectedStyle = localStorage.getItem(MAP_STORAGE.THEME_STYLE);
-    if (mapDark) {
-      this._themeMode = mapDark === 'true' ? THEME_MODE.DARK : THEME_MODE.LIGHT;
-    } else if (mapSelectedStyle) {
-      this._themeMode = mapSelectedStyle.includes('DARK') ? THEME_MODE.DARK : THEME_MODE.LIGHT;
-    } else {
-      const mapConfigMode = this.card.config.map_popup_config?.theme_mode || 'auto';
-      if (mapConfigMode === 'auto') {
-        this._themeMode = this.card.isDark ? THEME_MODE.DARK : THEME_MODE.LIGHT;
-      } else {
-        this._themeMode = (mapConfigMode as string) === 'dark' ? THEME_MODE.DARK : THEME_MODE.LIGHT;
-      }
-    }
+    const storedStyle = localStorage.getItem(MAP_STORAGE.THEME_STYLE);
+    const configTheme = this.card.config.map_popup_config?.theme_mode ?? 'auto';
 
-    if (mapSelectedStyle) {
-      this._currentStyle = mapSelectedStyle;
-    } else {
-      this._currentStyle = this._themeMode === 'dark' ? MAPTILER_STYLE.dark : MAPTILER_STYLE.light;
-      localStorage.setItem(MAP_STORAGE.THEME_STYLE, this._currentStyle);
-    }
+    const isDarkMode = configTheme === 'auto' ? this.card.isDark : configTheme === 'dark';
+    this._themeMode = isDarkMode ? THEME_MODE.DARK : THEME_MODE.LIGHT;
+
+    this._currentStyle = storedStyle
+      ? `${storedStyle.split('.')[0]}.${this._themeMode.toUpperCase()}`
+      : isDarkMode
+      ? MAPTILER_STYLE.dark
+      : MAPTILER_STYLE.light;
+
     console.log('Initial Theme Mode:', this._themeMode, 'Current Style:', this._currentStyle);
   }
 
@@ -112,8 +111,10 @@ export class VicMaptilerPopup extends LitElement {
     const mapConfig = this._mapConfig!;
     const apiKey = mapConfig.maptiler_api_key!;
     const defaultZoom = mapConfig.default_zoom || DEFAULT_ZOOM;
-    const initStyle = this._themeMode === THEME_MODE.DARK ? MAPTILER_STYLE.dark : MAPTILER_STYLE.light;
     const { lat, lon } = this.mapData;
+
+    const initStyle = this._currentStyle as string;
+
     this._bounds = this._getMapBounds();
 
     const mapEl = this.shadowRoot?.getElementById('map') as HTMLElement;
@@ -123,13 +124,13 @@ export class VicMaptilerPopup extends LitElement {
     const mapOptions: maptilersdk.MapOptions = {
       container: mapEl,
       zoom: defaultZoom,
+      style: initStyle,
       geolocateControl: false,
       fullscreenControl: false,
       navigationControl: false,
       attributionControl: false,
       fadeDuration: 0,
       minZoom: 3,
-      style: initStyle,
       canvasContextAttributes: { antialias: true },
     };
 
@@ -148,13 +149,17 @@ export class VicMaptilerPopup extends LitElement {
         const language = country_languages[0];
         this.map!.setLanguage(language);
       }
-      if (!this._bounds!.isEmpty()) {
+      if (!this._bounds!.isEmpty() && mapConfig.auto_fit && !this.pathHidden) {
         this.map!.fitBounds(this._bounds!, { ...BOUNDS_OPTS, maxZoom: defaultZoom });
       }
     });
 
     this.map.on('style.load', async () => {
       this._changeControlTheme();
+
+      // Add a circle around the marker
+      this._addMarkerCircle([lon, lat]);
+
       // Add sources & layers if available
       if (this._paths) {
         this._addSourceAndLayer(MAP_SOURCE.POINTS, this._paths.points, 'points');
@@ -166,22 +171,31 @@ export class VicMaptilerPopup extends LitElement {
     this.map.addControl(new maptilersdk.NavigationControl({ visualizePitch: true }), 'top-right');
 
     // Add Find Car Button
-    this._addMapControl('mdi:target', 'top-right', () => {
-      const isBearing = this.map!.getBearing() === 0;
-      if (isBearing) {
+    this._addMapControl('mdi:target', 'Find car', 'top-right', (event) => {
+      this._markerFocus = !this._markerFocus;
+      const haIcon = (event.currentTarget as HTMLElement).querySelector('ha-icon');
+
+      const flyToMarker = this._markerFocus;
+      const icon = flyToMarker ? 'mdi:image-filter-center-focus' : 'mdi:target';
+
+      if (flyToMarker) {
         this.map!.flyTo({ center: [lon, lat], ...MARKER_FLYTO_OPTS });
+      } else if (this.pathHidden) {
+        this.map!.flyTo({ center: [lon, lat], zoom: defaultZoom, bearing: 0, pitch: 0 });
       } else {
         this.map!.fitBounds(this._bounds!, { ...BOUNDS_OPTS, maxZoom: defaultZoom });
       }
+
+      haIcon?.setAttribute('icon', icon);
     });
 
     // Add Path Control Button (Only if paths exist)
     if (this._paths) {
-      this._addMapControl('mdi:map-marker-path', 'top-right', this._toggleMapLayers);
+      this._addMapControl('mdi:map-marker-path', 'Toggle Path', 'top-right', this._toggleMapLayers);
     }
 
     // Add Theme Toggle Button
-    this._addMapControl(this.getModeColor('themeBtn') as string, 'bottom-right', (event) => {
+    this._addMapControl(this.getModeColor('themeBtn') as string, 'Toggle theme mode', 'bottom-right', (event) => {
       const themeBtn = event.currentTarget as HTMLElement;
       const haIcon = themeBtn.querySelector('ha-icon') as HTMLElement;
       this._handleThemeToggle();
@@ -193,6 +207,10 @@ export class VicMaptilerPopup extends LitElement {
 
     // Setup point interactions
     this._setupPointInteractions();
+
+    this.map.on('dblclick', (e: any) => {
+      console.log('Marker Clicked', e);
+    });
 
     this.map.on('error', (e: any) => {
       if (e.style !== undefined) {
@@ -211,6 +229,17 @@ export class VicMaptilerPopup extends LitElement {
         data: new Uint8Array(0),
       });
     });
+  }
+
+  protected render(): TemplateResult {
+    const haButtons = this._renderHaButtons();
+    const loadError = this._renderLoadError();
+    return html`
+      <div class="tiler-map" style="${this._computeMapStyle()}">
+        ${loadError}
+        <div id="map">${haButtons}</div>
+      </div>
+    `;
   }
 
   private _changeControlTheme() {
@@ -244,13 +273,13 @@ export class VicMaptilerPopup extends LitElement {
     }
   }
 
-  private _getMapBounds(): maptilersdk.LngLatBounds {
+  private _getMapBounds = (): maptilersdk.LngLatBounds => {
     const { lon, lat } = this.mapData;
     let bounds = new maptilersdk.LngLatBounds();
     bounds.extend([lon, lat]);
     if (this._paths) {
       const features = this._paths?.points.data.features;
-      features.forEach((feature) => {
+      features.forEach((feature: any) => {
         if (feature.geometry.type === 'Point') {
           const [lng, lat] = feature.geometry.coordinates;
           if (lng !== null && lat !== null) {
@@ -260,6 +289,19 @@ export class VicMaptilerPopup extends LitElement {
       });
     }
     return bounds;
+  };
+
+  private _addMarkerCircle(lngLat: [number, number]) {
+    const deviceTracker = this._mapConfig?.device_tracker!;
+    const stateObj = this.card._hass.states[deviceTracker];
+    const { gps_accuracy: gpsAccuracy } = stateObj.attributes;
+    const markerCircle = {
+      type: 'geojson',
+      data: turf.circle(lngLat, gpsAccuracy, { steps: 64, units: 'meters' }),
+    };
+
+    this._addSourceAndLayer(MAP_SOURCE.MARKER_CIRCLE, markerCircle, 'circle-radius');
+    this._addSourceAndLayer(MAP_SOURCE.MARKER_CIRCLE, markerCircle, 'circle-outline');
   }
 
   private _addSourceAndLayer(sourceId: string, sourceData: any, type: MAP_TYPES): void {
@@ -273,43 +315,75 @@ export class VicMaptilerPopup extends LitElement {
   }
 
   private _addLayer(type: MAP_TYPES): void {
-    const pathHidden = localStorage.getItem(MAP_STORAGE.PATH_HIDDEN) === 'true';
+    const pathHidden = this.pathHidden;
     const pathColors = this.getPathColor();
 
-    const layerConfig =
-      type === 'points'
-        ? ({
-            id: 'points',
-            type: 'circle',
-            source: MAP_SOURCE.POINTS,
-            layout: {
-              'circle-sort-key': ['get', 'last_updated'],
-              visibility: pathHidden ? 'none' : 'visible',
-            },
-            paint: {
-              'circle-radius': 8,
-              'circle-color': pathColors,
-              'circle-opacity': ['get', 'opacity'],
-              'circle-stroke-width': 1,
-              'circle-stroke-color': pathColors,
-            },
-          } as maptilersdk.CircleLayerSpecification)
-        : ({
-            id: 'route',
-            type: 'line',
-            source: MAP_SOURCE.ROUTE,
-            layout: {
-              'line-sort-key': ['get', 'order_id'],
-              'line-join': 'round',
-              'line-cap': 'round',
-              visibility: pathHidden ? 'none' : 'visible',
-            },
-            paint: {
-              'line-color': pathColors,
-              'line-width': 3,
-              'line-opacity': ['get', 'opacity'],
-            },
-          } as maptilersdk.LineLayerSpecification);
+    let layerConfig:
+      | maptilersdk.CircleLayerSpecification
+      | maptilersdk.LineLayerSpecification
+      | maptilersdk.FillLayerSpecification;
+
+    switch (type) {
+      case 'points':
+        layerConfig = {
+          id: 'points',
+          type: 'circle',
+          source: MAP_SOURCE.POINTS,
+          layout: {
+            'circle-sort-key': ['get', 'last_updated'],
+            visibility: pathHidden ? 'none' : 'visible',
+          },
+          paint: {
+            'circle-radius': 8,
+            'circle-color': pathColors,
+            'circle-opacity': ['get', 'opacity'],
+            'circle-stroke-width': 1,
+            'circle-stroke-color': pathColors,
+          },
+        };
+        break;
+      case 'route':
+        layerConfig = {
+          id: 'route',
+          type: 'line',
+          source: MAP_SOURCE.ROUTE,
+          layout: {
+            'line-sort-key': ['get', 'order_id'],
+            'line-join': 'round',
+            'line-cap': 'round',
+            visibility: pathHidden ? 'none' : 'visible',
+          },
+          paint: {
+            'line-color': pathColors,
+            'line-width': 3,
+            'line-opacity': ['get', 'opacity'],
+          },
+        };
+        break;
+      case 'circle-radius':
+        layerConfig = {
+          id: 'circle-radius',
+          type: 'fill',
+          source: MAP_SOURCE.MARKER_CIRCLE,
+          paint: {
+            'fill-color': pathColors,
+            'fill-opacity': 0.3,
+          },
+        };
+        break;
+      case 'circle-outline':
+        layerConfig = {
+          id: 'circle-outline',
+          type: 'line',
+          source: MAP_SOURCE.MARKER_CIRCLE,
+          paint: {
+            'line-color': pathColors,
+            'line-width': 3,
+            'line-opacity': 0.8,
+          },
+        };
+        break;
+    }
 
     this.map.addLayer(layerConfig);
     // this.map.setLayoutProperty(type, 'visibility', pathHidden ? 'none' : null);
@@ -318,11 +392,11 @@ export class VicMaptilerPopup extends LitElement {
   /**
    * Helper function to add a control button to the map
    */
-  private _addMapControl(icon: string, position: 'top-right' | 'bottom-right', onClick: EventListener) {
+  private _addMapControl(icon: string, title: string, position: 'top-right' | 'bottom-right', onClick: EventListener) {
     this.map.addControl(
       {
         onAdd: () => {
-          const button = this._createButton(icon);
+          const button = this._createButton(icon, title);
           button.style.display = 'unset';
           button.addEventListener('click', onClick);
           return button;
@@ -333,7 +407,7 @@ export class VicMaptilerPopup extends LitElement {
     );
   }
 
-  private _createButton = (icon: string): HTMLElement => {
+  private _createButton = (icon: string, title: string): HTMLElement => {
     const div = document.createElement('div');
     div.className = 'maplibregl-ctrl maplibregl-ctrl-group';
     const button = document.createElement('button');
@@ -341,6 +415,7 @@ export class VicMaptilerPopup extends LitElement {
     haIcon.setAttribute('icon', icon);
     haIcon.style.color = 'var(--vic-map-button-color)';
     button.appendChild(haIcon);
+    button.title = title;
     div.appendChild(button);
     div.style.display = 'none';
 
@@ -348,9 +423,7 @@ export class VicMaptilerPopup extends LitElement {
   };
 
   private _toggleMapLayers = (): void => {
-    const pathHidden = localStorage.getItem(MAP_STORAGE.PATH_HIDDEN) === 'true';
-    const newVisibility = pathHidden ? null : 'none';
-
+    const pathHidden = this.pathHidden;
     // Toggle localStorage state
     localStorage.setItem(MAP_STORAGE.PATH_HIDDEN, String(!pathHidden));
 
@@ -360,7 +433,7 @@ export class VicMaptilerPopup extends LitElement {
     // Loop through layers and update visibility
     layers.forEach((layerId) => {
       if (this.map.getLayer(layerId)) {
-        this.map.setLayoutProperty(layerId, 'visibility', newVisibility);
+        this.map.setLayoutProperty(layerId, 'visibility', pathHidden ? 'visible' : 'none');
       }
     });
   };
@@ -400,7 +473,10 @@ export class VicMaptilerPopup extends LitElement {
         this.map.getCanvas().style.cursor = 'pointer';
 
         const coordinates = e.features[0].geometry.coordinates.slice();
-        const description = feature.properties.description;
+        const { description, friendly_name, last_updated } = feature.properties;
+
+        const frName = `<b>${friendly_name}</b>`;
+        const lastUpdated = `<i>${getFormatedDateTime(new Date(last_updated * 1000), this.card._hass.locale)}</i>`;
 
         // Adjust longitude for world wrap
         while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
@@ -408,9 +484,10 @@ export class VicMaptilerPopup extends LitElement {
         }
 
         pointPopup.setLngLat(coordinates).setHTML(description).addTo(this.map);
+
         const formattedAddress = await getAddressFromMapTiler(coordinates[1], coordinates[0], apiKey);
         if (formattedAddress) {
-          const updatedAddress = `${description}${formattedAddress.streetName}`;
+          const updatedAddress = `${frName}${lastUpdated}${formattedAddress.streetName}`;
           if (pointPopup.isOpen()) {
             pointPopup.setHTML(updatedAddress);
           }
@@ -492,27 +569,20 @@ export class VicMaptilerPopup extends LitElement {
     const deviceTracker = this.card.config.device_tracker!;
     const deviceName = this.card.getFormattedAttributeState(deviceTracker, 'friendly_name');
     const deviceState = this.card.getStateDisplay(deviceTracker);
-    let popupContent = `
-      <div class="popup-content primary">
-        <span>${deviceName}</span>
-        <span>${deviceState}</span>
-      </div>
-    `;
+    let popupContent = `<b>${deviceName}</b><span>${deviceState}</span><br />`;
 
     this._popup.setHTML(popupContent).addTo(this.map!);
 
-    const mapAddress = this.mapData.address;
+    const mapAddress = await getAddressFromMapTiler(
+      this.mapData.lat,
+      this.mapData.lon,
+      this._mapConfig?.maptiler_api_key!
+    );
 
     if (mapAddress) {
-      const { streetName, sublocality, city } = mapAddress;
-      const addressLine = `
-        <div class="popup-content">
-          <span>${streetName}</span>
-          <span>${sublocality}, ${city}</span>
-        </div>
+      const { streetName, sublocality, city, streetNumber } = mapAddress;
+      const updatedContent = `${popupContent}${streetName} ${streetNumber}<br /><i>${sublocality}, ${city}</i>
       `;
-
-      const updatedContent = `${popupContent}${addressLine}`;
       if (this._popup.isOpen()) {
         this._popup.setHTML(updatedContent);
       }
@@ -564,17 +634,6 @@ export class VicMaptilerPopup extends LitElement {
         : computedStyle.getPropertyValue('--primary-color');
     return color;
   };
-
-  protected render(): TemplateResult {
-    const haButtons = this._renderHaButtons();
-    const loadError = this._renderLoadError();
-    return html`
-      <div class="tiler-map" style="${this._computeMapStyle()}">
-        ${loadError}
-        <div id="map">${haButtons}</div>
-      </div>
-    `;
-  }
 
   private _renderLoadError(): TemplateResult | typeof nothing {
     if (!this._loadError) return nothing;
@@ -663,7 +722,7 @@ export class VicMaptilerPopup extends LitElement {
         : 'var(--primary-color)';
 
     const picBgcolor = entityPic ? 'rgba(0, 0, 0, 0.5)' : markerColor;
-    const markerSize = '3.5rem';
+    const markerSize = '48px';
     const buttonBg = getStyle('backgroundColor');
     const buttonColor = getStyle('fill');
     const boxShadow = getStyle('boxShadow');
@@ -903,17 +962,20 @@ export class VicMaptilerPopup extends LitElement {
           width: 100%;
           height: 100%;
           background-size: cover;
-          /* background-color: rgb(from var(--vic-map-marker-color) r g b / 100%); */
-          background-color: var(--vic-map-marker-color);
+          background-color: var(--vic-map-button-bg);
           border: 2px solid;
+          border-color: var(--vic-map-marker-color);
           border-radius: 50%;
           cursor: pointer;
-          color: white;
+          display: flex;
+          color: var(--vic-map-button-color);
           font-size: 1.5rem;
           align-items: center;
           text-align: center;
+          box-sizing: border-box;
           display: flex;
           justify-content: center;
+          overflow: hidden;
         }
 
         .maplibregl-ctrl-bottom-left,
@@ -926,26 +988,16 @@ export class VicMaptilerPopup extends LitElement {
         .maplibregl-popup-content {
           background-color: rgb(from var(--vic-map-button-bg) r g b / 80%);
           color: var(--vic-map-button-color);
-          border-radius: 0.5rem;
           display: flex;
           flex-direction: column;
-          gap: 0.5rem;
-          animation: fadeIn 0.5s;
+          /* gap: 0.5rem; */
+          border-radius: 0.5rem;
           backdrop-filter: blur(5px);
           border: var(--vic-map-button-border);
           box-shadow: var(--vic-map-button-shadow);
           font-size: 1rem;
           letter-spacing: 0.5px;
-        }
-
-        .maplibregl-popup-content .popup-content {
-          display: flex;
-          flex-direction: column;
-        }
-
-        .popup-content.primary > span:first-child {
-          font-size: 1.1rem;
-          font-weight: 500;
+          animation: fadeIn 0.5s;
         }
 
         .maplibregl-popup-anchor-bottom .maplibregl-popup-tip {

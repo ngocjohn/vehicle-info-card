@@ -14,7 +14,8 @@ import {
   MapData,
   SECTION,
   SECTION_DEFAULT_ORDER,
-  subscribeHistoryStatesTimeWindow,
+  MapPopupConfig,
+  subscribeHistory,
 } from '../../types';
 import { LovelaceCardConfig } from '../../types/ha-frontend/lovelace/lovelace';
 import { _getHistoryPoints, _getMapAddress, createMapPopup } from '../../utils';
@@ -22,15 +23,11 @@ import { createCloseHeading } from '../../utils/create';
 import './vic-maptiler-popup';
 import { VehicleCard } from '../../vehicle-info-card';
 
-export type MapConfig = {
-  hours_to_show?: number;
-  default_zoom?: number;
-  theme_mode?: string;
+export interface MapConfig extends MapPopupConfig {
   device_tracker?: string;
   google_api_key?: string;
   maptiler_api_key?: string;
-  path_color?: string;
-};
+}
 
 @customElement('vehicle-map')
 export class VehicleMap extends LitElement {
@@ -40,15 +37,14 @@ export class VehicleMap extends LitElement {
   @property({ type: Boolean }) open!: boolean;
 
   @state() private map: L.Map | null = null;
-  @state() private latLon: L.LatLng | null = null;
-  @state() private marker: L.Marker | null = null;
+  private latLon: L.LatLng | null = null;
+  private marker: L.Marker | null = null;
 
-  @state() private mapCardPopup?: LovelaceCardConfig[];
+  private mapCardPopup?: LovelaceCardConfig[];
   @state() private _locateIconVisible = false;
   @state() private _addressReady = false;
 
-  @state() private _address: Partial<MapData['address']> | null = null;
-
+  private _address: Partial<MapData['address']> | null = null;
   private _subscribed?: Promise<(() => Promise<void>) | undefined>;
   private _stateHistory?: HistoryStates;
   private _historyPoints?: any | undefined;
@@ -62,14 +58,13 @@ export class VehicleMap extends LitElement {
   }
 
   public get mapConfig(): MapConfig {
-    const { map_popup_config = {}, device_tracker = '', google_api_key = '' } = this.card.config;
+    const { map_popup_config, device_tracker = '', google_api_key = '' } = this.card.config;
     const maptiler_api_key = this.card.config.extra_configs?.maptiler_api_key;
     return { ...map_popup_config, device_tracker, google_api_key, maptiler_api_key };
   }
 
   connectedCallback() {
     super.connectedCallback();
-    console.log('Connected');
     this._subscribeHistory();
   }
 
@@ -79,15 +74,33 @@ export class VehicleMap extends LitElement {
   }
 
   private _subscribeHistory() {
-    const { hours_to_show } = this.card.config.map_popup_config!;
-    const device_tracker = this.card.config.device_tracker!;
+    const mapConfig = this.mapConfig;
     const hass = this.card._hass;
-    if (!isComponentLoaded(hass!, 'history') || this._subscribed || !(hours_to_show ?? DEFAULT_HOURS_TO_SHOW)) {
-      console.log('Not subscribing to history', isComponentLoaded(hass!, 'history'), this._subscribed, hours_to_show);
+    if (
+      !isComponentLoaded(hass!, 'history') ||
+      this._subscribed ||
+      !(mapConfig.hours_to_show ?? DEFAULT_HOURS_TO_SHOW)
+    ) {
+      console.log('Not subscribing to history');
       return;
     }
 
-    this._subscribed = subscribeHistoryStatesTimeWindow(
+    const historyPeriod = mapConfig?.history_period;
+    const now = new Date();
+
+    // Get range of time to show
+    let startTime = new Date(now);
+    let endTime = new Date(now);
+    if (historyPeriod === 'today') {
+      startTime.setHours(0, 0, 0, 0);
+    } else if (historyPeriod === 'yesterday') {
+      startTime.setDate(now.getDate() - 1);
+      startTime.setHours(0, 0, 0, 0);
+    } else {
+      startTime = new Date(now.getTime() - 60 * 60 * (mapConfig.hours_to_show ?? DEFAULT_HOURS_TO_SHOW) * 1000);
+    }
+
+    this._subscribed = subscribeHistory(
       hass!,
       (combinedHistory) => {
         if (!this._subscribed) {
@@ -97,11 +110,9 @@ export class VehicleMap extends LitElement {
         this._stateHistory = combinedHistory;
         // console.log('History updated:', this._stateHistory);
       },
-      hours_to_show ?? DEFAULT_HOURS_TO_SHOW,
-      [device_tracker],
-      false,
-      false,
-      false
+      new Date(startTime),
+      new Date(endTime),
+      [mapConfig.device_tracker!]
     ).catch((err) => {
       this._subscribed = undefined;
       console.error('Error subscribing to history', err);
@@ -126,71 +137,38 @@ export class VehicleMap extends LitElement {
 
   private async _getAddress(): Promise<void> {
     const { lat, lon } = this.mapData;
-    if (!lat || !lon) return;
-    const address = await _getMapAddress(this.card, this.mapData.lat, this.mapData.lon);
+    const address = await _getMapAddress(this.card, lat, lon);
     if (address) {
       this._address = address;
-      this.card.MapData!.address = address;
+      this.mapData.address = address;
       this._addressReady = true;
-    } else if (!address) {
+    } else if (!this._address) {
       this._addressReady = true;
     }
-  }
-
-  private _computeMapStyle() {
-    const sectionOrder = this.card.config.extra_configs?.section_order ?? [...SECTION_DEFAULT_ORDER];
-    const noHeader = this.card.config.name?.trim() === '' || this.card.config.name === undefined;
-    const firstItem = sectionOrder[0] === SECTION.MINI_MAP && noHeader;
-    const lastItem = sectionOrder[sectionOrder.length - 1] === SECTION.MINI_MAP;
-    const mapSingle = sectionOrder.includes(SECTION.MINI_MAP) && sectionOrder.length === 1;
-
-    let maskImage = 'linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%)';
-
-    if (lastItem && !firstItem) {
-      maskImage = 'linear-gradient(to bottom, transparent 0%, black 10%)';
-    } else if (firstItem && !lastItem) {
-      maskImage = 'linear-gradient(to bottom, black 90%, transparent 100%)';
-    } else if (mapSingle) {
-      maskImage = 'linear-gradient(to bottom, transparent 0%, black 0%, black 100%, transparent 100%)';
-    }
-
-    const markerColor = this.isDark ? 'var(--accent-color)' : 'var(--primary-color)';
-    const markerFilter = this.isDark ? 'contrast(1.2) saturate(6) brightness(1.3)' : 'none';
-    const tileFilter = this.isDark
-      ? 'brightness(0.6) invert(1) contrast(6) saturate(0.3) brightness(0.7) opacity(.25)'
-      : 'grayscale(1) contrast(1.1) opacity(1)';
-    const minimapHeight = this.card.config.extra_configs?.mini_map_height;
-    return styleMap({
-      '--vic-map-marker-color': markerColor,
-      '--vic-marker-filter': markerFilter,
-      '--vic-map-tiles-filter': tileFilter,
-      '--vic-map-mask-image': maskImage,
-      '--vic-map-height': minimapHeight ? `${minimapHeight}px` : `150px`,
-      height: minimapHeight ? `${minimapHeight}px` : `150px`,
-    });
   }
 
   initMap(): void {
     const { lat, lon } = this.mapData;
+    const defaultZoom = this.zoom;
     const mapOptions = {
       dragging: true,
       zoomControl: false,
       scrollWheelZoom: true,
+      zoom: defaultZoom,
     };
 
     const mapContainer = this.shadowRoot?.getElementById('map') as HTMLElement;
     if (!mapContainer) return;
-    this.map = L.map(mapContainer, mapOptions).setView([lat, lon], this.zoom);
-    const offset: [number, number] = this.calculateLatLngOffset(this.map, lat, lon, this.map.getSize().x / 5, 3);
+    this.map = L.map(mapContainer, mapOptions).setView([lat, lon]);
 
-    this.latLon = L.latLng(offset[0], offset[1]);
+    this.latLon = this._getTargetLatLng(this.map);
+
     this.map.setView(this.latLon, this.zoom);
 
     // Add tile layer to map
     this._createTileLayer(this.map);
     // Add marker to map
     this.marker = this._createMarker(this.map);
-
     this.map.on('moveend zoomend', () => {
       // check visibility of marker icon on view
       const bounds = this.map!.getBounds();
@@ -199,8 +177,17 @@ export class VehicleMap extends LitElement {
     });
   }
 
+  private _getTargetLatLng(map: L.Map): L.LatLng {
+    const { lat, lon } = this.mapData;
+    const mapSizeSplit = map.getSize().x;
+    const targetPoint = map.project([lat, lon], this.zoom).subtract([mapSizeSplit / 5, 3]);
+    const targetLatLng = map.unproject(targetPoint, this.zoom);
+    return targetLatLng;
+  }
+
   private _createMarker(map: L.Map): L.Marker {
     const { lat, lon } = this.mapData;
+
     const customIcon = L.divIcon({
       html: `<div class="marker">
             </div>`,
@@ -233,22 +220,6 @@ export class VehicleMap extends LitElement {
     this.map.flyTo(this.latLon, this.zoom);
   }
 
-  private calculateLatLngOffset(
-    map: L.Map,
-    lat: number,
-    lng: number,
-    xOffset: number,
-    yOffset: number
-  ): [number, number] {
-    // Convert the lat/lng to a point
-    const point = map.latLngToContainerPoint([lat, lng]);
-    // Apply the offset
-    const newPoint = L.point(point.x - xOffset, point.y - yOffset);
-    // Convert the point back to lat/lng
-    const newLatLng = map.containerPointToLatLng(newPoint);
-    return [newLatLng.lat, newLatLng.lng];
-  }
-
   protected render(): TemplateResult {
     const maptiler_api_key = this.card.config.extra_configs?.maptiler_api_key;
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
@@ -272,40 +243,42 @@ export class VehicleMap extends LitElement {
     if (!this._addressReady) return html` <div class="address-line loading"><span class="loader"></span></div> `;
 
     const address = this._address || {};
-    return html`
-      <div class="address-line">
-        <ha-icon icon="mdi:map-marker"></ha-icon>
-        <div class="address-info">
-          <span class="secondary">${address.streetName} ${address.streetNumber}</span>
-          <span class="primary">${!address.sublocality ? address.city : address.sublocality}</span>
-        </div>
-      </div>
-    `;
+    return address !== null && address.streetName
+      ? html` <div class="address-line">
+          <ha-icon icon="mdi:map-marker"></ha-icon>
+          <div class="address-info">
+            <span class="secondary">${address.streetName}</span>
+            <span class="primary">${!address.sublocality ? address.city : address.sublocality}</span>
+          </div>
+        </div>`
+      : html``;
   }
 
   private _renderMaptilerDialog(): TemplateResult | typeof nothing {
     const maptiler_api_key = this.card.config.extra_configs?.maptiler_api_key;
     if (!this.open || !maptiler_api_key) return nothing;
+
+    this._historyPoints = _getHistoryPoints(this.card.config!, this._stateHistory);
+
     return html`
       <ha-dialog open @closed=${() => (this.open = false)} hideActions flexContent>
         ${MAPTILER_DIALOG_STYLES}
-        <div class="container">
-          <vic-maptiler-popup
-            .mapData=${this.mapData}
-            .card=${this.card}
-            ._mapConfig=${this.mapConfig}
-            ._paths=${this._historyPoints}
-            @close-dialog=${() => {
-              this.open = false;
-            }}
-          ></vic-maptiler-popup>
-        </div>
+
+        <vic-maptiler-popup
+          .mapData=${this.mapData}
+          .card=${this.card}
+          ._mapConfig=${this.mapConfig}
+          ._paths=${this._historyPoints}
+          @close-dialog=${() => {
+            this.open = false;
+          }}
+        ></vic-maptiler-popup>
       </ha-dialog>
     `;
   }
 
-  private _renderMapDialog() {
-    if (!this.open) return html``;
+  private _renderMapDialog(): TemplateResult | typeof nothing {
+    if (!this.open) return nothing;
     return html`
       <ha-dialog
         open
@@ -322,25 +295,49 @@ export class VehicleMap extends LitElement {
 
   private async _toggleMapDialog() {
     if (!this.mapPopup) return;
-    if (this.mapCardPopup !== undefined || this._historyPoints !== undefined) {
-      this.open = !this.open;
-      return;
-    } else if (this.mapConfig.maptiler_api_key !== undefined && this._stateHistory) {
-      const pathData = _getHistoryPoints(this.card.config, this._stateHistory);
-      if (pathData) {
-        this._historyPoints = pathData;
-        setTimeout(() => {
-          this.open = true;
-        }, 50);
-      }
-    } else {
+    if (!this.mapConfig.maptiler_api_key && !this.mapCardPopup && !this.open) {
       createMapPopup(this.card._hass, this.card.config).then((popup) => {
         this.mapCardPopup = popup;
         setTimeout(() => {
           this.open = true;
         }, 50);
       });
+    } else {
+      this.open = !this.open;
+      return;
     }
+  }
+  private _computeMapStyle() {
+    const sectionOrder = this.card.config.extra_configs?.section_order ?? [...SECTION_DEFAULT_ORDER];
+    const noHeader = this.card.config.name?.trim() === '' || this.card.config.name === undefined;
+    const firstItem = sectionOrder[0] === SECTION.MINI_MAP && noHeader;
+    const lastItem = sectionOrder[sectionOrder.length - 1] === SECTION.MINI_MAP;
+    const mapSingle = sectionOrder.includes(SECTION.MINI_MAP) && sectionOrder.length === 1;
+
+    let maskImage = 'linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%)';
+
+    if (lastItem && !firstItem) {
+      maskImage = 'linear-gradient(to bottom, transparent 0%, black 10%)';
+    } else if (firstItem && !lastItem) {
+      maskImage = 'linear-gradient(to bottom, black 90%, transparent 100%)';
+    } else if (mapSingle) {
+      maskImage = 'linear-gradient(to bottom, transparent 0%, black 0%, black 100%, transparent 100%)';
+    }
+
+    const markerColor = this.isDark ? 'var(--accent-color)' : 'var(--primary-color)';
+    const markerFilter = this.isDark ? 'contrast(1.2) saturate(6) brightness(1.3)' : 'none';
+    const tileFilter = this.isDark
+      ? 'brightness(0.6) invert(1) contrast(6) saturate(0.3) brightness(0.7) opacity(.25)'
+      : 'grayscale(1) contrast(1.1) opacity(1)';
+    const minimapHeight = this.card.config.extra_configs?.mini_map_height;
+    return styleMap({
+      '--vic-map-marker-color': markerColor,
+      '--vic-marker-filter': markerFilter,
+      '--vic-map-tiles-filter': tileFilter,
+      '--vic-map-mask-image': maskImage,
+      '--vic-map-height': minimapHeight ? `${minimapHeight}px` : `150px`,
+      height: minimapHeight ? `${minimapHeight}px` : `150px`,
+    });
   }
 
   static get styles(): CSSResultGroup {
