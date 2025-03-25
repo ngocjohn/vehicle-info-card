@@ -82,7 +82,7 @@ export const DEFAULT_ZOOM = 14;
 
 export const MAPTILER_STYLE = {
   dark: 'STREETS.DARK',
-  light: 'STREETS',
+  light: 'STREETS.LIGHT',
   demo: 'https://demotiles.maplibre.org/style.json',
 };
 
@@ -118,9 +118,10 @@ export enum MAP_STORAGE {
 export enum MAP_SOURCE {
   POINTS = 'points',
   ROUTE = 'route',
+  MARKER_CIRCLE = 'marker-circle',
 }
 
-export type MAP_TYPES = 'points' | 'route';
+export type MAP_TYPES = 'points' | 'route' | 'circle-radius' | 'circle-outline';
 
 export const MAPTILER_DIALOG_STYLES = html`
   <style>
