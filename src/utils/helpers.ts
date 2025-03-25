@@ -1,6 +1,9 @@
+import { formatDateNumeric, formatTime } from 'custom-card-helpers';
+import memoizeOne from 'memoize-one';
 import tinycolor from 'tinycolor2';
 
 import { HistoryStates, VehicleCardConfig } from '../types';
+import { FrontendLocaleData } from '../types/ha-frontend/data/frontend-local-data';
 
 export function cloneDeep<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj));
@@ -91,7 +94,7 @@ const formatTimestamp = (ts: number): string => {
   return date.toLocaleString();
 };
 
-export const _getHistoryPoints = (config: VehicleCardConfig, history?: HistoryStates): any | undefined => {
+export const _getHistoryPoints = memoizeOne((config: VehicleCardConfig, history?: HistoryStates): any | undefined => {
   if (!history || !(config.map_popup_config.hours_to_show ?? 0)) {
     return undefined;
   }
@@ -113,7 +116,6 @@ export const _getHistoryPoints = (config: VehicleCardConfig, history?: HistorySt
   const totalPoints = locations.length;
   const lineSegments: any[] = [];
   const pointFeatures: any[] = [];
-  const multiLineSegments: any[] = [];
 
   for (let i = 0; i < totalPoints - 1; i++) {
     const start = locations[i];
@@ -145,12 +147,6 @@ export const _getHistoryPoints = (config: VehicleCardConfig, history?: HistorySt
         opacity: opacity, // Keep 2 decimal places for smoother transition
       },
     });
-
-    // Add multiLineSegments
-    multiLineSegments.push([
-      [start.a.longitude, start.a.latitude],
-      [end.a.longitude, end.a.latitude],
-    ]);
 
     const description = `<b>${start.a.friendly_name}</b><i>${formatTimestamp(start.lu)}</i>`;
 
@@ -186,24 +182,12 @@ export const _getHistoryPoints = (config: VehicleCardConfig, history?: HistorySt
     },
   };
 
-  const multiLineSource = {
-    type: 'geojson',
-    data: {
-      type: 'Feature',
-      geometry: {
-        type: 'MultiLineString',
-        coordinates: multiLineSegments,
-      },
-    },
-  };
-
   paths['route'] = routeSource;
   paths['points'] = pointSource;
-  paths['multiLine'] = multiLineSource;
 
   console.log('paths', paths);
   return paths;
-};
+});
 
 export const getInitials = (name: string): string => {
   if (!name) return ''; // Handle empty or undefined names
@@ -212,4 +196,8 @@ export const getInitials = (name: string): string => {
     .split(' ')
     .map((word) => word.charAt(0).toUpperCase())
     .join('');
+};
+
+export const getFormatedDateTime = (dateObj: Date, locale: FrontendLocaleData): string => {
+  return `${formatDateNumeric(dateObj, locale)} ${formatTime(dateObj, locale)}`;
 };

@@ -132,6 +132,7 @@ export const Picker = ({
         .selector=${options?.selector}
         @value-changed=${handleValueChange}
         .required=${false}
+        .helper=${options?.helperText}
       ></ha-selector>
     `,
     selectorBoolean: html`
