@@ -62,22 +62,19 @@
 
 ### [HACS](https://hacs.xyz) (Home Assistant Community Store)
 
-1. Go to HACS page on your Home Assistant instance
-
-2. Add this repository via HACS Custom repositories [How to add Custom Repositories](https://hacs.xyz/docs/faq/custom_repositories/)
-
-   ```
-   https://github.com/ngocjohn/vehicle-info-card
-   ```
-
-3. Select `Dashboard`
-
-4. Press add icon and search for `Vehicle Info Card`
-5. Select Vehicle Info Card repo and install
-6. Force refresh the Home Assistant page `Ctrl` + `F5` / `Shift` + `⌘` + `R`
-7. Add vehicle-info-card to your dashboard
+Use this link to directly go to the repository in HACS
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=ngocjohn&repository=vehicle-info-card&category=plugin)
+
+or
+
+1. If HACS is not installed yet, download it following the instructions on [https://hacs.xyz/docs/use/#getting-started-with-hacs](https://hacs.xyz/docs/use/#getting-started-with-hacs)
+2. Open HACS in Home Assistant
+3. Search for `Vehicle info card`
+4. Click the download button. ⬇️
+1. Force refresh the Home Assistant page `Ctrl` + `F5` / `Shift` + `⌘` + `R`
+1. Add vehicle-status-card to your dashboard
+
 
 ### Manual
 
