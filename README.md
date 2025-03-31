@@ -1,8 +1,6 @@
 <a name="readme-top"></a>
 
-[![Validate](https://github.com/ngocjohn/vehicle-info-card/actions/workflows/validate.yaml/badge.svg)](https://github.com/ngocjohn/vehicle-info-card/actions/workflows/validate.yaml) ![GitHub last commit](https://img.shields.io/github/last-commit/ngocjohn/vehicle-info-card)
-![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/ngocjohn/vehicle-info-card/total?style=flat&logo=homeassistantcommunitystore&logoSize=auto&label=Downloads&color=%2318BCF2) ![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/ngocjohn/vehicle-info-card/latest/total?style=flat&logo=homeassistantcommunitystore&logoSize=auto)
-
+[![hacs][hacs-default]][hacs-default-link] [![hacs][hacs-validate]][hacs-validate-link] ![last-commit] ![total-downloads] ![latest-downloads] [![buy_me_a_coffee][bmac-badge]][bmac-link]
 # 🚙 Vehicle info card
 
 <a href="#"><img src="https://raw.githubusercontent.com/ngocjohn/vehicle-info-card/main/assets/vehicle-header.gif" style="border-radius: 8px"></a>
@@ -240,6 +238,11 @@ Below is the configuration replaced entities card for `Vehicle status` button.
 
 We welcome contributions and are grateful for your support in improving this project. If you'd like to contribute, please follow our [Contribution Guidelines](docs/CONTRIBUTING.md) to get started.
 
+## Support
+If you like the card, consider supporting the developer
+
+<a href="https://www.buymeacoffee.com/ngocjohn" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 150px !important;" ></a>
+
 ---
 
 2024 Viet Ngoc
@@ -247,3 +250,14 @@ We welcome contributions and are grateful for your support in improving this pro
 [https://github.com/ngocjohn/](https://github.com/ngocjohn/)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!--BADGES-->
+[hacs-default]: https://img.shields.io/badge/HACS-Default-blue?style=flat&logo=homeassistantcommunitystore&logoSize=auto
+[hacs-default-link]: https://my.home-assistant.io/redirect/hacs_repository/?owner=ngocjohn&repository=vehicle-info-card&category=plugin
+[hacs-validate]: https://github.com/ngocjohn/vehicle-info-card/actions/workflows/validate.yaml/badge.svg
+[hacs-validate-link]: https://github.com/ngocjohn/vehicle-info-card/actions/workflows/validate.yaml
+[last-commit]: https://img.shields.io/github/last-commit/ngocjohn/vehicle-info-card
+[total-downloads]: https://img.shields.io/github/downloads/ngocjohn/vehicle-info-card/total?style=flat&logo=homeassistantcommunitystore&logoSize=auto&label=Downloads&color=%2318BCF2
+[latest-downloads]: https://img.shields.io/github/downloads/ngocjohn/vehicle-info-card/latest/total?style=flat&logo=homeassistantcommunitystore&logoSize=auto
+[bmac-link]: https://www.buymeacoffee.com/ngocjohn
+[bmac-badge]: https://img.shields.io/badge/_-buy_me_a_coffee-F28834?style=flat&logo=buymeacoffee&labelColor=grey&color=%23F28834
