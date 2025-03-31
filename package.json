@@ -66,7 +66,7 @@
     "rollup-plugin-typescript2": "^0.36.0",
     "sortablejs": "^1.15.6",
     "swiper": "^11.2.2",
-    "typescript": "^5.7.3"
+    "typescript": "^5.8.2"
   },
   "scripts": {
     "dev": "rollup -c rollup.config.js --bundleConfigAsCjs --watch",
