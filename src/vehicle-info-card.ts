@@ -272,7 +272,7 @@ export class VehicleCard extends LitElement {
       return false;
     }
 
-    if (_changedProps.has('config') && this.config.selected_theme && this.config.selected_theme.theme) {
+    if (_changedProps.has('config') && this.config.selected_theme?.theme !== 'default') {
       this.applyTheme(this.config.selected_theme.theme);
     }
 
@@ -603,6 +603,7 @@ export class VehicleCard extends LitElement {
     const config = this.config;
     const deviceTracker = config.device_tracker;
     const deviceState = this.getEntityState(deviceTracker);
+    const isDark = this._isDarkTheme();
     if (!config.show_map) {
       return;
     }
@@ -611,7 +612,7 @@ export class VehicleCard extends LitElement {
     }
     return html`
       <div id=${SECTION.MINI_MAP}>
-        <vehicle-map .mapData=${this.MapData} .card=${this} .isDark=${this.isDark}></vehicle-map>
+        <vehicle-map .mapData=${this.MapData} .card=${this} .isDark=${isDark}></vehicle-map>
       </div>
     `;
   }
@@ -927,7 +928,7 @@ export class VehicleCard extends LitElement {
     }
   };
 
-  private _isDarkTheme(): boolean {
+  public _isDarkTheme(): boolean {
     const css = getComputedStyle(this);
     const primaryTextColor = css.getPropertyValue('--primary-text-color');
     const isDark = isDarkColor(primaryTextColor);
