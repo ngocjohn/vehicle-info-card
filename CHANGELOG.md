@@ -1,3 +1,27 @@
+<a id="v1.8.1"></a>
+# [v1.8.1](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.8.1) - 2025-03-31
+
+<!-- Release notes generated using configuration in .github/release.yml at v1.8.1 -->
+
+## What's Changed
+🚀 **The card is now available in [HACS](https://hacs.xyz/)!**  
+If you find this card helpful, please consider giving the repository a ⭐ on GitHub or [Buy me a coffee](https://buymeacoffee.com/ngocjohn) ☕ 
+
+Thank you!
+
+### New Features 🎉
+- Added configuration options to customize the mini map display, and optimized overall rendering performance
+- Enabled setting a custom history period for data shown in the map popups, enhancing data control 
+
+### Other Changes
+- Refactored how marker positions are calculated and updated on the map for better accuracy and maintainability
+
+
+**Full Changelog**: https://github.com/ngocjohn/vehicle-info-card/compare/v1.8.0...v1.8.1
+
+[Changes][v1.8.1]
+
+
 <a id="v1.8.0"></a>
 # [v1.8.0](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.8.0) - 2025-03-19
 
@@ -482,6 +506,7 @@ This update enhances the usability and accuracy of our custom card, providing cl
 [Changes][v1.0.0]
 
 
+[v1.8.1]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.8.0...v1.8.1
 [v1.8.0]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.7.0...v1.8.0
 [v1.7.0]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.6.1...v1.7.0
 [v1.6.1]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.6.0...v1.6.1
