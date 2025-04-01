@@ -699,6 +699,12 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         configValue: 'us_format',
         configType: 'map_popup_config',
       },
+      {
+        label: 'Use zone name',
+        value: mapPopupConfig?.use_zone_name ?? false,
+        configValue: 'use_zone_name',
+        configType: 'map_popup_config',
+      },
     ];
 
     const themeMode = [

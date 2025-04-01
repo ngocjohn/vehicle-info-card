@@ -63,6 +63,19 @@ export class VehicleMap extends LitElement {
     return { ...map_popup_config, device_tracker, google_api_key, maptiler_api_key };
   }
 
+  private get _deviceNotInZone(): boolean {
+    const device_tracker = this.mapConfig.device_tracker;
+    if (!device_tracker) return true;
+    return this.card._hass.states[device_tracker]?.state === 'not_home';
+  }
+
+  private get _deviceState(): string {
+    const device_tracker = this.mapConfig.device_tracker;
+    if (!device_tracker) return '';
+    const stateObj = this.card._hass.states[device_tracker];
+    return stateObj ? this.card._hass.formatEntityState(stateObj) : '';
+  }
+
   connectedCallback() {
     super.connectedCallback();
     this._subscribeHistory();
@@ -239,17 +252,26 @@ export class VehicleMap extends LitElement {
   }
 
   private _renderAddress(): TemplateResult {
+    const useZoneName = this.mapConfig?.use_zone_name;
+
     if (this.card.config.extra_configs?.show_address === false) return html``;
     if (!this._addressReady) return html` <div class="address-line loading"><span class="loader"></span></div> `;
 
     const address = this._address || {};
-    return address !== null && address.streetName
+    const inZone = !this._deviceNotInZone;
+
+    const addressContent =
+      useZoneName && inZone
+        ? html`<span class="primary">${this._deviceState}</span>`
+        : html`
+            <span class="secondary">${address.streetName}</span>
+            <span class="primary">${address.sublocality || address.city}</span>
+          `;
+
+    return address?.streetName
       ? html` <div class="address-line">
           <ha-icon icon="mdi:map-marker"></ha-icon>
-          <div class="address-info">
-            <span class="secondary">${address.streetName}</span>
-            <span class="primary">${!address.sublocality ? address.city : address.sublocality}</span>
-          </div>
+          <div class="address-info">${addressContent}</div>
         </div>`
       : html``;
   }
