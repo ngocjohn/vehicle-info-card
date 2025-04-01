@@ -1,6 +1,6 @@
-name: Bug report
-description: File a bug report. 🐞
-title: "[Bug] "
+name: Bug report 🐞
+description: File a bug report.
+title: "[Bug]: "
 labels: ["bug"]
 assignees: ['ngocjohn']
 
@@ -58,6 +58,19 @@ body:
         - v1.0.2
         - v1.0.1
         - v1.0.0
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Card Configuration
+      description: Your card YAML configuration
+      render: yaml
+      placeholder: |
+        type: custom:vehicle-info-card
+        entity: sensor.vehicle
+        name: My Vehicle
+        # Your configuration here
     validations:
       required: true
 
