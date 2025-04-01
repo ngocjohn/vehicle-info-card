@@ -54,7 +54,7 @@ export class VehicleMap extends LitElement {
   }
 
   private get zoom(): number {
-    return this.card.config.map_popup_config.default_zoom ?? 14;
+    return this.card.config.map_popup_config.map_zoom ?? 14;
   }
 
   public get mapConfig(): MapConfig {
