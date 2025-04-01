@@ -37,14 +37,15 @@ export type Services = {
 type HISTORY_PERIOD = 'today' | 'yesterday' | undefined;
 
 export interface MapPopupConfig {
-  hours_to_show: number;
+  auto_fit?: boolean;
   default_zoom: number;
+  history_period?: HISTORY_PERIOD;
+  hours_to_show: number;
+  map_zoom?: number;
+  path_color?: string | undefined;
   theme_mode: THEME_MODE;
   us_format?: boolean;
-  path_color?: string | undefined;
-  auto_fit?: boolean;
-  map_zoom?: number;
-  history_period?: HISTORY_PERIOD;
+  use_zone_name?: boolean;
 }
 
 export type ImageConfig = {
