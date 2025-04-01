@@ -1,4 +1,4 @@
-import { LitElement, css, html, TemplateResult, PropertyValues, unsafeCSS } from 'lit';
+import { LitElement, css, html, TemplateResult, PropertyValues, unsafeCSS, CSSResultGroup } from 'lit';
 import { styleMap } from 'lit-html/directives/style-map.js';
 import { customElement, state } from 'lit/decorators.js';
 import Swiper from 'swiper';
@@ -55,9 +55,10 @@ export class HeaderSlide extends LitElement {
         pagination: {
           clickable: true,
           el: paginationEl,
+          dynamicBullets: true,
         },
         roundLengths: true,
-        slidesPerView: 'auto',
+        slidesPerView: 1,
         spaceBetween: 12,
       };
       const effeConfig: Partial<Record<string, Partial<SwiperOptions>>> = {
@@ -73,7 +74,7 @@ export class HeaderSlide extends LitElement {
             stretch: 0,
             depth: 100,
             modifier: 1,
-            slideShadows: false,
+            slideShadows: true,
           },
         },
       };
@@ -125,61 +126,68 @@ export class HeaderSlide extends LitElement {
     `;
   }
 
-  static styles = [
-    unsafeCSS(swipercss),
-    css`
-      :host {
-        --swiper-pagination-bottom: 0px;
-        --swiper-theme-color: var(--primary-text-color);
-      }
-      section {
-        display: block;
-        padding: 1rem 0;
-      }
-      .swiper-container {
-        width: 100%;
-        height: 100%;
-        display: block;
-      }
-      .swiper-slide {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-        height: 100%;
-      }
-      .swiper-slide:active {
-        scale: 1.02;
-      }
-      .swiper-slide img {
-        width: 100%;
-        height: 100%;
-        max-height: 150px;
-        object-fit: scale-down;
-        max-height: var(--vic-images-slide-height, 150px);
-        max-width: var(--vic-images-slide-width, 450px);
-      }
-      .swiper-slide .image-index {
-        position: absolute;
-        bottom: 0;
-        left: var(--vic-card-padding);
-        padding: var(--vic-gutter-gap);
-        background-color: var(--swiper-theme-color);
-        color: var(--primary-background-color);
-        font-size: 1rem;
-        font-weight: bold;
-        z-index: 1;
-      }
-
-      .swiper-pagination-bullet {
-        background-color: var(--swiper-theme-color);
-        transition: all 0.3s ease-in-out !important;
-      }
-      .swiper-pagination-bullet-active {
-        width: 18px !important;
-        border-radius: 1rem !important;
-        opacity: 0.7;
-      }
-    `,
-  ];
+  static get styles(): CSSResultGroup {
+    return [
+      unsafeCSS(swipercss),
+      css`
+        :host {
+          --swiper-pagination-bottom: -8px;
+          --swiper-theme-color: var(--primary-text-color);
+        }
+        section {
+          display: block;
+          padding: 1rem 0;
+        }
+        .swiper-wrapper {
+          display: flex;
+        }
+        .swiper-container {
+          width: 100%;
+          height: 100%;
+          display: block;
+        }
+        .swiper-slide {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          width: 100%;
+          height: 100%;
+        }
+        .swiper-slide:active {
+          scale: 1.02;
+        }
+        .swiper-slide img {
+          width: 100%;
+          height: 100%;
+          max-height: 150px;
+          object-fit: scale-down;
+          max-height: var(--vic-images-slide-height, 150px);
+          max-width: var(--vic-images-slide-width, 450px);
+        }
+        .swiper-slide .image-index {
+          position: absolute;
+          bottom: 0;
+          left: var(--vic-card-padding);
+          padding: var(--vic-gutter-gap);
+          background-color: var(--swiper-theme-color);
+          color: var(--primary-background-color);
+          font-size: 1rem;
+          font-weight: bold;
+          z-index: 1;
+        }
+        .swiper-pagination {
+          display: block;
+        }
+        .swiper-pagination-bullet {
+          background-color: var(--swiper-theme-color);
+          transition: all 0.3s ease-in-out !important;
+        }
+        .swiper-pagination-bullet-active {
+          width: 18px !important;
+          border-radius: 1rem !important;
+          opacity: 0.7;
+        }
+      `,
+    ];
+  }
 }
