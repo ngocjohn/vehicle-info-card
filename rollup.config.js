@@ -1,7 +1,6 @@
 import terser from '@rollup/plugin-terser';
 import serve from 'rollup-plugin-serve';
 import filesize from 'rollup-plugin-filesize';
-import replace from '@rollup/plugin-replace';
 import { version } from './package.json';
 import { logCardInfo, defaultPlugins } from './rollup.config.helper.mjs';
 
@@ -9,11 +8,6 @@ const dev = process.env.ROLLUP_WATCH;
 const port = process.env.PORT || 8235;
 const currentVersion = dev ? 'DEVELOPMENT' : `v${version}`;
 const custombanner = logCardInfo(currentVersion);
-
-const replaceOpts = {
-  'process.env.ROLLUP_WATCH': JSON.stringify(dev),
-  preventAssignment: true,
-};
 
 const serveopts = {
   contentBase: ['./dist'],
@@ -32,7 +26,7 @@ const terserOpt = {
   },
 };
 
-const plugins = [replace(replaceOpts), dev && serve(serveopts), !dev && terser(terserOpt), !dev && filesize()];
+const plugins = [dev && serve(serveopts), !dev && terser(terserOpt), !dev && filesize()];
 
 export default [
   {
