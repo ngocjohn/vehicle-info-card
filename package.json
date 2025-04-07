@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "@dotenvx/dotenvx": "^1.39.0",
-    "@maptiler/sdk": "^3.0.2",
+    "@maptiler/sdk": "^3.0.3",
     "@mdi/js": "^7.4.47",
     "@rollup/plugin-babel": "^6.0.4",
     "@rollup/plugin-commonjs": "^28.0.3",
