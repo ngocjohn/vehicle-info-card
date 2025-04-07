@@ -26,7 +26,7 @@
     "tinycolor2": "^1.6.0"
   },
   "devDependencies": {
-    "@dotenvx/dotenvx": "^1.39.0",
+    "@dotenvx/dotenvx": "^1.39.1",
     "@maptiler/sdk": "^3.0.2",
     "@mdi/js": "^7.4.47",
     "@rollup/plugin-babel": "^6.0.4",
