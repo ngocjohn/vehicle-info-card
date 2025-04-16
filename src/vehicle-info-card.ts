@@ -73,6 +73,7 @@ export class VehicleCard extends LitElement {
   @state() _hass!: HomeAssistant;
   @property({ attribute: false }) public config!: VehicleCardConfig;
   @property({ type: Boolean }) public editMode: boolean = false;
+  @property({ type: String }) public layout?: string;
 
   // Vehicle entities and attributes
   @state() vehicleEntities: VehicleEntities = {};
@@ -217,8 +218,19 @@ export class VehicleCard extends LitElement {
   }
 
   private get isEditorPreview(): boolean {
-    const parentElementClassPreview = this.offsetParent?.classList.contains('element-preview');
-    return parentElementClassPreview || false;
+    const cardParent = this.offsetParent as HTMLElement;
+    if (!cardParent) return false;
+    let isEditorPreview: boolean = false;
+    if (this.layout === 'grid') {
+      const sectionParent = cardParent.offsetParent as HTMLElement;
+      if (sectionParent) {
+        isEditorPreview = !!sectionParent.classList.contains('element-preview');
+      }
+    } else {
+      isEditorPreview = cardParent?.classList.contains('element-preview');
+    }
+
+    return isEditorPreview;
   }
 
   public static get styles(): CSSResultGroup {
