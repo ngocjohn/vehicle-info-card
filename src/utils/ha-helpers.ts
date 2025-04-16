@@ -1,5 +1,6 @@
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
 
+import { applyThemesOnElement } from 'custom-card-helpers';
 import memoizeOne from 'memoize-one';
 
 import { combinedFilters, CARD_UPADE_SENSOR, CARD_VERSION, REPOSITORY } from '../const/const';
@@ -83,7 +84,7 @@ const getVehicleEntities = memoizeOne(
     }
 
     return entityIds;
-  }
+  },
 );
 
 async function getModelName(hass: HomeAssistant, entityCar: string): Promise<string> {
@@ -123,7 +124,7 @@ export function getCarEntity(hass: HomeAssistant): string {
 
 export async function createCustomButtons(
   hass: HomeAssistant,
-  button: BaseButtonConfig
+  button: BaseButtonConfig,
 ): Promise<CustomButtonEntity | void> {
   if (!button) {
     return;
@@ -159,7 +160,7 @@ export async function createCustomButtons(
 
 export async function createCardElement(
   hass: HomeAssistant,
-  cards: LovelaceCardConfig[]
+  cards: LovelaceCardConfig[],
 ): Promise<LovelaceCardConfig[]> {
   if (!cards) {
     return [];
@@ -190,7 +191,7 @@ export async function createCardElement(
         console.error('Error creating card element:', error);
         return null;
       }
-    })
+    }),
   );
   return cardElements;
 }
@@ -230,7 +231,7 @@ async function getBooleanTemplate(hass: HomeAssistant, templateConfig: string): 
 export async function getDefaultButton(
   hass: HomeAssistant,
   config: VehicleCardConfig,
-  baseCard: CardTypeConfig
+  baseCard: CardTypeConfig,
 ): Promise<ButtonCardEntity> {
   const button = config[baseCard.button];
   const useCustom = config.use_custom_cards?.[baseCard.config] || false;
@@ -264,7 +265,7 @@ export async function getDefaultButton(
 export async function getAddedButton(
   hass: HomeAssistant,
   addedCard: AddedCards[keyof AddedCards],
-  key: string
+  key: string,
 ): Promise<ButtonCardEntity> {
   const button = addedCard.button;
   const customCard = addedCard.cards && addedCard.cards.length > 0;
@@ -452,7 +453,7 @@ export const _getMapAddress = memoizeOne(
 
     // console.log('\x1B[93mvehicle-info-card\x1B[m\n', 'address:', address);
     return address;
-  }
+  },
 );
 
 export async function getAddressFromMapTiler(lat: number, lon: number, apiKey: string): Promise<Address | null> {
@@ -592,3 +593,31 @@ async function fetchLatestReleaseTag() {
     console.error('Error fetching the latest release tag:', error);
   }
 }
+
+export const applyTheme = (element: any, hass: HomeAssistant, theme: string, mode?: string): void => {
+  if (!element) return;
+  // console.log('applyTheme', theme, mode);
+  const themeData = hass.themes.themes[theme];
+  if (themeData) {
+    // Filter out only top-level properties for CSS variables and the modes property
+    const filteredThemeData = Object.keys(themeData)
+      .filter((key) => key !== 'modes')
+      .reduce((obj, key) => {
+        obj[key] = themeData[key];
+        return obj;
+      }, {} as Record<string, string>);
+
+    if (!mode || mode === 'auto') {
+      mode = hass.themes.darkMode ? 'dark' : 'light';
+      // Get the current mode (light or dark)
+    } else {
+      mode = mode;
+    }
+    const modeData = themeData.modes && typeof themeData.modes === 'object' ? themeData.modes[mode] : {};
+    // Merge the top-level and mode-specific variables
+    // const allThemeData = { ...filteredThemeData, ...modeData };
+    const allThemeData = { ...filteredThemeData, ...modeData };
+    const allTheme = { default_theme: hass.themes.default_theme, themes: { [theme]: allThemeData } };
+    applyThemesOnElement(element, allTheme, theme, false);
+  }
+};

@@ -17,7 +17,6 @@ export interface Lovelace {
 }
 
 export function getLovelace(): Lovelace | null {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let root: any = document.querySelector('home-assistant');
   root = root && root.shadowRoot;
   root = root && root.querySelector('home-assistant-main');
@@ -91,7 +90,7 @@ export type LovelaceCardPath = [number, number] | [number, number, number];
 export type LovelaceContainerPath = [number] | [number, number];
 
 export const parseLovelaceCardPath = (
-  path: LovelaceCardPath
+  path: LovelaceCardPath,
 ): { viewIndex: number; sectionIndex?: number; cardIndex: number } => {
   if (path.length === 2) {
     return {
@@ -107,7 +106,7 @@ export const parseLovelaceCardPath = (
 };
 
 export const parseLovelaceContainerPath = (
-  path: LovelaceContainerPath
+  path: LovelaceContainerPath,
 ): { viewIndex: number; sectionIndex?: number } => {
   if (path.length === 1) {
     return {
@@ -130,7 +129,7 @@ type FindLovelaceContainer = {
 };
 export const findLovelaceContainer: FindLovelaceContainer = (
   config: LovelaceConfig,
-  path: LovelaceContainerPath
+  path: LovelaceContainerPath,
 ): LovelaceViewRawConfig | LovelaceSectionRawConfig => {
   const { viewIndex, sectionIndex } = parseLovelaceContainerPath(path);
 
@@ -156,7 +155,7 @@ export const findLovelaceContainer: FindLovelaceContainer = (
 
 export const findLovelaceCards = (
   config: LovelaceConfig,
-  path: LovelaceContainerPath
+  path: LovelaceContainerPath,
 ): LovelaceCardConfig[] | undefined => {
   const { viewIndex, sectionIndex } = parseLovelaceContainerPath(path);
 
@@ -186,7 +185,7 @@ export const findLovelaceCards = (
 export const updateLovelaceContainer = (
   config: LovelaceConfig,
   path: LovelaceContainerPath,
-  containerConfig: LovelaceViewRawConfig | LovelaceSectionRawConfig
+  containerConfig: LovelaceViewRawConfig | LovelaceSectionRawConfig,
 ): LovelaceConfig => {
   const { viewIndex, sectionIndex } = parseLovelaceContainerPath(path);
 
@@ -230,7 +229,7 @@ export const updateLovelaceContainer = (
 export const updateLovelaceCards = (
   config: LovelaceConfig,
   path: LovelaceContainerPath,
-  cards: LovelaceCardConfig[]
+  cards: LovelaceCardConfig[],
 ): LovelaceConfig => {
   const { viewIndex, sectionIndex } = parseLovelaceContainerPath(path);
 

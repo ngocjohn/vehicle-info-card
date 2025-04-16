@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { debounce } from 'es-toolkit';
 import { LitElement, html, TemplateResult, CSSResultGroup, PropertyValues, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
@@ -218,7 +217,7 @@ export class PanelImages extends LitElement {
               @input=${(event: Event) => imageInputChange(this.editor, event, index)}
             ></ha-textfield>
             <ha-checkbox .checked=${false} @change=${(ev: Event) => this._toggleSelection(ev, image.url)}></ha-checkbox>
-          </div>`
+          </div>`,
       )}
       ${showIndexDeleteBtn}
     </div>`;

@@ -230,7 +230,7 @@ export const TabBar = ({
   return html`
     <mwc-tab-bar @MDCTabBar:activated=${(e: Event) => onTabChange((e.target as any).activeIndex)}>
       ${tabs.map(
-        (tab) => html`<mwc-tab label=${tab.label} icon=${tab.icon || ''} ?stacked=${tab.stacked || false}></mwc-tab>`
+        (tab) => html`<mwc-tab label=${tab.label} icon=${tab.icon || ''} ?stacked=${tab.stacked || false}></mwc-tab>`,
       )}
     </mwc-tab-bar>
 
@@ -314,14 +314,20 @@ export const BtnPreview = (btn: CustomButtonEntity, hass: HomeAssistant): Templa
   `;
 };
 
-export const createCloseHeading = (hass: HomeAssistant | undefined, title: string | TemplateResult) => html`
-  <div class="header_title">
-    <ha-icon-button
-      .label=${hass?.localize('ui.dialogs.generic.close') ?? 'Close'}
-      .path=${mdiClose}
-      dialogAction="close"
-      class="header_button"
-    ></ha-icon-button>
-    <span>${title}</span>
-  </div>
-`;
+export const createCloseHeading = (hass: HomeAssistant | undefined, title: string | TemplateResult) => {
+  const headerStyle = `
+		display: flex;
+		align-items: center;
+		direction: var(--direction);
+		`;
+  return html`
+    <div style=${headerStyle}>
+      <ha-icon-button
+        .label=${hass?.localize('ui.dialogs.generic.close') ?? 'Close'}
+        .path=${mdiClose}
+        dialogAction="close"
+      ></ha-icon-button>
+      <span>${title}</span>
+    </div>
+  `;
+};

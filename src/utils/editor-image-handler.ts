@@ -60,7 +60,7 @@ export function imageInputChange(editor: VehicleCardEditor, ev: Event, index?: n
 
 export async function handleFilePicked(
   editor: VehicleCardEditor,
-  target: { files: FileList; toastId: string; errorMsg?: string }
+  target: { files: FileList; toastId: string; errorMsg?: string },
 ): Promise<void> {
   console.log('File picked');
   const { files, toastId, errorMsg } = target;

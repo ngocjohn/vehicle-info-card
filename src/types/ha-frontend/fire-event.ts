@@ -29,7 +29,6 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 declare global {
-  // eslint-disable-next-line
   interface HASSDomEvents {}
 }
 
@@ -62,7 +61,7 @@ export const fireEvent = <HassEvent extends ValidHassDomEvent>(
     bubbles?: boolean;
     cancelable?: boolean;
     composed?: boolean;
-  }
+  },
 ) => {
   options = options || {};
   // @ts-ignore

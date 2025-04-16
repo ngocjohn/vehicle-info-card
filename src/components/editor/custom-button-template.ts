@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { isString } from 'es-toolkit';
 import { LitElement, html, TemplateResult, CSSResultGroup } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
@@ -136,7 +134,7 @@ export class CustomButtonTemplate extends LitElement {
               @change=${(ev: Event) => this._dispatchEvent(ev, 'btn-changed')}
             ></ha-checkbox>
           </ha-formfield>
-        `
+        `,
       )}
     </div>`;
     return html` ${checkBoxes}

@@ -1,5 +1,5 @@
 import { mdiChevronLeft, mdiChevronRight, mdiClose } from '@mdi/js';
-import { formatDateTime, applyThemesOnElement, forwardHaptic, hasConfigOrEntityChanged } from 'custom-card-helpers';
+import { formatDateTime, forwardHaptic, hasConfigOrEntityChanged } from 'custom-card-helpers';
 import { LitElement, html, TemplateResult, PropertyValues, CSSResultGroup, nothing } from 'lit';
 import { styleMap } from 'lit-html/directives/style-map.js';
 
@@ -8,7 +8,7 @@ import './components';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
-import { EcoChart, RemoteControl, VehicleButtons, VehicleMap } from './components/cards';
+import { EcoChart, RemoteControl, VehicleButtons, VehicleMap } from './components/';
 import { CardItem, cardTypes } from './const/data-keys';
 import { IMAGE } from './const/imgconst';
 import { servicesCtrl } from './const/remote-control-keys';
@@ -41,6 +41,7 @@ import {
   isEmpty,
   Create,
   isDarkColor,
+  applyTheme,
 } from './utils';
 import { getAddedButton, getDefaultButton, createCardElement, createCustomButtons } from './utils';
 
@@ -253,8 +254,9 @@ export class VehicleCard extends LitElement {
     this.measureCard();
   }
 
-  protected updated(changedProps: PropertyValues): void {
+  protected updated(changedProps: PropertyValues) {
     super.updated(changedProps);
+
     if (changedProps.has('_currentCardType') && this._currentCardType !== null && !this.editMode) {
       const cardElement = this.shadowRoot?.querySelector('.card-element');
       if (cardElement) {
@@ -273,7 +275,9 @@ export class VehicleCard extends LitElement {
     }
 
     if (_changedProps.has('config') && this.config.selected_theme?.theme !== 'default') {
-      this.applyTheme(this.config.selected_theme.theme);
+      const theme = this.config.selected_theme.theme;
+      const mode = this.config.selected_theme?.mode || 'auto';
+      applyTheme(this, this._hass, theme, mode);
     }
 
     if (_changedProps.has('_currentCardType') && this._currentCardType) {
@@ -480,7 +484,7 @@ export class VehicleCard extends LitElement {
           <ha-icon .icon=${icon}></ha-icon>
           <span>${state}</span>
         </div>
-      `
+      `,
     );
 
     // Render added charging info if charging
@@ -489,7 +493,7 @@ export class VehicleCard extends LitElement {
           'mdi:ev-station',
           this.localize('card.common.stateCharging'),
           () => (this.chargingInfoVisible = !this.chargingInfoVisible),
-          this.chargingInfoVisible
+          this.chargingInfoVisible,
         )
       : nothing;
 
@@ -497,7 +501,7 @@ export class VehicleCard extends LitElement {
     const serviceControl =
       this.config.enable_services_control !== false
         ? renderItem('mdi:car-cog', this.localize('card.common.titleServices'), () =>
-            this.toggleCardFromButtons('servicesCard')
+            this.toggleCardFromButtons('servicesCard'),
           )
         : nothing;
 
@@ -549,7 +553,7 @@ export class VehicleCard extends LitElement {
 
     const entities = ['fuelLevel', 'rangeLiquid', 'rangeElectric', 'soc'];
     const [fuelInfo, rangeLiquidInfo, rangeElectricInfo, socInfo] = entities.map((entity) =>
-      getEntityInfo(this.vehicleEntities[entity]?.entity_id)
+      getEntityInfo(this.vehicleEntities[entity]?.entity_id),
     );
 
     const renderInfoBox = (icon: string, state: number, fuelInfo: string, rangeInfo: string, eletric: boolean) => html`
@@ -579,7 +583,7 @@ export class VehicleCard extends LitElement {
             fuelInfo.state!,
             fuelInfo.stateDisplay!,
             rangeLiquidInfo.stateDisplay!,
-            false
+            false,
           )
         : ''}
       ${socInfo && rangeElectricInfo
@@ -848,7 +852,7 @@ export class VehicleCard extends LitElement {
               >
                 <span class="tyre-value">${this.getStateDisplay(this.vehicleEntities[tyre.key]?.entity_id)}</span>
                 <span class="tyre-name">${tyre.name}</span>
-              </div>`
+              </div>`,
           )}
         </div>
         <div class="tyre-info" ?warning=${isPressureWarning}>
@@ -900,33 +904,6 @@ export class VehicleCard extends LitElement {
   }
 
   /* --------------------------- ADDITIONAL METHODS --------------------------- */
-
-  private applyTheme = (theme: string): void => {
-    const themeData = this._hass.themes.themes[theme];
-    if (themeData) {
-      // Filter out only top-level properties for CSS variables and the modes property
-      const filteredThemeData = Object.keys(themeData)
-        .filter((key) => key !== 'modes')
-        .reduce((obj, key) => {
-          obj[key] = themeData[key];
-          return obj;
-        }, {} as Record<string, string>);
-
-      // Get the current mode (light or dark)
-      const mode = this.isDark ? 'dark' : 'light';
-      const modeData = themeData.modes && typeof themeData.modes === 'object' ? themeData.modes[mode] : {};
-
-      // Merge the top-level and mode-specific variables
-      const allThemeData = { ...filteredThemeData, ...modeData };
-
-      applyThemesOnElement(
-        this,
-        { themes: { [theme]: allThemeData }, default_theme: this._hass.themes.default_theme },
-        theme,
-        false
-      );
-    }
-  };
 
   public _isDarkTheme(): boolean {
     const css = getComputedStyle(this);
@@ -1111,7 +1088,7 @@ export class VehicleCard extends LitElement {
 
   private getAttrStateMap(
     attributeType: 'lock' | 'window' | 'door',
-    lang: string
+    lang: string,
   ): Record<'lock' | 'window' | 'door', string> {
     const stateMapping: Record<string, any> = {
       lock: StateMapping.lockAttributes(lang),
@@ -1269,7 +1246,7 @@ export class VehicleCard extends LitElement {
 
   private getDefaultEntityInfo = (
     { key, name, icon, state, unit }: EntityConfig,
-    vehicleEntity: VehicleEntity
+    vehicleEntity: VehicleEntity,
   ): EntityConfig => {
     return {
       key,
@@ -1339,12 +1316,12 @@ export class VehicleCard extends LitElement {
         } else {
           doorAttributeStates[attribute] = this.getEntityAttribute(
             this.vehicleEntities.lockSensor.entity_id,
-            attribute
+            attribute,
           );
         }
       });
       const openDoors = Object.keys(doorAttributeStates).filter(
-        (attribute) => doorAttributeStates[attribute] === '0' || doorAttributeStates[attribute] === true
+        (attribute) => doorAttributeStates[attribute] === '0' || doorAttributeStates[attribute] === true,
       ).length;
       if (openDoors === 0) {
         closed = true;
@@ -1386,7 +1363,7 @@ export class VehicleCard extends LitElement {
       });
 
       const openWindows = Object.keys(windowAttributeStates).filter(
-        (attribute) => windowAttributeStates[attribute] === '0' || windowAttributeStates[attribute] === true
+        (attribute) => windowAttributeStates[attribute] === '0' || windowAttributeStates[attribute] === true,
       ).length;
 
       if (openWindows === 0) {
@@ -1442,7 +1419,7 @@ export class VehicleCard extends LitElement {
   private getWarningOrDefaultInfo = (
     defaultInfo: EntityConfig,
     key: string,
-    vehicleEntity: VehicleEntity
+    vehicleEntity: VehicleEntity,
   ): EntityConfig => {
     if (this.DataKeys.vehicleWarnings.map((key) => key.key).includes(key)) {
       const warningState = this.getBooleanState(vehicleEntity.entity_id);
@@ -1550,7 +1527,7 @@ export class VehicleCard extends LitElement {
 
   /* ---------------------------- COMPUTE CARD STYLES & CLASSES ---------------------------- */
   private _computeCardStyles() {
-    if (!this._resizeInitiated) return;
+    // if (!this._resizeInitiated) return;
     const fullCardWidth = this._cardWidth;
     const fullCardHeight = this._cardHeight;
     const backgroundUrl = this.isDark ? IMAGE.BACK_WHITE : IMAGE.BACK_DARK;
@@ -1644,7 +1621,7 @@ export class VehicleCard extends LitElement {
 
     // Images height
     const configImgMaxHeight = this.config.extra_configs?.images_swipe?.max_height ?? 150;
-    const imagesHeight = configImgMaxHeight / ROWPX;
+    const imagesHeight = (configImgMaxHeight + 28) / ROWPX;
 
     const headerInfoHeight = 70 / ROWPX;
 
