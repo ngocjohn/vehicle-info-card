@@ -57,6 +57,10 @@ ha-card.__map_last {
   padding-bottom: 0;
 }
 
+ha-card.__map_last section[type="custom"] {
+  padding-bottom: var(--vic-card-padding);
+}
+
 ha-card[no-header].__map_first {
   padding-top: 0;
 }

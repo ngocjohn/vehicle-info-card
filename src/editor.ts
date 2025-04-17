@@ -11,7 +11,7 @@ import './components/editor';
 import Sortable from 'sortablejs';
 
 import './components/editor/custom-card-ui-editor';
-import { PanelImages } from './components/editor';
+import { CustomCardUIEditor, PanelImages } from './components/editor';
 import { CARD_VERSION, PREVIEW_CONFIG_TYPES } from './const/const';
 import { cardTypes, editorShowOpts } from './const/data-keys';
 import { servicesCtrl } from './const/remote-control-keys';
@@ -66,6 +66,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   @state() private _newCardType: Map<string, string> = new Map();
 
   @query('panel-images') private _panelImages!: PanelImages;
+  @query('custom-card-ui-editor') private _customCardEditor?: CustomCardUIEditor;
 
   public async setConfig(config: VehicleCardConfig): Promise<void> {
     this._config = config;

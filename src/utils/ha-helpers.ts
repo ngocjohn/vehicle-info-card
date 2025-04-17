@@ -84,7 +84,7 @@ const getVehicleEntities = memoizeOne(
     }
 
     return entityIds;
-  },
+  }
 );
 
 async function getModelName(hass: HomeAssistant, entityCar: string): Promise<string> {
@@ -124,7 +124,7 @@ export function getCarEntity(hass: HomeAssistant): string {
 
 export async function createCustomButtons(
   hass: HomeAssistant,
-  button: BaseButtonConfig,
+  button: BaseButtonConfig
 ): Promise<CustomButtonEntity | void> {
   if (!button) {
     return;
@@ -160,12 +160,11 @@ export async function createCustomButtons(
 
 export async function createCardElement(
   hass: HomeAssistant,
-  cards: LovelaceCardConfig[],
+  cards: LovelaceCardConfig[]
 ): Promise<LovelaceCardConfig[]> {
   if (!cards) {
     return [];
   }
-
   // Load the helpers and ensure they are available
   let helpers;
 
@@ -191,7 +190,7 @@ export async function createCardElement(
         console.error('Error creating card element:', error);
         return null;
       }
-    }),
+    })
   );
   return cardElements;
 }
@@ -231,12 +230,17 @@ async function getBooleanTemplate(hass: HomeAssistant, templateConfig: string): 
 export async function getDefaultButton(
   hass: HomeAssistant,
   config: VehicleCardConfig,
-  baseCard: CardTypeConfig,
+  baseCard: CardTypeConfig
 ): Promise<ButtonCardEntity> {
   const button = config[baseCard.button];
   const useCustom = config.use_custom_cards?.[baseCard.config] || false;
   const customCard = config[baseCard.config] !== undefined;
-
+  const verticalConfig = [
+    {
+      type: 'vertical-stack',
+      cards: config[baseCard.config],
+    },
+  ];
   const buttonCard = {
     key: baseCard.type,
     default_name: baseCard.name,
@@ -257,7 +261,7 @@ export async function getDefaultButton(
     button_type: button?.button_type || 'default',
     card_type: useCustom ? ('custom' as const) : ('default' as const),
     custom_button: button?.enabled || false,
-    custom_card: customCard ? await createCardElement(hass, config[baseCard.config]) : [],
+    custom_card: customCard ? await createCardElement(hass, verticalConfig) : [],
   };
   return buttonCard;
 }
@@ -265,11 +269,16 @@ export async function getDefaultButton(
 export async function getAddedButton(
   hass: HomeAssistant,
   addedCard: AddedCards[keyof AddedCards],
-  key: string,
+  key: string
 ): Promise<ButtonCardEntity> {
   const button = addedCard.button;
   const customCard = addedCard.cards && addedCard.cards.length > 0;
-
+  const verticalConfig = [
+    {
+      type: 'vertical-stack',
+      cards: addedCard.cards,
+    },
+  ];
   const buttonCard = {
     key: key,
     custom_button: button.enabled ?? false,
@@ -288,7 +297,7 @@ export async function getAddedButton(
     },
     button_type: button.button_type || 'default',
     card_type: 'custom' as const,
-    custom_card: customCard ? await createCardElement(hass, addedCard.cards) : [],
+    custom_card: customCard ? await createCardElement(hass, verticalConfig) : [],
   };
   return buttonCard;
 }
@@ -453,7 +462,7 @@ export const _getMapAddress = memoizeOne(
 
     // console.log('\x1B[93mvehicle-info-card\x1B[m\n', 'address:', address);
     return address;
-  },
+  }
 );
 
 export async function getAddressFromMapTiler(lat: number, lon: number, apiKey: string): Promise<Address | null> {
