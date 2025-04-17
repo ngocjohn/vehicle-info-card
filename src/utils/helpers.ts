@@ -201,3 +201,21 @@ export const getInitials = (name: string): string => {
 export const getFormatedDateTime = (dateObj: Date, locale: FrontendLocaleData): string => {
   return `${formatDateNumeric(dateObj, locale)} ${formatTime(dateObj, locale)}`;
 };
+
+const isTemplateRegex = /{%|{{/;
+
+export const isTemplate = (value: string): boolean => isTemplateRegex.test(value);
+
+export const hasTemplate = (value: unknown): boolean => {
+  if (!value) {
+    return false;
+  }
+  if (typeof value === 'string') {
+    return isTemplate(value);
+  }
+  if (typeof value === 'object') {
+    const values = Array.isArray(value) ? value : Object.values(value!);
+    return values.some((val) => val && hasTemplate(val));
+  }
+  return false;
+};

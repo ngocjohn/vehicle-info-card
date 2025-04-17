@@ -6,16 +6,17 @@ export function addActions(element: HTMLElement, config: ButtonActionConfig) {
 
   element.addEventListener('pointerdown', handler.handleStart.bind(handler));
   element.addEventListener('pointerup', handler.handleEnd.bind(handler));
-  element.addEventListener('contextmenu', (e) => e.preventDefault());
 
+  element.addEventListener('contextmenu', (e) => e.preventDefault());
   element.style.cursor = 'pointer';
 }
 
 function sendActionEvent(element: HTMLElement, config: ButtonActionConfig, action: ActionType) {
   const tapAction = config?.tap_action || { action: 'more-info' };
-  const doubleTapAction = config?.double_tap_action || { action: 'toggle' };
-  const holdAction = config?.hold_action || { action: 'toggle' };
-  const entity = config?.entity || '';
+  const doubleTapAction = config?.double_tap_action || { action: 'none' };
+  const holdAction = config?.hold_action || { action: 'none' };
+  const entity = config?.entity || null;
+  if (!entity) return;
 
   callAction(
     element,
@@ -38,9 +39,12 @@ class ActionHandler {
   private config: ButtonActionConfig;
   private sendActionEvent: (element: HTMLElement, config: ButtonActionConfig, action: ActionType) => void;
   private tapTimeout: number | null;
-  private lastTap: number;
   private startTime: number | null;
+  private lastTap: number;
   private defaultEntity: string | null;
+  private isSwiping: boolean;
+  private startX: number | null = null;
+  private startY: number | null = null;
 
   constructor(
     element: HTMLElement,
@@ -54,6 +58,7 @@ class ActionHandler {
     this.tapTimeout = null;
     this.lastTap = 0;
     this.startTime = null;
+    this.isSwiping = false;
   }
 
   // Utility method to extract entity from the button actions
@@ -74,28 +79,26 @@ class ActionHandler {
     return null;
   }
 
-  handleStart(e: PointerEvent) {
-    e.stopPropagation();
-    e.stopImmediatePropagation();
-
-    // Example: Only trigger vibration after user interaction
-    if (navigator.vibrate && e.isTrusted) {
-      navigator.vibrate(50); // Vibrate for 50ms
-    }
-
-    this.startTime = Date.now();
-    clearTimeout(this.tapTimeout as number);
-  }
-
-  handleEnd() {
+  handleEnd(e: PointerEvent) {
     if (this.startTime === null) return;
 
     const currentTime = Date.now();
     const holdDuration = currentTime - this.startTime;
-    const doubleTapDuration = currentTime - this.lastTap;
+
+    const deltaX = Math.abs((e.clientX || 0) - (this.startX || 0));
+    const deltaY = Math.abs((e.clientY || 0) - (this.startY || 0));
+    const moveThreshold = 20;
+
+    if (deltaX > moveThreshold || deltaY > moveThreshold) {
+      this.isSwiping = true;
+      this.startTime = null;
+      // console.log('Swipe detected, ignoring tap/hold/double_tap');
+      return; // Ignore swipe as a valid tap/hold/double_tap
+    }
 
     // console.log('Pointer up:', currentTime, 'Hold duration:', holdDuration, 'Double tap duration:', doubleTapDuration);
 
+    const doubleTapDuration = currentTime - this.lastTap;
     this.lastTap = currentTime;
     this.startTime = null;
 
@@ -110,5 +113,14 @@ class ActionHandler {
         this.sendActionEvent(this.element, this.config, 'tap');
       }, 300); // Same threshold for single tap
     }
+  }
+
+  handleStart(e: PointerEvent) {
+    e.preventDefault();
+    this.startTime = Date.now();
+    this.startX = e.clientX;
+    this.startY = e.clientY;
+    this.isSwiping = false;
+    clearTimeout(this.tapTimeout as number);
   }
 }

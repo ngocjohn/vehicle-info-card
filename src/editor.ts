@@ -468,7 +468,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         .button=${this._getButtonConfig(card.button)}
         .card=${card}
         .isButtonPreview=${this._btnPreview}
-        @custom-button-changed=${(ev: any) => this._customBtnHandler(ev)}
+        @custom-button-changed=${this._customBtnHandler.bind(this)}
       ></custom-button-template>
     `;
 
@@ -769,7 +769,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       {
         configValue: 'path_color',
         label: 'Path Color',
-        value: mapPopupConfig?.path_color || undefined,
+        value: mapPopupConfig?.path_color || '',
         pickerType: 'baseSelector' as 'baseSelector',
         options: { selector: { ui_color: { include_none: false, include_state: false } } },
       },
@@ -1254,16 +1254,14 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     // console.log('Custom card editor changed', type, config);
   }
 
-  private _customBtnHandler(ev: any): void {
+  private _customBtnHandler(ev: CustomEvent): void {
+    ev.stopPropagation();
     const details = ev.detail;
-    const { type, button, card } = details;
+    const { type, button } = details;
 
     switch (type) {
       case 'toggle_preview_button':
         this._toggleBtnPreview(button);
-        break;
-      case 'toggle-show-button':
-        this._toggleShowButton(card);
         break;
       default:
         this._customBtnChanged(ev);
@@ -1491,7 +1489,8 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     }
   }
 
-  private _customBtnChanged(ev: any): void {
+  private _customBtnChanged(ev: CustomEvent): void {
+    ev.stopPropagation();
     const { configValue, configBtnType, value } = ev.detail;
 
     const updates: Partial<VehicleCardConfig> = {};
@@ -1611,19 +1610,24 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       newValue = ev.detail.value;
       if (this._config.map_popup_config![key] && this._config.map_popup_config[key] === newValue) {
         return;
+      } else {
+        updates.map_popup_config = {
+          ...this._config.map_popup_config,
+          [key]: newValue,
+        };
+        console.log('Map popup config changed:', key, newValue);
       }
-      updates.map_popup_config = {
-        ...this._config.map_popup_config,
-        [key]: newValue,
-      };
-      console.log('Map popup config changed:', configValue, newValue);
     } else if (['theme', 'mode'].includes(configValue)) {
       const key = configValue as keyof VehicleCardConfig['selected_theme'];
-      updates.selected_theme = {
-        ...this._config.selected_theme,
-        [key]: newValue,
-      };
-      console.log('Selected theme changed:', key, newValue);
+      if (this._config.selected_theme![key] && this._config.selected_theme[key] === newValue) {
+        return;
+      } else {
+        updates.selected_theme = {
+          ...this._config.selected_theme,
+          [key]: newValue,
+        };
+        console.log('Selected theme changed:', updates.selected_theme);
+      }
     } else if (configValue === 'selected_language') {
       newValue === 'system' ? (this._selectedLanguage = this.hass.language) : (this._selectedLanguage = newValue);
       updates.selected_language = newValue;
