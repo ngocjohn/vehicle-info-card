@@ -230,7 +230,7 @@ export const TabBar = ({
   return html`
     <mwc-tab-bar @MDCTabBar:activated=${(e: Event) => onTabChange((e.target as any).activeIndex)}>
       ${tabs.map(
-        (tab) => html`<mwc-tab label=${tab.label} icon=${tab.icon || ''} ?stacked=${tab.stacked || false}></mwc-tab>`,
+        (tab) => html`<mwc-tab label=${tab.label} icon=${tab.icon || ''} ?stacked=${tab.stacked || false}></mwc-tab>`
       )}
     </mwc-tab-bar>
 
@@ -289,16 +289,31 @@ export const HaAlert = ({
 
 export const BtnPreview = (btn: CustomButtonEntity, hass: HomeAssistant): TemplateResult => {
   if (!btn) return html``;
-  const { primary, icon, secondary, notify, entity } = btn;
+  const { primary, icon, secondary, notify, entity, color } = btn;
+  let iconColor: string | undefined;
+  if (color) {
+    iconColor = color;
+  } else {
+    iconColor = 'var(--primary-text-color)';
+  }
+  const iconBackground = `background-color: rgb(from ${iconColor} r g b / 0.2)`;
+  const gridStyle = `
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(calc((100% - 24px) / 2), 1fr));
+          grid-template-rows: auto;
+          grid-gap: var(--vic-gutter-gap);
+          position: relative;
+        }`;
   return html`
-    <ha-card class="preview-card">
+    <div class="preview-card" style=${gridStyle}>
       <div class="grid-item">
         <div class="item-icon">
-          <div class="icon-background">
+          <div class="icon-background" style=${iconBackground}>
             <ha-state-icon
               .hass=${hass}
               .stateObj=${entity ? hass.states[entity] : undefined}
               .icon=${icon}
+              style=${`color: ${iconColor}`}
             ></ha-state-icon>
           </div>
           <div class="item-notify" ?hidden=${!notify}>
@@ -310,7 +325,7 @@ export const BtnPreview = (btn: CustomButtonEntity, hass: HomeAssistant): Templa
           <span class="secondary">${secondary}</span>
         </div>
       </div>
-    </ha-card>
+    </div>
   `;
 };
 

@@ -35,6 +35,7 @@ ha-card.preview-card {
   background: none;
 }
 
+
 ha-card.__background::before {
   content: '';
   position: absolute;
