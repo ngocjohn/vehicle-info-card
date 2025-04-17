@@ -1,25 +1,17 @@
-<a id="v1.8.2"></a>
-# [v1.8.2](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.8.2) - 2025-04-17
-
-
-
-[Changes][v1.8.2]
-
-
 <a id="v1.8.1"></a>
 # [v1.8.1](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.8.1) - 2025-03-31
 
 <!-- Release notes generated using configuration in .github/release.yml at v1.8.1 -->
 
 ## What's Changed
-🚀 **The card is now available in [HACS](https://hacs.xyz/)!**  
-If you find this card helpful, please consider giving the repository a ⭐ on GitHub or [Buy me a coffee](https://buymeacoffee.com/ngocjohn) ☕ 
+🚀 **The card is now available in [HACS](https://hacs.xyz/)!**
+If you find this card helpful, please consider giving the repository a ⭐ on GitHub or [Buy me a coffee](https://buymeacoffee.com/ngocjohn) ☕
 
 Thank you!
 
 ### New Features 🎉
 - Added configuration options to customize the mini map display, and optimized overall rendering performance
-- Enabled setting a custom history period for data shown in the map popups, enhancing data control 
+- Enabled setting a custom history period for data shown in the map popups, enhancing data control
 
 ### Other Changes
 - Refactored how marker positions are calculated and updated on the map for better accuracy and maintainability
@@ -63,14 +55,14 @@ Thank you!
 ## What's Changed
 This release introduces support for the MapTiler API key, providing a new popup map design and improved mapping functionality. Additionally, Simplified and Traditional Chinese translations have been added.
 
-If you find this card helpful, please consider giving the repository a ⭐! 
+If you find this card helpful, please consider giving the repository a ⭐!
 
 ## New Features 🎉
-- **New Popup Map Design**: Added MapTiler API key support to enhance the mapping functionality. [#106](https://github.com/ngocjohn/vehicle-info-card/pull/106) 
+- **New Popup Map Design**: Added MapTiler API key support to enhance the mapping functionality. [#106](https://github.com/ngocjohn/vehicle-info-card/pull/106)
 ![maptiler-map](https://github.com/user-attachments/assets/8237e1f2-5d27-4c48-a612-73fffa20208d)
 
 ## Fixes 🐛
-- Corrected the spelling of "Acceleration" in ecoScore localization files. [#109](https://github.com/ngocjohn/vehicle-info-card/pull/109) 
+- Corrected the spelling of "Acceleration" in ecoScore localization files. [#109](https://github.com/ngocjohn/vehicle-info-card/pull/109)
 
 ## Translations 🌍
 - Added Simplified and Traditional Chinese translations. [#103](https://github.com/ngocjohn/vehicle-info-card/pull/103) by [@knoop7](https://github.com/knoop7)
@@ -91,16 +83,16 @@ If you find this card helpful, please consider giving the repository a ⭐!
 ## What's Changed
 This release introduces exciting new features, including section order customization, enhanced map functionality with address display, and support for picture templates in button configurations. Additionally, it includes key improvements to map tile handling, a redesigned map popup, and updated French translations for a more localized experience.
 
-If you find this card helpful, please consider giving the repository a ⭐! 
+If you find this card helpful, please consider giving the repository a ⭐!
 
 ## 🎉 New Features
-- **Target Temperature and Preconditioning Configuration**:  
+- **Target Temperature and Preconditioning Configuration**:
   Added services for configuring target temperature (preconditioning/auxiliary heating) and preconditioning seat settings. [#89](https://github.com/ngocjohn/vehicle-info-card/pull/89)
-- **Section Order Customization**:  
+- **Section Order Customization**:
   Introduced the ability to define the order of sections in the card, providing greater flexibility in customizing the layout.
-- **Show Address on Mini Map**:  
+- **Show Address on Mini Map**:
   Added an option to display the address directly on the mini map for enhanced usability.
-- **Picture Template for Buttons**:  
+- **Picture Template for Buttons**:
   Added support for a picture template, allowing users to use custom images instead of icons in button configurations.
 
 ![benz-section-order2](https://github.com/user-attachments/assets/610bd5e8-1ddb-4be2-a34c-acceb4efb439)
@@ -109,18 +101,18 @@ If you find this card helpful, please consider giving the repository a ⭐!
 
 
 ## 🛠️ Improvements
-- **Map Tile Provider Fixes**:  
+- **Map Tile Provider Fixes**:
   Resolved issues with map tile providers. [#99](https://github.com/ngocjohn/vehicle-info-card/pull/99)
-- **Map Popup Redesign**:  
+- **Map Popup Redesign**:
   Changed the map popup functionality from an in-card display to a dialog for improved usability and better integration with Home Assistant's UI.
 
 
 ## 🌍 Translations
-- **French Translation Update**:  
+- **French Translation Update**:
   Improved French translations for a more localized experience. Thanks to [@Joebar16](https://github.com/Joebar16)! [#95](https://github.com/ngocjohn/vehicle-info-card/pull/95)
 
 ## 📦 Other Changes
-- **Dependency Updates**:  
+- **Dependency Updates**:
   Updated `eslint-plugin-perfectionist` from `v3.9.1` to `v4.3.0` for improved code linting and development tooling. [#97](https://github.com/ngocjohn/vehicle-info-card/pull/97)
 
 
@@ -249,7 +241,7 @@ The latest update introduces exciting new possibilities for button customization
 ![button-grid-swipe](https://github.com/user-attachments/assets/b508e55c-5cd8-4273-98ca-21640a4cee71)
 
 
-If you enjoy these new features, please consider giving the repository a star ⭐ 
+If you enjoy these new features, please consider giving the repository a star ⭐
 
 **Full Changelog**: https://github.com/ngocjohn/vehicle-info-card/compare/v1.2.0...v1.3.0
 
@@ -261,7 +253,7 @@ If you enjoy these new features, please consider giving the repository a star �
 
 ## What's Changed
 
-This update introduces language localization improvements, enhanced styling for range info and hybrid car support, new features for zero-emission vehicles, charge flap status tracking, and customizable button options. If you’re enjoying this card, please consider giving it a star on the repository!  ⭐ 
+This update introduces language localization improvements, enhanced styling for range info and hybrid car support, new features for zero-emission vehicles, charge flap status tracking, and customizable button options. If you’re enjoying this card, please consider giving it a star on the repository!  ⭐
 
 - **Tyre to Tire Conversion**: Changed "Tyre" to "Tire" for `en` localization to match American English conventions. [#41](https://github.com/ngocjohn/vehicle-info-card/pull/41)
 - **Range Info Bar & Hybrid Car Support**: Updated range info bar styling and added support for hybrid vehicles. [#44](https://github.com/ngocjohn/vehicle-info-card/pull/44)
@@ -313,7 +305,7 @@ This update introduces language localization improvements, enhanced styling for 
 * Added `Lithuanian (lt.json)` translation by [@andiukas](https://github.com/andiukas) in [#32](https://github.com/ngocjohn/vehicle-info-card/pull/32)
 
 ### Maintenance
-* Update CSS parameters for adaptation of new version HA 2024.8 
+* Update CSS parameters for adaptation of new version HA 2024.8
 * Remove engine light warning and filter device entities based on availability in [#26](https://github.com/ngocjohn/vehicle-info-card/pull/26)
 
 ## New Contributors
@@ -333,8 +325,8 @@ We encourage new contributors, especially for localization translations; please 
 This update brings significant new features and improvements to enhance user experience and functionality.
 
 ### New Features:
-- **Language Localization Support:** Added comprehensive support for localization across the card, enabling users to see translated strings based on their selected language. [#22](https://github.com/ngocjohn/vehicle-info-card/pull/22) New pull requests (PRs) for additional translations are welcome. 🙏  
-  
+- **Language Localization Support:** Added comprehensive support for localization across the card, enabling users to see translated strings based on their selected language. [#22](https://github.com/ngocjohn/vehicle-info-card/pull/22) New pull requests (PRs) for additional translations are welcome. 🙏
+
    **Supported Languages:** The card now supports the following languages:
     - English (en) ` Default `
     - Czech (cs)
@@ -407,15 +399,15 @@ ___
   - Once activated, a new 'services' indicator will appear in the tab header, guiding you to the control tab.
   - Each service is represented by its own button, providing further configurations specific to that service.
   - For each service, the VIN/FIN is automatically set from the car entity ID.
-	
+
 
 ### Updates:
 
 - **Trip Card Enhancement**:
-  - Added the AdBlue level to the trip card status summary for more comprehensive trip information. [#13](https://github.com/ngocjohn/vehicle-info-card/issues/13) 
+  - Added the AdBlue level to the trip card status summary for more comprehensive trip information. [#13](https://github.com/ngocjohn/vehicle-info-card/issues/13)
 - **Tire Pressures Tab Update**:
   - Changed the display of the tire pressures tab. Now, the background of the car and the tire data are displayed for the specific tires.
-  - 
+  -
 ![v105_release](https://github.com/ngocjohn/vehicle-info-card/assets/96962827/51c94ce4-a7e7-41d3-a3df-983f9ebe7c15)
 
 
@@ -451,7 +443,7 @@ This update enhances the usability and accuracy of our custom card, providing cl
 # [v1.0.3](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.0.3) - 2024-06-15
 
 ### Features:
-- **Charge Indicator for Electric Vehicles**:  This indicator provides essential details including the charge power, current battery status, maximum set charge status, and the selected charging program. This enhancement offers clear and comprehensive insights into the charging process. [#1](https://github.com/ngocjohn/vehicle-info-card/issues/1) 
+- **Charge Indicator for Electric Vehicles**:  This indicator provides essential details including the charge power, current battery status, maximum set charge status, and the selected charging program. This enhancement offers clear and comprehensive insights into the charging process. [#1](https://github.com/ngocjohn/vehicle-info-card/issues/1)
 
 ### Changes:
 - **Map Popup Settings in UI**: Added a new setting option to the User Interface for configuring basic map settings. This includes parameters such as default zoom level, the number of hours to display, and the theme mode. These settings can now be adjusted directly from the UI.
@@ -498,7 +490,7 @@ This update enhances the usability and accuracy of our custom card, providing cl
 - **Unit of Measurement Display**: Corrected the display of units of measurement to ensure accuracy and consistency.
 - **Card Order**: Adjusted the order of cards to reflect the correct sequence.
 
-  
+
 ![swipe-card](https://github.com/ngocjohn/vehicle-info-card/assets/96962827/c550c09c-464a-4fff-9987-4d8ad11d5451)
 
 
