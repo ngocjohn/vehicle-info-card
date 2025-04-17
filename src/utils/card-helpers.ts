@@ -9,10 +9,10 @@ export function handleCardSwipe(cardElement: Element | null, toggleCard: (direct
 
   const presDown = (e: TouchEvent | MouseEvent) => {
     e.stopImmediatePropagation();
-    if (e instanceof TouchEvent) {
+    if (typeof TouchEvent !== 'undefined' && e instanceof TouchEvent) {
       xDown = e.touches[0].clientX;
       yDown = e.touches[0].clientY;
-    } else if (e instanceof MouseEvent) {
+    } else if (typeof MouseEvent !== 'undefined' && e instanceof MouseEvent) {
       xDown = e.clientX;
       yDown = e.clientY;
     }
@@ -29,10 +29,10 @@ export function handleCardSwipe(cardElement: Element | null, toggleCard: (direct
   const pressMove = (e: TouchEvent | MouseEvent) => {
     if (xDown === null || yDown === null) return;
 
-    if (e instanceof TouchEvent) {
+    if (typeof TouchEvent !== 'undefined' && e instanceof TouchEvent) {
       xDiff = xDown - e.touches[0].clientX;
       yDiff = yDown - e.touches[0].clientY;
-    } else if (e instanceof MouseEvent) {
+    } else if (typeof MouseEvent !== 'undefined' && e instanceof MouseEvent) {
       xDiff = xDown - e.clientX;
       yDiff = yDown - e.clientY;
     }
