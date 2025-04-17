@@ -20,12 +20,12 @@ export class CustomCardUIEditor extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
   @property({ attribute: false }) editor!: VehicleCardEditor;
   @property({ type: Object }) _config!: VehicleCardConfig;
-  @state() cardType!: CardTypeConfig;
-  @state() cards: LovelaceCardConfig[] = [];
+  @property({ type: Object }) cardType!: CardTypeConfig;
   @property({ type: Boolean }) isCardPreview: boolean = false;
-  @property({ type: Boolean }) isAddedCard: boolean = false;
   @property({ type: Boolean }) isCustomCard: boolean = false;
+  @property({ type: Boolean }) isAddedCard: boolean = false;
 
+  @state() cards: LovelaceCardConfig[] = [];
   @state() protected _clipboard?: LovelaceCardConfig;
   @state() protected _selectedCard = 0;
   @state() protected _GUImode = true;
@@ -84,39 +84,39 @@ export class CustomCardUIEditor extends LitElement {
     super.updated(_changedProperties);
   }
 
+  private _renderCardHeader(): TemplateResult {
+    const localizeKey = this.localizeKey;
+    return html` <div class="sub-card-header">
+      <ha-formfield style="${this.isAddedCard ? 'display: none;' : ''}" .label=${localizeKey('useCustomCard')}>
+        <ha-checkbox
+          .checked=${this.isCustomCard}
+          .disabled=${this.isAddedCard}
+          @change=${(ev: Event) => this._handleUseCustomCard(ev)}
+        ></ha-checkbox>
+      </ha-formfield>
+      <ha-button
+        style="display: inline-block; float: inline-end;"
+        @click=${(ev: Event) => this._dispatchEvent(ev, 'toggle_preview_card')}
+      >
+        ${this.isCardPreview ? localizeKey('hidePreview') : localizeKey('preview')}
+      </ha-button>
+    </div>`;
+  }
+
   protected render(): TemplateResult {
     if (!this._config || !this.cardType || !this.hass) {
       return html``;
     }
-    const localizeKey = (label: string): string => {
-      return this.editor.localize(`editor.buttonConfig.${label}`);
-    };
 
     this.cards = this.isAddedCard
-      ? this._config.added_cards[this.cardType.config].cards
+      ? this._config.added_cards[this.cardType.config].cards || []
       : this._config[this.cardType.config] || [];
 
     const selected = this._selectedCard!;
     const cardsLength = this.cards.length;
     const isGuiMode = !this._cardEditorEl || this._GUImode;
 
-    const header = html`
-      <div class="sub-card-header">
-        <ha-formfield style="${this.isAddedCard ? 'display: none;' : ''}" .label=${localizeKey('useCustomCard')}>
-          <ha-checkbox
-            .checked=${this.isCustomCard}
-            .disabled=${this.isAddedCard}
-            @change=${(ev: Event) => this._handleUseCustomCard(ev)}
-          ></ha-checkbox>
-        </ha-formfield>
-        <ha-button
-          style="display: inline-block; float: inline-end;"
-          @click=${(ev: Event) => this._dispatchEvent(ev, 'toggle_preview_card')}
-        >
-          ${this.isCardPreview ? localizeKey('hidePreview') : localizeKey('preview')}
-        </ha-button>
-      </div>
-    `;
+    const header = this._renderCardHeader();
 
     const toolBar = html`
       <div class="toolbar">
@@ -203,6 +203,10 @@ export class CustomCardUIEditor extends LitElement {
     `;
   }
 
+  private localizeKey = (label: string): string => {
+    return this.editor.localize(`editor.buttonConfig.${label}`);
+  };
+
   protected _toggleMode(): void {
     this._cardEditorEl?.toggleMode();
   }
@@ -226,7 +230,8 @@ export class CustomCardUIEditor extends LitElement {
     fireEvent(this, 'config-changed', { config });
   }
 
-  protected _handleSelectedCard(ev): void {
+  protected _handleSelectedCard(ev: any): void {
+    ev.stopPropagation();
     if (ev.target.id === 'add-card') {
       this._selectedCard = this.cards!.length;
       return;
@@ -391,6 +396,12 @@ export class CustomCardUIEditor extends LitElement {
       composed: true,
     };
     this.dispatchEvent(new CustomEvent('custom-card-editor-changed', eventDetail));
-    console.log('dispatched event', type, eventDetail);
+    // console.log('dispatched event', type, eventDetail);
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'custom-card-ui-editor': CustomCardUIEditor;
   }
 }
