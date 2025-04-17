@@ -1,3 +1,11 @@
+<a id="v1.8.2"></a>
+# [v1.8.2](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.8.2) - 2025-04-17
+
+
+
+[Changes][v1.8.2]
+
+
 <a id="v1.8.1"></a>
 # [v1.8.1](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.8.1) - 2025-03-31
 
@@ -506,6 +514,7 @@ This update enhances the usability and accuracy of our custom card, providing cl
 [Changes][v1.0.0]
 
 
+[v1.8.2]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.8.1...v1.8.2
 [v1.8.1]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.8.0...v1.8.1
 [v1.8.0]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.7.0...v1.8.0
 [v1.7.0]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.6.1...v1.7.0
