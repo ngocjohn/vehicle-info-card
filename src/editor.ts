@@ -29,7 +29,15 @@ import {
 // Local types
 import { fireEvent } from './types/ha-frontend/fire-event';
 import { LovelaceCardEditor, LovelaceConfig, LovelaceCardConfig } from './types/ha-frontend/lovelace/lovelace';
-import { Create, handleFirstUpdated, compareVersions, uploadImage, stickyPreview, loadHaComponents } from './utils';
+import {
+  Create,
+  handleFirstUpdated,
+  compareVersions,
+  uploadImage,
+  stickyPreview,
+  loadHaComponents,
+  loadCardPicker,
+} from './utils';
 import { Picker } from './utils/create';
 
 const latestRelease: { version: string; hacs: boolean; updated: boolean } = {
@@ -41,10 +49,10 @@ const latestRelease: { version: string; hacs: boolean; updated: boolean } = {
 @customElement('vehicle-info-card-editor')
 export class VehicleCardEditor extends LitElement implements LovelaceCardEditor {
   @property({ attribute: false }) public hass!: HomeAssistant;
+  @property({ attribute: false }) public lovelace?: LovelaceConfig;
   @property({ attribute: false }) _config!: VehicleCardConfig;
   @property({ attribute: false }) private baseCardTypes: CardTypeConfig[] = [];
 
-  @property({ attribute: false }) public lovelace?: LovelaceConfig;
   @state() private _btnPreview: boolean = false;
   @state() private _cardPreview: boolean = false;
   @state() private _isTirePreview: boolean = false;
@@ -112,11 +120,10 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   protected async firstUpdated(): Promise<void> {
+    void (await loadCardPicker());
     await new Promise((resolve) => setTimeout(resolve, 0));
     await handleFirstUpdated(this);
     this.getBaseCardTypes();
-    // this._convertDefaultCardConfigs();
-    // this._convertAddedCardConfigs();
   }
 
   protected updated(changedProperties: PropertyValues): void {
@@ -452,7 +459,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       return html``;
     }
     const { name, icon } = card;
-
     const subCardHeader = html`
       <div class="sub-card-header">
         <ha-icon-button .path=${mdiArrowLeft} @click=${() => this._closeSubCardEditor(card)}></ha-icon-button>
@@ -475,6 +481,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const cardEditor = html`
       <custom-card-ui-editor
         .hass=${this.hass}
+        .lovelace=${this.lovelace}
         .editor=${this}
         ._config=${this._config}
         .cardType=${card}
@@ -1910,6 +1917,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     return editorcss;
   }
 }
+
 (window as any).customCards = (window as any).customCards || [];
 (window as any).customCards.push({
   type: 'vehicle-info-card',
