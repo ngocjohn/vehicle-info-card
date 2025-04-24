@@ -1,5 +1,4 @@
- 
-
+const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
 // Hack to load ha-components needed for editor
 export const loadHaComponents = () => {
   if (!customElements.get('ha-form')) {
@@ -42,3 +41,32 @@ export const stickyPreview = () => {
 export function isEditorMode(card: HTMLElement) {
   return card.offsetParent?.classList.contains('element-preview');
 }
+
+export const loadCardPicker = async () => {
+  if (!customElements.get('hui-card-picker')) {
+    console.warn('Card picker not loaded');
+    // Load the component by invoking a related component's method
+
+    let helpers;
+    if ((window as any).loadCardHelpers) {
+      helpers = await (window as any).loadCardHelpers();
+    } else if (HELPERS) {
+      helpers = HELPERS;
+    }
+
+    // Check if helpers were loaded and if createCardElement exists
+    if (!helpers || !helpers.createCardElement) {
+      console.error('Card helpers or createCardElement not available.');
+      return;
+    }
+    // Create a card element to trigger the loading of hui-card-picker
+    let cls = customElements.get('hui-vertical-stack-card');
+    if (!cls) {
+      helpers.createCardElement({ type: 'vertical-stack', cards: [] });
+      await customElements.whenDefined('hui-vertical-stack-card');
+      cls = customElements.get('hui-vertical-stack-card');
+    }
+    const configElement = await (cls as any).getConfigElement();
+    return configElement;
+  }
+};

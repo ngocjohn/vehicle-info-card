@@ -1,5 +1,6 @@
 import { mdiPlus, mdiCodeBraces, mdiListBoxOutline, mdiDelete, mdiContentCut, mdiContentCopy } from '@mdi/js';
 // Custom card helpers
+import deepClone from 'deep-clone-simple';
 import { LitElement, html, TemplateResult, CSSResultGroup, PropertyValues, css } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 
@@ -8,7 +9,7 @@ import { VehicleCardEditor } from '../../editor';
 // Local types
 import { HomeAssistant, VehicleCardConfig, CardTypeConfig } from '../../types';
 import { fireEvent, HASSDomEvent } from '../../types/ha-frontend/fire-event';
-import { LovelaceCardConfig } from '../../types/ha-frontend/lovelace/lovelace';
+import { LovelaceCardConfig, LovelaceConfig } from '../../types/ha-frontend/lovelace/lovelace';
 
 export interface GUIModeChangedEvent {
   guiMode: boolean;
@@ -18,7 +19,8 @@ export interface GUIModeChangedEvent {
 @customElement('custom-card-ui-editor')
 export class CustomCardUIEditor extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
-  @property({ attribute: false }) editor!: VehicleCardEditor;
+  @property({ attribute: false }) public lovelace?: LovelaceConfig;
+  @property({ type: Object }) editor!: VehicleCardEditor;
   @property({ type: Object }) _config!: VehicleCardConfig;
   @property({ type: Object }) cardType!: CardTypeConfig;
   @property({ type: Boolean }) isCardPreview: boolean = false;
@@ -26,7 +28,7 @@ export class CustomCardUIEditor extends LitElement {
   @property({ type: Boolean }) isAddedCard: boolean = false;
 
   @state() cards: LovelaceCardConfig[] = [];
-  @state() protected _clipboard?: LovelaceCardConfig;
+  protected _clipboard?: LovelaceCardConfig;
   @state() protected _selectedCard = 0;
   @state() protected _GUImode = true;
   @state() protected _guiModeAvailable? = true;
@@ -49,9 +51,10 @@ export class CustomCardUIEditor extends LitElement {
           font-size: 14px;
           flex-grow: 1;
         }
-        #add-card {
-          max-width: 32px;
-          padding: 0;
+
+        paper-tabs#add-card {
+          flex-grow: 0;
+          max-width: 42px;
         }
 
         #card-options {
@@ -59,8 +62,16 @@ export class CustomCardUIEditor extends LitElement {
           justify-content: flex-end;
           width: 100%;
         }
+
         #editor-container {
           padding-inline: 4px;
+          margin-top: 1rem;
+        }
+
+        #card-picker {
+          display: block;
+          max-height: 600px;
+          overflow-x: hidden;
         }
 
         .gui-mode-button {
@@ -72,11 +83,21 @@ export class CustomCardUIEditor extends LitElement {
     ];
   }
 
+  connectedCallback(): void {
+    super.connectedCallback();
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this._cardEditorEl?.removeEventListener('config-changed', this._handleConfigChanged);
+    this._cardEditorEl?.removeEventListener('GUImode-changed', this._handleGUIModeChanged);
+  }
+
   public focusYamlEditor() {
     this._cardEditorEl?.focusYamlEditor();
   }
 
-  protected firstUpdated(_changedProperties: PropertyValues): void {
+  protected async firstUpdated(_changedProperties: PropertyValues): Promise<void> {
     super.firstUpdated(_changedProperties);
   }
 
@@ -104,7 +125,7 @@ export class CustomCardUIEditor extends LitElement {
   }
 
   protected render(): TemplateResult {
-    if (!this._config || !this.cardType || !this.hass) {
+    if (!this.editor || !this._config || !this.cardType || !this.hass) {
       return html``;
     }
 
@@ -137,67 +158,63 @@ export class CustomCardUIEditor extends LitElement {
 
     return html`
       <div class="card-config">
-          ${header} ${toolBar}
-          <div id="editor-container">
-            ${
-              selected < cardsLength
-                ? html`
-                    <div id="card-options">
-                      <ha-icon-button
-                        class="gui-mode-button"
-                        @click=${this._toggleMode}
-                        .disabled=${!this._guiModeAvailable}
-                        .path=${isGuiMode ? mdiCodeBraces : mdiListBoxOutline}
-                      ></ha-icon-button>
-                      <ha-icon-button-arrow-prev
-                        .disabled=${selected === 0}
-                        .label=${'Move before'}
-                        @click=${this._handleMove}
-                        .move=${-1}
-                      ></ha-icon-button-arrow-prev>
+        ${header} ${toolBar}
+        <div id="editor-container">
+          ${selected < cardsLength
+            ? html`
+                <div id="card-options">
+                  <ha-icon-button
+                    class="gui-mode-button"
+                    @click=${this._toggleMode}
+                    .disabled=${!this._guiModeAvailable}
+                    .path=${isGuiMode ? mdiCodeBraces : mdiListBoxOutline}
+                  ></ha-icon-button>
+                  <ha-icon-button-arrow-prev
+                    .disabled=${selected === 0}
+                    .label=${'Move before'}
+                    @click=${this._handleMove}
+                    .move=${-1}
+                  ></ha-icon-button-arrow-prev>
 
-                      <ha-icon-button-arrow-next
-                        .label=${'Move after'}
-                        .disabled=${selected === cardsLength - 1}
-                        @click=${this._handleMove}
-                        .move=${1}
-                      ></ha-icon-button-arrow-next>
-                      <ha-icon-button
-                        .label=${'Copy'}
-                        .path=${mdiContentCopy}
-                        @click=${this._handleCopyCard}
-                      ></ha-icon-button>
+                  <ha-icon-button-arrow-next
+                    .label=${'Move after'}
+                    .disabled=${selected === cardsLength - 1}
+                    @click=${this._handleMove}
+                    .move=${1}
+                  ></ha-icon-button-arrow-next>
+                  <ha-icon-button
+                    .label=${'Copy'}
+                    .path=${mdiContentCopy}
+                    @click=${this._handleCopyCard}
+                  ></ha-icon-button>
 
-                      <ha-icon-button
-                        .label=${'Cut'}
-                        .path=${mdiContentCut}
-                        @click=${this._handleCutCard}
-                      ></ha-icon-button>
-                      <ha-icon-button
-                        .label=${'Delete'}
-                        .path=${mdiDelete}
-                        @click=${this._handleDeleteCard}
-                      ></ha-icon-button>
-                    </div>
-                    <hui-card-element-editor
-                      .hass=${this.hass}
-                      .value=${this.cards[selected]}
-                      .lovelace=${this.editor.lovelace}
-                      @config-changed=${this._handleConfigChanged}
-                      @GUImode-changed=${this._handleGUIModeChanged}
-                    ></hui-card-element-editor>
-                  `
-                : html`
-                    <hui-card-picker
-                      .hass=${this.hass}
-                      .lovelace=${this.editor.lovelace}
-                      @config-changed=${this._handleCardPicked}
-                      ._clipboard=${this._clipboard}
-                    >
-                    </hui-card-picker>
-                  `
-            }
-          </div>
+                  <ha-icon-button .label=${'Cut'} .path=${mdiContentCut} @click=${this._handleCutCard}></ha-icon-button>
+                  <ha-icon-button
+                    .label=${'Delete'}
+                    .path=${mdiDelete}
+                    @click=${this._handleDeleteCard}
+                  ></ha-icon-button>
+                </div>
+                <hui-card-element-editor
+                  .hass=${this.hass}
+                  .value=${this.cards[selected]}
+                  .lovelace=${this.lovelace}
+                  @config-changed=${this._handleConfigChanged}
+                  @GUImode-changed=${this._handleGUIModeChanged}
+                ></hui-card-element-editor>
+              `
+            : html`
+                <div id="card-picker">
+                  <hui-card-picker
+                    .hass=${this.hass}
+                    .lovelace=${this.lovelace}
+                    ._clipboard=${this._clipboard}
+                    ._height=${500}
+                    @config-changed=${this._handleCardPicked}
+                  >
+                  </hui-card-picker>
+                </div>
+              `}
         </div>
       </div>
     `;
@@ -235,11 +252,19 @@ export class CustomCardUIEditor extends LitElement {
     if (ev.target.id === 'add-card') {
       this._selectedCard = this.cards!.length;
       return;
+    } else {
+      this._setMode(true);
+      this._guiModeAvailable = true;
+      this._selectedCard = parseInt(ev.detail.selected, 10);
     }
-    this._setMode(true);
-    this._guiModeAvailable = true;
-    this._selectedCard = parseInt(ev.detail.selected, 10);
   }
+
+  protected _handleAddCard(ev: any): void {
+    ev.stopPropagation();
+    this._selectedCard = this.cards!.length;
+    this.requestUpdate();
+  }
+
   protected _setMode(value: boolean): void {
     this._GUImode = value;
     if (this._cardEditorEl) {
@@ -284,7 +309,7 @@ export class CustomCardUIEditor extends LitElement {
     fireEvent(this, 'config-changed', { config: this._config });
   }
 
-  protected _handleCardPicked(ev) {
+  protected _handleCardPicked(ev: CustomEvent): void {
     ev.stopPropagation();
     if (!this._config) {
       return;
@@ -294,6 +319,7 @@ export class CustomCardUIEditor extends LitElement {
     if (this._config.card_preview && this.isCardPreview) {
       this._config = { ...this._config, card_preview: cards };
     }
+
     if (this.isAddedCard) {
       this._handleAddedCard(cards);
     } else {
@@ -353,7 +379,7 @@ export class CustomCardUIEditor extends LitElement {
     if (!this._config) {
       return;
     }
-    const card = this.cards[this._selectedCard];
+    const card = deepClone(this.cards[this._selectedCard]);
     console.log('Card copied', card);
     this._clipboard = card;
   }
