@@ -32,10 +32,10 @@ export interface MapConfig extends MapPopupConfig {
 
 @customElement('vehicle-map')
 export class VehicleMap extends LitElement {
-  @property({ attribute: false }) private hass!: HomeAssistant;
-  @property({ attribute: false }) private mapData!: MapData;
-  @property({ attribute: false }) private card!: VehicleCard;
-  @property({ type: Boolean }) private isDark!: boolean;
+  @property({ attribute: false }) public hass!: HomeAssistant;
+  @property({ attribute: false }) mapData!: MapData;
+  @property({ attribute: false }) card!: VehicleCard;
+  @property({ type: Boolean }) isDark!: boolean;
   @property({ type: Boolean }) open!: boolean;
 
   @state() private map: L.Map | null = null;

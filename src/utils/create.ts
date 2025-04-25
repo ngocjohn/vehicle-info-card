@@ -298,15 +298,13 @@ export const BtnPreview = (btn: CustomButtonEntity, hass: HomeAssistant): Templa
   }
   const iconBackground = `background-color: rgb(from ${iconColor} r g b / 0.2)`;
   const gridStyle = `
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(calc((100% - 24px) / 2), 1fr));
-          grid-template-rows: auto;
-          grid-gap: var(--vic-gutter-gap);
-          position: relative;
+          display: flex;
+          width: 100%;
+          min-width: 250px;
         }`;
   return html`
     <div class="preview-card" style=${gridStyle}>
-      <div class="grid-item">
+      <div class="grid-item" style="width: 100%;">
         <div class="item-icon">
           <div class="icon-background" style=${iconBackground}>
             <ha-state-icon
