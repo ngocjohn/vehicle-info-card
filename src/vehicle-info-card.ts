@@ -56,7 +56,9 @@ export class VehicleCard extends LitElement {
   // Properties
   @property({ attribute: false })
   set hass(hass: HomeAssistant) {
+    if (!hass) return;
     this._hass = hass;
+
     if (this._buttonReady && this.buttonCards) {
       Object.keys(this.buttonCards).forEach((key) => {
         const customCard = this.buttonCards[key].custom_card;
@@ -70,7 +72,7 @@ export class VehicleCard extends LitElement {
     }
   }
 
-  @property({ attribute: false }) _hass!: HomeAssistant;
+  @property({ attribute: false }) public _hass!: HomeAssistant;
   @property({ attribute: false }) public config!: VehicleCardConfig;
   @property({ type: Boolean }) public editMode: boolean = false;
   @property({ type: String }) public layout?: string;
@@ -280,10 +282,10 @@ export class VehicleCard extends LitElement {
   }
 
   protected shouldUpdate(_changedProps: PropertyValues): boolean {
-    if (!this.config || !this._hass) {
-      console.log('config or hass is null');
-      return false;
-    }
+    // if (!this.config || !this.hass) {
+    //   console.log('config or hass is null');
+    //   return false;
+    // }
 
     if (_changedProps.has('config') && this.config.selected_theme?.theme !== 'default') {
       const theme = this.config.selected_theme.theme;
@@ -321,6 +323,7 @@ export class VehicleCard extends LitElement {
 
     // console.log('%cButton ready: %O', 'color: #bada55', logging);
     this._buttonReady = true;
+
     setTimeout(() => {
       this._loading = false;
     }, 2000);
