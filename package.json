@@ -16,7 +16,7 @@
     "url": "https://github.com/ngocjohn/vehicle-info-card",
     "repo": "ngocjohn/vehicle-info-card"
   },
-  "module": "vehicle-info-card.js",
+  "main": "vehicle-info-card.js",
   "license": "MIT",
   "dependencies": {
     "@mdi/js": "^7.4.47",
@@ -59,17 +59,16 @@
     "json5": "^2.2.3",
     "lint-staged": "^15.5.1",
     "postcss-preset-env": "^10.1.5",
-    "rollup": "^4.40.0",
+    "rollup": "^4.29.1",
     "rollup-plugin-filesize": "^10.0.0",
     "rollup-plugin-polyfill-node": "^0.13.0",
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-postcss-lit": "^2.2.0",
     "rollup-plugin-serve": "^3.0.0",
-    "rollup-plugin-typescript2": "^0.36.0",
     "typescript": "^5.8.3"
   },
   "scripts": {
-    "dev": "rollup -c rollup.config.js --bundleConfigAsCjs --watch",
+    "dev": "rollup -c --watch --bundleConfigAsCjs",
     "build": "npm run import-lang && npm run lint && rollup -c --bundleConfigAsCjs",
     "lint": "eslint 'src/**/*.ts' --fix",
     "rollup": "rollup -c",

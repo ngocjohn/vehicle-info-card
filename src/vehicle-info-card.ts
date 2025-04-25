@@ -121,7 +121,6 @@ export class VehicleCard extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
-    window.BenzCard = this;
     this._connected = true;
     if (this.editMode) {
       this._loading = false;
@@ -131,6 +130,7 @@ export class VehicleCard extends LitElement {
     if (!this._resizeInitiated && !this._resizeObserver) {
       this.delayedAttachResizeObserver();
     }
+    window.BenzCard = this;
   }
 
   disconnectedCallback(): void {
@@ -1663,9 +1663,6 @@ export class VehicleCard extends LitElement {
 }
 
 declare global {
-  interface Window {
-    BenzCard: VehicleCard;
-  }
   interface HTMLElementTagNameMap {
     'vehicle-info-card': VehicleCard;
   }

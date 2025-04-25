@@ -1,5 +1,7 @@
 // Cutom card helpers:
 
+import { VehicleCard } from 'src/vehicle-info-card';
+
 import { LovelaceCardConfig, ActionConfig } from '../types';
 
 /**
@@ -269,3 +271,9 @@ export const defaultConfig = {
     tyre_card: false,
   },
 };
+
+declare global {
+  interface Window {
+    BenzCard: VehicleCard;
+  }
+}

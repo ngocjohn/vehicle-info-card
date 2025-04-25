@@ -1,4 +1,4 @@
-import typescript from 'rollup-plugin-typescript2';
+import typescript from '@rollup/plugin-typescript';
 import commonjs from '@rollup/plugin-commonjs';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import postcss from 'rollup-plugin-postcss';
@@ -36,7 +36,9 @@ export const defaultPlugins = [
   nodeResolve({ preferBuiltins: false }),
   nodePolyfills(),
   commonjs(),
-  typescript(),
+  typescript({
+    declaration: false,
+  }),
   json(),
   postcss({
     plugins: [
