@@ -37,14 +37,23 @@ const imports = currentFiles
 const languageObjectEntries = currentFiles
   .map((file) => {
     const key = path.basename(file, path.extname(file));
-    return `  ${key}: ${key},`;
+    const langKey = key.includes('_') ? key.replace('_', '-') : undefined;
+    if (langKey) {
+      return `  "${langKey}": ${key},`;
+    } else {
+      return `  ${key},`;
+    }
   })
   .join('\n');
 
 const languageOptions = currentFiles
   .map((file) => {
     const key = path.basename(file, path.extname(file));
-    return `  { key: '${key}', name: ${key}.name, nativeName: ${key}.nativeName },`;
+    const langData = JSON.parse(fs.readFileSync(path.join(languagesDir, file), 'utf8'));
+    const langKey = key.replace('_', '-');
+    const name = langData.name || key;
+    const nativeName = langData.nativeName || key;
+    return `  { key: '${langKey}', name: '${name}', nativeName: '${nativeName}' },`;
   })
   .join('\n');
 
@@ -52,7 +61,7 @@ const content = `// This file is generated automatically by the generate-lang-im
 
 ${imports}
 
-const languages: any = {
+const languages: Record<string, unknown> = {
 ${languageObjectEntries}
 };
 
