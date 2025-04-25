@@ -46,3 +46,25 @@ export interface FrontendLocaleData {
   first_weekday: FirstWeekday;
   time_zone: TimeZone;
 }
+
+declare global {
+  interface FrontendUserData {
+    language: FrontendLocaleData;
+  }
+}
+
+export type TranslationCategory =
+  | 'title'
+  | 'state'
+  | 'entity'
+  | 'entity_component'
+  | 'config'
+  | 'config_panel'
+  | 'options'
+  | 'device_automation'
+  | 'mfa_setup'
+  | 'system_health'
+  | 'device_class'
+  | 'application_credentials'
+  | 'issues'
+  | 'selector';

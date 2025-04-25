@@ -649,7 +649,7 @@ export class VicMaptilerPopup extends LitElement {
           ${STYLE_SCHEMA.map((schema) => {
             return html`
               <ha-selector
-                .hass=${this.card._hass}
+                ._hass=${this.card._hass}
                 .selector=${schema.selector}
                 .label=${schema.name}
                 .value=${this._currentStyle}

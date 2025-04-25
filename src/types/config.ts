@@ -1,7 +1,6 @@
 // Cutom card helpers:
-import { ActionConfig } from 'custom-card-helpers';
 
-import { LovelaceCardConfig } from './ha-frontend/lovelace/lovelace';
+import { LovelaceCardConfig, ActionConfig } from '../types';
 
 /**
  * Configuration interface for the Vehicle Card.

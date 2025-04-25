@@ -70,7 +70,7 @@ export class VehicleCard extends LitElement {
     }
   }
 
-  @state() _hass!: HomeAssistant;
+  @property({ attribute: false }) _hass!: HomeAssistant;
   @property({ attribute: false }) public config!: VehicleCardConfig;
   @property({ type: Boolean }) public editMode: boolean = false;
   @property({ type: String }) public layout?: string;
@@ -627,7 +627,7 @@ export class VehicleCard extends LitElement {
     }
     return html`
       <div id=${SECTION.MINI_MAP}>
-        <vehicle-map .mapData=${this.MapData} .card=${this} .isDark=${isDark}></vehicle-map>
+        <vehicle-map .hass=${this._hass} .mapData=${this.MapData} .card=${this} .isDark=${isDark}></vehicle-map>
       </div>
     `;
   }

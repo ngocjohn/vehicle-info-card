@@ -1,6 +1,6 @@
-import { LovelaceCardConfig } from 'custom-card-helpers';
-
 import { CustomButtonEntity } from './config';
+import { LovelaceCardConfig } from './ha-frontend/lovelace/lovelace';
+
 export type HEADER_ACTION = 'next' | 'prev' | 'close';
 
 export type CardTypeConfig = {

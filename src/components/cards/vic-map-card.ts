@@ -1,5 +1,5 @@
 // Leaflet imports
-import L from 'leaflet';
+import * as L from 'leaflet';
 import mapstyle from 'leaflet/dist/leaflet.css';
 import 'leaflet-providers';
 // Lit imports
@@ -16,6 +16,7 @@ import {
   SECTION_DEFAULT_ORDER,
   MapPopupConfig,
   subscribeHistory,
+  HomeAssistant,
 } from '../../types';
 import { LovelaceCardConfig } from '../../types/ha-frontend/lovelace/lovelace';
 import { _getHistoryPoints, _getMapAddress, createMapPopup } from '../../utils';
@@ -24,13 +25,14 @@ import './vic-maptiler-popup';
 import { VehicleCard } from '../../vehicle-info-card';
 
 export interface MapConfig extends MapPopupConfig {
-  device_tracker?: string;
+  device_tracker: string;
   google_api_key?: string;
   maptiler_api_key?: string;
 }
 
 @customElement('vehicle-map')
 export class VehicleMap extends LitElement {
+  @property({ attribute: false }) private hass!: HomeAssistant;
   @property({ attribute: false }) private mapData!: MapData;
   @property({ attribute: false }) private card!: VehicleCard;
   @property({ type: Boolean }) private isDark!: boolean;
@@ -66,14 +68,14 @@ export class VehicleMap extends LitElement {
   private get _deviceNotInZone(): boolean {
     const device_tracker = this.mapConfig.device_tracker;
     if (!device_tracker) return true;
-    return this.card._hass.states[device_tracker]?.state === 'not_home';
+    return this.hass.states[device_tracker]?.state === 'not_home';
   }
 
   private get _deviceState(): string {
     const device_tracker = this.mapConfig.device_tracker;
     if (!device_tracker) return '';
-    const stateObj = this.card._hass.states[device_tracker];
-    return stateObj ? this.card._hass.formatEntityState(stateObj) : '';
+    const stateObj = this.hass.states[device_tracker];
+    return stateObj ? this.hass.formatEntityState(stateObj) : '';
   }
 
   connectedCallback() {
@@ -88,13 +90,12 @@ export class VehicleMap extends LitElement {
 
   private _subscribeHistory() {
     const mapConfig = this.mapConfig;
-    const hass = this.card._hass;
+    const hass = this.hass;
     if (
       !isComponentLoaded(hass!, 'history') ||
       this._subscribed ||
       !(mapConfig.hours_to_show ?? DEFAULT_HOURS_TO_SHOW)
     ) {
-      console.log('Not subscribing to history');
       return;
     }
 
@@ -146,6 +147,26 @@ export class VehicleMap extends LitElement {
       this.initMap();
       this._getAddress();
     }
+  }
+
+  protected shouldUpdate(changedProperties: PropertyValues): boolean {
+    if (changedProperties.has('hass') && this.hass && this.map) {
+      const { lat, lon } = this.mapData;
+      const stateObj = this.hass.states[this.mapConfig.device_tracker!];
+      if (stateObj) {
+        const { latitude, longitude } = stateObj.attributes;
+        if (lat !== latitude || lon !== longitude) {
+          console.log('Map data changed:', lat, lon);
+          this.mapData.lat = latitude;
+          this.mapData.lon = longitude;
+          this.latLon = this._getTargetLatLng(this.map);
+          this.marker?.setLatLng([latitude, longitude]);
+          this.map.setView(this.latLon, this.zoom);
+          this._getAddress();
+        }
+      }
+    }
+    return true;
   }
 
   private async _getAddress(): Promise<void> {
@@ -304,7 +325,7 @@ export class VehicleMap extends LitElement {
     return html`
       <ha-dialog
         open
-        .heading=${createCloseHeading(this.card._hass, 'Map')}
+        .heading=${createCloseHeading(this.hass, 'Map')}
         @closed=${() => (this.open = false)}
         hideActions
         flexContent
@@ -318,7 +339,7 @@ export class VehicleMap extends LitElement {
   private async _toggleMapDialog() {
     if (!this.mapPopup) return;
     if (!this.mapConfig.maptiler_api_key && !this.mapCardPopup && !this.open) {
-      createMapPopup(this.card._hass, this.card.config).then((popup) => {
+      createMapPopup(this.hass, this.card.config).then((popup) => {
         this.mapCardPopup = popup;
         setTimeout(() => {
           this.open = true;
