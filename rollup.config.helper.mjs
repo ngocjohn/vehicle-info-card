@@ -37,7 +37,11 @@ export const defaultPlugins = [
   nodePolyfills(),
   commonjs(),
   typescript({
+    tsconfig: './tsconfig.json',
+    sourceMap: true,
+    inlineSources: true,
     declaration: false,
+    removeComments: false,
   }),
   json(),
   postcss({
