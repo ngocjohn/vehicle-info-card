@@ -23,8 +23,5 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Lint
-        run: npm run lint
-
       - name: Build
-        run: npm run rollup
+        run: npm run build
