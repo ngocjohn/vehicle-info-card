@@ -38,8 +38,6 @@ export const defaultPlugins = [
   commonjs(),
   typescript({
     tsconfig: './tsconfig.json',
-    sourceMap: true,
-    inlineSources: true,
     declaration: false,
     removeComments: false,
   }),

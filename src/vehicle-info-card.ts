@@ -1666,4 +1666,7 @@ declare global {
   interface HTMLElementTagNameMap {
     'vehicle-info-card': VehicleCard;
   }
+  interface Window {
+    BenzCard: VehicleCard;
+  }
 }
