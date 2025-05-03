@@ -71,7 +71,7 @@
     "dev": "rollup -c rollup.config.js --watch --bundleConfigAsCjs",
     "build": "npm run import-lang && npm run lint && rollup -c --bundleConfigAsCjs",
     "lint": "eslint 'src/**/*.ts' --fix",
-    "rollup": "rollup -c",
+    "rollup": "rollup -c rollup.config.js --bundleConfigAsCjs",
     "update-lang": "node scripts/update-languages",
     "import-lang": "node scripts/generate-lang-imports.js",
     "add-missing-translations": "node scripts/add-missing-translations.js",
