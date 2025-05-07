@@ -1,6 +1,7 @@
 import { mdiClose } from '@mdi/js';
 import { html, TemplateResult } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import 'nvn-tabs';
 
 import { HomeAssistant, CustomButtonEntity } from '../types';
 
@@ -342,5 +343,29 @@ export const createCloseHeading = (hass: HomeAssistant | undefined, title: strin
       ></ha-icon-button>
       <span>${title}</span>
     </div>
+  `;
+};
+
+export const VicTab = ({
+  activeTabIndex,
+  onTabChange,
+  tabs,
+}: {
+  activeTabIndex: number;
+  onTabChange: (index: number) => void;
+  tabs: { content: TemplateResult; key: string; label: string; icon?: string }[];
+}): TemplateResult => {
+  return html`
+    <nvn-tab-bar>
+      ${tabs.map(
+        (tab, index) => html`
+          <nvn-tab ?active=${index === activeTabIndex} .name=${tab.label} @click=${() => onTabChange(index)}>
+            ${tab.icon ? html`<ha-icon .icon=${tab.icon}></ha-icon>` : ''}
+          </nvn-tab>
+        `
+      )}
+    </nvn-tab-bar>
+
+    <div>${tabs[activeTabIndex]?.content || html`<div>No content available</div>`}</div>
   `;
 };
