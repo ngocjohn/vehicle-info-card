@@ -3,6 +3,7 @@ import { mdiPlus, mdiCodeBraces, mdiListBoxOutline, mdiDelete, mdiContentCut, md
 import deepClone from 'deep-clone-simple';
 import { LitElement, html, TemplateResult, CSSResultGroup, PropertyValues, css } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
+import 'nvn-tabs';
 
 import styles from '../../css/editor.css';
 import { VehicleCardEditor } from '../../editor';
@@ -43,18 +44,6 @@ export class CustomCardUIEditor extends LitElement {
       css`
         .toolbar {
           display: flex;
-          --paper-tabs-selection-bar-color: var(--primary-color);
-          --paper-tab-ink: var(--primary-color);
-        }
-        paper-tabs {
-          display: flex;
-          font-size: 14px;
-          flex-grow: 1;
-        }
-
-        paper-tabs#add-card {
-          flex-grow: 0;
-          max-width: 42px;
         }
 
         #card-options {
@@ -141,21 +130,22 @@ export class CustomCardUIEditor extends LitElement {
 
     const toolBar = html`
       <div class="toolbar">
-        <paper-tabs .selected=${selected} scrollable @iron-activate=${this._handleSelectedCard}>
-          ${this.cards.map((_card, i) => html` <paper-tab> ${i + 1} </paper-tab> `)}
-        </paper-tabs>
-        <paper-tabs
-          id="add-card"
-          .selected=${selected === cardsLength ? '0' : undefined}
-          @iron-activate=${this._handleSelectedCard}
-        >
-          <paper-tab>
-            <ha-svg-icon .path="${mdiPlus}"></ha-svg-icon>
-          </paper-tab>
-        </paper-tabs>
+        <nvn-tab-bar>
+          ${this.cards.map(
+            (_card, i) =>
+              html`<nvn-tab
+                ?active=${selected === i}
+                .name=${i + 1}
+                @click=${() => (this._selectedCard = i)}
+                style="flex: 0 !important;"
+              ></nvn-tab>`
+          )}
+        </nvn-tab-bar>
+        <nvn-tab id="add-card" ?active=${selected === cardsLength} @click=${this._handleAddCard} .narrow=${true}>
+          <ha-svg-icon .path="${mdiPlus}" slot="icon"></ha-svg-icon>
+        </nvn-tab>
       </div>
     `;
-
     return html`
       <div class="card-config">
         ${header} ${toolBar}
@@ -259,10 +249,12 @@ export class CustomCardUIEditor extends LitElement {
     }
   }
 
-  protected _handleAddCard(ev: any): void {
-    ev.stopPropagation();
+  protected _handleAddCard(ev: Event): void {
+    ev.stopImmediatePropagation();
     this._selectedCard = this.cards!.length;
-    this.requestUpdate();
+    this._setMode(true);
+    this._guiModeAvailable = true;
+    return;
   }
 
   protected _setMode(value: boolean): void {

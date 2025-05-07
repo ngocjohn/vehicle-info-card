@@ -27,6 +27,7 @@
     "leaflet-providers": "^2.0.0",
     "lit": "^3.2.1",
     "memoize-one": "^6.0.0",
+    "nvn-tabs": "^1.0.0",
     "sortablejs": "^1.15.6",
     "swiper": "^11.2.6",
     "tinycolor2": "^1.6.0"

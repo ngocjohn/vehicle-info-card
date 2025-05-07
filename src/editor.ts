@@ -515,7 +515,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       tabs.push({ key: 'tireConfig', label: 'Tire Config', content: tireType });
     }
 
-    const tabsContent = Create.TabBar({
+    const tabsContent = Create.VicTab({
       activeTabIndex: this._activeTabIndex || 0,
       onTabChange: (index: number) => (this._activeTabIndex = index),
       tabs: tabs,
