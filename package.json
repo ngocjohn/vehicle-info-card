@@ -58,7 +58,7 @@
     "eslint-plugin-unused-imports": "^4.1.4",
     "husky": "^9.1.7",
     "json5": "^2.2.3",
-    "lint-staged": "^15.5.2",
+    "lint-staged": "^16.0.0",
     "postcss-preset-env": "^10.1.6",
     "rollup": "^4.40.2",
     "rollup-plugin-filesize": "^10.0.0",
