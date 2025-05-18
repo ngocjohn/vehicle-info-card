@@ -1,3 +1,5 @@
+import { MapEntityConfig } from 'extra-map-card';
+
 import { LovelaceCardConfig, ActionConfig } from '../types';
 
 /**
@@ -31,18 +33,33 @@ export type Services = {
   windows: boolean;
 };
 
-type HISTORY_PERIOD = 'today' | 'yesterday' | undefined;
+export type HISTORY_PERIOD = 'today' | 'yesterday' | undefined;
+export type LABEL_MODE = 'name' | 'state' | 'attribute' | 'icon';
+export type MAP_THEME_MODE = 'auto' | 'dark' | 'light';
+
+export interface SingleMapCustomStyles {
+  light?: string;
+  dark?: string;
+}
 
 export interface MapPopupConfig {
+  map_zoom?: number;
+  path_color?: string | undefined;
+  theme_mode: MAP_THEME_MODE;
+  us_format?: boolean;
+  use_zone_name?: boolean;
+  single_map_card?: boolean;
   auto_fit?: boolean;
+  fit_zones?: boolean;
   default_zoom: number;
   history_period?: HISTORY_PERIOD;
   hours_to_show: number;
-  map_zoom?: number;
-  path_color?: string | undefined;
-  theme_mode: THEME_MODE;
-  us_format?: boolean;
-  use_zone_name?: boolean;
+  aspect_ratio?: string;
+  label_mode?: LABEL_MODE;
+  attribute?: string;
+  use_more_info?: boolean;
+  map_styles?: SingleMapCustomStyles;
+  extra_entities?: (MapEntityConfig | string)[];
 }
 
 export type ImageConfig = {
