@@ -212,6 +212,8 @@ export const Picker = ({
         .selector=${options?.selector}
         @value-changed=${handleValueChange}
         .required=${false}
+        .disabled=${options?.disabled || false}
+        .helper=${options?.helperText}
       ></ha-selector>
     `,
   };
@@ -244,15 +246,23 @@ export const ExpansionPanel = ({
   options,
 }: {
   content: TemplateResult;
-  options: { expanded?: boolean; header: string; icon?: string; secondary?: string };
+  options: {
+    expanded?: boolean;
+    header: string;
+    icon?: string;
+    secondary?: string;
+    outlined?: boolean;
+    noCollapse?: boolean;
+  };
 }): TemplateResult => {
   return html`
     <ha-expansion-panel
-      .outlined=${true}
+      .outlined=${options?.outlined ?? true}
       .expanded=${options?.expanded || false}
       .header=${options.header}
       .secondary=${options?.secondary || ''}
       .leftChevron=${true}
+      .noCollapse=${options?.noCollapse || false}
     >
       ${options.icon ? html`<div slot="icons"><ha-icon icon=${options.icon}></ha-icon></div>` : ''}
       <div class="card-config">${content}</div>

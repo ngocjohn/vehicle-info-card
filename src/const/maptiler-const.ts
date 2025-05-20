@@ -78,7 +78,7 @@ export const STYLE_SCHEMA = [
 export const DARK_AVAILABLE_STYLES = ['STREETS', 'BASIC', 'BRIGHT', 'DATAVIZ', 'VOYAGER', 'BACKDROP'];
 
 export const DEFAULT_HOURS_TO_SHOW = 0;
-export const DEFAULT_ZOOM = 14;
+export const DEFAULT_ZOOM = 13;
 
 export const MAPTILER_STYLE = {
   dark: 'STREETS.DARK',

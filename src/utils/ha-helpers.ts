@@ -1,6 +1,7 @@
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
 
 import { applyThemesOnElement } from 'custom-card-helpers';
+import { ExtraMapCardConfig, MapEntityConfig } from 'extra-map-card';
 import memoizeOne from 'memoize-one';
 
 import { combinedFilters, CARD_UPADE_SENSOR, CARD_VERSION, REPOSITORY } from '../const/const';
@@ -20,6 +21,7 @@ import {
   SECTION,
   defaultConfig,
   Address,
+  MapPopupConfig,
 } from '../types';
 import { LovelaceCardConfig } from '../types/ha-frontend/lovelace/lovelace';
 import { VehicleCard } from '../vehicle-info-card';
@@ -410,8 +412,30 @@ export async function handleCardFirstUpdated(component: VehicleCard): Promise<vo
     console.log('No vehicle entities found');
     card._entityNotFound = true;
   }
-
   _getMapDat(card);
+}
+
+export async function _getSingleCard(card: VehicleCard): Promise<LovelaceCardConfig | void> {
+  const config = card.config as VehicleCardConfig;
+  if (!config.map_popup_config.single_map_card || !config.device_tracker) return;
+  const hass = card._hass as HomeAssistant;
+  const mapConfig = config.map_popup_config;
+  const apiKey = config.extra_configs.maptiler_api_key!;
+  const deviceTrackerEntity = [
+    {
+      entity: config.device_tracker,
+      label_mode: mapConfig.label_mode,
+      attribute: mapConfig.attribute,
+    },
+  ];
+  const singleMapConfig = _convertToExtraMapConfig(
+    mapConfig,
+    apiKey,
+    config.map_popup_config.extra_entities || (deviceTrackerEntity as MapEntityConfig[])
+  );
+
+  const mapCardEl = await createCardElement(hass, [singleMapConfig]);
+  return mapCardEl[0];
 }
 
 export async function _getMapDat(card: VehicleCard): Promise<void> {
@@ -629,4 +653,24 @@ export const applyTheme = (element: any, hass: HomeAssistant, theme: string, mod
     const allTheme = { default_theme: hass.themes.default_theme, themes: { [theme]: allThemeData } };
     applyThemesOnElement(element, allTheme, theme, false);
   }
+};
+
+export const _convertToExtraMapConfig = (
+  config: MapPopupConfig,
+  apiKey: string,
+  entities: (MapEntityConfig | string)[] = []
+): ExtraMapCardConfig => {
+  return {
+    type: 'custom:extra-map-card',
+    api_key: apiKey,
+    entities,
+    custom_styles: config.map_styles,
+    aspect_ratio: config.aspect_ratio,
+    auto_fit: config.auto_fit,
+    fit_zones: config.fit_zones,
+    default_zoom: config.default_zoom,
+    hours_to_show: config.hours_to_show,
+    theme_mode: config.theme_mode,
+    history_period: config.history_period,
+  };
 };

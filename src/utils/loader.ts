@@ -1,3 +1,6 @@
+import { EXTRA_MAP_CARD_URL } from '../const/const';
+import { loadModule } from './load_resource';
+
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
 // Hack to load ha-components needed for editor
 export const loadHaComponents = () => {
@@ -13,6 +16,10 @@ export const loadHaComponents = () => {
   if (!customElements.get('ha-form-multi_select')) {
     // Load the component by invoking a related component's method
     (customElements.get('hui-entities-card') as any)?.getConfigElement();
+  }
+  if (!customElements.get('hui-entity-editor')) {
+    // Load the component by invoking a related component's method
+    (customElements.get('hui-glance-card') as any)?.getConfigElement();
   }
 };
 
@@ -34,7 +41,6 @@ export const stickyPreview = () => {
     position: 'sticky',
     top: '0',
     padding: '0',
-    justifyItems: 'center',
   });
 };
 
@@ -68,5 +74,17 @@ export const loadCardPicker = async () => {
     }
     const configElement = await (cls as any).getConfigElement();
     return configElement;
+  }
+};
+
+// Load a resource and get a promise when loading done.
+// From: https://davidwalsh.name/javascript-loader
+
+export const loadExtraMapCard = async () => {
+  (window as any).customCards = (window as any).customCards || [];
+
+  if (!(window as any).customCards.find((card: any) => card.type === 'extra-map-card')) {
+    await loadModule(EXTRA_MAP_CARD_URL);
+    console.log('extra-map-card loaded');
   }
 };
