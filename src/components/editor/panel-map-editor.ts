@@ -1,7 +1,7 @@
 import { fireEvent } from 'custom-card-helpers';
 import { EntityConfig, ExtraMapCardConfig, MapEntityConfig, processConfigEntities } from 'extra-map-card';
 import { LitElement, html, TemplateResult, CSSResultGroup, PropertyValues } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property, query, state } from 'lit/decorators.js';
 
 import { editorShowOpts } from '../../const/data-keys';
 import editorcss from '../../css/editor.css';
@@ -23,6 +23,7 @@ export class VicPanelMapEditor extends LitElement {
   @state() _yamlMode: boolean = false;
 
   @state() private _tmpYamlConfig?: ExtraMapCardConfig;
+  @query('#extra-map-editor') private _cardElementEditor?: HTMLElement;
 
   private get _mapPopupConfig(): MapPopupConfig {
     return this._config.map_popup_config || {};
@@ -57,8 +58,8 @@ export class VicPanelMapEditor extends LitElement {
         ...(this._config.map_popup_config || {}),
       };
       this._mapEntitiesConfig = this._mapCardConfig.extra_entities
-        ? processConfigEntities<MapEntityConfig>(this._mapCardConfig.extra_entities)
-        : processConfigEntities<MapEntityConfig>([this._deviceTrackerEntity]);
+        ? processConfigEntities<MapEntityConfig>(this._mapCardConfig.extra_entities, false)
+        : processConfigEntities<MapEntityConfig>([this._deviceTrackerEntity], false);
       this._useSingleMapCard = this._mapCardConfig.single_map_card ?? false;
     }
 
@@ -75,28 +76,49 @@ export class VicPanelMapEditor extends LitElement {
           },
         });
       }
-    }
 
-    if (_changedProperties.has('_yamlMode') && !this._yamlMode) {
-      const oldYamlMode = _changedProperties.get('_yamlMode') as boolean;
-      if (oldYamlMode === true && this._yamlMode === false) {
-        console.log('yaml mode changed to false');
-        if (this._tmpYamlConfig) {
-          const mapConfig = this._convertToBaseMapConfig(this._tmpYamlConfig);
-          const miniMapConfig = { ...(this._config.map_popup_config || {}) };
-          this._config = {
-            ...this._config,
-            map_popup_config: {
-              ...miniMapConfig,
-              ...mapConfig,
-            },
-          };
-          fireEvent(this, 'config-changed', {
-            config: this._config,
-          });
-          this._tmpYamlConfig = undefined;
+      if (_changedProperties.has('_yamlMode') && !this._yamlMode) {
+        const oldYamlMode = _changedProperties.get('_yamlMode') as boolean;
+        if (oldYamlMode === true && this._yamlMode === false) {
+          if (this._tmpYamlConfig) {
+            const mapConfig = this._convertToBaseMapConfig(this._tmpYamlConfig);
+            const miniMapConfig = { ...(this._config.map_popup_config || {}) };
+            this._config = {
+              ...this._config,
+              map_popup_config: {
+                ...miniMapConfig,
+                ...mapConfig,
+              },
+            };
+            fireEvent(this, 'config-changed', {
+              config: this._config,
+            });
+            this._tmpYamlConfig = undefined;
+          }
         }
       }
+    }
+    if (
+      (_changedProperties.has('_useSingleMapCard') && this._useSingleMapCard) ||
+      _changedProperties.has('_yamlMode')
+    ) {
+      setTimeout(() => {
+        this._hideSelectors();
+      }, 0);
+    }
+  }
+
+  private _hideSelectors() {
+    const formRoot = this._cardElementEditor
+      ?.querySelector('hui-card-element-editor')
+      ?.shadowRoot?.querySelector('extra-map-editor')
+      ?.shadowRoot?.querySelector('ha-form')?.shadowRoot;
+
+    if (formRoot) {
+      const selectors = formRoot.querySelectorAll('.root > ha-selector') as NodeListOf<HTMLElement>;
+      selectors.forEach((el: HTMLElement) => {
+        el.style.display = 'none'; // hide title and apikey formns
+      });
     }
   }
 
@@ -105,6 +127,9 @@ export class VicPanelMapEditor extends LitElement {
       return html``;
     }
     const baseMapConfig = this._renderBaseMapConfig();
+    const miniMapConfig = this._renderMiniMapConfig();
+    const popupConfig = this._renderPopupConfig();
+
     const useSingleMapConfig = {
       configValue: 'single_map_card',
       configType: 'map_popup_config',
@@ -125,7 +150,12 @@ export class VicPanelMapEditor extends LitElement {
 
     return html` <div class="card-config">
       ${baseMapConfig} ${useSingleCard}
-      ${!this._useSingleMapCard ? this._renderDefaultMapConfig() : this._renderExtraMapConfig()}
+      ${!this._useSingleMapCard
+        ? html`
+            <div class="panel-container">${miniMapConfig}</div>
+            <div class="panel-container">${popupConfig}</div>
+          `
+        : this._renderExtraMapConfig()}
     </div>`;
   }
 
@@ -176,30 +206,23 @@ export class VicPanelMapEditor extends LitElement {
       },
     ];
 
-    const baseContent = html` <div class="card-config">
+    const baseContent = html`
       ${baseMapConfig.map((config) => {
         return Picker({ ...sharedConfig, ...config });
       })}
-      <ha-alert alert-type="info">
-        ${maptilerInfo}
-        <mwc-button slot="action" @click="${() => window.open(docLink)}" label="More"></mwc-button>
-      </ha-alert>
-    </div>`;
+      <div class="panel-container">
+        <ha-alert alert-type="info">
+          ${maptilerInfo}
+          <mwc-button slot="action" @click="${() => window.open(docLink)}" label="More"></mwc-button>
+        </ha-alert>
+      </div>
+    `;
     return Create.ExpansionPanel({
       content: baseContent,
-      options: { header: 'Base Map Configuration', expanded: true },
+      options: { header: 'Base Map Configuration', expanded: !this._useSingleMapCard },
     });
   }
 
-  private _renderDefaultMapConfig() {
-    const miniMapConfig = this._renderMiniMapConfig();
-    const popupConfig = this._renderPopupConfig();
-
-    return html`
-      <div class="panel-container">${miniMapConfig}</div>
-      <div class="panel-container">${popupConfig}</div>
-    `;
-  }
   private _renderMiniMapConfig() {
     const { _getBooleanSelector, _getNumberSelector } = this;
     const showOpts = editorShowOpts(this.editor._selectedLanguage);
@@ -235,7 +258,7 @@ export class VicPanelMapEditor extends LitElement {
     </div>`;
     return Create.ExpansionPanel({
       content,
-      options: { header: 'Mini Map Config', secondary: 'Options for mini map section' },
+      options: { header: 'Mini Map Config', secondary: 'Options for mini map section', expanded: true },
     });
   }
 
@@ -267,7 +290,7 @@ export class VicPanelMapEditor extends LitElement {
         <mwc-button slot="action" @click="${() => window.open(docLink)}" label="More"></mwc-button>
       </ha-alert>
 
-      <div class="panel-container">
+      <div class="panel-container" id="extra-map-editor">
         ${!this._yamlMode
           ? html`
               <hui-card-element-editor
@@ -298,7 +321,7 @@ export class VicPanelMapEditor extends LitElement {
       ${Create.ExpansionPanel({
         content,
         options: {
-          header: 'Extra Map Config',
+          header: 'Standalone Map Config',
           secondary: 'Options for extra map card',
           expanded: true,
           outlined: false,
@@ -418,14 +441,13 @@ export class VicPanelMapEditor extends LitElement {
     const target = ev.target;
     const configValue = target.configValue;
     const configType = target.configType;
-    const configIndex = target.configIndex;
     const value = typeof ev.detail.value === 'string' ? ev.detail.value.trim() : ev.detail.value;
-    console.log('value changed:', {
-      configValue,
-      configType,
-      configIndex,
-      value,
-    });
+    // console.log('value changed:', {
+    //   configValue,
+    //   configType,
+    //   configIndex,
+    //   value,
+    // });
 
     const updates: Partial<VehicleCardConfig> = {};
     const _config = this._config;

@@ -80,12 +80,11 @@ export const loadCardPicker = async () => {
 // Load a resource and get a promise when loading done.
 // From: https://davidwalsh.name/javascript-loader
 
-export const loadExtraMapCard = () => {
+export const loadExtraMapCard = async () => {
   (window as any).customCards = (window as any).customCards || [];
+
   if (!(window as any).customCards.find((card: any) => card.type === 'extra-map-card')) {
-    loadModule(EXTRA_MAP_CARD_URL);
+    await loadModule(EXTRA_MAP_CARD_URL);
     console.log('extra-map-card loaded');
-  } else {
-    return;
   }
 };
