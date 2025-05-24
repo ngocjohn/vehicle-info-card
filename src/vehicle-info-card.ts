@@ -295,7 +295,7 @@ export class VehicleCard extends LitElement {
     // }
 
     if (_changedProps.has('config') && this.config.selected_theme?.theme !== 'default') {
-      const theme = this.config.selected_theme.theme;
+      const theme = this.config.selected_theme?.theme;
       const mode = this.config.selected_theme?.mode || 'auto';
       applyTheme(this, this._hass, theme, mode);
     }
@@ -426,7 +426,7 @@ export class VehicleCard extends LitElement {
       return this._renderCardPreview();
     }
 
-    if (this.config.map_popup_config.single_map_card && this._singleMapCard) {
+    if (this.config.map_popup_config?.single_map_card === true && this._singleMapCard !== undefined) {
       return html`${this._singleMapCard}`;
     }
 
@@ -654,7 +654,7 @@ export class VehicleCard extends LitElement {
     }
     return html`
       <div id=${SECTION.MINI_MAP}>
-        <vehicle-map .hass=${this._hass} .mapData=${this.MapData} .card=${this} .isDark=${isDark}></vehicle-map>
+        <vehicle-map .hass=${this._hass} .mapData=${this.MapData!} .card=${this} .isDark=${isDark}></vehicle-map>
       </div>
     `;
   }

@@ -104,8 +104,7 @@ export const Picker = ({
         .index=${configIndex}
         .itemIndex=${itemIndex}
         .cardIndex=${cardIndex}
-        .label=${label ?? 'Entity'}
-        @change=${handleValueChange}
+        @value-changed=${handleValueChange}
         .allowCustomIcons=${true}
         .includeDomains=${options?.includeDomains}
       ></ha-entity-picker>

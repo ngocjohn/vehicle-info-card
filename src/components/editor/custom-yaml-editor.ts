@@ -12,7 +12,7 @@ export class CustomYamlEditor extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
   @property({ attribute: false }) editor!: VehicleCardEditor;
   @property({ attribute: false }) configDefault: any = {};
-  @state() isDefaultCard!: boolean;
+  @state() isDefaultCard?: boolean;
   @state() configType!: string;
 
   static get styles(): CSSResultGroup {
