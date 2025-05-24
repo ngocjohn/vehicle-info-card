@@ -77,7 +77,7 @@ export class CustomButtonTemplate extends LitElement {
         .value=${this.button.entity || ''}
         .configValue=${'entity'}
         .configBtnType=${button}
-        @change=${(ev: Event) => this._dispatchEvent(ev, 'btn-changed')}
+        @value-changed=${(ev: any) => this._dispatchEvent(ev, 'btn-changed')}
       ></ha-entity-picker>
     `;
 
@@ -210,6 +210,7 @@ export class CustomButtonTemplate extends LitElement {
       'icon_template',
       'color_template',
       'picture_template',
+      'entity',
     ];
     const target = ev.target;
     const configValue = target?.configValue;

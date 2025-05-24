@@ -88,7 +88,7 @@ export class CustomButtonAction extends LitElement {
         .label=${'Entity to interact with'}
         .configValue=${'entity'}
         .configBtnType=${'button_action'}
-        @change=${(ev: Event) => this._handleActionTypeChange(ev, 'entity', this.cardButton)}
+        @value-changed=${(ev: any) => this._handleActionTypeChange(ev, 'entity', this.cardButton)}
       ></ha-entity-picker>
     </div>`;
 

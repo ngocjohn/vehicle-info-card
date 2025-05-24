@@ -416,7 +416,7 @@ export async function handleCardFirstUpdated(component: VehicleCard): Promise<vo
 
 export async function _getSingleCard(card: VehicleCard): Promise<LovelaceCardConfig | void> {
   const config = card.config as VehicleCardConfig;
-  if (!config.map_popup_config.single_map_card || !config.device_tracker) return;
+  if (!config.map_popup_config?.single_map_card || !config.device_tracker) return;
   const hass = card._hass as HomeAssistant;
   const mapConfig = config.map_popup_config;
   const apiKey = config.extra_configs.maptiler_api_key!;
