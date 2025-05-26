@@ -42,6 +42,8 @@ import {
   Create,
   isDarkColor,
   applyTheme,
+  loadExtraMapCard,
+  _getSingleCard,
 } from './utils';
 import { getAddedButton, getDefaultButton, createCardElement, createCustomButtons } from './utils';
 
@@ -90,6 +92,8 @@ export class VehicleCard extends LitElement {
   @state() private _activeSubCard: Set<string> = new Set();
   @state() private chargingInfoVisible!: boolean;
 
+  // Single Map Card
+  @state() public _singleMapCard?: LovelaceCardConfig;
   // Preview states
   @state() _currentPreviewType: 'button' | 'card' | 'tire' | null = null;
 
@@ -114,6 +118,7 @@ export class VehicleCard extends LitElement {
   @query('vehicle-map') vehicleMap!: VehicleMap;
   @query('eco-chart') ecoChart!: EcoChart;
   @query('remote-control') remoteControl!: RemoteControl;
+  @query('extra-map-card') _extraMapCard?: any;
 
   constructor() {
     super();
@@ -260,11 +265,13 @@ export class VehicleCard extends LitElement {
 
   protected async firstUpdated(_changedProperties: PropertyValues): Promise<void> {
     super.firstUpdated(_changedProperties);
+    void loadExtraMapCard();
     await new Promise((resolve) => setTimeout(resolve, 0));
     handleCardFirstUpdated(this);
     this.setUpButtonCards();
     this._setUpPreview();
     this.measureCard();
+    this.createSingleMapCard();
   }
 
   protected updated(changedProps: PropertyValues) {
@@ -288,7 +295,7 @@ export class VehicleCard extends LitElement {
     // }
 
     if (_changedProps.has('config') && this.config.selected_theme?.theme !== 'default') {
-      const theme = this.config.selected_theme.theme;
+      const theme = this.config.selected_theme?.theme;
       const mode = this.config.selected_theme?.mode || 'auto';
       applyTheme(this, this._hass, theme, mode);
     }
@@ -392,6 +399,19 @@ export class VehicleCard extends LitElement {
     return localize(string, this.userLang, search, replace);
   };
 
+  private createSingleMapCard() {
+    setTimeout(async () => {
+      this._singleMapCard = (await _getSingleCard(this)) as LovelaceCardConfig;
+      setTimeout(() => {
+        // check if the map card is loaded
+        if (this._extraMapCard && this.layout === 'panel' && !this.isEditorPreview) {
+          const root = this._extraMapCard!.shadowRoot.getElementById('root') as HTMLElement;
+          root.style.paddingBottom = 'unset';
+        }
+      }, 0);
+    }, 0);
+  }
+
   /* -------------------------------------------------------------------------- */
   /* MAIN RENDER                                                                */
   /* -------------------------------------------------------------------------- */
@@ -404,6 +424,10 @@ export class VehicleCard extends LitElement {
 
     if (this._currentPreviewType !== null && this.isEditorPreview) {
       return this._renderCardPreview();
+    }
+
+    if (this.config.map_popup_config?.single_map_card === true && this._singleMapCard !== undefined) {
+      return html`${this._singleMapCard}`;
     }
 
     const cardHeight = this.getGridRowSize() * ROWPX;
@@ -630,7 +654,7 @@ export class VehicleCard extends LitElement {
     }
     return html`
       <div id=${SECTION.MINI_MAP}>
-        <vehicle-map .hass=${this._hass} .mapData=${this.MapData} .card=${this} .isDark=${isDark}></vehicle-map>
+        <vehicle-map .hass=${this._hass} .mapData=${this.MapData!} .card=${this} .isDark=${isDark}></vehicle-map>
       </div>
     `;
   }
