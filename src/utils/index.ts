@@ -4,4 +4,6 @@ export * from './helpers';
 export * from './tap-action';
 export * from './loader';
 export * from './editor-image-handler';
+export * from './load_resource';
+export * from './apply-theme';
 export * as Create from './create';

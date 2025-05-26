@@ -4,6 +4,8 @@ export const CARD_VERSION = `v${version}`;
 export const CARD_UPADE_SENSOR = 'update.vehicle_info_card_update';
 export const REPOSITORY = repository.repo;
 
+export const EXTRA_MAP_CARD_URL = 'https://cdn.jsdelivr.net/npm/extra-map-card/dist/extra-map-card-bundle.min.js';
+
 export const PREVIEW_CONFIG_TYPES = ['btn_preview', 'card_preview', 'tire_preview'];
 
 /**

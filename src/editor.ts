@@ -11,7 +11,7 @@ import './components/editor';
 import Sortable from 'sortablejs';
 
 import './components/editor/custom-card-ui-editor';
-import { CustomCardUIEditor, PanelImages } from './components/editor';
+import { CustomCardUIEditor, PanelImages, VicPanelMapEditor } from './components/editor';
 import { CARD_VERSION, PREVIEW_CONFIG_TYPES } from './const/const';
 import { cardTypes, editorShowOpts } from './const/data-keys';
 import { servicesCtrl } from './const/remote-control-keys';
@@ -38,7 +38,6 @@ import {
   loadHaComponents,
   loadCardPicker,
 } from './utils';
-import { Picker } from './utils/create';
 
 const latestRelease: { version: string; hacs: boolean; updated: boolean } = {
   version: '',
@@ -61,7 +60,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   @state() private _activeSubcardType: string | null = null;
   @state() private _confirmDeleteType: string | null = null;
-  @state() private _selectedLanguage: string = 'system';
+  @state() public _selectedLanguage: string = 'system';
   @state() _cardSortable: Sortable | null = null;
   @state() _sectionSortable: Sortable | null = null;
 
@@ -75,6 +74,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   @query('panel-images') private _panelImages!: PanelImages;
   @query('custom-card-ui-editor') private _customCardEditor?: CustomCardUIEditor;
+  @query('vic-panel-map-editor') private _mapEditor?: VicPanelMapEditor;
 
   public async setConfig(config: VehicleCardConfig): Promise<void> {
     this._config = config;
@@ -674,184 +674,192 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _renderMapPopupConfig(): TemplateResult {
-    const infoAlert = this.localize('editor.common.infoMap');
-    const maptilerInfo = `How to get Maptiler API Key?`;
-    const docLink = 'https://github.com/ngocjohn/vehicle-info-card/blob/main/docs/Maptiler.md';
-
-    const showOpts = editorShowOpts(this._selectedLanguage);
-    const mapPopUp = showOpts.find((option) => option.configKey === 'enable_map_popup');
-    const showAddress = showOpts.find((option) => option.configKey === 'show_address');
-    const maptilerApiKey = this._config?.extra_configs?.maptiler_api_key || '';
-    const googleApiKey = this._config?.google_api_key || '';
-    const mapPopupConfig = this._config?.map_popup_config || {};
-
-    const sharedConfig = {
-      component: this,
-      pickerType: 'selectorBoolean' as 'selectorBoolean',
-    };
-
-    const mapBoolean = [
-      {
-        label: mapPopUp?.label,
-        value: this._config.enable_map_popup ?? false,
-        configValue: mapPopUp?.configKey,
-      },
-      {
-        label: showAddress?.label,
-        value: this._config.extra_configs?.show_address ?? true,
-        configValue: showAddress?.configKey,
-      },
-      {
-        label: 'US Address Format',
-        value: mapPopupConfig?.us_format ?? false,
-        configValue: 'us_format',
-        configType: 'map_popup_config',
-      },
-      {
-        label: 'Use zone name',
-        value: mapPopupConfig?.use_zone_name ?? false,
-        configValue: 'use_zone_name',
-        configType: 'map_popup_config',
-      },
-    ];
-
-    const themeMode = [
-      { value: 'auto', label: 'Auto' },
-      { value: 'dark', label: 'Dark' },
-      { value: 'light', label: 'Light' },
-    ];
-
-    const maxMiniMapHeight = {
-      label: 'Mini Map Height',
-      value: this._config.extra_configs?.mini_map_height || 150,
-      configValue: 'mini_map_height',
-      pickerType: 'number' as 'number',
-      options: { selector: { number: { max: 500, min: 150, mode: 'slider', step: 10 } } },
-      component: this,
-    };
-
-    const deviceTracker = {
-      label: 'Device Tracker (Optional)',
-      value: this._config?.device_tracker || '',
-      configValue: 'device_tracker',
-      pickerType: 'entity' as 'entity',
-      component: this,
-      options: { includeDomains: ['device_tracker'] },
-    };
-
-    const mapPopSharedConfig = {
-      component: this,
-      configType: 'map_popup_config',
-    };
-
-    const mapPopConfig = [
-      {
-        configValue: 'hours_to_show',
-        label: 'Hours to show',
-        value: mapPopupConfig.hours_to_show || 0,
-        pickerType: 'number' as 'number',
-        options: { selector: { number: { min: 0, mode: 'box' } } },
-      },
-      {
-        configValue: 'default_zoom',
-        label: 'Default Zoom',
-        value: mapPopupConfig.default_zoom || 14,
-        pickerType: 'number' as 'number',
-        options: { selector: { number: { min: 0, mode: 'box' } } },
-      },
-      {
-        configValue: 'theme_mode',
-        label: 'Theme mode',
-        value: mapPopupConfig.theme_mode ?? 'auto',
-        pickerType: 'baseSelector' as 'baseSelector',
-        options: { selector: { select: { mode: 'dropdown', options: themeMode } } },
-      },
-
-      {
-        configValue: 'auto_fit',
-        label: 'Auto Fit',
-        value: mapPopupConfig.auto_fit ?? false,
-        pickerType: 'selectorBoolean' as 'selectorBoolean',
-      },
-      {
-        configValue: 'path_color',
-        label: 'Path Color',
-        value: mapPopupConfig?.path_color || '',
-        pickerType: 'baseSelector' as 'baseSelector',
-        options: { selector: { ui_color: { include_none: false, include_state: false } } },
-      },
-      {
-        configValue: 'history_period',
-        label: 'History Period',
-        value: mapPopupConfig?.history_period || undefined,
-        pickerType: 'baseSelector' as 'baseSelector',
-        options: {
-          selector: {
-            select: {
-              mode: 'dropdown',
-              options: [
-                {
-                  value: 'today',
-                  label: 'Today',
-                },
-                {
-                  value: 'yesterday',
-                  label: 'Yesterday',
-                },
-              ],
-            },
-          },
-        },
-      },
-    ];
-
-    const mapPopupConfigEl = html`
-      <ha-alert alert-type="info">${infoAlert}</ha-alert>
-      <div class="switches">
-        ${mapPopConfig.map((item) => {
-          return Picker({ ...mapPopSharedConfig, ...item });
-        })}
-      </div>
-    `;
-
-    const minimapZoom = {
-      label: 'Mini Map Zoom',
-      value: mapPopupConfig.map_zoom || 14,
-      configValue: 'map_zoom',
-      pickerType: 'number' as 'number',
-      options: { selector: { number: { min: 0, mode: 'box' } }, helperText: 'Default zoom for minimap' },
-      configType: 'map_popup_config',
-      component: this,
-    };
-
-    const mapConfig = html`
-      ${Picker(deviceTracker)}
-      <ha-textfield
-        label="Google API Key (Optional)"
-        .value=${googleApiKey}
-        .configValue=${'google_api_key'}
-        @input=${this._valueChanged}
-      ></ha-textfield>
-      <ha-alert alert-type="info">
-        ${maptilerInfo}
-        <mwc-button slot="action" @click="${() => window.open(docLink)}" label="More"></mwc-button>
-      </ha-alert>
-      <ha-textfield
-        label="Maptiler API Key (Optional)"
-        .value=${maptilerApiKey}
-        .configValue=${'maptiler_api_key'}
-        @input=${this._valueChanged}
-      ></ha-textfield>
-      <div class="switches">
-        ${mapBoolean.map((item) => {
-          return Picker({ ...sharedConfig, ...item });
-        })}
-        ${Picker(minimapZoom)} ${Picker(maxMiniMapHeight)}
-      </div>
-    `;
-
-    return html` ${mapConfig} ${mapPopupConfigEl} `;
+    return html` <vic-panel-map-editor
+      .hass=${this.hass}
+      .editor=${this}
+      ._config=${this._config}
+    ></vic-panel-map-editor>`;
   }
+
+  // private _renderMapPopupConfig(): TemplateResult {
+  //   const infoAlert = this.localize('editor.common.infoMap');
+  //   const maptilerInfo = `How to get Maptiler API Key?`;
+  //   const docLink = 'https://github.com/ngocjohn/vehicle-info-card/blob/main/docs/Maptiler.md';
+
+  //   const showOpts = editorShowOpts(this._selectedLanguage);
+  //   const mapPopUp = showOpts.find((option) => option.configKey === 'enable_map_popup');
+  //   const showAddress = showOpts.find((option) => option.configKey === 'show_address');
+  //   const maptilerApiKey = this._config?.extra_configs?.maptiler_api_key || '';
+  //   const googleApiKey = this._config?.google_api_key || '';
+  //   const mapPopupConfig = this._config?.map_popup_config || {};
+
+  //   const sharedConfig = {
+  //     component: this,
+  //     pickerType: 'selectorBoolean' as 'selectorBoolean',
+  //   };
+
+  //   const mapBoolean = [
+  //     {
+  //       label: mapPopUp?.label,
+  //       value: this._config.enable_map_popup ?? false,
+  //       configValue: mapPopUp?.configKey,
+  //     },
+  //     {
+  //       label: showAddress?.label,
+  //       value: this._config.extra_configs?.show_address ?? true,
+  //       configValue: showAddress?.configKey,
+  //     },
+  //     {
+  //       label: 'US Address Format',
+  //       value: mapPopupConfig?.us_format ?? false,
+  //       configValue: 'us_format',
+  //       configType: 'map_popup_config',
+  //     },
+  //     {
+  //       label: 'Use zone name',
+  //       value: mapPopupConfig?.use_zone_name ?? false,
+  //       configValue: 'use_zone_name',
+  //       configType: 'map_popup_config',
+  //     },
+  //   ];
+
+  //   const themeMode = [
+  //     { value: 'auto', label: 'Auto' },
+  //     { value: 'dark', label: 'Dark' },
+  //     { value: 'light', label: 'Light' },
+  //   ];
+
+  //   const maxMiniMapHeight = {
+  //     label: 'Mini Map Height',
+  //     value: this._config.extra_configs?.mini_map_height || 150,
+  //     configValue: 'mini_map_height',
+  //     pickerType: 'number' as 'number',
+  //     options: { selector: { number: { max: 500, min: 150, mode: 'slider', step: 10 } } },
+  //     component: this,
+  //   };
+
+  //   const deviceTracker = {
+  //     label: 'Device Tracker (Optional)',
+  //     value: this._config?.device_tracker || '',
+  //     configValue: 'device_tracker',
+  //     pickerType: 'entity' as 'entity',
+  //     component: this,
+  //     options: { includeDomains: ['device_tracker'] },
+  //   };
+
+  //   const mapPopSharedConfig = {
+  //     component: this,
+  //     configType: 'map_popup_config',
+  //   };
+
+  //   const mapPopConfig = [
+  //     {
+  //       configValue: 'hours_to_show',
+  //       label: 'Hours to show',
+  //       value: mapPopupConfig.hours_to_show || 0,
+  //       pickerType: 'number' as 'number',
+  //       options: { selector: { number: { min: 0, mode: 'box' } } },
+  //     },
+  //     {
+  //       configValue: 'default_zoom',
+  //       label: 'Default Zoom',
+  //       value: mapPopupConfig.default_zoom || 14,
+  //       pickerType: 'number' as 'number',
+  //       options: { selector: { number: { min: 0, mode: 'box' } } },
+  //     },
+  //     {
+  //       configValue: 'theme_mode',
+  //       label: 'Theme mode',
+  //       value: mapPopupConfig.theme_mode ?? 'auto',
+  //       pickerType: 'baseSelector' as 'baseSelector',
+  //       options: { selector: { select: { mode: 'dropdown', options: themeMode } } },
+  //     },
+
+  //     {
+  //       configValue: 'auto_fit',
+  //       label: 'Auto Fit',
+  //       value: mapPopupConfig.auto_fit ?? false,
+  //       pickerType: 'selectorBoolean' as 'selectorBoolean',
+  //     },
+  //     {
+  //       configValue: 'path_color',
+  //       label: 'Path Color',
+  //       value: mapPopupConfig?.path_color || '',
+  //       pickerType: 'baseSelector' as 'baseSelector',
+  //       options: { selector: { ui_color: { include_none: false, include_state: false } } },
+  //     },
+  //     {
+  //       configValue: 'history_period',
+  //       label: 'History Period',
+  //       value: mapPopupConfig?.history_period || undefined,
+  //       pickerType: 'baseSelector' as 'baseSelector',
+  //       options: {
+  //         selector: {
+  //           select: {
+  //             mode: 'dropdown',
+  //             options: [
+  //               {
+  //                 value: 'today',
+  //                 label: 'Today',
+  //               },
+  //               {
+  //                 value: 'yesterday',
+  //                 label: 'Yesterday',
+  //               },
+  //             ],
+  //           },
+  //         },
+  //       },
+  //     },
+  //   ];
+
+  //   const mapPopupConfigEl = html`
+  //     <ha-alert alert-type="info">${infoAlert}</ha-alert>
+  //     <div class="switches">
+  //       ${mapPopConfig.map((item) => {
+  //         return Picker({ ...mapPopSharedConfig, ...item });
+  //       })}
+  //     </div>
+  //   `;
+
+  //   const minimapZoom = {
+  //     label: 'Mini Map Zoom',
+  //     value: mapPopupConfig.map_zoom || 14,
+  //     configValue: 'map_zoom',
+  //     pickerType: 'number' as 'number',
+  //     options: { selector: { number: { min: 0, mode: 'box' } }, helperText: 'Default zoom for minimap' },
+  //     configType: 'map_popup_config',
+  //     component: this,
+  //   };
+
+  //   const mapConfig = html`
+  //     ${Picker(deviceTracker)}
+  //     <ha-textfield
+  //       label="Google API Key (Optional)"
+  //       .value=${googleApiKey}
+  //       .configValue=${'google_api_key'}
+  //       @input=${this._valueChanged}
+  //     ></ha-textfield>
+  //     <ha-alert alert-type="info">
+  //       ${maptilerInfo}
+  //       <mwc-button slot="action" @click="${() => window.open(docLink)}" label="More"></mwc-button>
+  //     </ha-alert>
+  //     <ha-textfield
+  //       label="Maptiler API Key (Optional)"
+  //       .value=${maptilerApiKey}
+  //       .configValue=${'maptiler_api_key'}
+  //       @input=${this._valueChanged}
+  //     ></ha-textfield>
+  //     <div class="switches">
+  //       ${mapBoolean.map((item) => {
+  //         return Picker({ ...sharedConfig, ...item });
+  //       })}
+  //       ${Picker(minimapZoom)} ${Picker(maxMiniMapHeight)}
+  //     </div>
+  //   `;
+
+  //   return html` ${mapConfig} ${mapPopupConfigEl} `;
+  // }
 
   private _renderServicesConfig(): TemplateResult {
     const infoAlert = this.localize('editor.common.infoServices');
