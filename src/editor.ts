@@ -11,7 +11,8 @@ import './components/editor';
 import Sortable from 'sortablejs';
 
 import './components/editor/custom-card-ui-editor';
-import { CustomCardUIEditor, PanelImages, VicPanelMapEditor } from './components/editor';
+import { CustomButtonTemplate, CustomCardUIEditor, PanelImages, VicPanelMapEditor } from './components/editor';
+import { BUTTON_GRID_SCHEMA } from './components/editor/forms/grid-button-schema';
 import { CARD_VERSION, PREVIEW_CONFIG_TYPES } from './const/const';
 import { cardTypes, editorShowOpts } from './const/data-keys';
 import { servicesCtrl } from './const/remote-control-keys';
@@ -52,9 +53,9 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   @property({ attribute: false }) _config!: VehicleCardConfig;
   @property({ attribute: false }) private baseCardTypes: CardTypeConfig[] = [];
 
-  @state() private _btnPreview: boolean = false;
-  @state() private _cardPreview: boolean = false;
-  @state() private _isTirePreview: boolean = false;
+  @state() public _btnPreview: boolean = false;
+  @state() public _cardPreview: boolean = false;
+  @state() public _isTirePreview: boolean = false;
 
   @state() public _activeTabIndex: number = 0;
 
@@ -75,6 +76,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   @query('panel-images') private _panelImages!: PanelImages;
   @query('custom-card-ui-editor') private _customCardEditor?: CustomCardUIEditor;
   @query('vic-panel-map-editor') private _mapEditor?: VicPanelMapEditor;
+  @query('custom-button-template') _customButtonTemplate?: CustomButtonTemplate;
 
   public async setConfig(config: VehicleCardConfig): Promise<void> {
     this._config = config;
@@ -470,11 +472,12 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     `;
     const buttonTemplateWrapper = html`
       <custom-button-template
+        .hass=${this.hass}
         .editor=${this}
         .button=${this._getButtonConfig(card.button)}
         .card=${card}
         .isButtonPreview=${this._btnPreview}
-        @custom-button-changed=${this._customBtnHandler.bind(this)}
+        @custom-button-changed=${this._customBtnChanged}
       ></custom-button-template>
     `;
 
@@ -492,23 +495,11 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       ></custom-card-ui-editor>
     `;
 
-    const tapActionConfig = html`
-      <custom-button-action
-        .hass=${this.hass}
-        .config=${this._config}
-        .button=${this._getButtonConfig(card.button)}
-        .card=${card}
-        .isButtonPreview=${this._btnPreview}
-        @custom-action-changed=${(ev: any) => this._customBtnHandler(ev)}
-      ></custom-button-action>
-    `;
-
     const tireType = html`${this._renderTireConfig()}`;
 
     const tabs = [
       { key: 'buttonConfig', label: 'Button Config', content: buttonTemplateWrapper },
       { key: 'cardConfig', label: 'Card Config', content: cardEditor },
-      { key: 'actionConfig', label: 'Action Config', content: tapActionConfig },
     ];
 
     if (card.type === 'tyreCards') {
@@ -531,35 +522,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     // Filter out the enable_map_popup option
     showOptions = showOptions.filter((option) => option.configKey !== 'enable_map_popup');
     // console.log('showOptions', showOptions);
-    const maxButtons =
-      this.baseCardTypes.length % 2 === 0 ? this.baseCardTypes.length / 2 : this.baseCardTypes.length / 2 + 1;
-    const buttonGridSwipe = html`
-      <div class="card-type-item">
-        <div class="card-type-content">
-          <ha-textfield
-            .type=${'number'}
-            .label=${this.localize('editor.buttonConfig.swipeRows')}
-            .configValue=${'rows_size'}
-            .configType=${'button_grid'}
-            .value=${this._config.button_grid?.rows_size ?? 2}
-            .min=${1}
-            .max=${maxButtons}
-            .disabled=${!this._config.button_grid.use_swiper}
-            @input=${this._valueChanged}
-          ></ha-textfield>
-        </div>
-        <div class="card-type-content">
-          <ha-formfield .label=${this.localize('editor.buttonConfig.useButtonSwipe')}>
-            <ha-checkbox
-              .checked=${this._config.button_grid?.use_swiper ?? true}
-              .configValue=${'use_swiper'}
-              .configType=${'button_grid'}
-              @change=${this._valueChanged}
-            ></ha-checkbox>
-          </ha-formfield>
-        </div>
-      </div>
-    `;
 
     return html`
       <div class="switches">
@@ -576,7 +538,24 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
           `;
         })}
       </div>
-      ${buttonGridSwipe} ${this._renderSectionOrder()}
+      ${this._renderGridConfig()} ${this._renderSectionOrder()}
+    `;
+  }
+
+  private _renderGridConfig(): TemplateResult {
+    const DATA = { ...this._config.button_grid };
+    const gridSchema = BUTTON_GRID_SCHEMA;
+    return html`
+      <ha-form
+        .hass=${this.hass}
+        .data=${DATA}
+        .schema=${gridSchema}
+        .configType=${'button_grid'}
+        .computeLabel=${(schema: any) => {
+          return schema.label;
+        }}
+        @value-changed=${this._valueChanged}
+      ></ha-form>
     `;
   }
 
@@ -680,186 +659,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       ._config=${this._config}
     ></vic-panel-map-editor>`;
   }
-
-  // private _renderMapPopupConfig(): TemplateResult {
-  //   const infoAlert = this.localize('editor.common.infoMap');
-  //   const maptilerInfo = `How to get Maptiler API Key?`;
-  //   const docLink = 'https://github.com/ngocjohn/vehicle-info-card/blob/main/docs/Maptiler.md';
-
-  //   const showOpts = editorShowOpts(this._selectedLanguage);
-  //   const mapPopUp = showOpts.find((option) => option.configKey === 'enable_map_popup');
-  //   const showAddress = showOpts.find((option) => option.configKey === 'show_address');
-  //   const maptilerApiKey = this._config?.extra_configs?.maptiler_api_key || '';
-  //   const googleApiKey = this._config?.google_api_key || '';
-  //   const mapPopupConfig = this._config?.map_popup_config || {};
-
-  //   const sharedConfig = {
-  //     component: this,
-  //     pickerType: 'selectorBoolean' as 'selectorBoolean',
-  //   };
-
-  //   const mapBoolean = [
-  //     {
-  //       label: mapPopUp?.label,
-  //       value: this._config.enable_map_popup ?? false,
-  //       configValue: mapPopUp?.configKey,
-  //     },
-  //     {
-  //       label: showAddress?.label,
-  //       value: this._config.extra_configs?.show_address ?? true,
-  //       configValue: showAddress?.configKey,
-  //     },
-  //     {
-  //       label: 'US Address Format',
-  //       value: mapPopupConfig?.us_format ?? false,
-  //       configValue: 'us_format',
-  //       configType: 'map_popup_config',
-  //     },
-  //     {
-  //       label: 'Use zone name',
-  //       value: mapPopupConfig?.use_zone_name ?? false,
-  //       configValue: 'use_zone_name',
-  //       configType: 'map_popup_config',
-  //     },
-  //   ];
-
-  //   const themeMode = [
-  //     { value: 'auto', label: 'Auto' },
-  //     { value: 'dark', label: 'Dark' },
-  //     { value: 'light', label: 'Light' },
-  //   ];
-
-  //   const maxMiniMapHeight = {
-  //     label: 'Mini Map Height',
-  //     value: this._config.extra_configs?.mini_map_height || 150,
-  //     configValue: 'mini_map_height',
-  //     pickerType: 'number' as 'number',
-  //     options: { selector: { number: { max: 500, min: 150, mode: 'slider', step: 10 } } },
-  //     component: this,
-  //   };
-
-  //   const deviceTracker = {
-  //     label: 'Device Tracker (Optional)',
-  //     value: this._config?.device_tracker || '',
-  //     configValue: 'device_tracker',
-  //     pickerType: 'entity' as 'entity',
-  //     component: this,
-  //     options: { includeDomains: ['device_tracker'] },
-  //   };
-
-  //   const mapPopSharedConfig = {
-  //     component: this,
-  //     configType: 'map_popup_config',
-  //   };
-
-  //   const mapPopConfig = [
-  //     {
-  //       configValue: 'hours_to_show',
-  //       label: 'Hours to show',
-  //       value: mapPopupConfig.hours_to_show || 0,
-  //       pickerType: 'number' as 'number',
-  //       options: { selector: { number: { min: 0, mode: 'box' } } },
-  //     },
-  //     {
-  //       configValue: 'default_zoom',
-  //       label: 'Default Zoom',
-  //       value: mapPopupConfig.default_zoom || 14,
-  //       pickerType: 'number' as 'number',
-  //       options: { selector: { number: { min: 0, mode: 'box' } } },
-  //     },
-  //     {
-  //       configValue: 'theme_mode',
-  //       label: 'Theme mode',
-  //       value: mapPopupConfig.theme_mode ?? 'auto',
-  //       pickerType: 'baseSelector' as 'baseSelector',
-  //       options: { selector: { select: { mode: 'dropdown', options: themeMode } } },
-  //     },
-
-  //     {
-  //       configValue: 'auto_fit',
-  //       label: 'Auto Fit',
-  //       value: mapPopupConfig.auto_fit ?? false,
-  //       pickerType: 'selectorBoolean' as 'selectorBoolean',
-  //     },
-  //     {
-  //       configValue: 'path_color',
-  //       label: 'Path Color',
-  //       value: mapPopupConfig?.path_color || '',
-  //       pickerType: 'baseSelector' as 'baseSelector',
-  //       options: { selector: { ui_color: { include_none: false, include_state: false } } },
-  //     },
-  //     {
-  //       configValue: 'history_period',
-  //       label: 'History Period',
-  //       value: mapPopupConfig?.history_period || undefined,
-  //       pickerType: 'baseSelector' as 'baseSelector',
-  //       options: {
-  //         selector: {
-  //           select: {
-  //             mode: 'dropdown',
-  //             options: [
-  //               {
-  //                 value: 'today',
-  //                 label: 'Today',
-  //               },
-  //               {
-  //                 value: 'yesterday',
-  //                 label: 'Yesterday',
-  //               },
-  //             ],
-  //           },
-  //         },
-  //       },
-  //     },
-  //   ];
-
-  //   const mapPopupConfigEl = html`
-  //     <ha-alert alert-type="info">${infoAlert}</ha-alert>
-  //     <div class="switches">
-  //       ${mapPopConfig.map((item) => {
-  //         return Picker({ ...mapPopSharedConfig, ...item });
-  //       })}
-  //     </div>
-  //   `;
-
-  //   const minimapZoom = {
-  //     label: 'Mini Map Zoom',
-  //     value: mapPopupConfig.map_zoom || 14,
-  //     configValue: 'map_zoom',
-  //     pickerType: 'number' as 'number',
-  //     options: { selector: { number: { min: 0, mode: 'box' } }, helperText: 'Default zoom for minimap' },
-  //     configType: 'map_popup_config',
-  //     component: this,
-  //   };
-
-  //   const mapConfig = html`
-  //     ${Picker(deviceTracker)}
-  //     <ha-textfield
-  //       label="Google API Key (Optional)"
-  //       .value=${googleApiKey}
-  //       .configValue=${'google_api_key'}
-  //       @input=${this._valueChanged}
-  //     ></ha-textfield>
-  //     <ha-alert alert-type="info">
-  //       ${maptilerInfo}
-  //       <mwc-button slot="action" @click="${() => window.open(docLink)}" label="More"></mwc-button>
-  //     </ha-alert>
-  //     <ha-textfield
-  //       label="Maptiler API Key (Optional)"
-  //       .value=${maptilerApiKey}
-  //       .configValue=${'maptiler_api_key'}
-  //       @input=${this._valueChanged}
-  //     ></ha-textfield>
-  //     <div class="switches">
-  //       ${mapBoolean.map((item) => {
-  //         return Picker({ ...sharedConfig, ...item });
-  //       })}
-  //       ${Picker(minimapZoom)} ${Picker(maxMiniMapHeight)}
-  //     </div>
-  //   `;
-
-  //   return html` ${mapConfig} ${mapPopupConfigEl} `;
-  // }
 
   private _renderServicesConfig(): TemplateResult {
     const infoAlert = this.localize('editor.common.infoServices');
@@ -1269,22 +1068,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     // console.log('Custom card editor changed', type, config);
   }
 
-  private _customBtnHandler(ev: CustomEvent): void {
-    ev.stopPropagation();
-    const details = ev.detail;
-    const { type, button } = details;
-
-    switch (type) {
-      case 'toggle_preview_button':
-        this._toggleBtnPreview(button);
-        break;
-      default:
-        this._customBtnChanged(ev);
-    }
-
-    // console.log('Custom button handler', type, details.configValue, details.value);
-  }
-
   /* ----------------------- CUSTOM BUTTON ITEMS ACTIONS ---------------------- */
 
   private _removeCustomCard(cardType: string) {
@@ -1348,15 +1131,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
             button_type: 'default',
             button_action: {
               entity: '',
-              tap_action: {
-                action: 'more-info',
-              },
-              hold_action: {
-                action: 'none',
-              },
-              double_tap_action: {
-                action: 'none',
-              },
             },
           },
         },
@@ -1506,15 +1280,14 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private _customBtnChanged(ev: CustomEvent): void {
     ev.stopPropagation();
-    const { configValue, configBtnType, value } = ev.detail;
+    const { configBtnType, value } = ev.detail;
 
     const updates: Partial<VehicleCardConfig> = {};
     if (this._btnPreview && this._config.btn_preview) {
       this._config = {
         ...this._config,
         btn_preview: {
-          ...this._config.btn_preview,
-          [configValue]: value,
+          ...value,
         },
       };
     }
@@ -1528,13 +1301,13 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
             ...this._config.added_cards[configBtnType],
             button: {
               ...this._config.added_cards[configBtnType].button,
-              [configValue]: value,
+              ...value,
             },
           },
         },
       };
     } else {
-      updates[configBtnType] = { ...this._config[configBtnType], [configValue]: value };
+      updates[configBtnType] = { ...this._config[configBtnType], ...value };
       this._config = {
         ...this._config,
         ...updates,
@@ -1647,17 +1420,12 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       newValue === 'system' ? (this._selectedLanguage = this.hass.language) : (this._selectedLanguage = newValue);
       updates.selected_language = newValue;
     } else if (configType === 'button_grid') {
-      newValue = target.checked !== undefined ? target.checked : newValue;
-      const key = configValue as keyof VehicleCardConfig['button_grid'];
-      if (key === 'rows_size' && newValue > this.baseCardTypes.length / 2 + 1) {
-        return;
-      }
-
+      newValue = ev.detail.value;
       updates.button_grid = {
         ...this._config.button_grid,
-        [key]: parseInt(newValue) || newValue,
+        ...newValue,
       };
-      console.log('Button grid config changed:', key, newValue);
+      console.log('Button grid config changed:', newValue);
     } else if (configIndex === 'extra_configs') {
       const key = configValue as keyof VehicleCardConfig['extra_configs']['tire_card_custom'];
       newValue = key === 'background' ? target.value : ev.detail.value;
