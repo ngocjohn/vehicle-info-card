@@ -50,6 +50,8 @@ export class CustomYamlEditor extends LitElement {
     if (!config || !isValid) {
       return;
     }
+    value.button.enabled = !this.isDefaultCard ? (value.button.enabled = true) : value.button.enabled;
+
     if (this.isDefaultCard) {
       config = {
         ...config,
