@@ -1,6 +1,5 @@
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
 
-import { applyThemesOnElement } from 'custom-card-helpers';
 import { ExtraMapCardConfig, MapEntityConfig } from 'extra-map-card';
 import memoizeOne from 'memoize-one';
 
@@ -417,7 +416,7 @@ export async function handleCardFirstUpdated(component: VehicleCard): Promise<vo
 
 export async function _getSingleCard(card: VehicleCard): Promise<LovelaceCardConfig | void> {
   const config = card.config as VehicleCardConfig;
-  if (!config.map_popup_config.single_map_card || !config.device_tracker) return;
+  if (!config.map_popup_config?.single_map_card || !config.device_tracker) return;
   const hass = card._hass as HomeAssistant;
   const mapConfig = config.map_popup_config;
   const apiKey = config.extra_configs.maptiler_api_key!;
@@ -627,34 +626,6 @@ async function fetchLatestReleaseTag() {
   }
 }
 
-export const applyTheme = (element: any, hass: HomeAssistant, theme: string, mode?: string): void => {
-  if (!element) return;
-  // console.log('applyTheme', theme, mode);
-  const themeData = hass.themes.themes[theme];
-  if (themeData) {
-    // Filter out only top-level properties for CSS variables and the modes property
-    const filteredThemeData = Object.keys(themeData)
-      .filter((key) => key !== 'modes')
-      .reduce((obj, key) => {
-        obj[key] = themeData[key];
-        return obj;
-      }, {} as Record<string, string>);
-
-    if (!mode || mode === 'auto') {
-      mode = hass.themes.darkMode ? 'dark' : 'light';
-      // Get the current mode (light or dark)
-    } else {
-      mode = mode;
-    }
-    const modeData = themeData.modes && typeof themeData.modes === 'object' ? themeData.modes[mode] : {};
-    // Merge the top-level and mode-specific variables
-    // const allThemeData = { ...filteredThemeData, ...modeData };
-    const allThemeData = { ...filteredThemeData, ...modeData };
-    const allTheme = { default_theme: hass.themes.default_theme, themes: { [theme]: allThemeData } };
-    applyThemesOnElement(element, allTheme, theme, false);
-  }
-};
-
 export const _convertToExtraMapConfig = (
   config: MapPopupConfig,
   apiKey: string,
@@ -672,5 +643,6 @@ export const _convertToExtraMapConfig = (
     hours_to_show: config.hours_to_show,
     theme_mode: config.theme_mode,
     history_period: config.history_period,
+    use_more_info: config.use_more_info,
   };
 };
