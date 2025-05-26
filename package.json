@@ -1,6 +1,6 @@
 {
   "name": "vehicle-info-card",
-  "version": "1.9.1",
+  "version": "1.10.1-beta.1",
   "description": "Lovelace custom card for displaying vehicle information from Mercedes Component integration",
   "keywords": [
     "home-assistant",
@@ -56,6 +56,7 @@
     "eslint": "^9.26.0",
     "eslint-plugin-perfectionist": "^4.12.3",
     "eslint-plugin-unused-imports": "^4.1.4",
+    "extra-map-card": "^1.2.6",
     "husky": "^9.1.7",
     "json5": "^2.2.3",
     "lint-staged": "^15.5.2",
@@ -69,7 +70,7 @@
     "typescript": "^5.8.3"
   },
   "scripts": {
-    "dev": "rollup -c rollup.config.js --watch --bundleConfigAsCjs",
+    "dev": "rollup -c rollup.config.js --bundleConfigAsCjs --watch",
     "build": "npm run import-lang && npm run lint && npm run rollup",
     "lint": "eslint 'src/**/*.ts' --fix",
     "rollup": "rollup -c rollup.config.js --bundleConfigAsCjs",

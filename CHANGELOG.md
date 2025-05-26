@@ -1,3 +1,43 @@
+<a id="v1.10.0"></a>
+# [v1.10.0](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.10.0) - 2025-05-20
+
+<!-- Release notes generated using configuration in .github/release.yml at v1.10.0 -->
+
+## What's Changed
+### New Features 🎉
+* **Standalone Mini Map Card with MapTiler Theme**
+Added support for displaying the mini map as a full, standalone card on the dashboard. This new feature replicates the functionality of the native Home Assistant map card while incorporating the custom MapTiler-based styling for a consistent visual theme. Users can now integrate the map view more flexibly within their dashboard layouts.  [#152 ](https://github.com/ngocjohn/vehicle-status-card/pull/152)
+
+![feat-single-maps](https://github.com/user-attachments/assets/4b2e7ccf-f961-4439-a26a-08a1ff96a4a9)
+
+### Fixes 🐛
+* Fix theme application compatibility for HA 2025.5 [#153](https://github.com/ngocjohn/vehicle-info-card/pull/153)
+
+
+**Full Changelog**: [v1.9.1...v1.10.0](https://github.com/ngocjohn/vehicle-info-card/compare/v1.9.1...v1.10.0)
+
+[Changes][v1.10.0]
+
+
+<a id="v1.9.1"></a>
+# [v1.9.1](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.9.1) - 2025-05-07
+
+<!-- Release notes generated using configuration in .github/release.yml at v1.9.1 -->
+
+## What's Changed
+* Updated component to be compatible with the latest Home Assistant frontend requirements.
+### Other Changes
+* chore: update Rollup TypeScript configuration with source maps and inline sources by [@ngocjohn](https://github.com/ngocjohn) in [#141](https://github.com/ngocjohn/vehicle-info-card/pull/141)
+* chore(deps-dev): bump @types/node from 22.15.0 to 22.15.3 by [@dependabot](https://github.com/dependabot) in [#143](https://github.com/ngocjohn/vehicle-info-card/pull/143)
+* chore(deps-dev): bump @typescript-eslint/parser from 8.31.0 to 8.31.1 by [@dependabot](https://github.com/dependabot) in [#142](https://github.com/ngocjohn/vehicle-info-card/pull/142)
+* Refactor tab-bar component to use nvn-tabs by [@ngocjohn](https://github.com/ngocjohn) in [#144](https://github.com/ngocjohn/vehicle-info-card/pull/144)
+
+
+**Full Changelog**: https://github.com/ngocjohn/vehicle-info-card/compare/v1.9.0...v1.9.1
+
+[Changes][v1.9.1]
+
+
 <a id="v1.9.0"></a>
 # [v1.9.0](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.9.0) - 2025-04-24
 
@@ -529,6 +569,8 @@ This update enhances the usability and accuracy of our custom card, providing cl
 [Changes][v1.0.0]
 
 
+[v1.10.0]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.9.1...v1.10.0
+[v1.9.1]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.9.0...v1.9.1
 [v1.9.0]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.8.1...v1.9.0
 [v1.8.1]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.8.0...v1.8.1
 [v1.8.0]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.7.0...v1.8.0

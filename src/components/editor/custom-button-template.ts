@@ -74,11 +74,10 @@ export class CustomButtonTemplate extends LitElement {
     const entitySelector = html`
       <ha-entity-picker
         .hass=${this.editor.hass}
-        .label=${'Entity'}
         .value=${this.button.entity || ''}
         .configValue=${'entity'}
         .configBtnType=${button}
-        @change=${(ev: Event) => this._dispatchEvent(ev, 'btn-changed')}
+        @value-changed=${(ev: any) => this._dispatchEvent(ev, 'btn-changed')}
       ></ha-entity-picker>
     `;
 
@@ -134,7 +133,7 @@ export class CustomButtonTemplate extends LitElement {
               @change=${(ev: Event) => this._dispatchEvent(ev, 'btn-changed')}
             ></ha-checkbox>
           </ha-formfield>
-        `,
+        `
       )}
     </div>`;
     return html` ${checkBoxes}
@@ -211,6 +210,7 @@ export class CustomButtonTemplate extends LitElement {
       'icon_template',
       'color_template',
       'picture_template',
+      'entity',
     ];
     const target = ev.target;
     const configValue = target?.configValue;
