@@ -1,6 +1,7 @@
 // Lit
 import { LitElement, css, html, TemplateResult, PropertyValues, CSSResultGroup, unsafeCSS } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { styleMap } from 'lit/directives/style-map.js';
 import { when } from 'lit/directives/when.js';
 // Swiper
 import Swiper from 'swiper';
@@ -11,9 +12,9 @@ import swipercss from 'swiper/swiper-bundle.css';
 import mainstyle from '../../css/styles.css';
 // Local imports
 import { ButtonCardEntity, HomeAssistant, VehicleCardConfig } from '../../types';
-import { VehicleCard } from '../../vehicle-info-card';
 // Components
 import './vic-button-single';
+import { VehicleCard } from '../../vehicle-info-card';
 
 @customElement('vehicle-buttons')
 export class VehicleButtons extends LitElement {
@@ -87,6 +88,15 @@ export class VehicleButtons extends LitElement {
     return this._config.button_grid?.use_swiper || false;
   }
 
+  private get buttonConfig(): VehicleCardConfig['button_grid'] {
+    return {
+      rows_size: this._config.button_grid?.rows_size ?? 2,
+      columns_size: this._config.button_grid?.columns_size ?? 2,
+      button_layout: this._config.button_grid?.button_layout ?? 'horizontal',
+      use_swiper: this.useSwiper,
+    };
+  }
+
   protected firstUpdated(_changedProperties: PropertyValues): void {
     super.firstUpdated(_changedProperties);
     if (this.useSwiper) {
@@ -153,7 +163,7 @@ export class VehicleButtons extends LitElement {
 
     return html`
       <section id="button-swiper">
-        <div class="grid-container">
+        <div class="grid-container" style=${this._computeGridColumns()}>
           ${Object.keys(baseButtons).map((key) => {
             return html`${this._renderButton(key)} `;
           })}
@@ -172,12 +182,13 @@ export class VehicleButtons extends LitElement {
 
   // Chunked buttons into groups of 4 for slides in swiper
   private _buttonsGridGroup(BaseButton: ButtonCardEntity): TemplateResult {
-    const rowSize = this.component.config?.button_grid?.rows_size ? this.component.config.button_grid.rows_size * 2 : 4;
+    const rowSize = this.buttonConfig.rows_size! * this.buttonConfig.columns_size!;
+    // const rowSize = this.component.config?.button_grid?.rows_size ? this.component.config.button_grid.rows_size * 2 : 4;
     const chunkedCardTypes = this._chunkObject(BaseButton, rowSize); // Divide into groups of 4
     // console.log('chunked', chunkedCardTypes);
     const slides = Object.keys(chunkedCardTypes).map((key) => {
       const buttons = html`
-        <div class="grid-container">
+        <div class="grid-container" style=${this._computeGridColumns()}>
           ${Object.keys(chunkedCardTypes[key]).map((key) => {
             return html`${this._renderButton(key)} `;
           })}
@@ -206,6 +217,7 @@ export class VehicleButtons extends LitElement {
       ._card=${this}
       ._button=${button}
       ._index=${index}
+      .layout=${this.buttonConfig.button_layout}
     ></vic-button-single>`;
   }
 
@@ -230,6 +242,14 @@ export class VehicleButtons extends LitElement {
     this.component._currentSwipeIndex = this.activeSlideIndex;
     this.component._currentCardType = btnId;
   };
+
+  private _computeGridColumns() {
+    const columns = this.buttonConfig.columns_size!;
+    const minWidth = `calc((100% - 24px) / ${columns})`;
+    return styleMap({
+      gridTemplateColumns: `repeat(auto-fill, minmax(${minWidth}, 1fr))`,
+    });
+  }
 
   public showCustomBtnEditor = (key: string): void => {
     const btnId = `button-${key}`;

@@ -22,6 +22,7 @@ export class VicButtonSingle extends LitElement {
   @property({ attribute: false }) _card!: VehicleButtons;
   @property({ attribute: false }) _button!: ButtonCardEntity;
   @property({ attribute: false }) _index!: number;
+  @property({ attribute: 'layout', type: String }) public layout: 'horizontal' | 'vertical' = 'horizontal';
 
   @state() private _templateResults: Partial<Record<TemplateKey, RenderTemplateResult | undefined>> = {};
 
@@ -200,7 +201,8 @@ export class VicButtonSingle extends LitElement {
     const entity = custom_button ? button?.entity : '';
     const color = custom_button ? getValue('color_template') : '';
 
-    const iconBackground = color ? this._setColorAlpha(color) : this._getBackgroundColors();
+    // const iconBackground = color ? this._setColorAlpha(color) : this._getBackgroundColors();
+    const iconBackground = color ? color : 'var(--primary-text-color)';
     const picture = custom_button ? getValue('picture_template') : '';
 
     return html`
@@ -211,9 +213,9 @@ export class VicButtonSingle extends LitElement {
         style="animation-delay: ${index * 50}ms"
       >
         <ha-ripple></ha-ripple>
-        <div class="click-container click-shrink" id="${`button-action-${key}`}">
-          <div class="item-icon">
-            <div class="icon-background" style=${`background-color: ${iconBackground}`}>
+        <div class="click-container click-shrink" id="${`button-action-${key}`}" layout=${this.layout}>
+          <div class="item-icon" interactive>
+            <div class="icon-background" style=${`--vic-icon-bg-color: ${iconBackground}`}>
               ${picture
                 ? html`<img src="${picture}" class="icon-picture" />`
                 : html`

@@ -2,8 +2,9 @@
   --vic-gutter-gap: 8px;
   --vic-card-padding: 12px;
   --vic-icon-size: 36px;
-  --vic-icon-border-radius: 50%;
+  --vic-icon-border-radius: 18px;
   --vic-icon-shape-color: rgba(var(--rgb-primary-text-color), 0.05);
+  --vic-icon-bg-opacity: 0.2;
 }
 
 *:focus {
@@ -609,52 +610,102 @@ dialog::backdrop {
   opacity: 1;
   cursor: pointer;
   align-items: center;
+  height: 100%;
+  overflow: hidden;
 }
 
 
-.grid-item .click-container {
+/* .grid-item .click-container {
   display: flex;
   height: 100%;
   flex-direction: row;
   align-items: center;
   width: 100%;
+} */
+
+.grid-item .click-container[layout='vertical'] {
+  flex-direction: column;
+  text-align: center;
+}
+
+.grid-item .click-container {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  /* padding: 10px; */
+  flex: 1 1 0%;
+  min-width: 0px;
+  box-sizing: border-box;
+  pointer-events: none;
+  gap: 10px;
 }
 
 .grid-item .item-notify {
   display: flex;
   position: absolute;
-  top: -4px;
-  right: -8px;
-  /* opacity: 0.8; */
+  top: -2px;
+  right: -3px;
+  line-height: 0;
   color: #db4437;
   color: var(--error-color, #db4437);
-  --mdc-icon-size: 1.4rem;
+  --mdc-icon-size: 1.35rem;
+  justify-content: center;
+  align-items: center;
+
 }
 
 .grid-item .item-notify[hidden] {
   display: none;
 }
 
-.grid-item .item-icon {
+/* .grid-item .item-icon {
   position: relative;
   display: block;
   --mdc-icon-size: 22px;
   margin-right: var(--vic-card-padding);
+} */
+.grid-item .item-icon {
+  /* position: relative; */
+  /* display: block; */
+  /* --mdc-icon-size: 22px; */
+  /* margin-right: var(--vic-card-padding); */
+  position: relative;
+  padding: 6px;
+  margin: -6px;
 }
 
 .item-icon .icon-background {
   position: relative;
   width: var(--vic-icon-size);
   height: var(--vic-icon-size);
-  font-size: var(--vic-icon-size);
   border-radius: var(--vic-icon-border-radius);
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--vic-icon-shape-color);
-  transition-property: background-color, box-shadow;
+  overflow: hidden;
+  transition: box-shadow 180ms ease-in-out;
+  /* transition-property: background-color, box-shadow;
   transition-duration: 280ms;
-  transition-timing-function: ease-out;
+  transition-timing-function: ease-out; */
+}
+
+:host([interactive]):hover {
+  --vic-icon-bg-opacity: 0.55;
+}
+
+
+
+.icon-background::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background-color: var(--vic-icon-bg-color, var(--primary-text-color));
+  opacity: var(--vic-icon-bg-opacity, 0.2);
+  transition: background-color 180ms ease-in-out, opacity 180ms ease-in-out;
 }
 
 .icon-picture {
@@ -692,10 +743,14 @@ dialog::backdrop {
 
 .grid-item .item-content .secondary {
   color: var(--secondary-text-color);
-  /* text-transform: capitalize; */
+  text-transform: capitalize;
   letter-spacing: 0.5px;
-  font-size: smaller;
   white-space: nowrap;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 16px;
+  text-overflow: ellipsis;
+
 }
 
 .primary.title-wrap {

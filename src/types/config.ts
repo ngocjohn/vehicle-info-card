@@ -74,14 +74,16 @@ type ThemesConfig = {
 
 type ButtonGridConfig = {
   use_swiper: boolean;
-  rows_size: number;
+  rows_size?: number;
+  columns_size?: number;
+  button_layout?: 'horizontal' | 'vertical';
 };
 
 export type ButtonActionConfig = {
   entity: string;
-  tap_action: ActionConfig;
-  hold_action: ActionConfig;
-  double_tap_action: ActionConfig;
+  tap_action?: ActionConfig;
+  hold_action?: ActionConfig;
+  double_tap_action?: ActionConfig;
 };
 
 export type BaseButtonConfig = {
