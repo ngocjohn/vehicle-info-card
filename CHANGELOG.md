@@ -1,3 +1,22 @@
+<a id="v1.11.0"></a>
+# [v1.11.0](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.11.0) - 2025-05-27
+
+<!-- Release notes generated using configuration in .github/release.yml at v1.11.0 -->
+
+## What's Changed
+### New Features 🎉
+* Enhance button grid configuration with customizable layout mode and columns options [#161 ](https://github.com/ngocjohn/vehicle-info-card/pull/161) 
+
+![vic-grid-columns-layout](https://github.com/user-attachments/assets/1813a863-137a-4539-9e48-365a2c7b6549)
+
+### Fixes 🐛
+* Update entity picker use HA form schema in editor [#155](https://github.com/ngocjohn/vehicle-info-card/pull/155)
+
+**Full Changelog**: https://github.com/ngocjohn/vehicle-info-card/compare/v1.10.0...v1.11.0
+
+[Changes][v1.11.0]
+
+
 <a id="v1.10.0"></a>
 # [v1.10.0](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.10.0) - 2025-05-20
 
@@ -569,6 +588,7 @@ This update enhances the usability and accuracy of our custom card, providing cl
 [Changes][v1.0.0]
 
 
+[v1.11.0]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.10.0...v1.11.0
 [v1.10.0]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.9.1...v1.10.0
 [v1.9.1]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.9.0...v1.9.1
 [v1.9.0]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.8.1...v1.9.0
