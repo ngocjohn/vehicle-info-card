@@ -41,8 +41,8 @@
 | `pl`     | Polish          | Polski          |
 | `sk`     | Slovak          | Slovenčina          |
 | `vi`     | Vietnamese          | Tiếng Việt          |
-| `zh_hans`     | zh_hans          | 简体中文          |
-| `zh_hant`     | zh-hant          | 繁體中文          |
+| `zh_Hans`     | zh-hans          | 简体中文          |
+| `zh_Hant`     | zh-hant          | 繁體中文          |
 
 </details>
 
