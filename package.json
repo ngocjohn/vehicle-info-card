@@ -34,7 +34,7 @@
   },
   "devDependencies": {
     "@dotenvx/dotenvx": "^1.44.1",
-    "@maptiler/sdk": "^3.2.2",
+    "@maptiler/sdk": "^3.3.0",
     "@rollup/plugin-commonjs": "^28.0.3",
     "@rollup/plugin-image": "^3.0.3",
     "@rollup/plugin-json": "^6.1.0",
