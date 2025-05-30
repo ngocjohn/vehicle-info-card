@@ -1,4 +1,3 @@
-import { EXTRA_MAP_CARD_URL } from '../const/const';
 import { loadModule } from './load_resource';
 
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
@@ -80,11 +79,55 @@ export const loadCardPicker = async () => {
 // Load a resource and get a promise when loading done.
 // From: https://davidwalsh.name/javascript-loader
 
-export const loadExtraMapCard = async () => {
-  (window as any).customCards = (window as any).customCards || [];
+// export const loadExtraMapCard = async () => {
+//   (window as any).customCards = (window as any).customCards || [];
 
-  if (!(window as any).customCards.find((card: any) => card.type === 'extra-map-card')) {
-    await loadModule(EXTRA_MAP_CARD_URL);
-    console.log('extra-map-card loaded');
+//   if (!(window as any).customCards.find((card: any) => card.type === 'extra-map-card')) {
+//     await loadModule(EXTRA_MAP_CARD_URL);
+//     console.log('extra-map-card loaded');
+//   }
+// };
+
+const EXTRA_MAP_CARD_BASE = 'https://cdn.jsdelivr.net/npm/extra-map-card@';
+
+export const loadExtraMapCard = async () => {
+  const latestVersion = await getLatestNpmVersion();
+  if (!latestVersion) return;
+
+  const cardList = (window as any).customCards || [];
+  const existingCard = cardList.find((card: any) => card.type === 'extra-map-card');
+
+  // Check if already loaded with latest version
+  if (existingCard?.version === latestVersion) {
+    console.log(`extra-map-card is already up to date (v${latestVersion})`);
+    return;
+  }
+
+  const latestUrl = `${EXTRA_MAP_CARD_BASE}${latestVersion}/dist/extra-map-card-bundle.min.js`;
+  console.log(`Loading extra-map-card v${latestVersion} from: ${latestUrl}`);
+
+  // Remove old <script> tags
+  document.querySelectorAll(`script[src*="extra-map-card"]`).forEach((el) => el.remove());
+
+  // Remove outdated entry from customCards
+  (window as any).customCards = cardList.filter((card: any) => card.type !== 'extra-map-card');
+
+  try {
+    await loadModule(latestUrl);
+    console.log(`extra-map-card reloaded to version ${latestVersion}`);
+  } catch (err) {
+    console.error('Failed to load extra-map-card:', err);
   }
 };
+
+async function getLatestNpmVersion(): Promise<string | null> {
+  try {
+    const res = await fetch(`https://registry.npmjs.org/extra-map-card`);
+    if (!res.ok) throw new Error('Package not found');
+    const data = await res.json();
+    return data['dist-tags']?.latest || null;
+  } catch (error) {
+    console.error('Failed to fetch version:', error);
+    return null;
+  }
+}

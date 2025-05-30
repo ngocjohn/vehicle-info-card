@@ -425,6 +425,7 @@ export async function _getSingleCard(card: VehicleCard): Promise<LovelaceCardCon
       entity: config.device_tracker,
       label_mode: mapConfig.label_mode,
       attribute: mapConfig.attribute,
+      focus: true,
     },
   ];
   const singleMapConfig = _convertToExtraMapConfig(

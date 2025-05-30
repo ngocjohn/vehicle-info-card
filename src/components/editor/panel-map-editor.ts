@@ -34,6 +34,7 @@ export class VicPanelMapEditor extends LitElement {
       entity: this._config.device_tracker!,
       label_mode: this._mapPopupConfig.label_mode,
       attribute: this._mapPopupConfig.attribute,
+      focus: true,
     };
   }
 
