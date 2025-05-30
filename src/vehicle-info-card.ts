@@ -102,17 +102,13 @@ export class VehicleCard extends LitElement {
   @state() private _buttonReady = false;
   @state() _currentSwipeIndex?: number;
   // Resize observer
-  @state() _resizeInitiated = false;
   @state() _connected = false;
-  @state() private _resizeObserver: ResizeObserver | null = null;
-  @state() private _resizeEntries: ResizeObserverEntry[] = [];
-  @state() private _cardWidth: number = 0;
-  @state() private _cardHeight: number = 0;
 
   // Misc
   @state() mainSectionItems: Record<string, HTMLElement> = {};
   @state() _cardPreviewId?: string;
   @state() _cardId?: string | null;
+  private _calculateCardHeight?: number;
   // Components
   @query('vehicle-buttons') vehicleButtons!: VehicleButtons;
   @query('vehicle-map') vehicleMap!: VehicleMap;
@@ -127,60 +123,20 @@ export class VehicleCard extends LitElement {
   connectedCallback(): void {
     super.connectedCallback();
     this._connected = true;
+    loadExtraMapCard();
     if (this.editMode) {
       this._loading = false;
       window.addEventListener('editor-event', this.handleEditorEvents.bind(this));
     }
 
-    if (!this._resizeInitiated && !this._resizeObserver) {
-      this.delayedAttachResizeObserver();
-    }
     window.BenzCard = this;
   }
 
   disconnectedCallback(): void {
     window.removeEventListener('editor-event', this.handleEditorEvents.bind(this));
-    this.detachResizeObserver();
     this._connected = false;
-    this._resizeInitiated = false;
 
     super.disconnectedCallback();
-  }
-
-  delayedAttachResizeObserver(): void {
-    // wait for loading to finish before attaching resize observer
-    setTimeout(() => {
-      this.attachResizeObserver();
-      this._resizeInitiated = true;
-    }, 0);
-  }
-
-  attachResizeObserver(): void {
-    const ro = new ResizeObserver((entries: ResizeObserverEntry[]) => {
-      this._resizeEntries = entries;
-      this.measureCard();
-    });
-
-    const card = this.shadowRoot?.querySelector('ha-card') as HTMLElement;
-    if (card) {
-      ro.observe(card);
-      this._resizeObserver = ro;
-    }
-  }
-
-  detachResizeObserver(): void {
-    if (this._resizeObserver) {
-      this._resizeObserver.disconnect();
-      this._resizeObserver = null;
-    }
-  }
-
-  private measureCard(): void {
-    if (this._resizeEntries.length > 0) {
-      const entry = this._resizeEntries[0];
-      this._cardWidth = entry.borderBoxSize[0].inlineSize;
-      this._cardHeight = entry.borderBoxSize[0].blockSize;
-    }
   }
 
   get userLang(): string {
@@ -265,12 +221,11 @@ export class VehicleCard extends LitElement {
 
   protected async firstUpdated(_changedProperties: PropertyValues): Promise<void> {
     super.firstUpdated(_changedProperties);
-    void loadExtraMapCard();
+
     await new Promise((resolve) => setTimeout(resolve, 0));
     handleCardFirstUpdated(this);
     this.setUpButtonCards();
     this._setUpPreview();
-    this.measureCard();
     this.createSingleMapCard();
   }
 
@@ -331,6 +286,8 @@ export class VehicleCard extends LitElement {
     // console.log('%cButton ready: %O', 'color: #bada55', logging);
     this._buttonReady = true;
 
+    this._calculateCardHeight = this.getGridRowSize() * ROWPX;
+    console.log('Card height calculated', this._calculateCardHeight);
     setTimeout(() => {
       this._loading = false;
     }, 2000);
@@ -430,9 +387,8 @@ export class VehicleCard extends LitElement {
       return html`${this._singleMapCard}`;
     }
 
-    const cardHeight = this.getGridRowSize() * ROWPX;
     const loadingEl = html`
-      <div class="loading-image" style="height: ${cardHeight}px">
+      <div class="loading-image" style="height: ${this._calculateCardHeight}px">
         <img src="${IMAGE.LOADING}" alt="Loading" />
       </div>
     `;
@@ -1566,12 +1522,8 @@ export class VehicleCard extends LitElement {
   /* ---------------------------- COMPUTE CARD STYLES & CLASSES ---------------------------- */
   private _computeCardStyles() {
     // if (!this._resizeInitiated) return;
-    const fullCardWidth = this._cardWidth;
-    const fullCardHeight = this._cardHeight;
     const backgroundUrl = this.isDark ? IMAGE.BACK_WHITE : IMAGE.BACK_DARK;
     return styleMap({
-      '--vic-card-full-width': `${fullCardWidth}px`,
-      '--vic-card-full-height': `${fullCardHeight}px`,
       '--vic-background-image': this.config.show_background ? `url(${backgroundUrl})` : 'none',
     });
   }
@@ -1643,17 +1595,21 @@ export class VehicleCard extends LitElement {
     // Header Name
     const configName = this.config.name?.trim() === '';
     const name = configName ? ROWPX / 44 : 0;
+
     // Mini map height
-    const mini_map_height = this.config.extra_configs?.mini_map_height;
-    const minimapHeight = mini_map_height ? mini_map_height / ROWPX : 150 / ROWPX;
+    const mini_map_height = this.config.extra_configs?.mini_map_height ?? 150;
+    const minimapHeight = mini_map_height / ROWPX;
 
     // Grid buttons height
     const visibleButtons = Object.values(this.buttonCards).filter((card) => !card.button.hidden).length;
-    const rows_size = this.config.button_grid?.rows_size === undefined ? 2 : this.config.button_grid.rows_size;
+    const rows_size = this.config.button_grid?.rows_size ?? 2;
+    const columns_size = this.config.button_grid?.columns_size ?? 2;
 
-    const possibleRows = visibleButtons / 2;
+    const possibleRows = Math.ceil(visibleButtons / columns_size);
     const buttonRows = rows_size > possibleRows ? possibleRows : rows_size;
-    const gridButtonsHeight = (buttonRows * 62 + 12) / ROWPX;
+
+    const layoutRowHeight = this.config.button_grid?.button_layout === 'vertical' ? 57 * 2 : 57;
+    const gridButtonsHeight = (buttonRows * layoutRowHeight + 12) / ROWPX;
 
     // Images height
     const configImgMaxHeight = this.config.extra_configs?.images_swipe?.max_height ?? 150;
@@ -1661,12 +1617,20 @@ export class VehicleCard extends LitElement {
 
     const headerInfoHeight = 70 / ROWPX;
 
+    // Mini map in section last or first
+    const sectionsList = this.config.extra_configs?.section_order ?? [...SECTION_DEFAULT_ORDER];
+    const miniMapAtTopOrBottom =
+      sectionsList[sectionsList.length - 1] === SECTION.MINI_MAP || sectionsList[0] === SECTION.MINI_MAP
+        ? 12 / ROWPX
+        : 0;
+
     let gridRowSize = 0; // 58px
     if (show_slides) gridRowSize += imagesHeight;
     if (show_map) gridRowSize += minimapHeight;
     if (show_buttons) gridRowSize += gridButtonsHeight;
     if (show_header_info) gridRowSize += headerInfoHeight;
     if (configName) gridRowSize += name;
+    gridRowSize -= miniMapAtTopOrBottom;
 
     return gridRowSize;
   }
