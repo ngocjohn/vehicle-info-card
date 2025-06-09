@@ -45,7 +45,7 @@
     "@turf/turf": "^7.2.0",
     "@types/leaflet": "^1.9.18",
     "@types/leaflet-providers": "^1.2.4",
-    "@types/node": "^22.15.19",
+    "@types/node": "^22.15.30",
     "@types/sortablejs": "^1.15.8",
     "@typescript-eslint/eslint-plugin": "^8.32.0",
     "@typescript-eslint/parser": "^8.32.0",
