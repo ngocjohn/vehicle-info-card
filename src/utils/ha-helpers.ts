@@ -96,7 +96,7 @@ async function getModelName(hass: HomeAssistant, entityCar: string): Promise<str
   // Find the car entity
   const carEntity = allEntities.find((entity) => entity.entity_id === entityCar);
   if (!carEntity) return '';
-  console.log('Car Entity:', carEntity);
+  // console.log('Car Entity:', carEntity);
   const deviceId = carEntity.device_id;
   if (!deviceId) return '';
 
@@ -107,7 +107,7 @@ async function getModelName(hass: HomeAssistant, entityCar: string): Promise<str
   // Find the device by ID
   const device = allDevices.find((device) => device.id === deviceId);
   if (!device) return '';
-  console.log('Device:', device);
+  // console.log('Device:', device);
   return device.model || '';
 }
 
@@ -326,12 +326,9 @@ export async function handleFirstUpdated(editor: VehicleCardEditor): Promise<voi
   if (!editor._config.entity) {
     console.log('Entity not found, fetching...');
     updates.entity = getCarEntity(editor.hass as HomeAssistant);
-  } else if (!editor._config.model_name) {
+  } else if (!editor._modelName) {
     const entity = editor._config.entity;
-    updates.model_name = await getModelName(editor.hass as HomeAssistant, entity);
-  } else if (!editor._config.selected_language) {
-    updates.selected_language = editor.hass.language;
-    console.log('Selected language:', updates.selected_language);
+    editor._modelName = await getModelName(editor.hass as HomeAssistant, entity);
   } else if (editor._config.extra_configs?.section_order === undefined) {
     let extraConfig = { ...(editor._config.extra_configs || {}) };
     console.log('Section order not found, creating default...');
@@ -458,7 +455,7 @@ export async function _getMapDat(card: VehicleCard): Promise<void> {
 
 export const _getMapAddress = memoizeOne(
   async (card: VehicleCard, lat: number, lon: number): Promise<Address | undefined> => {
-    if (card.config.extra_configs?.show_address === false) return undefined;
+    if (card.config.map_popup_config?.show_address === false) return undefined;
 
     const apiKey = card.config?.google_api_key;
     const maptilerKey = card.config.extra_configs?.maptiler_api_key;
