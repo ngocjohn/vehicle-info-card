@@ -54,7 +54,7 @@
     "dotenv": "^16.5.0",
     "es-toolkit": "^1.37.2",
     "eslint": "^9.26.0",
-    "eslint-plugin-perfectionist": "^4.12.3",
+    "eslint-plugin-perfectionist": "^4.15.0",
     "eslint-plugin-unused-imports": "^4.1.4",
     "extra-map-card": "^1.2.10",
     "husky": "^9.1.7",
