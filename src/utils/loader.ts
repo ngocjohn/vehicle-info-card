@@ -89,32 +89,34 @@ export const loadCardPicker = async () => {
 // };
 
 const EXTRA_MAP_CARD_BASE = 'https://cdn.jsdelivr.net/npm/extra-map-card@';
+const EXTRA_MAP_NAME = 'extra-map-card';
+const EXTRA_MAP_PATH = '/dist/extra-map-card-bundle.min.js';
 
+const EXTRA_MAP_LATEST_URL = (version: string) => `${EXTRA_MAP_CARD_BASE}${version}${EXTRA_MAP_PATH}`;
 export const loadExtraMapCard = async () => {
   const latestVersion = await getLatestNpmVersion();
   if (!latestVersion) return;
 
   const cardList = (window as any).customCards || [];
-  const existingCard = cardList.find((card: any) => card.type === 'extra-map-card');
+  const existingCard = cardList.find((card: any) => card.type === `${EXTRA_MAP_NAME}`);
 
   // Check if already loaded with latest version
   if (existingCard?.version === latestVersion) {
-    console.log(`extra-map-card is already up to date (v${latestVersion})`);
+    // console.log(`extra-map-card is already at the latest version: ${latestVersion}`);
     return;
   }
 
-  const latestUrl = `${EXTRA_MAP_CARD_BASE}${latestVersion}/dist/extra-map-card-bundle.min.js`;
-  console.log(`Loading extra-map-card v${latestVersion} from: ${latestUrl}`);
+  const latestUrl = EXTRA_MAP_LATEST_URL(latestVersion);
 
   // Remove old <script> tags
-  document.querySelectorAll(`script[src*="extra-map-card"]`).forEach((el) => el.remove());
+  document.querySelectorAll(`script[src*="${EXTRA_MAP_NAME}"]`).forEach((el) => el.remove());
 
   // Remove outdated entry from customCards
-  (window as any).customCards = cardList.filter((card: any) => card.type !== 'extra-map-card');
+  (window as any).customCards = cardList.filter((card: any) => card.type !== `${EXTRA_MAP_NAME}`);
 
   try {
     await loadModule(latestUrl);
-    console.log(`extra-map-card reloaded to version ${latestVersion}`);
+    // console.log(`extra-map-card reloaded to version ${latestVersion}`);
   } catch (err) {
     console.error('Failed to load extra-map-card:', err);
   }
@@ -122,7 +124,7 @@ export const loadExtraMapCard = async () => {
 
 async function getLatestNpmVersion(): Promise<string | null> {
   try {
-    const res = await fetch(`https://registry.npmjs.org/extra-map-card`);
+    const res = await fetch(`https://registry.npmjs.org/${EXTRA_MAP_NAME}`);
     if (!res.ok) throw new Error('Package not found');
     const data = await res.json();
     return data['dist-tags']?.latest || null;

@@ -11,7 +11,17 @@ import './components/editor';
 import Sortable from 'sortablejs';
 
 import './components/editor/custom-card-ui-editor';
-import { CustomButtonTemplate, CustomCardUIEditor, PanelImages, VicPanelMapEditor } from './components/editor';
+import {
+  CustomButtonTemplate,
+  CustomCardUIEditor,
+  ENTITY_CARD_NAME_SCHEMA,
+  LANG_SCHEMA,
+  PanelImages,
+  SERVICE_SCHEMA,
+  SHOW_CONFIG_SCHEMA,
+  THEME_CONFIG_SCHEMA,
+  VicPanelMapEditor,
+} from './components/editor';
 import { BUTTON_GRID_SCHEMA } from './components/editor/forms/grid-button-schema';
 import { CARD_VERSION, PREVIEW_CONFIG_TYPES } from './const/const';
 import { cardTypes, editorShowOpts } from './const/data-keys';
@@ -24,8 +34,8 @@ import {
   CardTypeConfig,
   BaseButtonConfig,
   ExtendedButtonConfigItem,
-  SECTION_DEFAULT_ORDER,
   SECTION,
+  AddedCards,
 } from './types';
 // Local types
 import { fireEvent } from './types/ha-frontend/fire-event';
@@ -61,11 +71,12 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   @state() private _activeSubcardType: string | null = null;
   @state() private _confirmDeleteType: string | null = null;
-  @state() public _selectedLanguage: string = 'system';
+  @state() public _selectedLanguage: string = '';
   @state() _cardSortable: Sortable | null = null;
   @state() _sectionSortable: Sortable | null = null;
 
   @state() _latestRelease = latestRelease;
+  @state() _modelName: string | undefined = undefined;
 
   private _toastDissmissed: boolean = false;
   @state() private _reloadSectionList: boolean = false;
@@ -73,9 +84,11 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   @state() private _visiblePanel: Set<string> = new Set();
   @state() private _newCardType: Map<string, string> = new Map();
 
-  @query('panel-images') private _panelImages!: PanelImages;
-  @query('custom-card-ui-editor') private _customCardEditor?: CustomCardUIEditor;
-  @query('vic-panel-map-editor') private _mapEditor?: VicPanelMapEditor;
+  private _addedCardSorted: boolean = false;
+
+  @query('panel-images') _panelImages!: PanelImages;
+  @query('custom-card-ui-editor') _customCardEditor?: CustomCardUIEditor;
+  @query('vic-panel-map-editor') _mapEditor?: VicPanelMapEditor;
   @query('custom-button-template') _customButtonTemplate?: CustomButtonTemplate;
 
   public async setConfig(config: VehicleCardConfig): Promise<void> {
@@ -108,16 +121,29 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       )
     ) {
       console.log('Cleaning config of preview keys');
-      this._config = {
-        ...this._config,
-        ...PREVIEW_CONFIG_TYPES.reduce((acc: any, key: string) => {
-          acc[key] = undefined;
-          return acc;
-        }, {}),
-      };
+      PREVIEW_CONFIG_TYPES.forEach((key) => {
+        if (this._config.hasOwnProperty(key)) {
+          delete this._config[key];
+        }
+      });
       fireEvent(this, 'config-changed', { config: this._config });
     } else {
       return;
+    }
+  }
+
+  protected willUpdate(_changedProperties: PropertyValues): void {
+    if (_changedProperties.has('_config') && this._config.added_cards && !this._addedCardSorted) {
+      console.log('Rearranging added cards');
+      // Sort the added cards with hidden items at the end
+      const rearranged = this._rearrangeAddedCards(this._config.added_cards);
+      this._config = { ...this._config, added_cards: rearranged };
+      fireEvent(this, 'config-changed', { config: this._config });
+      this._addedCardSorted = true;
+    }
+    if (_changedProperties.has('_config') && this._config.selected_language) {
+      this._selectedLanguage = this._config.selected_language;
+      this.getBaseCardTypes();
     }
   }
 
@@ -125,6 +151,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     void (await loadCardPicker());
     await new Promise((resolve) => setTimeout(resolve, 0));
     await handleFirstUpdated(this);
+    this._selectedLanguage = this._config.selected_language || this.hass.language;
     this.getBaseCardTypes();
   }
 
@@ -136,22 +163,22 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     if (!this._btnPreview && !this._cardPreview && !this._isTirePreview) {
       this._cleanConfig();
     }
-    if (
-      _changedProperties.has('_activeSubcardType') &&
-      !this._activeSubcardType &&
-      (this._btnPreview || this._cardPreview || this._isTirePreview)
-    ) {
-      this._btnPreview = false;
-      this._cardPreview = false;
-      this._isTirePreview = false;
-      this._cleanConfig();
-    }
 
-    if (_changedProperties.has('_activeTabIndex') && (this._btnPreview || this._cardPreview || this._isTirePreview)) {
+    const resetConfig = () => {
       this._btnPreview = false;
       this._cardPreview = false;
       this._isTirePreview = false;
       this._cleanConfig();
+    };
+
+    const shouldReset =
+      (_changedProperties.has('_activeSubcardType') &&
+        !this._activeSubcardType &&
+        (this._btnPreview || this._cardPreview || this._isTirePreview)) ||
+      (_changedProperties.has('_activeTabIndex') && (this._btnPreview || this._cardPreview || this._isTirePreview));
+
+    if (shouldReset) {
+      resetConfig();
     }
 
     return true;
@@ -191,7 +218,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private getBaseCardTypes() {
     const baseCardTypes = cardTypes(this._selectedLanguage);
-
     if (this.isAnyAddedCard) {
       for (const [key, card] of Object.entries(this._config.added_cards)) {
         baseCardTypes.push({
@@ -204,7 +230,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       }
     }
 
-    return (this.baseCardTypes = baseCardTypes);
+    this.baseCardTypes = baseCardTypes;
   }
 
   private _debouncedCustomBtnChanged = debounce(this.configChanged.bind(this), 500);
@@ -212,75 +238,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   public localize = (string: string, search = '', replace = ''): string => {
     return localize(string, this._selectedLanguage, search, replace);
   };
-
-  private _initCardSortable(panelId: string): void {
-    this.updateComplete.then(() => {
-      const panel = this.shadowRoot?.getElementById(panelId);
-      const cardList = panel?.querySelector('#card-list') as HTMLElement;
-      if (cardList) {
-        this._cardSortable = new Sortable(cardList, {
-          animation: 150,
-          handle: '.handle',
-          ghostClass: 'ghost',
-          onEnd: (evt) => {
-            this._handleCardSort(evt);
-          },
-        });
-      }
-    });
-  }
-
-  private _handleCardSort(evt: Sortable.SortableEvent): void {
-    if (!this._config) return;
-    evt.preventDefault();
-    const oldIndex = evt.oldIndex as number;
-    const newIndex = evt.newIndex as number;
-    const buttonId = evt.item.getAttribute('data-id') as string;
-    const cards = [...Object.entries(this._config.added_cards)];
-    const [removed] = cards.splice(oldIndex, 1);
-    cards.splice(newIndex, 0, removed);
-
-    const newAddedCards = cards.reduce((acc, [key, value], index) => {
-      acc[key] = { ...value, order: index };
-      return acc;
-    }, {});
-
-    this._config = { ...this._config, added_cards: newAddedCards };
-    this.configChanged();
-    this.getBaseCardTypes();
-    this.requestUpdate();
-    this._handleSwipeToButton(buttonId);
-  }
-
-  private _initSectionSortable(): void {
-    this.updateComplete.then(() => {
-      const sectionList = this.shadowRoot?.getElementById('section-list') as HTMLElement;
-      if (sectionList) {
-        this._sectionSortable = new Sortable(sectionList, {
-          animation: 150,
-          handle: '.handle',
-          ghostClass: 'ghost',
-          onEnd: (evt) => {
-            this._handleSectionSort(evt);
-          },
-        });
-      }
-    });
-    console.log('Section sortable initialized');
-  }
-
-  private _handleSectionSort(evt: Sortable.SortableEvent): void {
-    if (!this._config) return;
-    evt.preventDefault();
-    const oldIndex = evt.oldIndex as number;
-    const newIndex = evt.newIndex as number;
-    const sectionOrder = [...(this._config.extra_configs?.section_order || [...SECTION_DEFAULT_ORDER])];
-    const [removed] = sectionOrder.splice(oldIndex, 1);
-    sectionOrder.splice(newIndex, 0, removed);
-
-    this._config = { ...this._config, extra_configs: { ...this._config.extra_configs, section_order: sectionOrder } };
-    this.configChanged();
-  }
 
   private _handleSwipeToButton(buttonId: string): void {
     setTimeout(() => {
@@ -325,43 +282,10 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _renderNameEntityForm(): TemplateResult {
-    // Filter entities as per your requirement
-    const entities = Object.keys(this.hass.states).filter(
-      (entity) => entity.startsWith('sensor') && entity.endsWith('_car')
-    );
-    const modelName = this._config.model_name;
+    const modelName = this._modelName || '';
+    const DATA = { entity: this._config.entity || '', name: this._config.name || '' };
 
-    // Define options for the combo-box
-    const options = [{ value: modelName, label: modelName }];
-
-    // The combo-box for entering a custom name or selecting the model name
-    const nameComboBox = html`
-      <ha-combo-box
-        .item-value-path=${'value'}
-        .item-label-path=${'label'}
-        .hass=${this.hass}
-        .label=${'Select or Enter Name'}
-        .items=${options}
-        .allowCustomValue=${true}
-        .value=${this._config.name}
-        .configValue=${'name'}
-        @value-changed=${this._valueChanged}
-        @closed=${(ev: Event) => ev.stopPropagation()}
-      ></ha-combo-box>
-    `;
-
-    return html`
-      <ha-entity-picker
-        .hass=${this.hass}
-        .value=${this._config?.entity}
-        .required=${true}
-        .configValue=${'entity'}
-        @value-changed=${this._valueChanged}
-        .allow-custom-entity=${false}
-        .includeEntities=${entities}
-      ></ha-entity-picker>
-      ${nameComboBox}
-    `;
+    return this._createHaForm(DATA, ENTITY_CARD_NAME_SCHEMA(modelName));
   }
 
   private _renderCardButtonPanel(): TemplateResult {
@@ -445,6 +369,8 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         cards: this.renderCardItems(customCards),
         visible: this.isAnyAddedCard,
         isVisible: true, // Always show the added cards
+
+        hideToggle: true, // Hide the toggle for added cards section
       },
     ].map((section) => ({
       ...section,
@@ -518,62 +444,44 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private _renderShowOptions(): TemplateResult {
-    let showOptions = editorShowOpts(this._selectedLanguage);
-    // Filter out the enable_map_popup option
-    showOptions = showOptions.filter((option) => option.configKey !== 'enable_map_popup');
-    // console.log('showOptions', showOptions);
+    // Filter out the enable_map_popup option and show_address option
+    const showOptions = editorShowOpts(this._selectedLanguage).filter(
+      (option) => option.configKey !== 'enable_map_popup' && option.configKey !== 'show_address'
+    );
+    const SHOW_DATA = { ...Object.fromEntries(showOptions.map((key) => [key.configKey, this._config[key.configKey]])) };
 
-    return html`
-      <div class="switches">
-        ${showOptions.map((option) => {
-          const { label, configKey } = option;
-          return html`
-            <ha-formfield .label=${label}>
-              <ha-checkbox
-                .checked=${this._config[configKey] ?? true}
-                .configValue=${configKey}
-                @change=${this._showValueChanged}
-              ></ha-checkbox>
-            </ha-formfield>
-          `;
-        })}
-      </div>
-      ${this._renderGridConfig()} ${this._renderSectionOrder()}
-    `;
-  }
+    // Grid config data schema
+    const GRID_BUTTON_DATA = { button_grid: this._config?.button_grid };
+    const GRID_SCHEMA = BUTTON_GRID_SCHEMA();
 
-  private _renderGridConfig(): TemplateResult {
-    const DATA = { ...this._config.button_grid };
-    const gridSchema = BUTTON_GRID_SCHEMA;
+    // Create a order list section
+    const orderList = this._renderSection({
+      key: 'section-order',
+      title: 'Section Order',
+      isVisible: this._visiblePanel.has('section-order'),
+      toggle: () => this._toggleSubButtonPanel('section-order'),
+      cards: this._renderSectionOrder(),
+    }) as TemplateResult;
+
+    const gridForm = this._createHaForm(GRID_BUTTON_DATA, GRID_SCHEMA);
     return html`
-      <ha-form
-        .hass=${this.hass}
-        .data=${DATA}
-        .schema=${gridSchema}
-        .configType=${'button_grid'}
-        .computeLabel=${(schema: any) => {
-          return schema.label;
-        }}
-        @value-changed=${this._valueChanged}
-      ></ha-form>
+      ${this._createHaForm(SHOW_DATA, SHOW_CONFIG_SCHEMA(showOptions), 'show_options')} ${orderList} ${gridForm}
     `;
   }
 
   private _renderSectionOrder(): TemplateResult {
-    if (this._reloadSectionList) return html`<div>....</div>`;
+    if (this._reloadSectionList) return html` <ha-spinner .size=${'small'}></ha-spinner> `;
     const sectionOrder = this._config.extra_configs?.section_order || [];
 
-    return html`<div class="header-sm">
-        <span>Section order</span>
-      </div>
-      <div class="sub-card-rows">
+    return html`
+      <ha-sortable handle-selector=".handle" @item-moved=${this._sectionMoved}>
         <div id="section-list">
           ${repeat(
             sectionOrder,
-            (section) => section,
-            (section, index) =>
+            (section: string) => section,
+            (section: string, index: number) =>
               html`
-                <div class="card-type-item" data-id=${section}>
+                <div class="card-type-item" data-id=${section} data-index=${index}>
                   <div class="handle">
                     <ha-icon-button .path=${mdiDrag}> </ha-icon-button>
                   </div>
@@ -591,61 +499,37 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
               `
           )}
         </div>
-      </div>`;
+      </ha-sortable>
+    `;
+  }
+
+  private _sectionMoved(evt: CustomEvent): void {
+    evt.stopPropagation();
+    const { oldIndex, newIndex } = evt.detail;
+    console.log(`Section moved from ${oldIndex} to ${newIndex}`);
+    const sections = [...(this._config.extra_configs?.section_order || [])];
+    sections.splice(newIndex, 0, sections.splice(oldIndex, 1)[0]);
+    this._config = {
+      ...this._config,
+      extra_configs: {
+        ...this._config.extra_configs,
+        section_order: sections,
+      },
+    };
+    fireEvent(this, 'config-changed', { config: this._config });
   }
 
   private _renderThemesConfig(): TemplateResult {
-    const langOpts = [
-      { key: 'system', name: 'System', nativeName: 'System' },
-      ...languageOptions.sort((a, b) => a.name.localeCompare(b.name)),
-    ];
+    const languesOpts = languageOptions.map((lang) => lang.key);
+    const THEME_LANG_SCHEMA = [...LANG_SCHEMA(languesOpts), ...THEME_CONFIG_SCHEMA];
+    const DATA = {
+      selected_language: this._config?.selected_language,
+      selected_theme: this._config?.selected_theme,
+    };
 
-    const themeMode = [
-      { key: 'auto', name: 'Auto' },
-      { key: 'dark', name: 'Dark' },
-      { key: 'light', name: 'Light' },
-    ];
+    const themeLangForm = this._createHaForm(DATA, THEME_LANG_SCHEMA);
 
-    const themeConfig = this._config.selected_theme || {};
-    const themesConfig = html`
-      <div class="switches">
-        <ha-select
-          .label=${'Language'}
-          .value=${this._config.selected_language}
-          .configValue=${'selected_language'}
-          @selected=${this._valueChanged}
-          @closed=${(ev: Event) => ev.stopPropagation()}
-          fixedMenuPosition
-        >
-          ${langOpts.map(
-            (lang) =>
-              html`<ha-list-item value=${lang.key}>${lang.nativeName ? lang.nativeName : lang.name}</ha-list-item> `
-          )}
-        </ha-select>
-
-        <ha-theme-picker
-          .hass=${this.hass}
-          .value=${themeConfig.theme ?? 'default'}
-          .configValue=${'theme'}
-          .includeDefault=${true}
-          @selected=${this._valueChanged}
-          @closed=${(ev: Event) => ev.stopPropagation()}
-          .required=${true}
-        ></ha-theme-picker>
-
-        <ha-select
-          label="Theme mode"
-          .value=${themeConfig.mode ?? 'auto'}
-          .configValue=${'mode'}
-          @selected=${this._valueChanged}
-          @closed=${(ev: Event) => ev.stopPropagation()}
-          fixedMenuPosition
-        >
-          ${themeMode.map((mode) => html`<mwc-list-item value=${mode.key}>${mode.name}</mwc-list-item>`)}
-        </ha-select>
-      </div>
-    `;
-    return themesConfig;
+    return themeLangForm;
   }
 
   private _renderImageConfig(): TemplateResult {
@@ -663,26 +547,15 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   private _renderServicesConfig(): TemplateResult {
     const infoAlert = this.localize('editor.common.infoServices');
 
-    // Get the current selected services based on the config
-    const selectedServices = Object.entries(this._config.services)
-      .filter(([, value]) => value === true)
-      .map(([key]) => key);
+    const serviceOptions = Object.entries(servicesCtrl(this._selectedLanguage)).map(([key, { name }]) => ({
+      value: key,
+      label: name,
+    }));
+    const SERVICE_FORM_SCHEMA = SERVICE_SCHEMA(serviceOptions);
+    const DATA = { services: this._config?.services };
+    const servicesSelector = this._createHaForm(DATA, SERVICE_FORM_SCHEMA);
 
-    const selectorItems = this.getServicesOptions();
-    const servicesSelector = html`
-      <ha-alert alert-type="info">${infoAlert}</ha-alert>
-      <div>
-        <ha-selector
-          .hass=${this.hass}
-          .label=${'Select Services'}
-          .selector=${selectorItems.selector}
-          .value=${selectedServices}
-          .configValue=${'selected_services'}
-          @value-changed=${this._servicesValueChanged}
-        ></ha-selector>
-      </div>
-    `;
-    return servicesSelector;
+    return html` <ha-alert alert-type="info">${infoAlert}</ha-alert>${servicesSelector}`;
   }
 
   private _renderVersionInfo(): TemplateResult {
@@ -847,6 +720,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     toggle,
     cards,
     hideHeader = false,
+    hideToggle = false,
   }: {
     key: string;
     title: string;
@@ -854,14 +728,15 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     toggle: () => void;
     cards: TemplateResult;
     hideHeader?: boolean;
+    hideToggle?: boolean;
   }): TemplateResult {
     return html`
-      <div class="card-types">
+      <div class="card-types" id="${key}">
         ${!hideHeader
           ? html`
-              <div class="header-sm">
+              <div class="header-sm" @click="${() => toggle()}" ?interactive=${!hideToggle}>
                 <span>${title}</span>
-                <div section-id="${key}" class="subcard-icon" ?active=${isVisible} @click="${() => toggle()}">
+                <div section-id="${key}" class="subcard-icon" ?active=${isVisible} ?hide=${hideToggle}>
                   <ha-icon icon="mdi:chevron-down"></ha-icon>
                 </div>
               </div>
@@ -883,77 +758,114 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   // Function to render card items
   private renderCardItems = (cards: CardTypeConfig[]): TemplateResult => {
-    const cardList = html`${repeat(
-      cards || [],
-      (card) => card.type,
-      (card, index) => {
-        const hiddenClass = this.isButtonHidden(card.button);
-        const addedCard = this.isAddedCard(card.type);
-        const { icon, name, type, config } = card;
-        return html`
-          <div class="card-type-item" data-id=${card.type}>
-            ${addedCard ? html`<div class="handle"><ha-icon-button .path=${mdiDrag}> </ha-icon-button></div>` : nothing}
-            <div class="card-type-row" ?disabled=${hiddenClass}>
-              <div class="card-type-icon">
-                <div class="icon-background">
-                  <ha-icon
-                    icon=${icon ? icon : `mdi:numeric-${index + 1}-circle`}
-                    @click=${() => (this._activeSubcardType = type)}
-                  ></ha-icon>
+    let foundHiddenDivider = false;
+    const cardList = html` <ha-sortable handle-selector=".handle" @item-moved=${this._buttonsMoved}>
+      <div id="added-card-list">
+        ${repeat(
+          cards || [],
+          (card) => card.type,
+          (card, index) => {
+            const hiddenClass = this.isButtonHidden(card.button);
+            if (hiddenClass && !foundHiddenDivider) {
+              foundHiddenDivider = true;
+              return html`
+                <div class="header-sm divider">
+                  <div>Hidden buttons</div>
                 </div>
-              </div>
-              <div class="card-type-content">
-                <span class="secondary">Config name: ${config}</span>
-                <div class="primary">${name}</div>
-              </div>
-            </div>
-            <div class="card-type-actions">
-              <ha-button-menu
-                .corner=${'BOTTOM_START'}
-                .fixed=${true}
-                .menuCorner=${'START'}
-                .activatable=${true}
-                .naturalMenuWidth=${true}
-                @closed=${(ev: Event) => ev.stopPropagation()}
-              >
-                <div class="action-icon" slot="trigger"><ha-icon icon="mdi:dots-vertical"></ha-icon></div>
-                <mwc-list-item @click=${() => (this._activeSubcardType = type)} .graphic=${'icon'}>
-                  <ha-icon icon="mdi:pencil" slot="graphic"></ha-icon>
-                  Edit
+                ${this._renderItemRow(card, index)}
+              `;
+            }
+            return this._renderItemRow(card, index);
+          }
+        )}
+      </div>
+    </ha-sortable>`;
+
+    return cardList;
+  };
+
+  private _renderItemRow(card: CardTypeConfig, index: number): TemplateResult {
+    const hidden = this.isButtonHidden(card.button);
+    const addedCard = this.isAddedCard(card.type);
+    const { icon, name, type, config } = card;
+
+    return html` <div class="card-type-item" data-id=${card.type}>
+      ${addedCard && !hidden
+        ? html`<div class="handle"><ha-icon-button .path=${mdiDrag}> </ha-icon-button></div>`
+        : nothing}
+      <div class="card-type-row" ?disabled=${hidden}>
+        <div class="card-type-icon">
+          <div class="icon-background">
+            <ha-icon
+              icon=${icon ? icon : `mdi:numeric-${index + 1}-circle`}
+              @click=${() => (this._activeSubcardType = type)}
+            ></ha-icon>
+          </div>
+        </div>
+        <div class="card-type-content">
+          <span class="secondary">Config name: ${config}</span>
+          <div class="primary">${name}</div>
+        </div>
+      </div>
+      <div class="card-type-actions">
+        <ha-button-menu
+          .corner=${'BOTTOM_START'}
+          .fixed=${true}
+          .menuCorner=${'START'}
+          .activatable=${true}
+          .naturalMenuWidth=${true}
+          @closed=${(ev: Event) => ev.stopPropagation()}
+        >
+          <div class="action-icon" slot="trigger"><ha-icon icon="mdi:dots-vertical"></ha-icon></div>
+          <mwc-list-item @click=${() => (this._activeSubcardType = type)} .graphic=${'icon'}>
+            <ha-icon icon="mdi:pencil" slot="graphic"></ha-icon>
+            Edit
+          </mwc-list-item>
+          <mwc-list-item @click=${() => this._toggleButtonHide(card.button)} .graphic=${'icon'}>
+            <ha-icon icon="${hidden ? 'mdi:eye' : 'mdi:eye-off'}" slot="graphic"></ha-icon>
+            ${hidden ? 'Unhide' : 'Hide'} button on card
+          </mwc-list-item>
+          ${addedCard
+            ? html`
+                <mwc-list-item
+                  @click=${() => (this._confirmDeleteType = type)}
+                  .graphic=${'icon'}
+                  style="color: var(--error-color)"
+                >
+                  <ha-icon icon="mdi:delete" slot="graphic" style="color: var(--error-color)"></ha-icon>
+                  Delete
                 </mwc-list-item>
-                <mwc-list-item @click=${() => this._toggleButtonHide(card.button)} .graphic=${'icon'}>
-                  <ha-icon icon="${hiddenClass ? 'mdi:eye' : 'mdi:eye-off'}" slot="graphic"></ha-icon>
-                  ${hiddenClass ? 'Unhide' : 'Hide'} button on card
-                </mwc-list-item>
-                ${addedCard
-                  ? html`
-                      <mwc-list-item
-                        @click=${() => (this._confirmDeleteType = type)}
-                        .graphic=${'icon'}
-                        style="color: var(--error-color)"
-                      >
-                        <ha-icon icon="mdi:delete" slot="graphic" style="color: var(--error-color)"></ha-icon>
-                        Delete
-                      </mwc-list-item>
-                    `
-                  : nothing}
-              </ha-button-menu>
-              ${this._confirmDeleteType === type
-                ? html` <div class="confirm-delete">
+              `
+            : nothing}
+        </ha-button-menu>
+        ${this._confirmDeleteType === type
+          ? html` <div class="confirm-delete">
                   <span>${this.localize('editor.buttonConfig.deleteConfirm')}</span>
                   <ha-button @click=${this._removeCustomCard(type)}><ha-icon icon="mdi:check"></ha-button>
                   <ha-button @click=${() =>
                     (this._confirmDeleteType = null)}><ha-icon icon="mdi:close"> </ha-icon></ha-button>
                 </div>`
-                : nothing}
-            </div>
-          </div>
-        `;
-      }
-    )}`;
+          : nothing}
+      </div>
+    </div>`;
+  }
 
-    return html`<div id="card-list">${cardList}</div>`;
-  };
+  private _buttonsMoved(ev: CustomEvent): void {
+    ev.stopPropagation();
+    const { oldIndex, newIndex } = ev.detail;
+    const cards = [...Object.entries(this._config.added_cards)];
+    cards.splice(newIndex, 0, cards.splice(oldIndex, 1)[0]);
+    const cardId = cards[newIndex][0];
+    const newAddedCards = cards.reduce((acc, [key, value], index) => {
+      acc[key] = { ...value, order: index };
+      return acc;
+    }, {});
+    this._config = { ...this._config, added_cards: newAddedCards };
+    this.configChanged();
+    this.getBaseCardTypes();
+    this.requestUpdate();
+    this._handleSwipeToButton(cardId);
+  }
 
   private panelTemplate = (
     titleKey: string,
@@ -1161,9 +1073,10 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     if (isAddedCard) {
       const addedCards = { ...this._config.added_cards };
       addedCards[type].button.hide = !isHidden;
+      const rearrangedCards = this._rearrangeAddedCards(addedCards);
       this._config = {
         ...this._config,
-        added_cards: addedCards,
+        added_cards: rearrangedCards,
       };
     } else {
       const config = { ...this._config };
@@ -1171,44 +1084,22 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       this._config = config;
     }
     this.configChanged();
+    this.requestUpdate();
+    this.getBaseCardTypes();
+  }
+
+  private _rearrangeAddedCards(addedCards: AddedCards): AddedCards {
+    const addedEntries = [...Object.entries(addedCards)];
+    // Rearrange added cards based on hidden state
+    const rearrangedCards: AddedCards = Object.fromEntries([
+      ...addedEntries.filter(([, card]) => !card.button?.hide),
+      ...addedEntries.filter(([, card]) => card.button?.hide),
+    ]);
+
+    return rearrangedCards;
   }
 
   /* --------------------- ADDITIONAL HANDLERS AND METHODS -------------------- */
-
-  private _servicesValueChanged(ev: CustomEvent): void {
-    const selectedServices = ev.detail.value;
-    const updatedServices = { ...this._config.services };
-
-    // Set each service to true or false based on the selection
-    Object.keys(updatedServices).forEach((service) => {
-      updatedServices[service] = selectedServices.includes(service);
-    });
-
-    // Update the config with the new services state
-    this._config = {
-      ...this._config,
-      services: updatedServices,
-    };
-
-    this.configChanged();
-  }
-
-  private getServicesOptions() {
-    const serviceOptions = Object.entries(servicesCtrl(this._selectedLanguage)).map(([key, { name }]) => ({
-      value: key,
-      label: name,
-    }));
-
-    return {
-      selector: {
-        select: {
-          multiple: true,
-          custom_value: false,
-          options: serviceOptions,
-        },
-      },
-    };
-  }
 
   private _handlePanelExpandedChanged(e: Event, titleKey: string): void {
     const panel = e.target as HTMLElement;
@@ -1216,14 +1107,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     // Special handling for imagesConfig panel
     if (titleKey === 'imagesConfig' && (panel as any).expanded) {
       this._panelImages.initSortable();
-    }
-
-    if (titleKey === 'customButtonConfig' && (panel as any).expanded) {
-      this._initCardSortable('customButtonConfig');
-    }
-
-    if (titleKey === 'showConfig' && (panel as any).expanded) {
-      this._initSectionSortable();
     }
 
     // Get all panels
@@ -1245,6 +1128,68 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       panels.forEach((p) => {
         p.style.display = 'block';
       });
+    }
+  }
+
+  /* ----------------------------- COMPUTE FORM METHODS ----------------------------- */
+
+  private _createHaForm(data: any, schema: any, configKey?: string): TemplateResult {
+    return html`
+      <ha-form
+        .hass=${this.hass}
+        .data=${data}
+        .schema=${schema}
+        .configKey=${configKey}
+        .computeLabel=${this._computeLabel}
+        .computeHelper=${this._computeHelper}
+        @value-changed=${this._formValueChanged}
+      ></ha-form>
+    `;
+  }
+
+  private _computeLabel(schema: any) {
+    if (schema.name === 'entity') {
+      return '';
+    }
+    return schema.label || schema.name;
+  }
+  private _computeHelper(schema: any) {
+    return schema.helper || '';
+  }
+
+  private _formValueChanged(ev: CustomEvent): void {
+    if (!this._config || !this.hass) {
+      return;
+    }
+    const configKey = (ev.target as any).configKey;
+    const value = ev.detail.value;
+    console.log('Form value changed', configKey, value);
+    const updates: Partial<VehicleCardConfig> = {};
+    if (configKey !== undefined && configKey !== null) {
+      if (configKey === 'show_options' && typeof value === 'object') {
+        // Handle show options changes
+        this._setOrderList(value);
+        return;
+      } else {
+        // Handle other config changes
+        updates[configKey] = value;
+      }
+    } else {
+      this._config = {
+        ...this._config,
+        ...value,
+      };
+      fireEvent(this, 'config-changed', { config: this._config });
+      return;
+    }
+
+    if (Object.keys(updates).length > 0) {
+      this._config = {
+        ...this._config,
+        ...updates,
+      };
+      this.configChanged();
+      return;
     }
   }
 
@@ -1316,69 +1261,41 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     this._debouncedCustomBtnChanged();
   }
 
-  private _showValueChanged(ev: any): void {
-    ev.stopPropagation();
-    if (!this._config || !this.hass) {
-      return;
-    }
-
-    const target = ev.target;
-    const configValue = target.configValue;
-
-    const updates: Partial<VehicleCardConfig> = {};
-
-    let extraConfig = { ...(this._config.extra_configs || {}) };
-    let sectionOrderChanged = false;
-    if (configValue === 'show_address') {
-      extraConfig.show_address = target.checked;
-      updates.extra_configs = extraConfig;
-    } else {
-      updates[configValue] = target.checked;
-      if (['show_header_info', 'show_slides', 'show_map', 'show_buttons'].includes(configValue)) {
-        let sectionOrder = [...(this._config.extra_configs?.section_order || [])];
-        const section = {
-          show_header_info: SECTION.HEADER_INFO,
-          show_slides: SECTION.IMAGES_SLIDER,
-          show_map: SECTION.MINI_MAP,
-          show_buttons: SECTION.BUTTONS,
-        };
-        for (const sectionKey of Object.keys(section)) {
-          if (updates[sectionKey] === true) {
-            sectionOrder.push(section[sectionKey]);
-          } else if (updates[sectionKey] === false) {
-            sectionOrder = sectionOrder.filter((s) => s !== section[sectionKey]);
-          }
-        }
-        sectionOrder = [...new Set(sectionOrder)];
-        updates.extra_configs = {
-          ...extraConfig,
-          section_order: sectionOrder,
-        };
-        sectionOrderChanged = true;
-        console.log('Section order changed:', sectionOrder);
+  private _setOrderList(showConfig: { [key: string]: boolean }) {
+    const itemFilter = ['show_header_info', 'show_slides', 'show_map', 'show_buttons'];
+    const showItems = Object.fromEntries(Object.entries(showConfig).filter(([key]) => itemFilter.includes(key)));
+    const currentOrder = [...(this._config.extra_configs?.section_order || [])];
+    let sectionOrder = [...currentOrder];
+    const section = {
+      show_header_info: SECTION.HEADER_INFO,
+      show_slides: SECTION.IMAGES_SLIDER,
+      show_map: SECTION.MINI_MAP,
+      show_buttons: SECTION.BUTTONS,
+    };
+    for (const sectionKey of Object.keys(section)) {
+      if (showItems[sectionKey] === true) {
+        sectionOrder.push(section[sectionKey]);
+      } else if (showItems[sectionKey] === false) {
+        sectionOrder = sectionOrder.filter((s) => s !== section[sectionKey]);
       }
     }
-    if (Object.keys(updates).length > 0) {
-      this._config = {
-        ...this._config,
-        ...updates,
-      };
-      fireEvent(this, 'config-changed', { config: this._config });
-      if (sectionOrderChanged) {
-        this._reloadSectionList = true;
-
-        setTimeout(() => {
-          if (this._sectionSortable) {
-            this._sectionSortable.destroy();
-            this._reloadSectionList = false;
-            setTimeout(() => {
-              this._initSectionSortable();
-            }, 0);
-          }
-        }, 50);
-      }
-    }
+    sectionOrder = [...new Set(sectionOrder)];
+    const extraConfigs = {
+      ...this._config.extra_configs,
+      section_order: sectionOrder,
+    };
+    this._config = {
+      ...this._config,
+      extra_configs: extraConfigs,
+      ...showConfig,
+    };
+    fireEvent(this, 'config-changed', { config: this._config });
+    this._reloadSectionList = true;
+    setTimeout(() => {
+      this._reloadSectionList = false;
+    }, 200);
   }
+
   public _valueChanged(ev: any): void {
     ev.stopPropagation();
     if (!this._config || !this.hass) {
@@ -1407,13 +1324,15 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       }
     } else if (['theme', 'mode'].includes(configValue)) {
       const key = configValue as keyof VehicleCardConfig['selected_theme'];
-      if (this._config.selected_theme![key] && this._config.selected_theme[key] === newValue) {
+      if (this._config.selected_theme && this._config.selected_theme[key] === newValue) {
         return;
       } else {
-        updates.selected_theme = {
-          ...this._config.selected_theme,
+        let selectedTheme = this._config.selected_theme || {};
+        selectedTheme = {
+          ...selectedTheme,
           [key]: newValue,
         };
+        updates.selected_theme = selectedTheme;
         console.log('Selected theme changed:', updates.selected_theme);
       }
     } else if (configValue === 'selected_language') {
@@ -1446,13 +1365,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         mini_map_height: parseInt(newValue) || newValue,
       };
       console.log('Mini map height changed:', newValue);
-    } else if (configValue === 'show_address') {
-      newValue = target.checked !== undefined ? target.checked : ev.detail.value;
-      updates.extra_configs = {
-        ...this._config.extra_configs,
-        show_address: newValue,
-      };
-      console.log('Show address changed:', target.checked);
     } else if (configValue === 'maptiler_api_key') {
       newValue = target.value;
       if (newValue.trim() === '' || newValue === '') {
@@ -1676,9 +1588,6 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       p.style.display = p.id === panel ? 'block' : 'none';
       (p as any).expanded = p.id === panel;
     });
-    if (panel === 'customButtonConfig') {
-      this._initCardSortable('customButtonConfig');
-    }
   }
 
   private _dispatchCardEvent(action: string): void {

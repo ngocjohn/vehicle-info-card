@@ -59,6 +59,7 @@ export interface MapPopupConfig {
   attribute?: string;
   use_more_info?: boolean;
   map_styles?: SingleMapCustomStyles;
+  show_address?: boolean;
   extra_entities?: (MapEntityConfig | string)[];
 }
 
@@ -69,7 +70,7 @@ export type ImageConfig = {
 
 type ThemesConfig = {
   theme: string;
-  mode: THEME_MODE;
+  mode?: THEME_MODE;
 };
 
 type ButtonGridConfig = {
@@ -136,43 +137,8 @@ type ExtraConfigs = {
   };
   section_order?: string[];
   mini_map_height?: number;
-  show_address?: boolean;
   maptiler_api_key?: string;
 };
-
-export interface VehicleCardConfig extends LovelaceCardConfig {
-  type: string;
-  entity: string;
-  name?: string;
-  device_tracker?: string;
-  google_api_key?: string;
-  selected_language?: string | null;
-  model_name?: string;
-  images: ImageConfig[];
-  services: Services;
-  button_grid: ButtonGridConfig;
-  map_popup_config: MapPopupConfig;
-  selected_theme: ThemesConfig;
-  use_custom_cards?: CustomCardsUse;
-  vehicle_card?: LovelaceCardConfig[];
-  trip_card?: LovelaceCardConfig[];
-  eco_card?: LovelaceCardConfig[];
-  tyre_card?: LovelaceCardConfig[];
-  eco_button?: BaseButtonConfig;
-  trip_button?: BaseButtonConfig;
-  vehicle_button?: BaseButtonConfig;
-  tyre_button?: BaseButtonConfig;
-  added_cards: AddedCards;
-  extra_configs: ExtraConfigs;
-  show_slides: boolean;
-  show_map: boolean;
-  show_buttons: boolean;
-  show_background: boolean;
-  enable_map_popup: boolean;
-  enable_services_control: boolean;
-  show_error_notify: boolean;
-  show_header_info: boolean;
-}
 
 export type ButtonCardEntity = {
   key: string;
@@ -216,6 +182,42 @@ export type ExtendedButtonConfigItem = BaseButtonConfig & {
   isHidden?: boolean;
   useCustomButton?: boolean;
 };
+
+export type SHOW_OPTIONS = {
+  show_slides: boolean;
+  show_map: boolean;
+  show_buttons: boolean;
+  show_background: boolean;
+  enable_map_popup: boolean;
+  enable_services_control: boolean;
+  show_error_notify: boolean;
+  show_header_info: boolean;
+};
+export interface VehicleCardConfig extends LovelaceCardConfig, SHOW_OPTIONS {
+  type: string;
+  entity: string;
+  name?: string;
+  device_tracker?: string;
+  google_api_key?: string;
+  selected_language?: string;
+  model_name?: string;
+  images?: ImageConfig[];
+  services: Services;
+  button_grid: ButtonGridConfig;
+  map_popup_config: MapPopupConfig;
+  selected_theme: ThemesConfig;
+  use_custom_cards?: CustomCardsUse;
+  vehicle_card?: LovelaceCardConfig[];
+  trip_card?: LovelaceCardConfig[];
+  eco_card?: LovelaceCardConfig[];
+  tyre_card?: LovelaceCardConfig[];
+  eco_button?: BaseButtonConfig;
+  trip_button?: BaseButtonConfig;
+  vehicle_button?: BaseButtonConfig;
+  tyre_button?: BaseButtonConfig;
+  added_cards: AddedCards;
+  extra_configs: ExtraConfigs;
+}
 
 // Default configuration for the Vehicle Card.
 

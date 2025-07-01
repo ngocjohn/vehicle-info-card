@@ -42,7 +42,7 @@ export function imageInputChange(editor: VehicleCardEditor, ev: Event, index?: n
 
   if (!url || !editor._config) return;
 
-  const images = [...editor._config.images];
+  const images = [...(editor._config.images || [])];
 
   if (index !== undefined) {
     // Update existing image
@@ -60,7 +60,7 @@ export function imageInputChange(editor: VehicleCardEditor, ev: Event, index?: n
 
 export async function handleFilePicked(
   editor: VehicleCardEditor,
-  target: { files: FileList; toastId: string; errorMsg?: string },
+  target: { files: FileList; toastId: string; errorMsg?: string }
 ): Promise<void> {
   console.log('File picked');
   const { files, toastId, errorMsg } = target;
@@ -87,7 +87,7 @@ export async function handleFilePicked(
 function _addImage(editor: VehicleCardEditor, url: string, title: string): void {
   console.log('Image added:', url);
   if (editor._config) {
-    const images = [...editor._config.images];
+    const images = [...(editor._config.images || [])];
     images.push({ url, title });
     editor._config = { ...editor._config, images };
     editor.configChanged();

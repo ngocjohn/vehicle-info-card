@@ -242,7 +242,7 @@ export class VicPanelMapEditor extends LitElement {
       ),
       _getBooleanSelector(
         showAddress?.configKey!,
-        extraConfigs?.show_address ?? true,
+        mapPopupConfig?.show_address ?? true,
         showAddress?.label!,
         'extra_configs'
       ),

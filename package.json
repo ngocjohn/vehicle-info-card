@@ -56,7 +56,7 @@
     "eslint": "^9.26.0",
     "eslint-plugin-perfectionist": "^4.12.3",
     "eslint-plugin-unused-imports": "^4.1.4",
-    "extra-map-card": "^1.2.6",
+    "extra-map-card": "^1.2.10",
     "husky": "^9.1.7",
     "json5": "^2.2.3",
     "lint-staged": "^16.0.0",

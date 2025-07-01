@@ -17,6 +17,10 @@
   box-sizing: border-box;
 }
 
+*[hidden] {
+  display: none;
+}
+
 ha-card {
   position: relative;
   overflow: hidden;
@@ -533,6 +537,10 @@ header h1 {
 
 .subcard-icon.hidden {
   visibility: hidden;
+}
+
+.subcard-icon[hide] {
+  display: none !important;
 }
 
 .sub-attributes {

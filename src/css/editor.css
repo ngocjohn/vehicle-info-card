@@ -105,6 +105,14 @@ h3 {
   gap: 8px 0px;
 }
 
+#section-order {
+  border: 1px solid var(--divider-color);
+  padding: var(--vic-gutter-gap);
+  box-sizing: border-box;
+  border-radius: var(--vic-gutter-gap);
+  margin-bottom: var(--vic-card-padding);
+}
+
 .card-types {
   display: flex;
   flex-direction: column;
@@ -112,6 +120,8 @@ h3 {
   position: relative;
   border-bottom: 1px solid var(--divider-color);
   padding-bottom: 0.5rem;
+  box-sizing: border-box;
+  margin-block: var(--vic-card-padding);
 }
 
 .header-sm {
@@ -125,9 +135,23 @@ h3 {
   text-transform: uppercase;
   height: 100%;
   /* font-size: medium; */
-  margin-top: 1rem;
+  /* margin-top: 1rem; */
   font-weight: 400;
 }
+
+.header-sm[interactive] {
+  cursor: pointer;
+}
+
+.header-sm[interactive]:hover {
+  color: var(--primary-color);
+}
+
+.header-sm.divider {
+  color: var(--secondary-text-color);
+  padding: var(--vic-card-padding);
+}
+
 
 .subcard-icon {
   transition: transform 0.3s;
@@ -138,6 +162,10 @@ h3 {
 
 .subcard-icon[active] {
   transform: rotate(180deg);
+}
+
+.subcard-icon[hide] {
+  display: none !important;
 }
 
 .sub-card-rows {
@@ -152,6 +180,7 @@ h3 {
   max-height: 0;
   overflow: hidden;
   padding: 0;
+  transition: all 400ms ease-in-out;
 }
 
 .card-type-item {

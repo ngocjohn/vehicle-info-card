@@ -294,6 +294,16 @@ export interface LovelaceGenericElementEditor<C = any> extends HTMLElement {
 // ****************************************************************************************************
 export interface LovelaceDashboardBaseConfig {}
 
+export interface LovelaceCard extends HTMLElement {
+  hass?: HomeAssistant;
+  isPanel?: boolean;
+  preview?: boolean;
+  layout?: string;
+  getCardSize(): number | Promise<number>;
+  getLayoutOptions?(): LovelaceLayoutOptions;
+  setConfig(config: LovelaceCardConfig): void;
+}
+
 export interface LovelaceConfig extends LovelaceDashboardBaseConfig {
   background?: string;
   views: LovelaceViewRawConfig[];
