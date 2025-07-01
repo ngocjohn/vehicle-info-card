@@ -60,7 +60,7 @@ export class PanelImages extends LitElement {
 
   protected shouldUpdate(_changedProperties: PropertyValues): boolean {
     if (_changedProperties.has('config')) {
-      this._images = this.config.images;
+      this._images = this.config.images || [];
       return true;
     }
     return true;
@@ -185,7 +185,7 @@ export class PanelImages extends LitElement {
         : '';
 
     const showIndexDeleteBtn =
-      this.config.images && this.config.images.length > 0
+      this._images.length > 0
         ? html`
             <div class="custom-background-wrapper">
               <ha-formfield .label=${'Show Image Index'}>
@@ -217,7 +217,7 @@ export class PanelImages extends LitElement {
               @input=${(event: Event) => imageInputChange(this.editor, event, index)}
             ></ha-textfield>
             <ha-checkbox .checked=${false} @change=${(ev: Event) => this._toggleSelection(ev, image.url)}></ha-checkbox>
-          </div>`,
+          </div>`
       )}
       ${showIndexDeleteBtn}
     </div>`;
@@ -419,14 +419,15 @@ export class PanelImages extends LitElement {
     });
 
     this._selectedItems.clear(); // Clear existing selections
-    this.config.images.forEach((image: { url: string }) => this._selectedItems.add(image.url));
+
+    this._images.forEach((image: { url: string }) => this._selectedItems.add(image.url));
 
     this.requestUpdate();
   }
 
   private _deleteSelectedItems(): void {
     if (this._selectedItems.size === 0) return;
-    const images = this.config.images.filter((image: { url: string }) => !this._selectedItems.has(image.url));
+    const images = this._images.filter((image: { url: string }) => !this._selectedItems.has(image.url));
     this._selectedItems.clear();
     fireEvent(this.editor, 'config-changed', { config: { ...this.config, images } });
     this.validateImageList();
@@ -435,7 +436,7 @@ export class PanelImages extends LitElement {
   private validateImageList(): void {
     setTimeout(() => {
       const imagesListCount = this.shadowRoot?.querySelectorAll('.images-list .image-input').length || 0;
-      const configImagesCount = this.config.images.length;
+      const configImagesCount = this._images.length;
       if (imagesListCount !== configImagesCount) {
         console.log('Reindexing images  ...');
         this._reindexImages = true;
@@ -464,7 +465,7 @@ export class PanelImages extends LitElement {
   }
   private addNewImageUrl(): void {
     if (!this._newImageUrl || !this.config) return;
-    const images = [...this.config.images];
+    const images = [...(this.config.images || [])];
     images.push({ url: this._newImageUrl, title: this._newImageUrl });
     this.config = { ...this.config, images };
     this._newImageUrl = '';
