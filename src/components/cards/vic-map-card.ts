@@ -275,7 +275,7 @@ export class VehicleMap extends LitElement {
   private _renderAddress(): TemplateResult {
     const useZoneName = this.mapConfig?.use_zone_name;
 
-    if (this.card.config.extra_configs?.show_address === false) return html``;
+    if (this.card.config.map_popup_config?.show_address === false) return html``;
     if (!this._addressReady) return html` <div class="address-line loading"><span class="loader"></span></div> `;
 
     const address = this._address || {};
