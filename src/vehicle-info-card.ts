@@ -32,7 +32,7 @@ import {
 import { HEADER_ACTION, PreviewCard, MapData, SECTION } from './types';
 import { FrontendLocaleData } from './types/ha-frontend/data/frontend-local-data';
 import { fireEvent } from './types/ha-frontend/fire-event';
-import { LovelaceCardEditor, LovelaceCardConfig } from './types/ha-frontend/lovelace/lovelace';
+import { LovelaceCardEditor, LovelaceCardConfig, LovelaceCard } from './types/ha-frontend/lovelace/lovelace';
 import {
   handleCardFirstUpdated,
   getCarEntity,
@@ -41,16 +41,16 @@ import {
   isEmpty,
   Create,
   isDarkColor,
-  applyTheme,
   loadExtraMapCard,
   _getSingleCard,
+  applyThemesOnElement,
 } from './utils';
 import { getAddedButton, getDefaultButton, createCardElement, createCustomButtons } from './utils';
 
 const ROWPX = 58;
 
 @customElement('vehicle-info-card')
-export class VehicleCard extends LitElement {
+export class VehicleCard extends LitElement implements LovelaceCard {
   public static async getConfigElement(): Promise<LovelaceCardEditor> {
     await import('./editor');
     return document.createElement('vehicle-info-card-editor');
@@ -77,7 +77,7 @@ export class VehicleCard extends LitElement {
   @property({ attribute: false }) public _hass!: HomeAssistant;
   @property({ attribute: false }) public config!: VehicleCardConfig;
   @property({ type: Boolean }) public editMode: boolean = false;
-  @property({ type: String }) public layout?: string;
+  @property({ attribute: false }) public layout?: string;
 
   // Vehicle entities and attributes
   @state() vehicleEntities: VehicleEntities = {};
@@ -116,20 +116,18 @@ export class VehicleCard extends LitElement {
   @query('remote-control') remoteControl!: RemoteControl;
   @query('extra-map-card') _extraMapCard?: any;
 
-  constructor() {
-    super();
-  }
-
   connectedCallback(): void {
     super.connectedCallback();
-    this._connected = true;
+    window.BenzCard = this;
+
     loadExtraMapCard();
     if (this.editMode) {
       this._loading = false;
-      window.addEventListener('editor-event', this.handleEditorEvents.bind(this));
+      if (this.isEditorPreview) {
+        window.addEventListener('editor-event', this.handleEditorEvents.bind(this));
+      }
     }
-
-    window.BenzCard = this;
+    this._connected = true;
   }
 
   disconnectedCallback(): void {
@@ -137,6 +135,22 @@ export class VehicleCard extends LitElement {
     this._connected = false;
 
     super.disconnectedCallback();
+  }
+
+  public static getStubConfig = (hass: HomeAssistant): Record<string, unknown> => {
+    const entity = getCarEntity(hass);
+    console.log('entity', entity);
+    return {
+      ...defaultConfig,
+      entity: entity,
+      images: [],
+    };
+  };
+
+  public setConfig(config: VehicleCardConfig): void {
+    this.config = {
+      ...config,
+    };
   }
 
   get userLang(): string {
@@ -179,57 +193,47 @@ export class VehicleCard extends LitElement {
     return newLocale;
   }
 
-  private get isEditorPreview(): boolean {
-    const cardParent = this.offsetParent as HTMLElement;
-    if (!cardParent) return false;
-    let isEditorPreview: boolean = false;
-    if (this.layout === 'grid') {
-      const sectionParent = cardParent.offsetParent as HTMLElement;
-      if (sectionParent) {
-        isEditorPreview = !!sectionParent.classList.contains('element-preview');
-      }
-    } else {
-      isEditorPreview = cardParent?.classList.contains('element-preview');
-    }
-
-    return isEditorPreview;
+  get isEditorPreview(): boolean {
+    const parentElementClassPreview = this.offsetParent?.classList.contains('element-preview');
+    return parentElementClassPreview || false;
   }
 
   public static get styles(): CSSResultGroup {
     return styles;
   }
 
-  public static getStubConfig = (hass: HomeAssistant): Record<string, unknown> => {
-    const entity = getCarEntity(hass);
-    console.log('entity', entity);
-    return {
-      ...defaultConfig,
-      entity: entity,
-      images: [],
-    };
-  };
+  protected async willUpdate(changedProps: PropertyValues): Promise<void> {
+    super.willUpdate(changedProps);
 
-  public async setConfig(config: VehicleCardConfig): Promise<void> {
-    if (!config) {
-      throw new Error('Invalid configuration');
+    if (
+      changedProps.has('config') &&
+      this.config.map_popup_config?.single_map_card === true &&
+      this.config?.device_tracker &&
+      this.config.extra_configs?.maptiler_api_key
+    ) {
+      if (!this._singleMapCard) {
+        this.createSingleMapCard();
+      }
     }
 
-    this.config = {
-      ...config,
-    };
+    if (changedProps.has('config') && this.config.selected_theme) {
+      const oldTheme = changedProps.get('config')?.selected_theme?.theme;
+      const newTheme = this.config.selected_theme.theme;
+      if (oldTheme !== newTheme) {
+        this.applyTheme(newTheme);
+      }
+    }
   }
 
-  protected async firstUpdated(_changedProperties: PropertyValues): Promise<void> {
-    super.firstUpdated(_changedProperties);
-
+  protected async firstUpdated(changedProps: PropertyValues): Promise<void> {
+    super.firstUpdated(changedProps);
     await new Promise((resolve) => setTimeout(resolve, 0));
     handleCardFirstUpdated(this);
-    this.setUpButtonCards();
+    this._setUpButtonCards();
     this._setUpPreview();
-    this.createSingleMapCard();
   }
 
-  protected updated(changedProps: PropertyValues) {
+  protected async updated(changedProps: PropertyValues): Promise<void> {
     super.updated(changedProps);
 
     if (changedProps.has('_currentCardType') && this._currentCardType !== null && !this.editMode) {
@@ -249,12 +253,6 @@ export class VehicleCard extends LitElement {
     //   return false;
     // }
 
-    if (_changedProps.has('config') && this.config.selected_theme?.theme !== 'default') {
-      const theme = this.config.selected_theme?.theme;
-      const mode = this.config.selected_theme?.mode || 'auto';
-      applyTheme(this, this._hass, theme, mode);
-    }
-
     if (_changedProps.has('_currentCardType') && this._currentCardType) {
       this._activeSubCard = new Set<string>();
     }
@@ -262,7 +260,7 @@ export class VehicleCard extends LitElement {
     return hasConfigOrEntityChanged(this, _changedProps, true);
   }
 
-  private async setUpButtonCards(): Promise<void> {
+  private async _setUpButtonCards(): Promise<void> {
     if (this._currentPreviewType !== null) return;
     this._buttonReady = false;
 
@@ -285,9 +283,8 @@ export class VehicleCard extends LitElement {
 
     // console.log('%cButton ready: %O', 'color: #bada55', logging);
     this._buttonReady = true;
-
     this._calculateCardHeight = this.getGridRowSize() * ROWPX;
-    console.log('Card height calculated', this._calculateCardHeight);
+    // console.log('Card height calculated', this._calculateCardHeight);
     setTimeout(() => {
       this._loading = false;
     }, 2000);
@@ -1519,6 +1516,33 @@ export class VehicleCard extends LitElement {
     }
   }
 
+  /* ---------------------------- THEME METHODS ---------------------------- */
+  private applyTheme(theme: string): void {
+    const themeData = this._hass.themes.themes[theme];
+    if (themeData) {
+      // Filter out only top-level properties for CSS variables and the modes property
+      const filteredThemeData = Object.keys(themeData)
+        .filter((key) => key !== 'modes')
+        .reduce((obj, key) => {
+          obj[key] = themeData[key];
+          return obj;
+        }, {} as Record<string, string>);
+
+      // Get the current mode (light or dark)
+      const mode = this.isDark ? 'dark' : 'light';
+      const modeData = themeData.modes && typeof themeData.modes === 'object' ? themeData.modes[mode] : {};
+
+      // Merge the top-level and mode-specific variables
+      const allThemeData = { ...filteredThemeData, ...modeData };
+      applyThemesOnElement(
+        this,
+        { default_theme: this._hass.themes.default_theme, themes: { [theme]: allThemeData } },
+        theme,
+        false
+      );
+    }
+  }
+
   /* ---------------------------- COMPUTE CARD STYLES & CLASSES ---------------------------- */
   private _computeCardStyles() {
     // if (!this._resizeInitiated) return;
@@ -1589,6 +1613,7 @@ export class VehicleCard extends LitElement {
     }
   }
 
+  /* ---------------------------- GRID LAYOUT METHODS --------------------------- */
   private getGridRowSize(): number {
     const { show_slides = true, show_map = true, show_buttons = true, show_header_info = true } = this.config;
 
