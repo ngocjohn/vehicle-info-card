@@ -6,7 +6,7 @@ import { logCardInfo, defaultPlugins } from './rollup.config.helper.mjs';
 
 const dev = process.env.ROLLUP_WATCH;
 const port = process.env.PORT || 8235;
-const currentVersion = dev ? 'DEVELOPMENT' : `v${version}`;
+const currentVersion = dev ? `DEV - v${version}` : `v${version}`;
 const custombanner = logCardInfo(currentVersion);
 
 const serveopts = {
