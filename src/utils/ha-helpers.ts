@@ -1,5 +1,6 @@
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
 
+import { hasAction } from 'custom-card-helpers';
 import { ExtraMapCardConfig, MapEntityConfig } from 'extra-map-card';
 import memoizeOne from 'memoize-one';
 
@@ -21,6 +22,7 @@ import {
   defaultConfig,
   Address,
   MapPopupConfig,
+  ButtonActionConfig,
 } from '../types';
 import { LovelaceCardConfig } from '../types/ha-frontend/lovelace/lovelace';
 import { VehicleCard } from '../vehicle-info-card';
@@ -258,6 +260,9 @@ export async function getDefaultButton(
       icon_template: button?.icon_template || '',
       color_template: button?.color_template || '',
       picture_template: button?.picture_template || '',
+      state_color: button?.state_color || false,
+      notify_icon: button?.notify_icon || '',
+      notify_color: button?.notify_color || '',
     },
     button_type: button?.button_type || 'default',
     card_type: useCustom ? ('custom' as const) : ('default' as const),
@@ -295,6 +300,9 @@ export async function getAddedButton(
       icon_template: button.icon_template || '',
       color_template: button.color_template || '',
       picture_template: button.picture_template || '',
+      state_color: button.state_color || false,
+      notify_icon: button.notify_icon || '',
+      notify_color: button.notify_color || '',
     },
     button_type: button.button_type || 'default',
     card_type: 'custom' as const,
@@ -643,4 +651,10 @@ export const _convertToExtraMapConfig = (
     history_period: config.history_period,
     use_more_info: config.use_more_info,
   };
+};
+
+export const hasActions = (config: ButtonActionConfig): boolean => {
+  return Object.keys(config)
+    .filter((key) => key !== 'entity')
+    .some((action) => hasAction(config[action]));
 };

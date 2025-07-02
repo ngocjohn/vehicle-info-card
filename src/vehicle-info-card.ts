@@ -98,7 +98,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   @state() _currentPreviewType: 'button' | 'card' | 'tire' | null = null;
 
   // Loading state
-  @state() private _loading = true;
+  @state() public _loading = true;
   @state() private _buttonReady = false;
   @state() _currentSwipeIndex?: number;
   // Resize observer
@@ -242,17 +242,9 @@ export class VehicleCard extends LitElement implements LovelaceCard {
         handleCardSwipe(cardElement, this.toggleCard.bind(this));
       }
     }
-    if (changedProps.has('_loading') && !this._loading) {
-      this._setUpButtonAnimation();
-    }
   }
 
   protected shouldUpdate(_changedProps: PropertyValues): boolean {
-    // if (!this.config || !this.hass) {
-    //   console.log('config or hass is null');
-    //   return false;
-    // }
-
     if (_changedProps.has('_currentCardType') && this._currentCardType) {
       this._activeSubCard = new Set<string>();
     }

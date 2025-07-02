@@ -73,7 +73,7 @@ export class CustomButtonTemplate extends LitElement {
 
     const _schema = [
       ...USE_CUSTOM_HIDE_SCHEMA(DATA.isDefaultCard!),
-      ...BTN_TYPE_PRIMARY_SCHEMA,
+      ...BTN_TYPE_PRIMARY_SCHEMA(DATA.entity ?? ''),
       ...BTN_SECONDARY_SCHEMA(DATA.entity ?? ''),
       ...BTN_EXTRA_TEMPLATES_SCHEMA,
       ...BTN_ACTION_SCHEMA,
@@ -103,6 +103,9 @@ export class CustomButtonTemplate extends LitElement {
 
   private _computeHelper = (schema: any): string => {
     if (schema.helper !== undefined) {
+      if (['notify_icon', 'notify_color', 'state_color'].includes(schema.name)) {
+        return schema.helper;
+      }
       return this.localizeKey(`${schema.helper}`) || '';
     }
     return '';

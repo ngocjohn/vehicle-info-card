@@ -21,19 +21,11 @@ export class VehicleButtons extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
   @property({ attribute: false }) public component!: VehicleCard;
   @property({ attribute: false }) _config!: VehicleCardConfig;
-  @property({ type: Object }) _buttons!: ButtonCardEntity;
+  @property({ attribute: false }) _buttons!: ButtonCardEntity;
 
   @state() swiper: Swiper | null = null;
   @state() public activeSlideIndex: number = 0;
   @state() private _cardCurrentSwipeIndex?: number;
-
-  connectedCallback(): void {
-    super.connectedCallback();
-  }
-
-  disconnectedCallback(): void {
-    super.disconnectedCallback();
-  }
 
   static get styles(): CSSResultGroup {
     return [
@@ -88,12 +80,13 @@ export class VehicleButtons extends LitElement {
     return this._config.button_grid?.use_swiper || false;
   }
 
-  private get buttonConfig(): VehicleCardConfig['button_grid'] {
+  public get buttonConfig(): VehicleCardConfig['button_grid'] {
     return {
       rows_size: this._config.button_grid?.rows_size ?? 2,
       columns_size: this._config.button_grid?.columns_size ?? 2,
       button_layout: this._config.button_grid?.button_layout ?? 'horizontal',
       use_swiper: this.useSwiper,
+      transparent: this._config.button_grid?.transparent ?? false,
     };
   }
 
@@ -102,10 +95,54 @@ export class VehicleButtons extends LitElement {
     if (this.useSwiper) {
       this.initSwiper();
     }
+    if (_changedProperties.has('component') && this.component && this.component._loading === false) {
+      this._setUpButtonAnimation();
+    }
   }
 
-  protected updated(changedProperties: PropertyValues): void {
-    super.updated(changedProperties);
+  private _setUpButtonAnimation(): void {
+    if (this.component.isEditorPreview) return;
+    if (!this.shadowRoot) return;
+
+    const runAnimation = () => {
+      const gridItems = this.shadowRoot?.querySelectorAll('vic-button-single') as NodeListOf<HTMLElement>;
+      if (!gridItems || gridItems.length === 0) return;
+
+      gridItems.forEach((grid, index) => {
+        // Defer to ensure shadow DOM is ready
+        requestAnimationFrame(() => {
+          const gridItem = grid.shadowRoot?.querySelector('.grid-item') as HTMLElement;
+          if (gridItem) {
+            gridItem.style.animationDelay = `${index * 50}ms`;
+            gridItem.classList.add('zoom-in');
+            gridItem.addEventListener(
+              'animationend',
+              () => {
+                gridItem.classList.remove('zoom-in');
+              },
+              { once: true }
+            );
+          }
+        });
+      });
+
+      observer.disconnect();
+    };
+
+    const observer = new MutationObserver(() => {
+      const buttons = this.shadowRoot?.querySelectorAll('vic-button-single') as NodeListOf<HTMLElement>;
+      if (buttons && buttons.length > 0) {
+        requestAnimationFrame(() => runAnimation());
+      }
+    });
+
+    observer.observe(this.shadowRoot, {
+      childList: true,
+      subtree: true,
+    });
+
+    // Initial fallback
+    requestAnimationFrame(() => runAnimation());
   }
 
   private initSwiper(): void {
@@ -208,15 +245,13 @@ export class VehicleButtons extends LitElement {
   };
 
   private _renderButton(key: string): TemplateResult {
-    const index = Object.keys(this._buttons).indexOf(key);
     const button = this._buttons[key];
     return html` <vic-button-single
-      id="${`button-${key}`}"
+      data-key="${`button-${key}`}"
       .hass=${this.hass}
       ._config=${this._config}
       ._card=${this}
       ._button=${button}
-      ._index=${index}
       .layout=${this.buttonConfig.button_layout}
     ></vic-button-single>`;
   }
@@ -254,12 +289,14 @@ export class VehicleButtons extends LitElement {
   public showCustomBtnEditor = (key: string): void => {
     const btnId = `button-${key}`;
     const gridBtns = this.shadowRoot?.querySelectorAll('vic-button-single') as NodeListOf<HTMLElement>;
-    const btnElt = Array.from(gridBtns).find((btn) => btn.id === btnId);
+    const btnElt = Array.from(gridBtns).find((btn) => btn.getAttribute('data-key') === btnId) as HTMLElement;
 
     if (!btnElt) return;
 
     const highlightButton = () => {
-      const filteredBtns = Array.from(gridBtns).filter((btn) => btn.id !== btnId);
+      const filteredBtns = Array.from(gridBtns).filter(
+        (btn) => btn.getAttribute('data-key') !== btnId
+      ) as HTMLElement[];
       const gridItem = btnElt.shadowRoot?.querySelector('.grid-item') as HTMLElement;
       filteredBtns.forEach((btn) => (btn.style.opacity = '0.2'));
       gridItem.classList.add('redGlows');
@@ -287,7 +324,7 @@ export class VehicleButtons extends LitElement {
   public swipeToButton(btnId: string): void {
     this.updateComplete.then(() => {
       const btnType = `button-${btnId}`;
-      const btnElt = this.shadowRoot?.getElementById(btnType) as HTMLElement;
+      const btnElt = this.shadowRoot?.querySelector(`[data-key="${btnType}"]`) as HTMLElement;
 
       if (!btnElt) return;
       if (this.useSwiper) {
