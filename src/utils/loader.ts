@@ -40,6 +40,9 @@ export const stickyPreview = () => {
     position: 'sticky',
     top: '0',
     padding: '0',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
   });
 };
 
