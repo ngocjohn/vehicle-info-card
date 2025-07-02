@@ -73,15 +73,18 @@ type ThemesConfig = {
   mode?: THEME_MODE;
 };
 
+export type BUTTON_LAYOUT = 'horizontal' | 'vertical';
+
 type ButtonGridConfig = {
   use_swiper: boolean;
   rows_size?: number;
   columns_size?: number;
-  button_layout?: 'horizontal' | 'vertical';
+  button_layout?: BUTTON_LAYOUT;
+  transparent?: boolean;
 };
 
 export type ButtonActionConfig = {
-  entity: string;
+  entity?: string;
   tap_action?: ActionConfig;
   hold_action?: ActionConfig;
   double_tap_action?: ActionConfig;
@@ -101,6 +104,9 @@ export type BaseButtonConfig = {
   color_template?: string;
   icon_template?: string;
   picture_template?: string;
+  state_color?: boolean;
+  notify_icon?: string;
+  notify_color?: string;
 };
 
 export type AddedCards = {
@@ -156,6 +162,9 @@ export type ButtonCardEntity = {
     color_template: string;
     icon_template: string;
     picture_template: string;
+    state_color: boolean;
+    notify_icon: string;
+    notify_color: string;
   };
   button_type: 'default' | 'action';
   card_type: 'default' | 'custom';

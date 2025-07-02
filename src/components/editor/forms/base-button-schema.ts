@@ -25,40 +25,52 @@ export const USE_CUSTOM_HIDE_SCHEMA = memoizeOne(
     ] as const
 );
 
-export const BTN_TYPE_PRIMARY_SCHEMA = [
-  {
-    name: '',
-    type: 'grid',
-    schema: [
+export const BTN_TYPE_PRIMARY_SCHEMA = memoizeOne(
+  (secondaryEntity: string) =>
+    [
       {
-        name: 'button_type',
-        label: 'Button Type',
-        required: true,
-        default: 'default',
-        selector: {
-          select: {
-            mode: 'dropdown',
-            options: BUTTON_TYPES.map((type) => ({
-              value: type,
-              label: type.charAt(0).toUpperCase() + type.slice(1),
-            })),
+        name: '',
+        type: 'grid',
+        schema: [
+          {
+            name: 'button_type',
+            label: 'Button Type',
+            required: true,
+            default: 'default',
+            selector: {
+              select: {
+                mode: 'dropdown',
+                options: BUTTON_TYPES.map((type) => ({
+                  value: type,
+                  label: type.charAt(0).toUpperCase() + type.slice(1),
+                })),
+              },
+            },
           },
-        },
+          {
+            name: 'primary',
+            label: 'Button Title',
+            type: 'string',
+          },
+          {
+            name: 'icon',
+            label: 'Icon',
+            selector: { icon: {} },
+            context: { icon_entity: 'entity' },
+          },
+          {
+            name: 'state_color',
+            label: 'State Color',
+            type: 'boolean',
+            default: false,
+            disabled: !secondaryEntity,
+            helper:
+              'Set to true to have icon colored when entity is active, or to show entity picture instead of icon. (secondary entity required)',
+          },
+        ],
       },
-      {
-        name: 'primary',
-        label: 'Button Title',
-        selector: { text: {} },
-      },
-      {
-        name: 'icon',
-        label: 'Icon',
-        selector: { icon: {} },
-        context: { icon_entity: 'entity' },
-      },
-    ],
-  },
-] as const;
+    ] as const
+);
 
 export const BTN_SECONDARY_SCHEMA = memoizeOne(
   (entityId: string) =>
@@ -69,17 +81,23 @@ export const BTN_SECONDARY_SCHEMA = memoizeOne(
         title: 'Secondary content',
         schema: [
           {
-            name: 'entity',
-            selector: { entity: {} },
-          },
-          {
-            name: 'attribute',
-            label: 'Attribute',
-            selector: {
-              attribute: {
-                entity_id: entityId,
+            name: '',
+            type: 'grid',
+            schema: [
+              {
+                name: 'entity',
+                selector: { entity: {} },
               },
-            },
+              {
+                name: 'attribute',
+                label: 'Attribute',
+                selector: {
+                  attribute: {
+                    entity_id: entityId,
+                  },
+                },
+              },
+            ],
           },
           {
             name: 'secondary',
@@ -99,28 +117,54 @@ export const BTN_EXTRA_TEMPLATES_SCHEMA = [
     title: 'Extra templates',
     schema: [
       {
-        name: 'notify',
-        label: 'notifyInfo',
-        helper: 'notifyInfoHelper',
-        selector: { template: {} },
+        name: '',
+        type: 'expandable',
+        title: 'Icon Customize',
+        schema: [
+          {
+            name: 'icon_template',
+            label: 'iconInfo',
+            helper: 'iconInfoHelper',
+            selector: { template: {} },
+          },
+          {
+            name: 'color_template',
+            label: 'colorInfo',
+            helper: 'colorInfoHelper',
+            selector: { template: {} },
+          },
+          {
+            name: 'picture_template',
+            label: 'pictureInfo',
+            helper: 'pictureInfoHelper',
+            selector: { template: {} },
+          },
+        ],
       },
       {
-        name: 'icon_template',
-        label: 'iconInfo',
-        helper: 'iconInfoHelper',
-        selector: { template: {} },
-      },
-      {
-        name: 'color_template',
-        label: 'colorInfo',
-        helper: 'colorInfoHelper',
-        selector: { template: {} },
-      },
-      {
-        name: 'picture_template',
-        label: 'pictureInfo',
-        helper: 'pictureInfoHelper',
-        selector: { template: {} },
+        name: '',
+        type: 'expandable',
+        title: 'Notification Settings',
+        schema: [
+          {
+            name: 'notify',
+            label: 'notifyInfo',
+            helper: 'notifyInfoHelper',
+            selector: { template: {} },
+          },
+          {
+            name: 'notify_color',
+            label: 'Badge color template',
+            helper: 'Use Jinja2 template to set the badge color',
+            selector: { template: {} },
+          },
+          {
+            name: 'notify_icon',
+            label: 'Badge icon template',
+            helper: 'Template with result in `mdi:` format to set the badge icon',
+            selector: { template: {} },
+          },
+        ],
       },
     ],
   },
@@ -185,4 +229,7 @@ export const GENERIC_LABEL = [
   'primary',
   'icon',
   'attribute',
+  'state_color',
+  'notify_icon',
+  'notify_color',
 ];
