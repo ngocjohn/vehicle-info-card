@@ -41,9 +41,9 @@ import {
   isEmpty,
   Create,
   isDarkColor,
-  loadExtraMapCard,
   _getSingleCard,
   applyThemesOnElement,
+  addResource,
 } from './utils';
 import { getAddedButton, getDefaultButton, createCardElement, createCustomButtons } from './utils';
 
@@ -120,7 +120,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     super.connectedCallback();
     window.BenzCard = this;
 
-    loadExtraMapCard();
+    addResource(this._hass);
     if (this.editMode) {
       this._loading = false;
       if (this.isEditorPreview) {
