@@ -43,7 +43,7 @@ import {
   isDarkColor,
   _getSingleCard,
   applyThemesOnElement,
-  addResource,
+  loadAndCleanExtraMap,
 } from './utils';
 import { getAddedButton, getDefaultButton, createCardElement, createCustomButtons } from './utils';
 
@@ -120,7 +120,6 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     super.connectedCallback();
     window.BenzCard = this;
 
-    addResource(this._hass);
     if (this.editMode) {
       this._loading = false;
       if (this.isEditorPreview) {
@@ -1675,3 +1674,6 @@ declare global {
     BenzCard: VehicleCard;
   }
 }
+
+// Load and clean extra map resources
+loadAndCleanExtraMap().catch(console.error);
