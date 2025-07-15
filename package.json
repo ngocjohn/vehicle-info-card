@@ -50,6 +50,7 @@
     "@typescript-eslint/eslint-plugin": "^8.35.1",
     "@typescript-eslint/parser": "^8.35.1",
     "axios": "^1.10.0",
+    "cross-env": "^7.0.3",
     "custom-card-helpers": "^1.9.0",
     "dotenv": "^16.5.0",
     "es-toolkit": "^1.39.6",
@@ -79,6 +80,7 @@
     "add-missing-translations": "node scripts/add-missing-translations.js",
     "translate-new-strings": "npx dotenvx run -- node scripts/translate-new-strings.mjs",
     "update-missing": "npm run translate-new-strings && npm run add-missing-translations",
-    "prepare": "husky"
+    "prepare": "husky",
+    "dev-serve": "cross-env PORT=8222 npm run dev"
   }
 }
