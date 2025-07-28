@@ -25,7 +25,7 @@
     "home-assistant-js-websocket": "^9.5.0",
     "leaflet": "^1.9.4",
     "leaflet-providers": "^2.0.0",
-    "lit": "^3.3.0",
+    "lit": "^3.3.1",
     "memoize-one": "^6.0.0",
     "nvn-tabs": "^1.0.1",
     "sortablejs": "^1.15.6",
