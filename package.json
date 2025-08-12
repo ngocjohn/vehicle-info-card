@@ -68,7 +68,7 @@
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-postcss-lit": "^2.2.0",
     "rollup-plugin-serve": "^3.0.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.2"
   },
   "scripts": {
     "dev": "rollup -c rollup.config.js --bundleConfigAsCjs --watch",
