@@ -20,7 +20,7 @@
   "license": "MIT",
   "dependencies": {
     "@mdi/js": "^7.4.47",
-    "apexcharts": "3.52.0",
+    "apexcharts": "^5.3.3",
     "deep-clone-simple": "^1.1.1",
     "home-assistant-js-websocket": "^9.5.0",
     "leaflet": "^1.9.4",
