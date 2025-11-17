@@ -33,7 +33,7 @@
     "tinycolor2": "^1.6.0"
   },
   "devDependencies": {
-    "@dotenvx/dotenvx": "^1.45.2",
+    "@dotenvx/dotenvx": "^1.51.1",
     "@maptiler/sdk": "^3.5.0",
     "@rollup/plugin-commonjs": "^28.0.6",
     "@rollup/plugin-image": "^3.0.3",
