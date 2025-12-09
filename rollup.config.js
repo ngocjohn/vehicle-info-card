@@ -1,6 +1,5 @@
 import terser from '@rollup/plugin-terser';
 import serve from 'rollup-plugin-serve';
-import filesize from 'rollup-plugin-filesize';
 import { version } from './package.json';
 import { logCardInfo, defaultPlugins } from './rollup.config.helper.mjs';
 
@@ -26,7 +25,7 @@ const terserOpt = {
   },
 };
 
-const plugins = [dev && serve(serveopts), !dev && terser(terserOpt), !dev && filesize()];
+const plugins = [dev && serve(serveopts), !dev && terser(terserOpt)];
 
 export default [
   {
@@ -43,7 +42,7 @@ export default [
     watch: {
       exclude: 'node_modules/**',
     },
-    plugins: [...plugins, ...defaultPlugins],
+    plugins: [...defaultPlugins, ...plugins],
     moduleContext: (id) => {
       const thisAsWindowForModules = [
         'node_modules/@formatjs/intl-utils/lib/src/diff.js',

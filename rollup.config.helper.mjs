@@ -5,7 +5,6 @@ import postcss from 'rollup-plugin-postcss';
 import postcssPresetEnv from 'postcss-preset-env';
 import postcssLit from 'rollup-plugin-postcss-lit';
 import json from '@rollup/plugin-json';
-import nodePolyfills from 'rollup-plugin-polyfill-node';
 
 import { description, repository } from './package.json';
 
@@ -34,7 +33,6 @@ export function logCardInfo(version) {
 
 export const defaultPlugins = [
   nodeResolve({ preferBuiltins: false }),
-  nodePolyfills(),
   commonjs(),
   typescript({
     tsconfig: './tsconfig.json',
