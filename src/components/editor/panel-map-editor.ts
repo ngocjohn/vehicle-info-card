@@ -1,4 +1,3 @@
-import { fireEvent } from 'custom-card-helpers';
 import { EntityConfig, ExtraMapCardConfig, MapEntityConfig, processConfigEntities } from 'extra-map-card';
 import { LitElement, html, TemplateResult, CSSResultGroup, PropertyValues } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
@@ -7,6 +6,7 @@ import { editorShowOpts } from '../../const/data-keys';
 import editorcss from '../../css/editor.css';
 import { VehicleCardEditor } from '../../editor';
 import { HomeAssistant, LovelaceConfig, MapPopupConfig, VehicleCardConfig } from '../../types';
+import { fireEvent } from '../../types/ha-frontend';
 import { _convertToExtraMapConfig, Create } from '../../utils';
 import { Picker } from '../../utils/create';
 import { maptilerPopupSchema } from '../editor/forms/map-schema';

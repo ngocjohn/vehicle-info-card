@@ -1,4 +1,3 @@
-import { forwardHaptic } from 'custom-card-helpers';
 import { HassEntity, UnsubscribeFunc } from 'home-assistant-js-websocket';
 import { css, CSSResultGroup, html, LitElement, PropertyValues, TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
@@ -7,9 +6,16 @@ import tinycolor from 'tinycolor2';
 
 // Styles
 import mainstyle from '../../css/styles.css';
-import { ButtonCardEntity, HomeAssistant, VehicleCardConfig, BUTTON_LAYOUT } from '../../types';
+import {
+  ButtonCardEntity,
+  HomeAssistant,
+  VehicleCardConfig,
+  BUTTON_LAYOUT,
+  forwardHaptic,
+  hasItemAction,
+} from '../../types';
 import { RenderTemplateResult, subscribeRenderTemplate } from '../../types/ha-frontend/data/ws-templates';
-import { addActions, hasActions, hasTemplate } from '../../utils';
+import { addActions, hasTemplate } from '../../utils';
 import { VehicleButtons } from './vic-vehicle-buttons';
 
 const TEMPLATE_KEYS = [
@@ -276,7 +282,7 @@ export class VicButtonSingle extends LitElement {
     }
     // const btnId = `button-${this._button.key}`;
     const actionConfig = this._button.button?.button_action || {};
-    if (hasActions(actionConfig)) {
+    if (hasItemAction(actionConfig)) {
       const actionEl = this.shadowRoot?.getElementById('actionBtn') as HTMLElement;
       addActions(actionEl, actionConfig);
     }

@@ -1,0 +1,23 @@
+import { ActionConfig } from '../ha-frontend';
+
+export type ActionsSharedConfig = {
+  entity?: string; // Optional entity for the action
+  tap_action?: ActionConfig;
+  hold_action?: ActionConfig;
+  double_tap_action?: ActionConfig;
+};
+
+export function hasAction(config?: ActionConfig): boolean {
+  return config !== undefined && config.action !== 'none';
+}
+
+export function hasItemAction(config?: ActionsSharedConfig): boolean {
+  return (
+    config !== undefined &&
+    Object.keys(config)
+      .filter((key) => key !== 'entity')
+      .some((action) => hasAction(config[action]))
+  );
+}
+
+export const ACTION_SHARED_KEYS = ['tap_action', 'hold_action', 'double_tap_action'] as const;

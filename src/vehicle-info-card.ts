@@ -1,13 +1,10 @@
 import { mdiChevronLeft, mdiChevronRight, mdiClose } from '@mdi/js';
-import { formatDateTime, forwardHaptic, hasConfigOrEntityChanged } from 'custom-card-helpers';
 import { LitElement, html, TemplateResult, PropertyValues, CSSResultGroup, nothing } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
-
-import './components';
-
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
+import './components';
 import { EcoChart, RemoteControl, VehicleButtons, VehicleMap } from './components/';
 import { CardItem, cardTypes } from './const/data-keys';
 import { IMAGE } from './const/imgconst';
@@ -30,8 +27,8 @@ import {
   SECTION_DEFAULT_ORDER,
 } from './types';
 import { HEADER_ACTION, PreviewCard, MapData, SECTION } from './types';
-import { FrontendLocaleData } from './types/ha-frontend/data/frontend-local-data';
-import { fireEvent } from './types/ha-frontend/fire-event';
+import { fireEvent, formatDateTime, forwardHaptic } from './types/ha-frontend';
+import { FrontendLocaleData } from './types/ha-frontend/data/translation';
 import { LovelaceCardEditor, LovelaceCardConfig, LovelaceCard } from './types/ha-frontend/lovelace/lovelace';
 import {
   handleCardFirstUpdated,
@@ -248,7 +245,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       this._activeSubCard = new Set<string>();
     }
 
-    return hasConfigOrEntityChanged(this, _changedProps, true);
+    return true;
   }
 
   private async _setUpButtonCards(): Promise<void> {
@@ -677,7 +674,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     }
 
     const lastCarUpdate = this.config.entity ? this._hass.states[this.config.entity].last_changed : '';
-    const formattedDate = formatDateTime(new Date(lastCarUpdate), this._locale);
+    const formattedDate = formatDateTime(new Date(lastCarUpdate), this._locale, this._hass.config);
 
     const cardHeaderBox = html`<div class="added-card-header">
       <ha-icon-button .label=${'Close'} .path=${mdiClose} class="click-shrink" @click=${() => this.toggleCard('close')}>

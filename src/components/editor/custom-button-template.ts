@@ -49,18 +49,27 @@ export class CustomButtonTemplate extends LitElement {
     return html`
       <div class="card-button-cfg ha-button">
         <ha-button
-          .outlined=${true}
-          .label=${localizeKey('showButton')}
+          size="small"
+          appearance="filled"
+          variant="brand"
           ?hidden=${this.button.isHidden}
           @click=${() => this.editor._toggleShowButton(this.card)}
-        ></ha-button>
-        <ha-button
-          .outlined=${true}
-          @click=${() => this.editor._toggleBtnPreview(this.cardButton)}
-          .label=${previewLabel}
+          >${localizeKey('showButton')}</ha-button
         >
+        <ha-button
+          size="small"
+          appearance="filled"
+          variant="brand"
+          @click=${() => this.editor._toggleBtnPreview(this.cardButton)}
+          >${previewLabel}
         </ha-button>
-        <ha-button .outlined=${true} @click=${() => (this._yamlMode = !this._yamlMode)} .label=${yamlLabel}>
+        <ha-button
+          size="small"
+          appearance="filled"
+          variant="brand"
+          @click=${() => (this._yamlMode = !this._yamlMode)}
+          .label=${yamlLabel}
+          >${yamlLabel}
         </ha-button>
       </div>
     `;

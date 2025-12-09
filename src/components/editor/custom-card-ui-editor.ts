@@ -9,7 +9,7 @@ import styles from '../../css/editor.css';
 import { VehicleCardEditor } from '../../editor';
 // Local types
 import { HomeAssistant, VehicleCardConfig, CardTypeConfig } from '../../types';
-import { fireEvent, HASSDomEvent } from '../../types/ha-frontend/fire-event';
+import { fireEvent, HASSDomEvent } from '../../types';
 import { LovelaceCardConfig, LovelaceConfig } from '../../types/ha-frontend/lovelace/lovelace';
 
 export interface GUIModeChangedEvent {

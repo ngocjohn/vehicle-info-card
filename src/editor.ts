@@ -38,7 +38,7 @@ import {
   AddedCards,
 } from './types';
 // Local types
-import { fireEvent } from './types/ha-frontend/fire-event';
+import { fireEvent } from './types/ha-frontend';
 import { LovelaceCardEditor, LovelaceConfig, LovelaceCardConfig } from './types/ha-frontend/lovelace/lovelace';
 import {
   Create,

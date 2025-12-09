@@ -7,7 +7,7 @@ import Sortable from 'sortablejs';
 import editorcss from '../../css/editor.css';
 import { VehicleCardEditor } from '../../editor';
 import { ImageConfig, VehicleCardConfig } from '../../types';
-import { fireEvent } from '../../types/ha-frontend/fire-event';
+import { fireEvent } from '../../types/ha-frontend';
 import { imageInputChange, handleFilePicked } from '../../utils';
 import { Picker } from '../../utils/create';
 

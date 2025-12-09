@@ -476,7 +476,11 @@ export class VicMaptilerPopup extends LitElement {
         const { description, friendly_name, last_updated } = feature.properties;
 
         const frName = `<b>${friendly_name}</b>`;
-        const lastUpdated = `<i>${getFormatedDateTime(new Date(last_updated * 1000), this.card._hass.locale)}</i>`;
+        const lastUpdated = `<i>${getFormatedDateTime(
+          new Date(last_updated * 1000),
+          this.card._hass.locale,
+          this.card._hass.config
+        )}</i>`;
 
         // Adjust longitude for world wrap
         while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {

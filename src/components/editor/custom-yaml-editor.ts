@@ -5,7 +5,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import editorcss from '../../css/editor.css';
 import { VehicleCardEditor } from '../../editor';
 import { HomeAssistant, VehicleCardConfig } from '../../types';
-import { fireEvent } from '../../types/ha-frontend/fire-event';
+import { fireEvent } from '../../types';
 
 @customElement('custom-yaml-editor')
 export class CustomYamlEditor extends LitElement {

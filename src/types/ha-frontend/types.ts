@@ -1,4 +1,4 @@
-import type {
+import {
   Auth,
   Connection,
   HassConfig,
@@ -9,66 +9,26 @@ import type {
   MessageBase,
 } from 'home-assistant-js-websocket';
 
-import type { FrontendLocaleData, TranslationCategory } from './data/frontend-local-data';
-import type { LocalizeFunc } from './data/localize';
+import type { LocalizeFunc } from './common/translations/localize';
+import type { DeviceRegistryEntry } from './data/device_registry';
+import type { EntityRegistryDisplayEntry } from './data/entity_registry';
+import type { FrontendLocaleData, TranslationCategory } from './data/translation';
 import type { Themes, ThemeSettings } from './data/ws-themes';
 
-export interface EntityRegistryDisplayEntry {
-  entity_id: string;
-  name?: string;
-  device_id?: string;
-  area_id?: string;
-  hidden?: boolean;
-  entity_category?: 'config' | 'diagnostic';
-  translation_key?: string;
-  platform?: string;
-  display_precision?: number;
+export interface PanelInfo<T = Record<string, any> | null> {
+  component_name: string;
+  config: T;
+  icon: string | null;
+  title: string | null;
+  url_path: string;
 }
 
-export interface DeviceRegistryEntry {
-  id: string;
-  config_entries: string[];
-  connections: Array<[string, string]>;
-  identifiers: Array<[string, string]>;
-  manufacturer: string | null;
-  model: string | null;
-  name: string | null;
-  sw_version: string | null;
-  hw_version: string | null;
-  via_device_id: string | null;
-  area_id: string | null;
-  name_by_user: string | null;
-  entry_type: 'service' | null;
-  disabled_by: 'user' | 'integration' | 'config_entry' | null;
-  configuration_url: string | null;
+export interface Panels {
+  [name: string]: PanelInfo;
 }
 
-export interface AreaRegistryEntry {
-  area_id: string;
-  name: string;
-  picture: string | null;
-}
-
-export interface Resources {
+interface Resources {
   [language: string]: Record<string, string>;
-}
-
-export interface Context {
-  id: string;
-  parent_id?: string;
-  user_id?: string | null;
-}
-
-export interface ServiceCallResponse {
-  context: Context;
-  response?: any;
-}
-
-export interface ServiceCallRequest {
-  domain: string;
-  service: string;
-  serviceData?: Record<string, any>;
-  target?: HassServiceTarget;
 }
 
 export interface Translation {
@@ -104,6 +64,32 @@ export interface CurrentUser {
   mfa_modules: MFAModule[];
 }
 
+interface Context {
+  id: string;
+  parent_id?: string;
+  user_id?: string | null;
+}
+
+interface ServiceCallResponse {
+  context: Context;
+  response?: any;
+}
+
+interface ServiceCallRequest {
+  domain: string;
+  service: string;
+  serviceData?: Record<string, any>;
+  target?: HassServiceTarget;
+}
+
+export interface AreaRegistryEntry {
+  area_id: string;
+  name: string;
+  picture: string | null;
+}
+
+export type EntityNameType = 'entity' | 'device' | 'area' | 'floor';
+
 export interface HomeAssistant {
   auth: Auth & { external?: any };
   connection: Connection;
@@ -116,7 +102,7 @@ export interface HomeAssistant {
   config: HassConfig;
   themes: Themes;
   selectedTheme: ThemeSettings | null;
-  panels: any; // Panels;
+  panels: Panels;
   panelUrl: string;
   // i18n
   // current effective language in that order:
@@ -145,9 +131,7 @@ export interface HomeAssistant {
     domain: ServiceCallRequest['domain'],
     service: ServiceCallRequest['service'],
     serviceData?: ServiceCallRequest['serviceData'],
-    target?: ServiceCallRequest['target'],
-    notifyOnError?: boolean,
-    returnResponse?: boolean
+    target?: ServiceCallRequest['target']
   ): Promise<ServiceCallResponse>;
   callApi<T>(
     method: 'GET' | 'POST' | 'PUT' | 'DELETE',
@@ -158,22 +142,16 @@ export interface HomeAssistant {
   fetchWithAuth(path: string, init?: Record<string, any>): Promise<Response>;
   sendWS(msg: MessageBase): void;
   callWS<T>(msg: MessageBase): Promise<T>;
-  // loadBackendTranslation(
-  //   category: Parameters<typeof getHassTranslations>[2],
-  //   integrations?: Parameters<typeof getHassTranslations>[3],
-  //   configFlow?: Parameters<typeof getHassTranslations>[4]
-  // ): Promise<LocalizeFunc>;
-  // loadFragmentTranslation(fragment: string): Promise<LocalizeFunc | undefined>;
   loadBackendTranslation(
     category: TranslationCategory,
     integration?: string | string[],
     configFlow?: boolean
   ): Promise<LocalizeFunc>;
+  // loadFragmentTranslation(fragment: string): Promise<LocalizeFunc | undefined>;
   formatEntityState(stateObj: HassEntity, state?: string): string;
   formatEntityAttributeValue(stateObj: HassEntity, attribute: string, value?: any): string;
   formatEntityAttributeName(stateObj: HassEntity, attribute: string): string;
+  formatEntityName(stateObj: HassEntity, type: EntityNameType | EntityNameType[], separator?: string): string;
 }
 
-/** Return if a component is loaded. */
-export const isComponentLoaded = (hass: HomeAssistant, component: string): boolean =>
-  hass && hass.config.components.includes(component);
+export type Constructor<T = any> = new (...args: any[]) => T;

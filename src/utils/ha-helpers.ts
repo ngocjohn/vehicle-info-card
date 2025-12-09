@@ -1,6 +1,5 @@
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
 
-import { hasAction } from 'custom-card-helpers';
 import { ExtraMapCardConfig, MapEntityConfig } from 'extra-map-card';
 import memoizeOne from 'memoize-one';
 
@@ -22,7 +21,6 @@ import {
   defaultConfig,
   Address,
   MapPopupConfig,
-  ButtonActionConfig,
 } from '../types';
 import { LovelaceCardConfig } from '../types/ha-frontend/lovelace/lovelace';
 import { VehicleCard } from '../vehicle-info-card';
@@ -651,10 +649,4 @@ export const _convertToExtraMapConfig = (
     history_period: config.history_period,
     use_more_info: config.use_more_info,
   };
-};
-
-export const hasActions = (config: ButtonActionConfig): boolean => {
-  return Object.keys(config)
-    .filter((key) => key !== 'entity')
-    .some((action) => hasAction(config[action]));
 };

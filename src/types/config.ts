@@ -1,6 +1,6 @@
 import { MapEntityConfig } from 'extra-map-card';
 
-import { LovelaceCardConfig, ActionConfig } from '../types';
+import { LovelaceCardConfig, ActionsSharedConfig } from '../types';
 
 /**
  * Configuration interface for the Vehicle Card.
@@ -83,13 +83,6 @@ type ButtonGridConfig = {
   transparent?: boolean;
 };
 
-export type ButtonActionConfig = {
-  entity?: string;
-  tap_action?: ActionConfig;
-  hold_action?: ActionConfig;
-  double_tap_action?: ActionConfig;
-};
-
 export type BaseButtonConfig = {
   enabled: boolean;
   hide?: boolean;
@@ -98,7 +91,7 @@ export type BaseButtonConfig = {
   icon: string;
   notify?: string;
   button_type: 'default' | 'action';
-  button_action: ButtonActionConfig;
+  button_action: ActionsSharedConfig;
   entity?: string;
   attribute?: string;
   color_template?: string;
@@ -151,7 +144,7 @@ export type ButtonCardEntity = {
   default_name?: string;
   default_icon?: string;
   button: {
-    button_action: ButtonActionConfig;
+    button_action: ActionsSharedConfig;
     icon: string;
     primary: string;
     secondary: string;
@@ -180,7 +173,7 @@ export type CustomButtonEntity = {
   icon: string;
   notify?: boolean;
   button_type: 'default' | 'action';
-  button_action: ButtonActionConfig;
+  button_action: ActionsSharedConfig;
   entity: string;
   attribute?: string;
   color?: string;

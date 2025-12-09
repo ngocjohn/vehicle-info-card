@@ -1,9 +1,11 @@
-import { formatDateNumeric, formatTime } from 'custom-card-helpers';
+import { HassConfig } from 'home-assistant-js-websocket';
 import memoizeOne from 'memoize-one';
 import tinycolor from 'tinycolor2';
 
 import { HistoryStates, VehicleCardConfig } from '../types';
-import { FrontendLocaleData } from '../types/ha-frontend/data/frontend-local-data';
+import { FrontendLocaleData } from '../types/ha-frontend/';
+import { formatDateNumeric } from '../types/ha-frontend/common/datetime/format_date';
+import { formatTime } from '../types/ha-frontend/common/datetime/format_time';
 
 export function cloneDeep<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj));
@@ -198,8 +200,8 @@ export const getInitials = (name: string): string => {
     .join('');
 };
 
-export const getFormatedDateTime = (dateObj: Date, locale: FrontendLocaleData): string => {
-  return `${formatDateNumeric(dateObj, locale)} ${formatTime(dateObj, locale)}`;
+export const getFormatedDateTime = (dateObj: Date, locale: FrontendLocaleData, config: HassConfig): string => {
+  return `${formatDateNumeric(dateObj, locale, config)} ${formatTime(dateObj, locale, config)}`;
 };
 
 const isTemplateRegex = /{%|{{/;
