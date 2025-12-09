@@ -11,25 +11,16 @@ const path = require('path');
 
 const languagesDir = path.resolve(__dirname, '../src/languages');
 const outputFilePath = path.resolve(__dirname, '../src/localize/languageImports.ts');
-const languageListPath = path.resolve(__dirname, '../src/localize/languageList.json');
 
 const currentFiles = fs.readdirSync(languagesDir).filter((file) => file.endsWith('.json'));
-let previousFiles = [];
-
-if (fs.existsSync(languageListPath)) {
-  previousFiles = JSON.parse(fs.readFileSync(languageListPath, 'utf8'));
-}
-
-const filesToRemove = previousFiles.filter((file) => !currentFiles.includes(file));
-const filesToAdd = currentFiles.filter((file) => !previousFiles.includes(file));
-
-// Update the languageList.json with the current list of files
-fs.writeFileSync(languageListPath, JSON.stringify(currentFiles, null, 2));
 
 // Generate imports for the current files
 const imports = currentFiles
   .map((file) => {
     const key = path.basename(file, path.extname(file));
+    if (key.includes('-')) {
+      return `import * as ${key.replace(/-/g, '_')} from '../languages/${file}';`;
+    }
     return `import * as ${key} from '../languages/${file}';`;
   })
   .join('\n');
@@ -37,31 +28,43 @@ const imports = currentFiles
 const languageObjectEntries = currentFiles
   .map((file) => {
     const key = path.basename(file, path.extname(file));
-    const langKey = key.includes('_') ? key.replace('_', '-') : undefined;
-    if (langKey) {
-      return `  "${langKey}": ${key},`;
-    } else {
-      return `  ${key},`;
+    if (key.includes('-')) {
+      return `  '${key}': ${key.replace(/-/g, '_')},`;
     }
+    return `  ${key}: ${key},`;
   })
   .join('\n');
 
 const languageOptions = currentFiles
   .map((file) => {
     const key = path.basename(file, path.extname(file));
-    const langData = JSON.parse(fs.readFileSync(path.join(languagesDir, file), 'utf8'));
-    const langKey = key.replace('_', '-');
-    const name = langData.name || key;
-    const nativeName = langData.nativeName || key;
-    return `  { key: '${langKey}', name: '${name}', nativeName: '${nativeName}' },`;
+    if (key.includes('-')) {
+      return `  { key: '${key}', name: ${key.replace(/-/g, '_')}.name, nativeName: ${key.replace(
+        /-/g,
+        '_'
+      )}.nativeName },`;
+    }
+    return `  { key: '${key}', name: ${key}.name, nativeName: ${key}.nativeName },`;
   })
   .join('\n');
+
+const langFilesEntries = currentFiles
+  .map((file) => {
+    const key = path.basename(file, path.extname(file));
+    if (key.includes('-')) {
+      return `  '${key}': ${key.replace(/-/g, '_')},`;
+    }
+    return `  ${key},`;
+  })
+  .join('\n');
+
+const langKeysList = currentFiles.map((file) => `'${path.basename(file, path.extname(file))}'`).join(', ');
 
 const content = `// This file is generated automatically by the generate-lang-imports script. Do not modify it manually.
 
 ${imports}
 
-const languages: Record<string, unknown> = {
+const languages: any = {
 ${languageObjectEntries}
 };
 
@@ -69,14 +72,15 @@ export const languageOptions = [
 ${languageOptions}
 ];
 
+export const langFiles: Record<string, unknown> = {
+${langFilesEntries}
+};
+
+export const langKeys = [${langKeysList}] as const;
+
 export { languages };
 `;
 
 fs.writeFileSync(outputFilePath, content);
 
 console.log('Language imports generated successfully.');
-
-// Log files that were removed
-if (filesToRemove.length > 0) {
-  console.log('Removed files:', filesToRemove);
-}

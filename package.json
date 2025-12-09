@@ -23,6 +23,7 @@
     "apexcharts": "^5.3.3",
     "deep-clone-simple": "^1.1.1",
     "home-assistant-js-websocket": "^9.5.0",
+    "intl-messageformat": "^10.7.18",
     "leaflet": "^1.9.4",
     "leaflet-providers": "^2.0.0",
     "lit": "^3.3.0",
