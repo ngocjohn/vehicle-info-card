@@ -1,6 +1,6 @@
 import { LitElement, css, html, TemplateResult, PropertyValues, unsafeCSS, CSSResultGroup } from 'lit';
-import { styleMap } from 'lit-html/directives/style-map.js';
 import { customElement, state } from 'lit/decorators.js';
+import { styleMap } from 'lit/directives/style-map.js';
 import Swiper from 'swiper';
 import { Autoplay, Pagination, EffectFade, EffectCoverflow } from 'swiper/modules';
 import swipercss from 'swiper/swiper-bundle.css';

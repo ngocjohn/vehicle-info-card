@@ -3,8 +3,8 @@ import mapstyle from '@maptiler/sdk/dist/maptiler-sdk.css';
 import { mdiChevronRight, mdiClose } from '@mdi/js';
 import * as turf from '@turf/turf';
 import { LitElement, html, css, TemplateResult, unsafeCSS, CSSResultGroup, nothing } from 'lit';
-import { styleMap } from 'lit-html/directives/style-map.js';
 import { customElement, property, state } from 'lit/decorators.js';
+import { styleMap } from 'lit/directives/style-map.js';
 
 import {
   DEFAULT_ZOOM,

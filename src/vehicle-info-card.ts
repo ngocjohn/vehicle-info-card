@@ -1,12 +1,12 @@
 import { mdiChevronLeft, mdiChevronRight, mdiClose } from '@mdi/js';
 import { formatDateTime, forwardHaptic, hasConfigOrEntityChanged } from 'custom-card-helpers';
 import { LitElement, html, TemplateResult, PropertyValues, CSSResultGroup, nothing } from 'lit';
-import { styleMap } from 'lit-html/directives/style-map.js';
+import { customElement, property, state, query } from 'lit/decorators.js';
 
 import './components';
 
-import { customElement, property, state, query } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { styleMap } from 'lit/directives/style-map.js';
 
 import { EcoChart, RemoteControl, VehicleButtons, VehicleMap } from './components/';
 import { CardItem, cardTypes } from './const/data-keys';

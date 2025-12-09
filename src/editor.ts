@@ -2,8 +2,8 @@ import { mdiArrowLeft, mdiDrag } from '@mdi/js';
 // Custom card helpers
 import { debounce } from 'es-toolkit';
 import { LitElement, html, TemplateResult, CSSResultGroup, PropertyValues, nothing } from 'lit';
-import { repeat } from 'lit-html/directives/repeat.js';
 import { customElement, property, query, state } from 'lit/decorators.js';
+import { repeat } from 'lit/directives/repeat.js';
 
 // Import the custom card components
 import './components/editor';
