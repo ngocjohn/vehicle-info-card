@@ -14,14 +14,14 @@ import {
   MapData,
   SECTION,
   SECTION_DEFAULT_ORDER,
-  MapPopupConfig,
   subscribeHistory,
   HomeAssistant,
 } from '../../types';
+import { MapPopupConfig } from '../../types/card-config/mini-map';
 import { LovelaceCardConfig } from '../../types/ha-frontend/lovelace/lovelace';
 import { _getHistoryPoints, _getMapAddress, createMapPopup } from '../../utils';
-import { createCloseHeading } from '../../utils/create';
 import './vic-maptiler-popup';
+import { createCloseHeading } from '../../utils/create';
 import { VehicleCard } from '../../vehicle-info-card';
 
 export interface MapConfig extends MapPopupConfig {
@@ -52,11 +52,11 @@ export class VehicleMap extends LitElement {
   private _historyPoints?: any | undefined;
 
   private get mapPopup(): boolean {
-    return this.card.config.enable_map_popup;
+    return this.card.config?.enable_map_popup ?? false;
   }
 
   private get zoom(): number {
-    return this.card.config.map_popup_config.map_zoom ?? 14;
+    return this.card.config.map_popup_config?.map_zoom ?? 14;
   }
 
   public get mapConfig(): MapConfig {

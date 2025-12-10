@@ -1,5 +1,5 @@
-import { CustomButtonEntity } from './config';
 import { LovelaceCardConfig } from './ha-frontend/lovelace/lovelace';
+import { CustomButtonEntity } from './legacy-card-config/legacy-button-config';
 
 export type HEADER_ACTION = 'next' | 'prev' | 'close';
 

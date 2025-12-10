@@ -15,6 +15,41 @@ import type { EntityRegistryDisplayEntry } from './data/entity_registry';
 import type { FrontendLocaleData, TranslationCategory } from './data/translation';
 import type { Themes, ThemeSettings } from './data/ws-themes';
 
+declare global {
+  var __DEV__: boolean;
+  var __DEMO__: boolean;
+  var __BUILD__: 'modern' | 'legacy';
+  var __VERSION__: string;
+  var __STATIC_PATH__: string;
+  var __BACKWARDS_COMPAT__: boolean;
+  var __SUPERVISOR__: boolean;
+  var __HASS_URL__: string;
+
+  // for fire event
+  interface HASSDomEvents {
+    'value-changed': {
+      value: unknown;
+    };
+    change: undefined;
+    'hass-logout': undefined;
+    'config-refresh': undefined;
+    'hass-api-called': {
+      success: boolean;
+      response: unknown;
+    };
+  }
+
+  // For loading workers in rspack
+  interface ImportMeta {
+    url: string;
+  }
+}
+
+export interface ValueChangedEvent<T> extends CustomEvent {
+  detail: {
+    value: T;
+  };
+}
 export interface PanelInfo<T = Record<string, any> | null> {
   component_name: string;
   config: T;

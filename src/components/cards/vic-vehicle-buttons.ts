@@ -11,7 +11,8 @@ import swipercss from 'swiper/swiper-bundle.css';
 // Styles
 import mainstyle from '../../css/styles.css';
 // Local imports
-import { ButtonCardEntity, HomeAssistant, VehicleCardConfig } from '../../types';
+import { HomeAssistant, VehicleCardConfig } from '../../types';
+import { ButtonCardEntity } from '../../types/legacy-card-config/legacy-button-config';
 // Components
 import './vic-button-single';
 import { VehicleCard } from '../../vehicle-info-card';
@@ -219,7 +220,7 @@ export class VehicleButtons extends LitElement {
 
   // Chunked buttons into groups of 4 for slides in swiper
   private _buttonsGridGroup(BaseButton: ButtonCardEntity): TemplateResult {
-    const rowSize = this.buttonConfig.rows_size! * this.buttonConfig.columns_size!;
+    const rowSize = this.buttonConfig?.rows_size! * this.buttonConfig?.columns_size!;
     // const rowSize = this.component.config?.button_grid?.rows_size ? this.component.config.button_grid.rows_size * 2 : 4;
     const chunkedCardTypes = this._chunkObject(BaseButton, rowSize); // Divide into groups of 4
     // console.log('chunked', chunkedCardTypes);
@@ -252,7 +253,7 @@ export class VehicleButtons extends LitElement {
       ._config=${this._config}
       ._card=${this}
       ._button=${button}
-      .layout=${this.buttonConfig.button_layout}
+      .layout=${this.buttonConfig?.button_layout}
     ></vic-button-single>`;
   }
 
@@ -279,7 +280,7 @@ export class VehicleButtons extends LitElement {
   };
 
   private _computeGridColumns() {
-    const columns = this.buttonConfig.columns_size!;
+    const columns = this.buttonConfig?.columns_size || 2;
     const minWidth = `calc((100% - 24px) / ${columns})`;
     return styleMap({
       gridTemplateColumns: `repeat(auto-fill, minmax(${minWidth}, 1fr))`,

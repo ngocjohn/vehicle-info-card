@@ -11,6 +11,9 @@ import './components/editor';
 import Sortable from 'sortablejs';
 
 import './components/editor/custom-card-ui-editor';
+import { MapPopupConfig } from 'types/card-config/mini-map';
+import { BaseButtonConfig, ExtendedButtonConfigItem, AddedCards } from 'types/legacy-card-config/legacy-button-config';
+
 import {
   CustomButtonTemplate,
   CustomCardUIEditor,
@@ -23,20 +26,12 @@ import {
   VicPanelMapEditor,
 } from './components/editor';
 import { BUTTON_GRID_SCHEMA } from './components/editor/forms/grid-button-schema';
-import { CARD_VERSION, PREVIEW_CONFIG_TYPES } from './const/const';
+import { CARD_VERSION, PREVIEW_CONFIG_TYPES, VEHICLE_INFO_CARD_EDITOR_NAME } from './const/const';
 import { cardTypes, editorShowOpts } from './const/data-keys';
 import { servicesCtrl } from './const/remote-control-keys';
 import editorcss from './css/editor.css';
 import { languageOptions, localize } from './localize/localize';
-import {
-  HomeAssistant,
-  VehicleCardConfig,
-  CardTypeConfig,
-  BaseButtonConfig,
-  ExtendedButtonConfigItem,
-  SECTION,
-  AddedCards,
-} from './types';
+import { HomeAssistant, VehicleCardConfig, CardTypeConfig, SECTION } from './types';
 // Local types
 import { fireEvent } from './types/ha-frontend';
 import { LovelaceCardEditor, LovelaceConfig, LovelaceCardConfig } from './types/ha-frontend/lovelace/lovelace';
@@ -56,7 +51,7 @@ const latestRelease: { version: string; hacs: boolean; updated: boolean } = {
   updated: false,
 };
 
-@customElement('vehicle-info-card-editor')
+@customElement(VEHICLE_INFO_CARD_EDITOR_NAME)
 export class VehicleCardEditor extends LitElement implements LovelaceCardEditor {
   @property({ attribute: false }) public hass!: HomeAssistant;
   @property({ attribute: false }) public lovelace?: LovelaceConfig;
@@ -136,7 +131,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     if (_changedProperties.has('_config') && this._config.added_cards && !this._addedCardSorted) {
       console.log('Rearranging added cards');
       // Sort the added cards with hidden items at the end
-      const rearranged = this._rearrangeAddedCards(this._config.added_cards);
+      const rearranged = this._rearrangeAddedCards(this._config.added_cards || {});
       this._config = { ...this._config, added_cards: rearranged };
       fireEvent(this, 'config-changed', { config: this._config });
       this._addedCardSorted = true;
@@ -185,7 +180,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 
   private get isAnyAddedCard(): boolean {
-    return this._config.added_cards && Object.keys(this._config.added_cards).length > 0;
+    return this._config.added_cards !== undefined && Object.keys(this._config.added_cards).length > 0;
   }
 
   private useCustomCard = (cardType: string): boolean => {
@@ -193,7 +188,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   };
 
   public isAddedCard = (cardType: string): boolean => {
-    return this._config.added_cards?.hasOwnProperty(cardType);
+    return this._config.added_cards !== undefined && this._config.added_cards.hasOwnProperty(cardType);
   };
 
   private useCustomButton = (button: string): boolean => {
@@ -207,7 +202,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private _getButtonConfig = (button: string): ExtendedButtonConfigItem => {
     const configBtn: ExtendedButtonConfigItem = {
-      ...(!this.isAddedCard(button) ? this._config[button] : this._config.added_cards[button].button),
+      ...(!this.isAddedCard(button) ? this._config[button] : this._config.added_cards![button].button),
       isDefaultCard: !this.isAddedCard(button),
       isHidden: this.isButtonHidden(button),
       useCustomButton: this.useCustomButton(button),
@@ -219,7 +214,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   private getBaseCardTypes() {
     const baseCardTypes = cardTypes(this._selectedLanguage);
     if (this.isAnyAddedCard) {
-      for (const [key, card] of Object.entries(this._config.added_cards)) {
+      for (const [key, card] of Object.entries(this._config.added_cards!)) {
         baseCardTypes.push({
           type: key,
           name: card.button.primary,
@@ -626,7 +621,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
 
   private _renderTireConfig(): TemplateResult {
     const info = this.localize('editor.customTireBackground.info');
-    const isUploaded = this._config.extra_configs?.tire_card_custom?.background.startsWith('/api/') || false;
+    const isUploaded = this._config.extra_configs?.tire_card_custom?.background?.startsWith('/api/') || false;
 
     const urlInput = html`
       <ha-alert alert-type="info">${info}</ha-alert>
@@ -634,7 +629,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
         <ha-textfield
           .label=${'Tire background url'}
           .disabled=${isUploaded}
-          .value=${this._config.extra_configs?.tire_card_custom.background}
+          .value=${this._config.extra_configs?.tire_card_custom?.background}
           .configIndex=${'extra_configs'}
           .configValue=${'background'}
           @change=${this._valueChanged}
@@ -642,7 +637,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       </div>
 
       <div class="custom-background-wrapper">
-        ${this._config.extra_configs?.tire_card_custom.background
+        ${this._config.extra_configs?.tire_card_custom?.background
           ? html` <ha-button @click=${() => this._removeTireBackground()}> Use Defaut image </ha-button> `
           : html` <ha-button @click=${() => this.shadowRoot?.getElementById('file-upload-new')?.click()}>
                 Upload image
@@ -853,7 +848,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   private _buttonsMoved(ev: CustomEvent): void {
     ev.stopPropagation();
     const { oldIndex, newIndex } = ev.detail;
-    const cards = [...Object.entries(this._config.added_cards)];
+    const cards = [...Object.entries(this._config.added_cards || {})];
     cards.splice(newIndex, 0, cards.splice(oldIndex, 1)[0]);
     const cardId = cards[newIndex][0];
     const newAddedCards = cards.reduce((acc, [key, value], index) => {
@@ -1092,8 +1087,8 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const addedEntries = [...Object.entries(addedCards)];
     // Rearrange added cards based on hidden state
     const rearrangedCards: AddedCards = Object.fromEntries([
-      ...addedEntries.filter(([, card]) => !card.button?.hide),
-      ...addedEntries.filter(([, card]) => card.button?.hide),
+      ...addedEntries.filter(([, card]) => !card.button.hide),
+      ...addedEntries.filter(([, card]) => card.button.hide),
     ]);
 
     return rearrangedCards;
@@ -1311,28 +1306,23 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
     const updates: Partial<VehicleCardConfig> = {};
 
     if (configType === 'map_popup_config') {
-      const key = configValue as keyof VehicleCardConfig['map_popup_config'];
+      const key = configValue as keyof MapPopupConfig;
       newValue = ev.detail.value;
-      if (this._config.map_popup_config![key] && this._config.map_popup_config[key] === newValue) {
-        return;
-      } else {
-        updates.map_popup_config = {
-          ...this._config.map_popup_config,
-          [key]: newValue,
-        };
-        console.log('Map popup config changed:', key, newValue);
-      }
+      updates.map_popup_config = {
+        ...this._config.map_popup_config,
+        [key]: newValue,
+      };
+      console.log('Map popup config changed:', updates.map_popup_config);
     } else if (['theme', 'mode'].includes(configValue)) {
       const key = configValue as keyof VehicleCardConfig['selected_theme'];
+      newValue = ev.detail.value;
       if (this._config.selected_theme && this._config.selected_theme[key] === newValue) {
         return;
       } else {
-        let selectedTheme = this._config.selected_theme || {};
-        selectedTheme = {
-          ...selectedTheme,
+        updates.selected_theme = {
+          ...this._config.selected_theme,
           [key]: newValue,
         };
-        updates.selected_theme = selectedTheme;
         console.log('Selected theme changed:', updates.selected_theme);
       }
     } else if (configValue === 'selected_language') {
@@ -1346,8 +1336,7 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
       };
       console.log('Button grid config changed:', newValue);
     } else if (configIndex === 'extra_configs') {
-      const key = configValue as keyof VehicleCardConfig['extra_configs']['tire_card_custom'];
-      newValue = key === 'background' ? target.value : ev.detail.value;
+      const key = configValue as keyof VehicleCardConfig['extra_configs'];
       updates.extra_configs = {
         ...this._config.extra_configs,
         tire_card_custom: {
@@ -1603,21 +1592,8 @@ export class VehicleCardEditor extends LitElement implements LovelaceCardEditor 
   }
 }
 
-(window as any).customCards = (window as any).customCards || [];
-(window as any).customCards.push({
-  type: 'vehicle-info-card',
-  name: 'Vehicle Info Card',
-  preview: true,
-  description: 'A custom card to display vehicle data with a map and additional cards.',
-  documentationURL: 'https://github.com/ngocjohn/vehicle-info-card?tab=readme-ov-file#configuration',
-});
-
 declare global {
   interface Window {
     BenzEditor: VehicleCardEditor;
-  }
-
-  interface HTMLElementTagNameMap {
-    'vehicle-info-card-editor': LovelaceCardEditor;
   }
 }

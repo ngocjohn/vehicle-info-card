@@ -63,7 +63,7 @@ export class CustomYamlEditor extends LitElement {
         added_cards: {
           ...config.added_cards,
           [this.configType]: {
-            ...config.added_cards[this.configType],
+            ...config.added_cards![this.configType],
             button: value,
           },
         },

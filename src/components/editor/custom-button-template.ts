@@ -3,8 +3,9 @@ import { customElement, property, state } from 'lit/decorators.js';
 
 import editorcss from '../../css/editor.css';
 import { VehicleCardEditor } from '../../editor';
-import { ExtendedButtonConfigItem, CardTypeConfig, HomeAssistant, BaseButtonConfig } from '../../types';
+import { CardTypeConfig, HomeAssistant } from '../../types';
 import './custom-yaml-editor';
+import { ExtendedButtonConfigItem, BaseButtonConfig } from '../../types/legacy-card-config/legacy-button-config';
 import {
   BTN_ACTION_SCHEMA,
   BTN_EXTRA_TEMPLATES_SCHEMA,
@@ -127,7 +128,7 @@ export class CustomButtonTemplate extends LitElement {
     const isDefaultCard = this.button.isDefaultCard;
     const defaultConfig = isDefaultCard
       ? this.editor._config[this.cardButton]
-      : this.editor._config['added_cards'][this.cardButton].button;
+      : this.editor._config['added_cards']![this.cardButton].button;
 
     return html`
       <custom-yaml-editor

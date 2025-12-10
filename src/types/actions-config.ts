@@ -1,4 +1,4 @@
-import { ActionConfig } from '../ha-frontend';
+import { ActionConfig } from './ha-frontend';
 
 export type ActionsSharedConfig = {
   entity?: string; // Optional entity for the action

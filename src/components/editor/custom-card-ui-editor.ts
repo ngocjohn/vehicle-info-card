@@ -119,7 +119,7 @@ export class CustomCardUIEditor extends LitElement {
     }
 
     this.cards = this.isAddedCard
-      ? this._config.added_cards[this.cardType.config].cards || []
+      ? this._config.added_cards![this.cardType.config].cards || []
       : this._config[this.cardType.config] || [];
 
     const selected = this._selectedCard!;
@@ -395,7 +395,7 @@ export class CustomCardUIEditor extends LitElement {
       added_cards: {
         ...this._config.added_cards,
         [this.cardType.config]: {
-          ...this._config.added_cards[this.cardType.config],
+          ...this._config.added_cards![this.cardType.config],
           cards: cards,
         },
       },

@@ -5,12 +5,12 @@ import { customElement, property, query, state } from 'lit/decorators.js';
 import { editorShowOpts } from '../../const/data-keys';
 import editorcss from '../../css/editor.css';
 import { VehicleCardEditor } from '../../editor';
-import { HomeAssistant, LovelaceConfig, MapPopupConfig, VehicleCardConfig } from '../../types';
+import { HomeAssistant, LovelaceConfig, VehicleCardConfig } from '../../types';
+import { MapPopupConfig } from '../../types/card-config/mini-map';
 import { fireEvent } from '../../types/ha-frontend';
 import { _convertToExtraMapConfig, Create } from '../../utils';
 import { Picker } from '../../utils/create';
 import { maptilerPopupSchema } from '../editor/forms/map-schema';
-
 @customElement('vic-panel-map-editor')
 export class VicPanelMapEditor extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
@@ -25,23 +25,23 @@ export class VicPanelMapEditor extends LitElement {
   @state() private _tmpYamlConfig?: ExtraMapCardConfig;
   @query('#extra-map-editor') private _cardElementEditor?: HTMLElement;
 
-  private get _mapPopupConfig(): MapPopupConfig {
-    return this._config.map_popup_config || {};
+  private get _mapPopupConfig(): MapPopupConfig | undefined {
+    return this._config.map_popup_config;
   }
 
   private get _deviceTrackerEntity(): MapEntityConfig {
     return {
       entity: this._config.device_tracker!,
-      label_mode: this._mapPopupConfig.label_mode,
-      attribute: this._mapPopupConfig.attribute,
+      label_mode: this._mapPopupConfig?.label_mode,
+      attribute: this._mapPopupConfig?.attribute,
       focus: true,
     };
   }
 
   private get _extraMapCardConfig(): ExtraMapCardConfig {
     const mapConfig = _convertToExtraMapConfig(
-      this._mapPopupConfig,
-      this._config.extra_configs.maptiler_api_key!,
+      this._mapPopupConfig!,
+      this._config.extra_configs?.maptiler_api_key!,
       this._mapEntitiesConfig
     );
     return mapConfig;
@@ -65,7 +65,7 @@ export class VicPanelMapEditor extends LitElement {
     }
 
     if (_changedProperties.has('_config') && this._config.extra_configs) {
-      if (!this._config.extra_configs.maptiler_api_key && this._config.map_popup_config.single_map_card) {
+      if (!this._config.extra_configs.maptiler_api_key && this._config.map_popup_config?.single_map_card) {
         this._useSingleMapCard = false;
         fireEvent(this, 'config-changed', {
           config: {

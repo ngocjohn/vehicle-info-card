@@ -5,7 +5,11 @@ import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
 import './components';
+import { defaultConfig } from 'types/legacy-card-config/default-config';
+import { registerCustomCard } from 'utils/custom-card-register';
+
 import { EcoChart, RemoteControl, VehicleButtons, VehicleMap } from './components/';
+import { VEHICLE_INFO_CARD_NAME, VEHICLE_INFO_CARD_EDITOR_NAME } from './const/const';
 import { CardItem, cardTypes } from './const/data-keys';
 import { IMAGE } from './const/imgconst';
 import { servicesCtrl } from './const/remote-control-keys';
@@ -17,19 +21,21 @@ import {
   VehicleCardConfig,
   EntityConfig,
   VehicleEntity,
-  ButtonCardEntity,
   CardTypeConfig,
-  CustomButtonEntity,
-  defaultConfig,
-  BaseButtonConfig,
   VehicleEntities,
   ecoChartModel,
   SECTION_DEFAULT_ORDER,
 } from './types';
 import { HEADER_ACTION, PreviewCard, MapData, SECTION } from './types';
 import { fireEvent, formatDateTime, forwardHaptic } from './types/ha-frontend';
+import * as ENTITY_UTIL from './types/ha-frontend/data/entity_registry';
 import { FrontendLocaleData } from './types/ha-frontend/data/translation';
 import { LovelaceCardEditor, LovelaceCardConfig, LovelaceCard } from './types/ha-frontend/lovelace/lovelace';
+import {
+  ButtonCardEntity,
+  CustomButtonEntity,
+  BaseButtonConfig,
+} from './types/legacy-card-config/legacy-button-config';
 import {
   handleCardFirstUpdated,
   getCarEntity,
@@ -46,11 +52,11 @@ import { getAddedButton, getDefaultButton, createCardElement, createCustomButton
 
 const ROWPX = 58;
 
-@customElement('vehicle-info-card')
+@customElement(VEHICLE_INFO_CARD_NAME)
 export class VehicleCard extends LitElement implements LovelaceCard {
   public static async getConfigElement(): Promise<LovelaceCardEditor> {
     await import('./editor');
-    return document.createElement('vehicle-info-card-editor');
+    return document.createElement(VEHICLE_INFO_CARD_EDITOR_NAME) as LovelaceCardEditor;
   }
   // Properties
   @property({ attribute: false })
@@ -113,6 +119,8 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   @query('remote-control') remoteControl!: RemoteControl;
   @query('extra-map-card') _extraMapCard?: any;
 
+  public _entityUtils = ENTITY_UTIL;
+
   connectedCallback(): void {
     super.connectedCallback();
     window.BenzCard = this;
@@ -137,6 +145,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     const entity = getCarEntity(hass);
     console.log('entity', entity);
     return {
+      type: `custom:${VEHICLE_INFO_CARD_NAME}`,
       ...defaultConfig,
       entity: entity,
       images: [],
@@ -212,7 +221,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       }
     }
 
-    if (changedProps.has('config') && this.config.selected_theme) {
+    if (changedProps.has('config') && this.config.selected_theme && this.config.selected_theme.theme) {
       const oldTheme = changedProps.get('config')?.selected_theme?.theme;
       const newTheme = this.config.selected_theme.theme;
       if (oldTheme !== newTheme) {
@@ -859,7 +868,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
   private _renderServiceControl(): TemplateResult | void {
     const hass = this._hass;
-    const serviceControl = this.config.services;
+    const serviceControl = this.config.services || {};
 
     const activeServices = Object.entries(serviceControl).reduce((acc, [key, value]) => {
       if (value) {
@@ -1542,7 +1551,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
   private _computeClasses() {
     // if (this._loading) return;
-    const showBackground = this.config.show_background && !this._loading;
+    const showBackground = !!this.config.show_background;
     const sectionOrder = this.config.extra_configs?.section_order ?? [...SECTION_DEFAULT_ORDER];
     const lastItem = sectionOrder[sectionOrder.length - 1];
     const firstItem = sectionOrder[0];
@@ -1663,10 +1672,13 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   }
 }
 
+registerCustomCard({
+  type: VEHICLE_INFO_CARD_NAME,
+  name: 'Vehicle Info Card',
+  description: 'A custom card to display vehicle data with a map and additional cards.',
+});
+
 declare global {
-  interface HTMLElementTagNameMap {
-    'vehicle-info-card': VehicleCard;
-  }
   interface Window {
     BenzCard: VehicleCard;
   }

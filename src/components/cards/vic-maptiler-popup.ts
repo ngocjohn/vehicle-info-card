@@ -713,7 +713,7 @@ export class VicMaptilerPopup extends LitElement {
 
   private _computeMapStyle() {
     const getStyle = (key: string) => this.getModeColor(key);
-    const configPathColor = this._mapConfig?.path_color;
+    const configPathColor = this._mapConfig!.path_color;
 
     const deviceTracker = this._mapConfig?.device_tracker!;
     const entityPic = this.card._hass.states[deviceTracker]?.attributes.entity_picture;

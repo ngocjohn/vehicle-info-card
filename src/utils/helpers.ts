@@ -97,7 +97,7 @@ const formatTimestamp = (ts: number): string => {
 };
 
 export const _getHistoryPoints = memoizeOne((config: VehicleCardConfig, history?: HistoryStates): any | undefined => {
-  if (!history || !(config.map_popup_config.hours_to_show ?? 0)) {
+  if (!history || !(config.map_popup_config?.hours_to_show ?? 0)) {
     return undefined;
   }
   console.log('history', history);

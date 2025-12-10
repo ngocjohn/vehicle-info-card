@@ -3,7 +3,8 @@ import { html, TemplateResult } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import 'nvn-tabs';
 
-import { HomeAssistant, CustomButtonEntity } from '../types';
+import { HomeAssistant } from '../types';
+import { CustomButtonEntity } from '../types/legacy-card-config/legacy-button-config';
 
 interface PickerOptions {
   cardIndex?: number;
