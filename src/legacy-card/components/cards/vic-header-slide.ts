@@ -6,7 +6,7 @@ import { Autoplay, Pagination, EffectFade, EffectCoverflow } from 'swiper/module
 import swipercss from 'swiper/swiper-bundle.css';
 import { SwiperOptions } from 'swiper/types';
 
-import { VehicleCardConfig } from '../../types';
+import { VehicleCardConfig } from '../../../types';
 
 @customElement('header-slide')
 export class HeaderSlide extends LitElement {

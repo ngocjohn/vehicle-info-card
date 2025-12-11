@@ -5,17 +5,11 @@ import { styleMap } from 'lit/directives/style-map.js';
 import tinycolor from 'tinycolor2';
 
 // Styles
-import mainstyle from '../../css/styles.css';
-import {
-  ButtonCardEntity,
-  HomeAssistant,
-  VehicleCardConfig,
-  BUTTON_LAYOUT,
-  forwardHaptic,
-  hasItemAction,
-} from '../../types';
-import { RenderTemplateResult, subscribeRenderTemplate } from '../../types/ha-frontend/data/ws-templates';
-import { addActions, hasTemplate } from '../../utils';
+import mainstyle from '../../../css/styles.css';
+import { HomeAssistant, VehicleCardConfig, forwardHaptic, hasItemAction } from '../../../types';
+import { RenderTemplateResult, subscribeRenderTemplate } from '../../../types/ha-frontend/data/ws-templates';
+import { ButtonCardEntity } from '../../../types/legacy-card-config/legacy-button-config';
+import { addActions, hasTemplate } from '../../../utils';
 import { VehicleButtons } from './vic-vehicle-buttons';
 
 const TEMPLATE_KEYS = [
@@ -37,7 +31,7 @@ export class VicButtonSingle extends LitElement {
   @property({ attribute: false }) _config!: VehicleCardConfig;
   @property({ attribute: false }) _card!: VehicleButtons;
   @property({ attribute: false }) _button!: ButtonCardEntity;
-  @property({ attribute: 'layout', type: String }) layout?: BUTTON_LAYOUT;
+  @property({ attribute: 'layout', type: String }) layout?: 'horizontal' | 'vertical' = 'horizontal';
 
   @property({ attribute: false }) _entityStateObj?: HassEntity;
 
@@ -346,7 +340,7 @@ export class VicButtonSingle extends LitElement {
         data-key="${`button-${key}`}"
         class="grid-item"
         @click=${this._handleNavigate}
-        ?transparent=${this._card.buttonConfig.transparent}
+        ?transparent=${this._card.buttonConfig?.transparent}
         style=${styleMap(iconStyle)}
       >
         <ha-ripple></ha-ripple>

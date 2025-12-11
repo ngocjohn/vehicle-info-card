@@ -2,9 +2,9 @@ import { LitElement, html, TemplateResult, CSSResultGroup, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { ExtendedButtonConfigItem } from 'types/legacy-card-config/legacy-button-config';
 
-import editorcss from '../../css/editor.css';
-import { CardTypeConfig, HomeAssistant, VehicleCardConfig } from '../../types';
-import { fireEvent } from '../../types/ha-frontend';
+import editorcss from '../../../css/editor.css';
+import { CardTypeConfig, HomeAssistant, VehicleCardConfig } from '../../../types';
+import { fireEvent } from '../../../types/';
 
 const ACTIONSELECTOR = [
   {

@@ -4,12 +4,12 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import Sortable from 'sortablejs';
 
-import editorcss from '../../css/editor.css';
+import editorcss from '../../../css/editor.css';
+import { ImageConfig, VehicleCardConfig } from '../../../types';
+import { fireEvent } from '../../../types/ha-frontend';
+import { imageInputChange, handleFilePicked } from '../../../utils';
+import { Picker } from '../../../utils/create';
 import { VehicleCardEditor } from '../../editor';
-import { ImageConfig, VehicleCardConfig } from '../../types';
-import { fireEvent } from '../../types/ha-frontend';
-import { imageInputChange, handleFilePicked } from '../../utils';
-import { Picker } from '../../utils/create';
 
 @customElement('panel-images')
 export class PanelImages extends LitElement {

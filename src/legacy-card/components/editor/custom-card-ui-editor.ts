@@ -5,12 +5,12 @@ import { LitElement, html, TemplateResult, CSSResultGroup, PropertyValues, css }
 import { customElement, property, query, state } from 'lit/decorators.js';
 import 'nvn-tabs';
 
-import styles from '../../css/editor.css';
-import { VehicleCardEditor } from '../../editor';
+import styles from '../../../css/editor.css';
 // Local types
-import { HomeAssistant, VehicleCardConfig, CardTypeConfig } from '../../types';
-import { fireEvent, HASSDomEvent } from '../../types';
-import { LovelaceCardConfig, LovelaceConfig } from '../../types/ha-frontend/lovelace/lovelace';
+import { HomeAssistant, VehicleCardConfig, CardTypeConfig } from '../../../types';
+import { fireEvent, HASSDomEvent } from '../../../types';
+import { LovelaceCardConfig, LovelaceConfig } from '../../../types/ha-frontend/lovelace/lovelace';
+import { VehicleCardEditor } from '../../editor';
 
 export interface GUIModeChangedEvent {
   guiMode: boolean;

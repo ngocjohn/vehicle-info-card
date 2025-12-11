@@ -1,11 +1,11 @@
 import { LitElement, html, TemplateResult, CSSResultGroup, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
-import editorcss from '../../css/editor.css';
-import { VehicleCardEditor } from '../../editor';
-import { CardTypeConfig, HomeAssistant } from '../../types';
+import editorcss from '../../../css/editor.css';
+import { CardTypeConfig, HomeAssistant } from '../../../types';
+import { ExtendedButtonConfigItem, BaseButtonConfig } from '../../../types/legacy-card-config/legacy-button-config';
 import './custom-yaml-editor';
-import { ExtendedButtonConfigItem, BaseButtonConfig } from '../../types/legacy-card-config/legacy-button-config';
+import { VehicleCardEditor } from '../../editor';
 import {
   BTN_ACTION_SCHEMA,
   BTN_EXTRA_TEMPLATES_SCHEMA,

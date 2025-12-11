@@ -14,10 +14,10 @@ import {
   MAPTILER_STYLE,
   MAPTILER_THEME,
   STYLE_SCHEMA,
-} from '../../const/maptiler-const';
-import { MapData } from '../../types';
-import { getAddressFromMapTiler, getFormatedDateTime, getInitials } from '../../utils';
-import { VehicleCard } from '../../vehicle-info-card';
+} from '../../../const/maptiler-const';
+import { MapData } from '../../../types';
+import { getAddressFromMapTiler, getFormatedDateTime, getInitials } from '../../../utils';
+import { VehicleCard } from '../../vehicle-info-card-legacy';
 import { MapConfig } from './vic-map-card';
 
 enum THEME_MODE {

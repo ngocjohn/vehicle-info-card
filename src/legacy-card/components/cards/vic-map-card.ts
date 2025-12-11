@@ -7,7 +7,7 @@ import { LitElement, html, css, TemplateResult, PropertyValues, CSSResultGroup, 
 import { customElement, state, property } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
-import { MAPTILER_DIALOG_STYLES, DEFAULT_DIALOG_STYLES, DEFAULT_HOURS_TO_SHOW } from '../../const/maptiler-const';
+import { MAPTILER_DIALOG_STYLES, DEFAULT_DIALOG_STYLES, DEFAULT_HOURS_TO_SHOW } from '../../../const/maptiler-const';
 import {
   HistoryStates,
   isComponentLoaded,
@@ -16,13 +16,13 @@ import {
   SECTION_DEFAULT_ORDER,
   subscribeHistory,
   HomeAssistant,
-} from '../../types';
-import { MapPopupConfig } from '../../types/card-config/mini-map';
-import { LovelaceCardConfig } from '../../types/ha-frontend/lovelace/lovelace';
-import { _getHistoryPoints, _getMapAddress, createMapPopup } from '../../utils';
+} from '../../../types';
+import { MapPopupConfig } from '../../../types/card-config/mini-map';
+import { LovelaceCardConfig } from '../../../types/ha-frontend/lovelace/lovelace';
+import { _getHistoryPoints, _getMapAddress, createMapPopup } from '../../../utils';
 import './vic-maptiler-popup';
-import { createCloseHeading } from '../../utils/create';
-import { VehicleCard } from '../../vehicle-info-card';
+import { createCloseHeading } from '../../../utils/create';
+import { VehicleCard } from '../../vehicle-info-card-legacy';
 
 export interface MapConfig extends MapPopupConfig {
   device_tracker: string;

@@ -3,7 +3,7 @@ import ApexCharts from 'apexcharts';
 import { LitElement, html, TemplateResult, css, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
-import { ecoChartModel } from '../../types';
+import { ecoChartModel } from '../../../types';
 
 @customElement('eco-chart')
 export class EcoChart extends LitElement {

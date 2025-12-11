@@ -9,13 +9,13 @@ import { Pagination } from 'swiper/modules';
 import swipercss from 'swiper/swiper-bundle.css';
 
 // Styles
-import mainstyle from '../../css/styles.css';
+import mainstyle from '../../../css/styles.css';
 // Local imports
-import { HomeAssistant, VehicleCardConfig } from '../../types';
-import { ButtonCardEntity } from '../../types/legacy-card-config/legacy-button-config';
+import { HomeAssistant, VehicleCardConfig } from '../../../types';
+import { ButtonCardEntity } from '../../../types/legacy-card-config/legacy-button-config';
 // Components
 import './vic-button-single';
-import { VehicleCard } from '../../vehicle-info-card';
+import { VehicleCard } from '../../vehicle-info-card-legacy';
 
 @customElement('vehicle-buttons')
 export class VehicleButtons extends LitElement {

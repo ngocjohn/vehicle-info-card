@@ -3,13 +3,13 @@ import { mdiClose } from '@mdi/js';
 import { LitElement, html, TemplateResult, CSSResultGroup, nothing } from 'lit';
 import { customElement, state, property } from 'lit/decorators.js';
 
-import { ControlServiceData, tempSelectOptions } from '../../const/remote-control-keys';
-import styles from '../../css/remote-control.css';
-import mainstyle from '../../css/styles.css';
-import { fireEvent, forwardHaptic } from '../../types';
-import { HomeAssistant } from '../../types';
-import { convertToMinutes } from '../../utils';
-import { VehicleCard } from '../../vehicle-info-card';
+import { ControlServiceData, tempSelectOptions } from '../../../const/remote-control-keys';
+import styles from '../../../css/remote-control.css';
+import mainstyle from '../../../css/styles.css';
+import { fireEvent, forwardHaptic } from '../../../types';
+import { HomeAssistant } from '../../../types';
+import { convertToMinutes } from '../../../utils';
+import { VehicleCard } from '../../vehicle-info-card-legacy';
 
 const enum PRECOND {
   TIME = 'time',

@@ -2,10 +2,10 @@
 import { LitElement, html, CSSResultGroup, nothing, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
-import editorcss from '../../css/editor.css';
+import editorcss from '../../../css/editor.css';
+import { HomeAssistant, VehicleCardConfig } from '../../../types';
+import { fireEvent } from '../../../types';
 import { VehicleCardEditor } from '../../editor';
-import { HomeAssistant, VehicleCardConfig } from '../../types';
-import { fireEvent } from '../../types';
 
 @customElement('custom-yaml-editor')
 export class CustomYamlEditor extends LitElement {

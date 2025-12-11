@@ -2,14 +2,14 @@ import { EntityConfig, ExtraMapCardConfig, MapEntityConfig, processConfigEntitie
 import { LitElement, html, TemplateResult, CSSResultGroup, PropertyValues } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 
-import { editorShowOpts } from '../../const/data-keys';
-import editorcss from '../../css/editor.css';
+import { editorShowOpts } from '../../../const/data-keys';
+import editorcss from '../../../css/editor.css';
+import { HomeAssistant, LovelaceConfig, VehicleCardConfig } from '../../../types';
+import { MapPopupConfig } from '../../../types/card-config/mini-map';
+import { fireEvent } from '../../../types/ha-frontend';
+import { _convertToExtraMapConfig, Create } from '../../../utils';
+import { Picker } from '../../../utils/create';
 import { VehicleCardEditor } from '../../editor';
-import { HomeAssistant, LovelaceConfig, VehicleCardConfig } from '../../types';
-import { MapPopupConfig } from '../../types/card-config/mini-map';
-import { fireEvent } from '../../types/ha-frontend';
-import { _convertToExtraMapConfig, Create } from '../../utils';
-import { Picker } from '../../utils/create';
 import { maptilerPopupSchema } from '../editor/forms/map-schema';
 @customElement('vic-panel-map-editor')
 export class VicPanelMapEditor extends LitElement {

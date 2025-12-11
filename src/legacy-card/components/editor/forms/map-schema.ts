@@ -1,6 +1,6 @@
 import memoizeOne from 'memoize-one';
 
-import { DEFAULT_HOURS_TO_SHOW, DEFAULT_ZOOM } from '../../../const/maptiler-const';
+import { DEFAULT_HOURS_TO_SHOW, DEFAULT_ZOOM } from '../../../../const/maptiler-const';
 
 const themeModes = ['auto', 'light', 'dark'] as const;
 const labelModes = ['name', 'state', 'icon', 'attribute'] as const;
