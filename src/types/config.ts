@@ -9,15 +9,6 @@ import { AddedCards, BaseButtonConfig } from './legacy-card-config/legacy-button
  * Configuration interface for the Vehicle Card.
  */
 
-export enum SECTION {
-  HEADER_INFO = 'header_info',
-  IMAGES_SLIDER = 'images_slider',
-  MINI_MAP = 'mini_map',
-  BUTTONS = 'buttons',
-}
-
-export const SECTION_DEFAULT_ORDER = [SECTION.HEADER_INFO, SECTION.IMAGES_SLIDER, SECTION.MINI_MAP, SECTION.BUTTONS];
-
 export type ImageConfig = {
   url: string;
   title: string;

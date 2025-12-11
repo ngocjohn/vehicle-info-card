@@ -76,3 +76,4 @@ const sensorDeviceFilters: {
 };
 
 export const combinedFilters = { ...binarySensorsFilters, ...sensorDeviceFilters };
+export type CarEntityKey = keyof typeof combinedFilters;

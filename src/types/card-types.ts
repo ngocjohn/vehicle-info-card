@@ -1,3 +1,5 @@
+import { CarEntityKey } from 'const/const';
+
 import { LovelaceCardConfig } from './ha-frontend/lovelace/lovelace';
 import { CustomButtonEntity } from './legacy-card-config/legacy-button-config';
 
@@ -23,6 +25,10 @@ export type VehicleEntity = {
   translation_key?: string;
   disabled_by?: string | null;
   hidden_by?: string | null;
+  icon?: string;
+  unit?: string;
+  state?: string;
+  active?: boolean;
 };
 
 export type EntityConfig = {
@@ -64,3 +70,16 @@ export interface PreviewCard {
   cardPreview?: LovelaceCardConfig[];
   buttonPreview?: Partial<CustomButtonEntity>;
 }
+
+export interface CarEntity {
+  entity_id: string;
+  original_name: string;
+  icon?: string;
+  unit?: string;
+  state?: string;
+  active?: boolean;
+}
+
+export type CarEntities = {
+  [K in CarEntityKey]?: CarEntity;
+};

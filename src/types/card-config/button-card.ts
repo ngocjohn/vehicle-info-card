@@ -10,6 +10,7 @@ export type CARD_TYPE = (typeof CardType)[number];
 export type PRIMARY_INFO = (typeof PrimaryInfo)[number];
 export type ICON_TYPE = (typeof IconType)[number];
 
+export type BUTTON_LAYOUT = 'horizontal' | 'vertical';
 export interface ButtonShowConfig {
   show_primary?: boolean;
   show_secondary?: boolean;
@@ -18,7 +19,7 @@ export interface ButtonShowConfig {
   icon_type?: ICON_TYPE;
   state_color?: boolean;
   include_state_template?: boolean;
-  layout?: 'horizontal' | 'vertical';
+  layout?: BUTTON_LAYOUT;
   transparent?: boolean;
   secondary_multiline?: boolean;
   state_content?: string[];

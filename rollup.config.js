@@ -29,7 +29,7 @@ const plugins = [dev && serve(serveopts), !dev && terser(terserOpt)];
 
 export default [
   {
-    input: 'src/vehicle-info-card.ts',
+    input: 'src/main.ts',
     output: [
       {
         file: dev ? 'dist/vehicle-info-card.js' : 'build/vehicle-info-card.js',

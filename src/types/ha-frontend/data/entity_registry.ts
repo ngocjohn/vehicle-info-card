@@ -1,3 +1,5 @@
+import { Connection } from 'home-assistant-js-websocket';
+
 export interface RegistryEntry {
   created_at: number;
   modified_at: number;
@@ -41,3 +43,8 @@ export interface EntityRegistryEntry extends RegistryEntry {
   options: any;
   categories: Record<string, string>;
 }
+
+export const fetchEntityRegistry = (conn: Connection) =>
+  conn.sendMessagePromise<EntityRegistryEntry[]>({
+    type: 'config/entity_registry/list',
+  });

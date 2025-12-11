@@ -1,4 +1,4 @@
-import { VehicleCardEditor } from '../editor';
+import { VehicleCardEditor } from '../legacy-card/editor';
 import { HomeAssistant } from '../types';
 /**
  * Upload a file to the server

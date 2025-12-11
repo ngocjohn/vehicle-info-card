@@ -6,7 +6,8 @@ import { defaultConfig } from 'types/legacy-card-config/default-config';
 
 import { combinedFilters, CARD_UPADE_SENSOR, CARD_VERSION, REPOSITORY } from '../const/const';
 import { baseDataKeys } from '../const/data-keys';
-import { VehicleCardEditor } from '../editor';
+import { VehicleCardEditor } from '../legacy-card/editor';
+import { VehicleCard } from '../legacy-card/vehicle-info-card-legacy';
 import {
   HomeAssistant,
   VehicleEntities,
@@ -25,7 +26,6 @@ import {
   BaseButtonConfig,
   CustomButtonEntity,
 } from '../types/legacy-card-config/legacy-button-config';
-import { VehicleCard } from '../vehicle-info-card';
 /**
  *
  * @param car
