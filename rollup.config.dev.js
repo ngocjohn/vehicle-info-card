@@ -1,5 +1,6 @@
 import terser from '@rollup/plugin-terser';
 import serve from 'rollup-plugin-serve';
+import replace from '@rollup/plugin-replace';
 import { version } from './package.json';
 import { logCardInfo, defaultPlugins } from './rollup.config.helper.mjs';
 
@@ -29,6 +30,7 @@ const terserOpt = {
 
 const replaceOpts = {
   preventAssignment: true,
+  'process.env.DEBUG': JSON.stringify(debug),
   __DEBUG__: debug || false,
 };
 
@@ -36,18 +38,30 @@ const plugins = [dev && serve(serveopts), !dev && terser(terserOpt)];
 
 export default [
   {
+    input: 'src/main-b.ts',
+    output: {
+      file: 'dist/vehicle-info-card-legacy.js',
+      format: 'es',
+      sourcemap: false,
+      inlineDynamicImports: true,
+    },
+    plugins: [replace(replaceOpts), ...defaultPlugins, ...plugins],
+    watch: false,
+  },
+  {
     input: 'src/main.ts',
     output: [
       {
-        file: dev ? 'dist/vehicle-info-card.js' : 'build/vehicle-info-card.js',
+        file: 'dist/vehicle-info-card.js',
         format: 'es',
-        sourcemap: dev ? true : false,
+        sourcemap: true,
         inlineDynamicImports: true,
         banner: custombanner,
       },
     ],
     watch: {
       exclude: 'node_modules/**',
+      buildDelay: 500,
     },
     plugins: [replace(replaceOpts), ...defaultPlugins, ...plugins],
     moduleContext: (id) => {

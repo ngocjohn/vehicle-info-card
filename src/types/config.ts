@@ -1,3 +1,5 @@
+import { convertButtonToNewFormat } from 'utils/editor/migrate_button_card';
+
 import { LovelaceCardConfig } from '../types';
 import { AdditionalCustomButtonCard, DefaultButtonCard } from './card-config/button-card';
 import { ButtonGridLayoutConfig, ExtraConfigs } from './card-config/layout-config';
@@ -130,3 +132,80 @@ export interface VehicleCardConfig extends LovelaceCardConfig {
    */
   show_error_notify?: boolean;
 }
+
+const DEPRECATED_BUTTON_CARD_PROPS = [
+  'eco_button',
+  'trip_button',
+  'vehicle_button',
+  'tyre_button',
+  'eco_card',
+  'trip_card',
+  'vehicle_card',
+  'tyre_card',
+  'use_custom_cards',
+] as const;
+
+type DeprecatedConfig = {
+  legacyDefaultButtonCard?: boolean;
+  legacyAddedCustomButtonCard?: boolean;
+};
+
+export const configHasDeprecatedProps = (config: VehicleCardConfig): boolean | DeprecatedConfig => {
+  // Check for deprecated properties
+
+  const legacyDefaultButtonCard = DEPRECATED_BUTTON_CARD_PROPS.some((prop) => prop in config);
+
+  const needMigration = Boolean(legacyDefaultButtonCard);
+  if (needMigration) {
+    console.log('Config needs migration:', {
+      legacyDefaultButtonCard,
+    });
+    return {
+      legacyDefaultButtonCard,
+    };
+  }
+  return needMigration;
+};
+
+export const updateDeprecatedConfig = (config: VehicleCardConfig): VehicleCardConfig => {
+  const legacyCheck = configHasDeprecatedProps(config);
+  if (!legacyCheck) {
+    console.log('No deprecated config properties found.');
+    return config;
+  }
+
+  const newConfig = { ...config };
+  // Migrate legacy button configs
+  if (legacyCheck && typeof legacyCheck === 'object') {
+    if (legacyCheck.legacyDefaultButtonCard) {
+      console.log('Migrating legacy button card config');
+      const updatedDefaultButtons: DefaultButtonCard = {};
+      for (const cardButtonType of ['vehicle', 'trip', 'eco', 'tyre'] as const) {
+        const buttonKey = `${cardButtonType}_button` as keyof VehicleCardConfig;
+        const cardKey = `${cardButtonType}_card` as keyof VehicleCardConfig;
+        const legacyButtonConfig = config[buttonKey] as BaseButtonConfig | undefined;
+        const legacyCardConfig = config[cardKey] as LovelaceCardConfig[] | undefined;
+        const useCustomCards = config.use_custom_cards?.[`${cardButtonType}_card`];
+        if (legacyButtonConfig || legacyCardConfig) {
+          const updatedButtonConfig = convertButtonToNewFormat({
+            button: legacyButtonConfig,
+            cards: legacyCardConfig,
+            use_custom_cards: useCustomCards,
+          });
+          updatedDefaultButtons[`${cardButtonType}_card`] = updatedButtonConfig;
+        }
+      }
+      newConfig.default_buttons = {
+        ...newConfig.default_buttons,
+        ...updatedDefaultButtons,
+      };
+      // Remove deprecated properties
+      DEPRECATED_BUTTON_CARD_PROPS.forEach((prop) => {
+        if (prop in newConfig) {
+          delete (newConfig as any)[prop];
+        }
+      });
+    }
+  }
+  return newConfig;
+};

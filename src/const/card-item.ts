@@ -1,6 +1,33 @@
+import { forEach } from 'es-toolkit/compat';
 import { LocalizeFunc } from 'types';
 
-export type CardSection = 'tripCard' | 'vehicleCard' | 'ecoCard' | 'tyreCard' | 'chargingOverview';
+export const CARD_SECTION = ['tripCard', 'vehicleCard', 'ecoCard', 'tyreCard'] as const;
+export const CARD_ATTRIBUTES_SECTION = ['lockAttributes', 'doorAttributes', 'windowAttributes'] as const;
+export const CARD_INDICATOR_SECTION = ['chargingOverview'] as const;
+
+export enum ATTR_SECTON_TYPE {
+  LOCK = 'lockAttributes',
+  DOOR = 'doorAttributes',
+  WINDOW = 'windowAttributes',
+}
+export enum CARD_SECTON_TYPE {
+  TRIP = 'tripCard',
+  VEHICLE = 'vehicleCard',
+  ECO = 'ecoCard',
+  TYRE = 'tyreCard',
+}
+
+export type CardSection = (typeof CARD_SECTION)[number];
+export type CardAttributesSection = (typeof CARD_ATTRIBUTES_SECTION)[number];
+export type CardIndicatorSection = (typeof CARD_INDICATOR_SECTION)[number];
+
+export type CardSectionType = CardSection | CardAttributesSection | CardIndicatorSection;
+
+export interface CardItem {
+  key: CardItemKey;
+  name: string;
+  icon?: string;
+}
 
 export const TRIP_OVERVIEW_KEYS = [
   'odometer',
@@ -49,11 +76,10 @@ export const VEHICLE_WARNINGS_KEYS = [
 ] as const;
 
 export const ECO_SCORE_KEYS = [
-  'ecoScoreAcceleration',
   'ecoScoreBonusRange',
+  'ecoScoreAcceleration',
   'ecoScoreConstant',
   'ecoScoreFreeWheel',
-  'ecoScoreTotal',
 ] as const;
 
 export const TYRE_PRESSURE_KEYS = [
@@ -65,14 +91,54 @@ export const TYRE_PRESSURE_KEYS = [
 
 export const CHARGING_OVERVIEW_KEYS = ['chargingPower', 'soc', 'maxSoc', 'selectedProgram'] as const;
 
+export const LOCK_ATTIBUTES_KEYS = [
+  'doorlockstatusfrontleft',
+  'doorlockstatusfrontright',
+  'doorlockstatusrearleft',
+  'doorlockstatusrearright',
+  'doorlockstatusgas',
+] as const;
+
+export const DOOR_ATTRIBUTES_KEYS = [
+  'decklidstatus',
+  'doorstatusfrontleft',
+  'doorstatusfrontright',
+  'doorstatusrearleft',
+  'doorstatusrearright',
+  'enginehoodstatus',
+  'chargeflapdcstatus',
+] as const;
+
+export const WINDOW_ATTRIBUTES_KEYS = [
+  'windowstatusrearleft',
+  'windowstatusrearright',
+  'windowstatusfrontleft',
+  'windowstatusfrontright',
+  'windowstatusrearleftblind',
+  'windowstatusrearrightblind',
+  'windowstatusfrontleftblind',
+  'windowstatusfrontrightblind',
+  'sunroofstatus',
+] as const;
+
 export type TripOverviewKey = (typeof TRIP_OVERVIEW_KEYS)[number];
 export type TripFromResetKey = (typeof TRIP_FROM_RESET_KEYS)[number];
 export type TripFromStartKey = (typeof TRIP_FROM_START_KEYS)[number];
+
 export type VehicleOverviewKey = (typeof VEHICLE_OVERVIEW_KEYS)[number];
 export type VehicleWarningsKey = (typeof VEHICLE_WARNINGS_KEYS)[number];
+
 export type EcoScoreKey = (typeof ECO_SCORE_KEYS)[number];
+
 export type TyrePressureKey = (typeof TYRE_PRESSURE_KEYS)[number];
+
 export type ChargingOverviewKey = (typeof CHARGING_OVERVIEW_KEYS)[number];
+
+export type LockAttributesKey = (typeof LOCK_ATTIBUTES_KEYS)[number];
+export type DoorAttributesKey = (typeof DOOR_ATTRIBUTES_KEYS)[number];
+export type WindowAttributesKey = (typeof WINDOW_ATTRIBUTES_KEYS)[number];
+
+export type AttributeItemKey = LockAttributesKey | DoorAttributesKey | WindowAttributesKey;
 
 export type CardItemKey =
   | TripOverviewKey
@@ -82,13 +148,9 @@ export type CardItemKey =
   | VehicleWarningsKey
   | EcoScoreKey
   | TyrePressureKey
-  | ChargingOverviewKey;
+  | ChargingOverviewKey
+  | AttributeItemKey;
 
-export interface CardItem {
-  key: CardItemKey;
-  name: string;
-  icon?: string;
-}
 const ICON: Record<CardItemKey | string, string> = {
   // Trip Overview
   odometer: 'mdi:counter',
@@ -112,27 +174,97 @@ const ICON: Record<CardItemKey | string, string> = {
   selectedProgram: 'mdi:ev-station',
 };
 
-const createItem = (localize: LocalizeFunc, section: CardSection, key: CardItemKey): CardItem => ({
-  key,
-  name: localize(`card.${section}.${key}`),
-  ...(ICON[key] ? { icon: ICON[key] } : {}),
-});
+export const ATTR_SECTION_ITEMS: Record<CardAttributesSection, readonly AttributeItemKey[]> = {
+  lockAttributes: LOCK_ATTIBUTES_KEYS,
+  doorAttributes: DOOR_ATTRIBUTES_KEYS,
+  windowAttributes: WINDOW_ATTRIBUTES_KEYS,
+};
 
-export const computeCardItems = (localize: LocalizeFunc) => ({
-  tripCard: {
-    overview: TRIP_OVERVIEW_KEYS.map((key) => createItem(localize, 'tripCard', key)),
-    fromReset: TRIP_FROM_RESET_KEYS.map((key) => createItem(localize, 'tripCard', key)),
-    fromStart: TRIP_FROM_START_KEYS.map((key) => createItem(localize, 'tripCard', key)),
-  },
-  vehicleCard: {
-    overview: VEHICLE_OVERVIEW_KEYS.map((key) => createItem(localize, 'vehicleCard', key)),
-    warnings: VEHICLE_WARNINGS_KEYS.map((key) => createItem(localize, 'vehicleCard', key)),
-  },
-  ecoCard: {
-    scores: ECO_SCORE_KEYS.map((key) => createItem(localize, 'ecoCard', key)),
-  },
-  tyreCard: {
-    pressures: TYRE_PRESSURE_KEYS.map((key) => createItem(localize, 'tyreCard', key)),
-  },
-  chargingOverview: [CHARGING_OVERVIEW_KEYS.map((key) => createItem(localize, 'chargingOverview', key))],
-});
+const createItem = (localize: LocalizeFunc, section: CardSectionType, key: CardItemKey): CardItem => {
+  if (key === 'sunroofstatus') {
+    section = 'doorAttributes';
+  }
+  return {
+    key,
+    name: localize(`card.${section}.${key}`),
+    ...(ICON[key] ? { icon: ICON[key] } : {}),
+  };
+};
+
+export const computeCardItems = (localize: LocalizeFunc) => {
+  const sections = {
+    tripCard: {
+      overview: TRIP_OVERVIEW_KEYS,
+      fromReset: TRIP_FROM_RESET_KEYS,
+      fromStart: TRIP_FROM_START_KEYS,
+    },
+    vehicleCard: {
+      overview: VEHICLE_OVERVIEW_KEYS,
+      warnings: VEHICLE_WARNINGS_KEYS,
+    },
+    ecoCard: ECO_SCORE_KEYS,
+    tyreCard: TYRE_PRESSURE_KEYS,
+    chargingOverview: CHARGING_OVERVIEW_KEYS,
+    lockAttributes: LOCK_ATTIBUTES_KEYS,
+    doorAttributes: DOOR_ATTRIBUTES_KEYS,
+    windowAttributes: WINDOW_ATTRIBUTES_KEYS,
+  };
+
+  const cardItems: any = {};
+
+  forEach(sections, (sectionValue, sectionKey) => {
+    if (Array.isArray(sectionValue)) {
+      // Simple array of keys
+      cardItems[sectionKey] = sectionValue.map((key) => createItem(localize, sectionKey as CardSectionType, key));
+    } else {
+      // Nested object of subsections
+      cardItems[sectionKey] = {};
+      forEach(sectionValue, (subsectionValue, subsectionKey) => {
+        cardItems[sectionKey][subsectionKey] = [...subsectionValue].map((key) =>
+          createItem(localize, sectionKey as CardSectionType, key)
+        );
+      });
+    }
+  });
+
+  return cardItems;
+};
+
+export function findCardItemByKey(obj: any, key: string): CardItem | undefined {
+  if (!obj) return undefined;
+
+  // Case 1: it's an array → inspect each item
+  if (Array.isArray(obj)) {
+    for (const item of obj) {
+      const result = findCardItemByKey(item, key);
+      if (result) return result;
+    }
+    return undefined;
+  }
+
+  // Case 2: it's an object with "key" property → match found
+  if (typeof obj === 'object' && 'key' in obj) {
+    return obj.key === key ? obj : undefined;
+  }
+
+  // Case 3: it's a nested object → search each property
+  if (typeof obj === 'object') {
+    for (const value of Object.values(obj)) {
+      const result = findCardItemByKey(value, key);
+      if (result) return result;
+    }
+  }
+
+  return undefined;
+}
+
+export function getAttrSectionType(key: AttributeItemKey | string): ATTR_SECTON_TYPE | undefined {
+  if (LOCK_ATTIBUTES_KEYS.includes(key as LockAttributesKey)) {
+    return ATTR_SECTON_TYPE.LOCK;
+  } else if (DOOR_ATTRIBUTES_KEYS.includes(key as DoorAttributesKey)) {
+    return ATTR_SECTON_TYPE.DOOR;
+  } else if (WINDOW_ATTRIBUTES_KEYS.includes(key as WindowAttributesKey)) {
+    return ATTR_SECTON_TYPE.WINDOW;
+  }
+  return undefined;
+}

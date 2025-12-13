@@ -35,6 +35,9 @@ export class VehicleInfoCardEditor extends BaseEditor implements LovelaceCardEdi
     super.disconnectedCallback();
   }
   public setConfig(config: VehicleCardConfig): void {
+    if (!config) {
+      throw new Error('Invalid configuration');
+    }
     this._config = config;
     if (this._store != undefined) {
       this._store.config = config;
@@ -57,8 +60,7 @@ export class VehicleInfoCardEditor extends BaseEditor implements LovelaceCardEdi
   }
 
   private _createStore(): void {
-    this._store = new Store(this, this._config!);
-    this._store._hass = this._hass;
+    this._store = new Store(this, this._config!, this._hass);
 
     super.requestUpdate();
   }

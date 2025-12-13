@@ -1047,7 +1047,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
             if (key === 'sunroofstatus') {
               classState = rawState === '0' ? false : true;
             } else {
-              classState = ['2', '1', false].includes(rawState as string) ? false : true;
+              classState = ['2', '1', false, 'false'].includes(rawState as string) ? false : true;
             }
             return html`
               <div class="data-row">

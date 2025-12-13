@@ -31,14 +31,14 @@ export type VehicleEntity = {
   active?: boolean;
 };
 
-export type EntityConfig = {
+export interface EntityConfig {
   key: string;
   name?: string;
   icon?: string;
   unit?: string;
   state?: string;
   active?: boolean;
-};
+}
 
 export interface ecoChartModel {
   bonusRange: {
@@ -74,6 +74,7 @@ export interface PreviewCard {
 export interface CarEntity {
   entity_id: string;
   original_name: string;
+  name?: string;
   icon?: string;
   unit?: string;
   state?: string;
@@ -82,4 +83,8 @@ export interface CarEntity {
 
 export type CarEntities = {
   [K in CarEntityKey]?: CarEntity;
+};
+
+export type CarItemDisplay = Partial<CarEntity & EntityConfig> & {
+  display_state?: string;
 };

@@ -71,7 +71,8 @@ export type BaseButtonCardItemConfig = BaseButtonCardItem &
 
 export interface DefaultButtonConfig extends BaseButtonCardItemConfig {
   card_type?: CARD_TYPE;
-  custom_button?: boolean;
+  use_custom_button?: boolean;
+  use_custom_cards?: boolean;
 }
 
 export interface DefaultButtonCard {

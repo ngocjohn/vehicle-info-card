@@ -75,5 +75,53 @@ const sensorDeviceFilters: {
   tirePressureRearRight: { suffix: '_tirepressurerearright' },
 };
 
-export const combinedFilters = { ...binarySensorsFilters, ...sensorDeviceFilters };
-export type CarEntityKey = keyof typeof combinedFilters;
+export const combinedFilters = { ...binarySensorsFilters, ...sensorDeviceFilters } as const;
+
+export const CAR_ENTITY_KEYS = [
+  'lock',
+  'parkBrake',
+  'liquidRangeCritical',
+  'lowBrakeFluid',
+  'lowWashWater',
+  'lowCoolantLevel',
+  'windowsClosed',
+  'tirePressureWarning',
+  'remoteStartActive',
+  'engineState',
+  'chargeFlapACStatus',
+  'adBlueLevel',
+  'averageSpeedReset',
+  'averageSpeedStart',
+  'chargeFlapDCStatus',
+  'chargingPower',
+  'distanceReset',
+  'distanceStart',
+  'distanceZEReset',
+  'distanceZEStart',
+  'ecoScoreAcceleration',
+  'ecoScoreBonusRange',
+  'ecoScoreConstant',
+  'ecoScoreFreeWheel',
+  'ecoScoreTotal',
+  'electricConsumptionReset',
+  'electricConsumptionStart',
+  'fuelLevel',
+  'ignitionState',
+  'liquidConsumptionReset',
+  'liquidConsumptionStart',
+  'lockSensor',
+  'maxSoc',
+  'odometer',
+  'precondStatus',
+  'rangeElectric',
+  'rangeLiquid',
+  'soc',
+  'starterBatteryState',
+  'sunroofStatus',
+  'tirePressureFrontLeft',
+  'tirePressureFrontRight',
+  'tirePressureRearLeft',
+  'tirePressureRearRight',
+] as const;
+
+export type CarEntityKey = (typeof CAR_ENTITY_KEYS)[number];

@@ -1,7 +1,9 @@
+import { getStateDisplay, StateDisplayManager } from 'const/state-display';
 import { css, CSSResultGroup, html, LitElement, TemplateResult } from 'lit';
 import { property } from 'lit/decorators.js';
+import { Car } from 'model/car';
 import { Store } from 'model/store';
-import { HomeAssistant, SECTION } from 'types';
+import { HomeAssistant, LocalizeFunc, SECTION, VehicleCardConfig } from 'types';
 
 export function computeDarkMode(hass?: HomeAssistant): boolean {
   if (!hass) return false;
@@ -10,16 +12,12 @@ export function computeDarkMode(hass?: HomeAssistant): boolean {
 
 export class BaseElement extends LitElement {
   @property({ attribute: false }) public _hass!: HomeAssistant;
-  @property({ attribute: false }) protected _store!: Store;
+  @property({ attribute: false }) protected store!: Store;
+  @property({ attribute: false }) protected car!: Car;
 
+  // protected _translate!: LocalizeFunc;
   protected section?: SECTION;
 
-  connectedCallback(): void {
-    super.connectedCallback();
-  }
-  disconnectedCallback(): void {
-    super.disconnectedCallback();
-  }
   constructor(section?: SECTION) {
     super();
     if (section) {
@@ -27,15 +25,32 @@ export class BaseElement extends LitElement {
     }
   }
 
+  public connectedCallback() {
+    super.connectedCallback();
+
+    // if (this.hasUpdated && this.store !== undefined) {
+    //   console.log('%cBASE-ELEMENT:', 'color: #bada55;', this, this.hasUpdated);
+    // }
+  }
+
+  get _translate(): LocalizeFunc {
+    return this.store.translate;
+  }
+
+  get _stateDisplayManager(): StateDisplayManager {
+    return getStateDisplay(this._translate);
+  }
+
   set hass(hass: HomeAssistant) {
     this._hass = hass;
-    if (this._store && !this._store._hass) {
-      this._store._hass = hass;
-    }
   }
 
   get hass(): HomeAssistant {
     return this._hass;
+  }
+
+  get config(): VehicleCardConfig {
+    return this.store.config;
   }
 
   public _showWarning(warning: string): TemplateResult {

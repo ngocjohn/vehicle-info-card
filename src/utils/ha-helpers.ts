@@ -124,6 +124,16 @@ export function getCarEntity(hass: HomeAssistant): string {
   return entities[0] || '';
 }
 
+export const _getCarEntity = (hass: HomeAssistant): string => {
+  console.log('Getting car entity');
+  const entities = Object.values(hass.entities).filter((entity) => entity.platform === 'mbapi2020');
+  if (entities.length > 0) {
+    const carEntity = entities.find((entity) => entity.entity_id.endsWith('_car'));
+    return carEntity ? carEntity.entity_id : entities[0].entity_id;
+  }
+  return '';
+};
+
 export async function createCustomButtons(
   hass: HomeAssistant,
   button: BaseButtonConfig

@@ -13,8 +13,7 @@ export async function getCarEntities(entry: EntityRegistryDisplayEntry, hass: Ho
   const deviceEntities = await fetchEntityRegistry(hass.connection).then((entries) =>
     entries.filter((e) => e.device_id === deviceId && !e.hidden_by && !e.disabled_by)
   );
-
-  // console.log('Found', deviceEntities.length, deviceEntities, 'combinedFilters:', combinedFilters);
+  console.log('%cCAR-ENTITIES:', 'color: #bada55;', combinedFilters);
 
   const entities: CarEntities = {};
   for (const [key, val] of Object.entries(combinedFilters)) {
@@ -43,6 +42,6 @@ export async function getCarEntities(entry: EntityRegistryDisplayEntry, hass: Ho
     }
   }
 
-  console.log(Object.keys(entities).length, entities);
+  // console.log(Object.keys(entities).length, entities);
   return entities;
 }

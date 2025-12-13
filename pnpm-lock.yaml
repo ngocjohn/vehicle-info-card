@@ -96,6 +96,9 @@ importers:
       '@typescript-eslint/parser':
         specifier: ^8.35.1
         version: 8.49.0(eslint@9.39.1)(typescript@5.9.3)
+      '@watchable/unpromise':
+        specifier: ^1.0.2
+        version: 1.0.2
       axios:
         specifier: ^1.10.0
         version: 1.13.2
@@ -1362,6 +1365,9 @@ packages:
   '@typescript-eslint/visitor-keys@8.49.0':
     resolution: {integrity: sha512-LlKaciDe3GmZFphXIc79THF/YYBugZ7FS1pO581E/edlVVNbZKDy93evqmrfQ9/Y4uN0vVhX4iuchq26mK/iiA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  '@watchable/unpromise@1.0.2':
+    resolution: {integrity: sha512-yGCKYzCrAfJQ9yzm76r1bl4WUIWyqmh4vqidXn5LyOfPbgdiZrKOyvW2ivqIvtmsRVb7u3ModEpc4q901VRgXw==}
 
   '@yr/monotone-cubic-spline@1.0.3':
     resolution: {integrity: sha512-FQXkOta0XBSUPHndIKON2Y9JeQz5ZeMqLYZVVK93FliNBFm7LNMIZmY6FrMEB9XPcDbE2bekMbZD6kzDkxwYjA==}
@@ -5603,6 +5609,8 @@ snapshots:
     dependencies:
       '@typescript-eslint/types': 8.49.0
       eslint-visitor-keys: 4.2.1
+
+  '@watchable/unpromise@1.0.2': {}
 
   '@yr/monotone-cubic-spline@1.0.3': {}
 

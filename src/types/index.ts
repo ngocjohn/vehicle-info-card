@@ -10,7 +10,7 @@ import { VehicleInfoCardEditor } from '../vehicle-info-card-editor';
 
 declare global {
   interface Window {
-    VicCard: VehicleInfoCard;
-    VicEditor: VehicleInfoCardEditor;
+    VicCard: VehicleInfoCard | undefined;
+    VicEditor: VehicleInfoCardEditor | undefined;
   }
 }

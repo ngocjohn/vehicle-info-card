@@ -24,6 +24,7 @@ declare global {
   var __BACKWARDS_COMPAT__: boolean;
   var __SUPERVISOR__: boolean;
   var __HASS_URL__: string;
+  var __DEBUG__: boolean;
 
   // for fire event
   interface HASSDomEvents {
