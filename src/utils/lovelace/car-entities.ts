@@ -1,8 +1,9 @@
 // helper functions
-import { combinedFilters } from 'const/const';
 import { CarEntity, EntityRegistryDisplayEntry, fetchEntityRegistry } from 'types';
 import { HomeAssistant } from 'types';
 import { CarEntities } from 'types';
+
+import { combinedFilters } from '../../data/car-device-entities';
 
 export async function getCarEntities(entry: EntityRegistryDisplayEntry, hass: HomeAssistant): Promise<CarEntities> {
   const deviceId = entry.device_id;
@@ -13,7 +14,7 @@ export async function getCarEntities(entry: EntityRegistryDisplayEntry, hass: Ho
   const deviceEntities = await fetchEntityRegistry(hass.connection).then((entries) =>
     entries.filter((e) => e.device_id === deviceId && !e.hidden_by && !e.disabled_by)
   );
-  console.log('%cCAR-ENTITIES:', 'color: #bada55;', combinedFilters);
+  // console.log('%cCAR-ENTITIES:', 'color: #bada55;', combinedFilters);
 
   const entities: CarEntities = {};
   for (const [key, val] of Object.entries(combinedFilters)) {

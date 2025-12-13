@@ -1,27 +1,9 @@
+import { AttributeItemKey, CardAttributesSection, getAttributeSectionItems } from 'data/attributes-items';
+import { getIndicatorItems, CardIndicatorKey } from 'data/indicator-items';
+import { SubCardItemKey, SubCardSection, getSubCardItems } from 'data/subcard-items';
 import { forEach } from 'es-toolkit/compat';
 import { LocalizeFunc } from 'types';
-
-export const CARD_SECTION = ['tripCard', 'vehicleCard', 'ecoCard', 'tyreCard'] as const;
-export const CARD_ATTRIBUTES_SECTION = ['lockAttributes', 'doorAttributes', 'windowAttributes'] as const;
-export const CARD_INDICATOR_SECTION = ['chargingOverview'] as const;
-
-export enum ATTR_SECTON_TYPE {
-  LOCK = 'lockAttributes',
-  DOOR = 'doorAttributes',
-  WINDOW = 'windowAttributes',
-}
-export enum CARD_SECTON_TYPE {
-  TRIP = 'tripCard',
-  VEHICLE = 'vehicleCard',
-  ECO = 'ecoCard',
-  TYRE = 'tyreCard',
-}
-
-export type CardSection = (typeof CARD_SECTION)[number];
-export type CardAttributesSection = (typeof CARD_ATTRIBUTES_SECTION)[number];
-export type CardIndicatorSection = (typeof CARD_INDICATOR_SECTION)[number];
-
-export type CardSectionType = CardSection | CardAttributesSection | CardIndicatorSection;
+export type CardSectionType = SubCardSection | CardAttributesSection | CardIndicatorKey;
 
 export interface CardItem {
   key: CardItemKey;
@@ -29,127 +11,7 @@ export interface CardItem {
   icon?: string;
 }
 
-export const TRIP_OVERVIEW_KEYS = [
-  'odometer',
-  'fuelLevel',
-  'adBlueLevel',
-  'rangeLiquid',
-  'rangeElectric',
-  'soc',
-  'maxSoc',
-] as const;
-
-export const TRIP_FROM_RESET_KEYS = [
-  'distanceReset',
-  'drivenTimeReset',
-  'distanceZEReset',
-  'drivenTimeZEReset',
-  'averageSpeedReset',
-  'liquidConsumptionReset',
-  'electricConsumptionReset',
-] as const;
-
-export const TRIP_FROM_START_KEYS = [
-  'distanceStart',
-  'drivenTimeStart',
-  'distanceZEStart',
-  'drivenTimeZEStart',
-  'averageSpeedStart',
-  'liquidConsumptionStart',
-  'electricConsumptionStart',
-] as const;
-
-export const VEHICLE_OVERVIEW_KEYS = [
-  'lockSensor',
-  'windowsClosed',
-  'doorStatusOverall',
-  'parkBrake',
-  'ignitionState',
-] as const;
-
-export const VEHICLE_WARNINGS_KEYS = [
-  'starterBatteryState',
-  'lowCoolantLevel',
-  'lowBrakeFluid',
-  'lowWashWater',
-  'tirePressureWarning',
-] as const;
-
-export const ECO_SCORE_KEYS = [
-  'ecoScoreBonusRange',
-  'ecoScoreAcceleration',
-  'ecoScoreConstant',
-  'ecoScoreFreeWheel',
-] as const;
-
-export const TYRE_PRESSURE_KEYS = [
-  'tirePressureFrontLeft',
-  'tirePressureFrontRight',
-  'tirePressureRearLeft',
-  'tirePressureRearRight',
-] as const;
-
-export const CHARGING_OVERVIEW_KEYS = ['chargingPower', 'soc', 'maxSoc', 'selectedProgram'] as const;
-
-export const LOCK_ATTIBUTES_KEYS = [
-  'doorlockstatusfrontleft',
-  'doorlockstatusfrontright',
-  'doorlockstatusrearleft',
-  'doorlockstatusrearright',
-  'doorlockstatusgas',
-] as const;
-
-export const DOOR_ATTRIBUTES_KEYS = [
-  'decklidstatus',
-  'doorstatusfrontleft',
-  'doorstatusfrontright',
-  'doorstatusrearleft',
-  'doorstatusrearright',
-  'enginehoodstatus',
-  'chargeflapdcstatus',
-] as const;
-
-export const WINDOW_ATTRIBUTES_KEYS = [
-  'windowstatusrearleft',
-  'windowstatusrearright',
-  'windowstatusfrontleft',
-  'windowstatusfrontright',
-  'windowstatusrearleftblind',
-  'windowstatusrearrightblind',
-  'windowstatusfrontleftblind',
-  'windowstatusfrontrightblind',
-  'sunroofstatus',
-] as const;
-
-export type TripOverviewKey = (typeof TRIP_OVERVIEW_KEYS)[number];
-export type TripFromResetKey = (typeof TRIP_FROM_RESET_KEYS)[number];
-export type TripFromStartKey = (typeof TRIP_FROM_START_KEYS)[number];
-
-export type VehicleOverviewKey = (typeof VEHICLE_OVERVIEW_KEYS)[number];
-export type VehicleWarningsKey = (typeof VEHICLE_WARNINGS_KEYS)[number];
-
-export type EcoScoreKey = (typeof ECO_SCORE_KEYS)[number];
-
-export type TyrePressureKey = (typeof TYRE_PRESSURE_KEYS)[number];
-
-export type ChargingOverviewKey = (typeof CHARGING_OVERVIEW_KEYS)[number];
-
-export type LockAttributesKey = (typeof LOCK_ATTIBUTES_KEYS)[number];
-export type DoorAttributesKey = (typeof DOOR_ATTRIBUTES_KEYS)[number];
-export type WindowAttributesKey = (typeof WINDOW_ATTRIBUTES_KEYS)[number];
-
-export type AttributeItemKey = LockAttributesKey | DoorAttributesKey | WindowAttributesKey;
-
-export type CardItemKey =
-  | TripOverviewKey
-  | TripFromResetKey
-  | TripFromStartKey
-  | VehicleOverviewKey
-  | VehicleWarningsKey
-  | EcoScoreKey
-  | TyrePressureKey
-  | ChargingOverviewKey
-  | AttributeItemKey;
+export type CardItemKey = SubCardItemKey | CardIndicatorKey | AttributeItemKey;
 
 const ICON: Record<CardItemKey | string, string> = {
   // Trip Overview
@@ -174,12 +36,6 @@ const ICON: Record<CardItemKey | string, string> = {
   selectedProgram: 'mdi:ev-station',
 };
 
-export const ATTR_SECTION_ITEMS: Record<CardAttributesSection, readonly AttributeItemKey[]> = {
-  lockAttributes: LOCK_ATTIBUTES_KEYS,
-  doorAttributes: DOOR_ATTRIBUTES_KEYS,
-  windowAttributes: WINDOW_ATTRIBUTES_KEYS,
-};
-
 const createItem = (localize: LocalizeFunc, section: CardSectionType, key: CardItemKey): CardItem => {
   if (key === 'sunroofstatus') {
     section = 'doorAttributes';
@@ -192,22 +48,13 @@ const createItem = (localize: LocalizeFunc, section: CardSectionType, key: CardI
 };
 
 export const computeCardItems = (localize: LocalizeFunc) => {
+  const subCardItems = getSubCardItems();
+  const attrinutesItems = getAttributeSectionItems();
+  const indicatorItems = getIndicatorItems();
   const sections = {
-    tripCard: {
-      overview: TRIP_OVERVIEW_KEYS,
-      fromReset: TRIP_FROM_RESET_KEYS,
-      fromStart: TRIP_FROM_START_KEYS,
-    },
-    vehicleCard: {
-      overview: VEHICLE_OVERVIEW_KEYS,
-      warnings: VEHICLE_WARNINGS_KEYS,
-    },
-    ecoCard: ECO_SCORE_KEYS,
-    tyreCard: TYRE_PRESSURE_KEYS,
-    chargingOverview: CHARGING_OVERVIEW_KEYS,
-    lockAttributes: LOCK_ATTIBUTES_KEYS,
-    doorAttributes: DOOR_ATTRIBUTES_KEYS,
-    windowAttributes: WINDOW_ATTRIBUTES_KEYS,
+    ...subCardItems,
+    ...indicatorItems,
+    ...attrinutesItems,
   };
 
   const cardItems: any = {};
@@ -255,16 +102,5 @@ export function findCardItemByKey(obj: any, key: string): CardItem | undefined {
     }
   }
 
-  return undefined;
-}
-
-export function getAttrSectionType(key: AttributeItemKey | string): ATTR_SECTON_TYPE | undefined {
-  if (LOCK_ATTIBUTES_KEYS.includes(key as LockAttributesKey)) {
-    return ATTR_SECTON_TYPE.LOCK;
-  } else if (DOOR_ATTRIBUTES_KEYS.includes(key as DoorAttributesKey)) {
-    return ATTR_SECTON_TYPE.DOOR;
-  } else if (WINDOW_ATTRIBUTES_KEYS.includes(key as WindowAttributesKey)) {
-    return ATTR_SECTON_TYPE.WINDOW;
-  }
   return undefined;
 }

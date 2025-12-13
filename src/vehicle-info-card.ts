@@ -1,3 +1,4 @@
+import { ATTR_SECTION } from 'data';
 import { isEmpty } from 'es-toolkit/compat';
 import { html, CSSResultGroup, TemplateResult, css, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
@@ -101,7 +102,7 @@ export class VehicleInfoCard extends BaseElement implements LovelaceCard {
       const newDarkMode = computeDarkMode(this._hass);
       if (currentDarkMode != newDarkMode) {
         this.toggleAttribute('dark-mode', newDarkMode);
-        console.log('Dark mode changed:', newDarkMode);
+        // console.log('Dark mode changed:', newDarkMode);
       }
     }
   }
@@ -114,10 +115,20 @@ export class VehicleInfoCard extends BaseElement implements LovelaceCard {
     return html`
       <ha-card class="__background">
         <header><h1>${this._config?.name || 'Vehicle Info Card'}</h1></header>
-        <main id="main-wrapper">
-          <span>${this._config.entity}</span>
-        </main>
+        <main id="main-wrapper">${this._renderMockData()}</main>
       </ha-card>
+    `;
+  }
+
+  private _renderMockData(): TemplateResult {
+    const windowData = this.car!._getAttrSectionItemConfig(ATTR_SECTION.WINDOW);
+    return html`
+      <div>
+        <h2>Window Status (Mock Data)</h2>
+        <ul>
+          ${Object.values(windowData).map((item) => html`<li>${item.name}: ${item.display_state || 'N/A'}</li>`)}
+        </ul>
+      </div>
     `;
   }
 

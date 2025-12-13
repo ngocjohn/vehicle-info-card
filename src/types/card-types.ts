@@ -1,4 +1,4 @@
-import { CarEntityKey } from 'const/const';
+import { CarEntityKey } from 'data/car-device-entities';
 
 import { LovelaceCardConfig } from './ha-frontend/lovelace/lovelace';
 import { CustomButtonEntity } from './legacy-card-config/legacy-button-config';

@@ -1,7 +1,5 @@
+import { AttributeItemKey, CardAttributesSection, ATTR_SECTION_ITEMS } from 'data/attributes-items';
 import { LocalizeFunc } from 'types';
-
-import { LOCK_ATTIBUTES_KEYS, DOOR_ATTRIBUTES_KEYS, WINDOW_ATTRIBUTES_KEYS, AttributeItemKey } from './card-item';
-import { CardAttributesSection } from './card-item';
 
 type StateDisplay = {
   [key: string]: string;
@@ -13,12 +11,6 @@ export interface StateMapping {
 
 export type AttributeStateMapping = Record<keyof AttributeItemKey, StateDisplay>;
 export type StateDisplayManager = StateMapping & AttributeStateMapping;
-
-const SECTORS: Record<CardAttributesSection, readonly string[]> = {
-  lockAttributes: LOCK_ATTIBUTES_KEYS,
-  doorAttributes: DOOR_ATTRIBUTES_KEYS,
-  windowAttributes: WINDOW_ATTRIBUTES_KEYS,
-};
 
 export const LOCK_STATES: StateDisplay = {
   '0': 'stateUnlocked',
@@ -109,7 +101,7 @@ const createAttributeStateMapping = (
   sector: CardAttributesSection,
   stateMapping: StateDisplay
 ): AttributeStateMapping => {
-  const attributeKeys = SECTORS[sector];
+  const attributeKeys = ATTR_SECTION_ITEMS[sector];
   const mapping: Record<string, StateDisplay> = {};
   attributeKeys.forEach((key) => {
     stateMapping = key === 'chargeflapdcstatus' ? FLAP_STATES : key === 'sunroofstatus' ? SUNROOF_STATES : stateMapping;

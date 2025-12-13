@@ -4,8 +4,9 @@ import { ExtraMapCardConfig, MapEntityConfig } from 'extra-map-card';
 import memoizeOne from 'memoize-one';
 import { defaultConfig } from 'types/legacy-card-config/default-config';
 
-import { combinedFilters, CARD_UPADE_SENSOR, CARD_VERSION, REPOSITORY } from '../const/const';
+import { CARD_UPADE_SENSOR, CARD_VERSION, REPOSITORY } from '../const/const';
 import { baseDataKeys } from '../const/data-keys';
+import { combinedFilters } from '../data/car-device-entities';
 import { VehicleCardEditor } from '../legacy-card/editor';
 import { VehicleCard } from '../legacy-card/vehicle-info-card-legacy';
 import {
