@@ -24,8 +24,8 @@ importers:
         specifier: ^1.9.4
         version: 1.9.4
       leaflet-providers:
-        specifier: ^2.0.0
-        version: 2.0.0
+        specifier: ^3.0.0
+        version: 3.0.0
       lit:
         specifier: ^3.3.0
         version: 3.3.1
@@ -2271,8 +2271,8 @@ packages:
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
 
-  leaflet-providers@2.0.0:
-    resolution: {integrity: sha512-CWwKEnHd66Qsx0m4o5q5ZOa60s00B91pMxnlr4Y22msubfs7dhbZhdMIz8bvZQkrZqi67ppI1fsZRS6vtrLcOA==}
+  leaflet-providers@3.0.0:
+    resolution: {integrity: sha512-PWwsWRpf7xMrCofRUfWR6FBdw2v08j48tXCLQCoS1PinxPpVU70AQTr9N3NcbTIONiF9nS6m45LxBWVYx2i+wg==}
 
   leaflet@1.9.4:
     resolution: {integrity: sha512-nxS1ynzJOmOlHp+iL3FyWqK89GtNL8U8rvlMOsQdTTssxZwCXh8N2NB3GDQOL+YR3XnWyZAxwQixURb+FA74PA==}
@@ -6504,7 +6504,7 @@ snapshots:
     dependencies:
       json-buffer: 3.0.1
 
-  leaflet-providers@2.0.0: {}
+  leaflet-providers@3.0.0: {}
 
   leaflet@1.9.4: {}
 
