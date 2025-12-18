@@ -1,5 +1,5 @@
-import { CardItemKey, computeCardItems, findCardItemByKey } from 'const/card-item';
-import { CardIndicatorKey, CHARGING_OVERVIEW_KEYS, INDICATOR_ITEMS, INDICATOR_SECTIONS } from 'data';
+import { CardItem, CardItemKey, computeCardItems, findCardItemByKey } from 'const/card-item';
+import { CardIndicatorKey, INDICATOR_ITEMS, INDICATOR_SECTIONS } from 'data';
 import {
   ATTR_SECTION_ITEMS,
   ATTR_SECTION,
@@ -9,9 +9,9 @@ import {
   NON_ATTR_ENTITY_KEYS,
 } from 'data/attributes-items';
 import { CarEntityKey } from 'data/car-device-entities';
-import { forEach } from 'es-toolkit/compat';
 import { HassEntity } from 'home-assistant-js-websocket';
 import { CarEntities, CarItemDisplay, HomeAssistant, LocalizeFunc } from 'types';
+import { getEntityAttributeValue } from 'utils/entity-helper';
 import { VehicleInfoCard } from 'vehicle-info-card';
 
 import * as ITEMS_FROM_CONST from '../const/card-item';
@@ -51,15 +51,20 @@ export class Car {
     return Boolean(chargingState);
   }
 
-  _loopEntities() {
-    const entities = this._carEntities;
-    console.group('%cCar Entities:', 'color: #bada55;');
-    forEach(entities, (entity, key) => {
-      console.log(`[${key}]:`, entity?.original_name || entity?.entity_id);
+  _loopAttributesValues() {
+    const itemKeys = ATTR_SECTION_ITEMS.lockAttributes;
+    const mainEntity = this._carEntities.lockSensor?.entity_id || '';
+    itemKeys.forEach((itemKey) => {
+      const attrNormal = getEntityAttributeValue(this.hass, mainEntity, itemKey);
+      const formattedValue = getEntityAttributeValue(this.hass, mainEntity, itemKey, true /* formatted */);
+      const attrName = this.hass.formatEntityAttributeName(this.hass.states[mainEntity], itemKey);
+      console.log(
+        `%cCAR:`,
+        'color: #bada55;',
+        ` ${itemKey}: ${attrName} Normal Value: ${attrNormal}, Formatted Value: ${formattedValue}`
+      );
     });
-    console.groupEnd();
   }
-
   _getAttrSectionItemConfig(section: ATTR_SECTION): Record<AttributeItemKey, CarItemDisplay> {
     const items = {} as Record<AttributeItemKey, CarItemDisplay>;
     const itemKeys = ATTR_SECTION_ITEMS[section];
@@ -78,19 +83,12 @@ export class Car {
     return items;
   }
 
-  _getChargingOverviewItems(): CarItemDisplay[] {
-    const indicatorKeys = CHARGING_OVERVIEW_KEYS;
-    return indicatorKeys.map((key) => this._getEntityConfigByKey(key));
-  }
-
   public _getEntityConfigByKey(key: CardItemKey): CarItemDisplay {
-    if (!this._carItems || !this._carEntities) {
-      return {} as CarItemDisplay;
-    }
     const entity = this._carEntities![key];
-    const attrType = getAttrSectionType(key);
+    let attrType = getAttrSectionType(key);
     if (!entity) {
       console.log('%cCAR:', 'color: #bada55;', ' No entity found for key:', key);
+      attrType = attrType && attrType in ATTR_SECTION ? (attrType as ATTR_SECTION) : undefined;
       return this._getFallbackEntityConfig(key, attrType) as CarItemDisplay;
     }
     let item = findCardItemByKey(this._carItems, key);
@@ -99,7 +97,7 @@ export class Car {
       item = findCardItemByKey(chargingObj, key);
     }
 
-    const { state, display_state, icon } = this._getEntityDisplayState(key as CarEntityKey);
+    const { state, display_state, icon } = this._getEntityDisplayState(key as CarEntityKey, item);
     const result: CarItemDisplay = {
       display_state,
       state,
@@ -112,14 +110,14 @@ export class Car {
     return result;
   }
 
-  private _getFallbackEntityConfig(key: CardItemKey, attrType?: ATTR_SECTION | string): CarItemDisplay {
+  private _getFallbackEntityConfig(key: CardItemKey, attrType?: ATTR_SECTION): CarItemDisplay {
     const item = findCardItemByKey(this._carItems, key);
     let state: string | undefined = undefined;
     let display_state: string | undefined = undefined;
     let active: boolean | undefined = undefined;
 
-    if (attrType && attrType in ATTR_SECTION) {
-      return this._getAttrItemConfig(key as AttributeItemKey, attrType as ATTR_SECTION);
+    if (attrType) {
+      return this._getAttrItemConfig(key as AttributeItemKey, attrType);
     } else {
       switch (key) {
         case 'selectedProgram':
@@ -148,7 +146,8 @@ export class Car {
   }
 
   private _getAttrItemConfig(itemKey: AttributeItemKey, attrType: ATTR_SECTION): CarItemDisplay {
-    const item = findCardItemByKey(this._carItems, itemKey);
+    const itemObj = this._carItems[attrType];
+    const item = findCardItemByKey(itemObj, itemKey);
     if ([...NON_ATTR_ENTITY_KEYS].includes(itemKey)) {
       // console.log('%cCAR:', 'color: #bada55;', 'Handling non-attribute entity key:', itemKey);
       const mainItemEntity =
@@ -191,13 +190,15 @@ export class Car {
     }
   }
 
-  private _getEntityDisplayState(key: CarEntityKey): Pick<CarItemDisplay, 'state' | 'display_state' | 'icon'> {
+  private _getEntityDisplayState(
+    key: CarEntityKey,
+    item?: CardItem
+  ): Pick<CarItemDisplay, 'state' | 'display_state' | 'icon'> {
     const entity = this._carEntities[key];
     const stateObj: HassEntity | undefined = this.hass.states[entity?.entity_id || ''];
     if (!stateObj) {
       return { state: undefined, display_state: undefined, icon: undefined };
     }
-    const item = findCardItemByKey(this._carItems, key);
     const state = stateObj.state;
     const display_state = this._stateManager[key]?.[state as string] || this.hass.formatEntityState(stateObj);
     const icon = item?.icon || stateObj.attributes?.icon;

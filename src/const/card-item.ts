@@ -4,6 +4,7 @@ import { getIndicatorItems, CardIndicatorKey } from 'data/indicator-items';
 import type { SubCardItemKey, SubCardSection } from 'data/subcard-items';
 import { getSubCardItems } from 'data/subcard-items';
 import { forEach } from 'es-toolkit/compat';
+import memoizeOne from 'memoize-one';
 import { LocalizeFunc } from 'types';
 
 export type CardSectionType = SubCardSection | CardAttributesSection | CardIndicatorSection;
@@ -41,6 +42,7 @@ const ICON: Record<CardItemKey | string, string> = {
   // Indicator Base
   titleServices: 'mdi:car-cog',
   stateCharging: 'mdi:ev-station',
+  soc: 'mdi:ev-station',
 };
 
 const createItem = (localize: LocalizeFunc, section: CardSectionType | string, key: CardItemKey): CardItem => {
@@ -62,7 +64,7 @@ const createItem = (localize: LocalizeFunc, section: CardSectionType | string, k
   };
 };
 
-export const computeCardItems = (localize: LocalizeFunc) => {
+export const computeCardItems = memoizeOne((localize: LocalizeFunc) => {
   const subCardItems = getSubCardItems();
   const attrinutesItems = getAttributeSectionItems();
   const indicatorItems = getIndicatorItems();
@@ -72,7 +74,7 @@ export const computeCardItems = (localize: LocalizeFunc) => {
     ...attrinutesItems,
   };
 
-  const cardItems: any = {};
+  const cardItems: Record<string, CardItem[] | Record<string, Record<string, CardItem[]>>> = {};
 
   forEach(sections, (sectionValue, sectionKey) => {
     if (Array.isArray(sectionValue)) {
@@ -90,7 +92,7 @@ export const computeCardItems = (localize: LocalizeFunc) => {
   });
 
   return cardItems;
-};
+});
 
 export function findCardItemByKey(obj: any, key: string): CardItem | undefined {
   if (!obj) return undefined;

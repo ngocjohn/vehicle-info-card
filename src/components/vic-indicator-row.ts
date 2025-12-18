@@ -1,9 +1,10 @@
-import { CardIndicatorKey, INDICATOR_SECTIONS } from 'data/indicator-items';
-import { isEmpty } from 'es-toolkit/compat';
+import { CardIndicatorKey, ChargingOverviewKey, INDICATOR_SECTIONS, IndicatorBaseKey } from 'data/indicator-items';
+import { isEmpty, pick } from 'es-toolkit/compat';
 import { html, TemplateResult, css, CSSResultGroup, PropertyValues } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 
 import './shared/vic-indicator-badge';
+import './shared/vic-range-bar';
 import { classMap } from 'lit/directives/class-map.js';
 import { CarItemDisplay, HomeAssistant, SECTION } from 'types';
 
@@ -16,8 +17,9 @@ export class VicIndicatorRow extends BaseElement {
   }
   @state() private subItemsActive: boolean = false;
   @state() private _connected: boolean = false;
-  @state() private _baseIndicators?: Record<CardIndicatorKey, CarItemDisplay>;
-  @state() private _chargingOverview?: Record<CardIndicatorKey, CarItemDisplay>;
+  @state() private _baseIndicators?: Record<IndicatorBaseKey, CarItemDisplay>;
+  @state() private _chargingOverview?: Record<ChargingOverviewKey, CarItemDisplay>;
+  @state() private _noServices: boolean = false;
 
   public connectedCallback(): void {
     super.connectedCallback();
@@ -31,11 +33,13 @@ export class VicIndicatorRow extends BaseElement {
   }
 
   protected willUpdate(_changedProperties: PropertyValues): void {
+    super.willUpdate(_changedProperties);
     if (_changedProperties.has('_connected') && this._connected) {
       if (isEmpty(this._baseIndicators)) {
         this._baseIndicators = this.car._getIndicatorSectionItems(INDICATOR_SECTIONS.BASE_INDICATORS);
       }
     }
+
     if (_changedProperties.has('subItemsActive')) {
       const isActive = this.subItemsActive;
       if (isActive && isEmpty(this._chargingOverview)) {
@@ -44,10 +48,6 @@ export class VicIndicatorRow extends BaseElement {
         this._chargingOverview = undefined;
       }
     }
-  }
-
-  protected updated(changedProps: PropertyValues): void {
-    super.updated(changedProps);
   }
 
   protected shouldUpdate(changedProperties: PropertyValues): boolean {
@@ -87,14 +87,29 @@ export class VicIndicatorRow extends BaseElement {
   protected render(): TemplateResult {
     const baseData = this._baseIndicators!;
     // const baseData = pick(this._baseIndicators!, ['lockSensor', 'parkBrake']);
-    const moreItems = Object.keys(baseData).length > 2;
+    const isCarCharging = this.car._isCarCharging;
+    const isNoServices = this._noServices;
     return html`
-      <div class=${classMap({ 'indicator-row': true, 'more-items': moreItems })}>
+      <div class=${classMap({ 'indicator-row': true, 'more-items': Boolean(isCarCharging || !isNoServices) })}>
         ${Object.values(baseData).map((item) => {
           const { icon, display_state, key } = item;
           const buttonType = ['titleServices', 'stateCharging'].includes(key!) ? 'button' : undefined;
+          const isHidden = (key) => {
+            if (isNoServices && key === 'titleServices') {
+              return true;
+            }
+            if (!isCarCharging && key === 'stateCharging') {
+              return true;
+            }
+            return false;
+          };
           return html`
-            <vic-indicator-badge type=${buttonType} @click=${this._toggleSubItems} .active=${this.subItemsActive}>
+            <vic-indicator-badge
+              type=${buttonType}
+              @click=${this._toggleSubItems}
+              .active=${this.subItemsActive && key === 'stateCharging'}
+              .hidden=${isHidden(key)}
+            >
               <ha-icon slot="icon" .icon=${icon}></ha-icon>
               ${display_state}
             </vic-indicator-badge>
@@ -102,6 +117,7 @@ export class VicIndicatorRow extends BaseElement {
         })}
       </div>
       <div class="indi-group-item" ?active=${this.subItemsActive}>${this._renderSubItems()}</div>
+      <div class="combined-range-bars" ?colapsed=${this.subItemsActive}>${this._renderRangeInfoBars()}</div>
     `;
   }
 
@@ -125,6 +141,35 @@ export class VicIndicatorRow extends BaseElement {
     `;
   }
 
+  private _renderRangeInfoBars(): TemplateResult {
+    const rangeInfoConfig = this.car._getIndicatorSectionItems(INDICATOR_SECTIONS.RANGE_INFO);
+    if (isEmpty(rangeInfoConfig)) {
+      return html``;
+    }
+    const liquidConfig = pick(rangeInfoConfig, ['fuelLevel', 'rangeLiquid']);
+    const electricConfig = pick(rangeInfoConfig, ['soc', 'rangeElectric']);
+    const renderBars = (): TemplateResult[] => {
+      const bars: TemplateResult[] = [];
+      if (!isEmpty(liquidConfig)) {
+        bars.push(html`
+          <vic-range-bar .levelInfo=${liquidConfig.fuelLevel} .rangeInfo=${liquidConfig.rangeLiquid}></vic-range-bar>
+        `);
+      }
+      if (!isEmpty(electricConfig)) {
+        bars.push(html`
+          <vic-range-bar
+            .levelInfo=${electricConfig.soc}
+            .rangeInfo=${electricConfig.rangeElectric}
+            .electic=${true}
+            .charging=${this.car._isCarCharging}
+          ></vic-range-bar>
+        `);
+      }
+      return bars;
+    };
+    return html`${renderBars()}`;
+  }
+
   private _toggleSubItems() {
     this.subItemsActive = !this.subItemsActive;
   }
@@ -141,7 +186,7 @@ export class VicIndicatorRow extends BaseElement {
         height: -moz-fit-content;
         height: fit-content;
         gap: var(--vic-gutter-gap);
-        justify-content: center;
+        justify-content: space-evenly;
       }
       .indicator-row.more-items {
         justify-content: space-around;
@@ -162,6 +207,27 @@ export class VicIndicatorRow extends BaseElement {
         max-height: 100px;
         justify-content: space-between;
         opacity: 1;
+      }
+      .combined-range-bars {
+        gap: var(--vic-gutter-gap);
+        margin-top: var(--vic-gutter-gap);
+        width: 100%;
+        display: grid;
+        width: 100%;
+        height: 100%;
+        grid-template-columns: repeat(auto-fill, minmax(calc((100% - 16px) / 2), 1fr));
+      }
+      .combined-range-bars[colapsed] {
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+        margin: 0 !important;
+        transition: all 400ms cubic-bezier(0.3, 0, 0.8, 0.15);
+      }
+      .combined-range-bars:not([colapsed]) {
+        max-height: 200px;
+        opacity: 1;
+        transition: max-height 0.3s ease-out, margin-top 0.3s ease-out, opacity 0.3s ease-out;
       }
     `;
   }

@@ -34,6 +34,9 @@ export class VicIndicatorBadge extends LitElement {
         -webkit-tap-highlight-color: transparent;
         --mdc-icon-size: var(--badge-icon-size, 21px);
       }
+      :host([hidden]) {
+        display: none;
+      }
       .badge {
         position: relative;
         display: flex;

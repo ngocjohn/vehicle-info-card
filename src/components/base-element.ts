@@ -1,5 +1,5 @@
 import { getStateDisplay, StateDisplayManager } from 'const/state-display';
-import { css, CSSResultGroup, html, LitElement, PropertyValues, TemplateResult } from 'lit';
+import { css, CSSResultGroup, html, LitElement, TemplateResult } from 'lit';
 import { property } from 'lit/decorators.js';
 import { Car } from 'model/car';
 import { Store } from 'model/store';
@@ -31,18 +31,6 @@ export class BaseElement extends LitElement {
     // if (this.hasUpdated && this.store !== undefined) {
     //   console.log('%cBASE-ELEMENT:', 'color: #bada55;', this, this.hasUpdated);
     // }
-  }
-
-  protected updated(changedProps: PropertyValues): void {
-    super.updated(changedProps);
-    if (changedProps.has('_hass') && this._hass) {
-      const currentDarkMode = computeDarkMode(changedProps.get('_hass'));
-      const newDarkMode = computeDarkMode(this._hass);
-      if (currentDarkMode != newDarkMode) {
-        this.toggleAttribute('dark-mode', newDarkMode);
-        console.log('Dark mode changed:', newDarkMode);
-      }
-    }
   }
 
   get _translate(): LocalizeFunc {

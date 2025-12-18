@@ -7,7 +7,7 @@ import { _getCarEntity } from 'utils';
 import { isCardInEditPreview, isCardInPickerPreview } from 'utils/helpers-dom';
 import { getCarEntities } from 'utils/lovelace/car-entities';
 
-import { BaseElement } from './components';
+import { BaseElement, computeDarkMode } from './components';
 import { VEHICLE_INFO_CARD_NEW_EDITOR_NAME, VEHICLE_INFO_CARD_NEW_NAME } from './const/const';
 import { imagesVars } from './css/shared-styles';
 import { Store } from './model/store';
@@ -87,6 +87,18 @@ export class VehicleInfoCard extends BaseElement implements LovelaceCard {
         this._carEntities = await getCarEntities(this._hass.entities[this._config.entity], this._hass);
         console.log('Car entities updated');
         this._loadedData = true;
+      }
+    }
+  }
+
+  protected updated(changedProps: PropertyValues): void {
+    super.updated(changedProps);
+    if (changedProps.has('_hass') && this._hass) {
+      const currentDarkMode = computeDarkMode(changedProps.get('_hass'));
+      const newDarkMode = computeDarkMode(this._hass);
+      if (currentDarkMode != newDarkMode) {
+        this.toggleAttribute('dark-mode', newDarkMode);
+        console.log('Dark mode changed:', newDarkMode);
       }
     }
   }
