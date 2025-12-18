@@ -1,9 +1,9 @@
 import { getStateDisplay, StateDisplayManager } from 'const/state-display';
-import { css, CSSResultGroup, html, LitElement, TemplateResult } from 'lit';
+import { css, CSSResultGroup, html, LitElement, PropertyValues, TemplateResult } from 'lit';
 import { property } from 'lit/decorators.js';
 import { Car } from 'model/car';
 import { Store } from 'model/store';
-import { HomeAssistant, LocalizeFunc, SECTION, VehicleCardConfig } from 'types';
+import { fireEvent, HomeAssistant, LocalizeFunc, SECTION, VehicleCardConfig } from 'types';
 
 export function computeDarkMode(hass?: HomeAssistant): boolean {
   if (!hass) return false;
@@ -33,6 +33,18 @@ export class BaseElement extends LitElement {
     // }
   }
 
+  protected updated(changedProps: PropertyValues): void {
+    super.updated(changedProps);
+    if (changedProps.has('_hass') && this._hass) {
+      const currentDarkMode = computeDarkMode(changedProps.get('_hass'));
+      const newDarkMode = computeDarkMode(this._hass);
+      if (currentDarkMode != newDarkMode) {
+        this.toggleAttribute('dark-mode', newDarkMode);
+        console.log('Dark mode changed:', newDarkMode);
+      }
+    }
+  }
+
   get _translate(): LocalizeFunc {
     return this.store.translate;
   }
@@ -55,6 +67,10 @@ export class BaseElement extends LitElement {
 
   public _showWarning(warning: string): TemplateResult {
     return html` <hui-warning>${warning}</hui-warning> `;
+  }
+
+  protected _openMoreInfo(entityId: string): void {
+    fireEvent(this, 'hass-more-info', { entityId });
   }
 
   static get styles(): CSSResultGroup {

@@ -7,7 +7,7 @@ import { _getCarEntity } from 'utils';
 import { isCardInEditPreview, isCardInPickerPreview } from 'utils/helpers-dom';
 import { getCarEntities } from 'utils/lovelace/car-entities';
 
-import { BaseElement, computeDarkMode } from './components';
+import { BaseElement } from './components';
 import { VEHICLE_INFO_CARD_NEW_EDITOR_NAME, VEHICLE_INFO_CARD_NEW_NAME } from './const/const';
 import { imagesVars } from './css/shared-styles';
 import { Store } from './model/store';
@@ -78,10 +78,6 @@ export class VehicleInfoCard extends BaseElement implements LovelaceCard {
     this._config = {
       ...updateDeprecatedConfig(newConfig),
     };
-    if (this.store != null) {
-      console.log('Updating store config');
-      this.store.config = this._config;
-    }
   }
 
   protected async willUpdate(_changedProperties: PropertyValues): Promise<void> {
@@ -95,29 +91,21 @@ export class VehicleInfoCard extends BaseElement implements LovelaceCard {
     }
   }
 
-  protected updated(changedProps: PropertyValues): void {
-    super.updated(changedProps);
-    if (changedProps.has('_hass') && this._hass) {
-      const currentDarkMode = computeDarkMode(changedProps.get('_hass'));
-      const newDarkMode = computeDarkMode(this._hass);
-      if (currentDarkMode != newDarkMode) {
-        this.toggleAttribute('dark-mode', newDarkMode);
-        // console.log('Dark mode changed:', newDarkMode);
-      }
-    }
-  }
-
   protected render(): TemplateResult | void {
-    if (!this._hass) {
+    if (!this._hass || !this._config || !this._loadedData) {
       return html``;
     }
     this._createStore();
     return html`
       <ha-card class="__background">
         <header><h1>${this._config?.name || 'Vehicle Info Card'}</h1></header>
-        <main id="main-wrapper">${this._renderMockData()}</main>
+        <main id="main-wrapper">${this._renderIndicator()}</main>
       </ha-card>
     `;
+  }
+
+  private _renderIndicator(): TemplateResult {
+    return html` <vic-indicator-row .store=${this.store} .car=${this.car} .hass=${this._hass}></vic-indicator-row> `;
   }
 
   private _renderMockData(): TemplateResult {
@@ -127,6 +115,22 @@ export class VehicleInfoCard extends BaseElement implements LovelaceCard {
         <h2>Window Status (Mock Data)</h2>
         <ul>
           ${Object.values(windowData).map((item) => html`<li>${item.name}: ${item.display_state || 'N/A'}</li>`)}
+        </ul>
+      </div>
+    `;
+  }
+  private _renderMockIndicator(): TemplateResult {
+    const lockBrakeData = ['lockSensor', 'parkBrake'].map((key) => this.car!._getEntityConfigByKey(key as any));
+    return html`
+      <div>
+        <h2>Indicator Status (Mock Data)</h2>
+        <ul>
+          ${Object.values(lockBrakeData).map(
+            (item) => html`<li>
+              ${item.icon ? html`<ha-icon icon="${item.icon}"></ha-icon>` : ''} ${item.name}:
+              ${item.display_state || 'N/A'}
+            </li>`
+          )}
         </ul>
       </div>
     `;
@@ -180,13 +184,12 @@ export class VehicleInfoCard extends BaseElement implements LovelaceCard {
           color: var(--ha-card-header-color, var(--primary-text-color));
           font-family: serif !important;
           font-size: var(--ha-card-header-font-size, 24px);
-          /* letter-spacing: -0.012em; */
           line-height: 2rem;
           font-weight: 400;
           display: block;
           margin: 0;
           text-align: center;
-          /* padding-bottom: 0.67em; */
+          margin-bottom: var(--vic-gutter-gap);
         }
       `,
     ];

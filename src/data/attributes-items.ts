@@ -1,3 +1,5 @@
+import { CHARGING_OVERVIEW_KEYS, ChargingOverviewKey, INDICATOR_SECTIONS } from './indicator-items';
+
 export const LOCK_ATTIBUTES_KEYS = [
   'doorlockstatusfrontleft',
   'doorlockstatusfrontright',
@@ -48,13 +50,17 @@ export enum ATTR_SECTION {
   WINDOW = 'windowAttributes',
 }
 
-export function getAttrSectionType(key: AttributeItemKey | string): ATTR_SECTION | undefined {
+export function getAttrSectionType(
+  key: AttributeItemKey | ChargingOverviewKey | string
+): ATTR_SECTION | INDICATOR_SECTIONS | undefined {
   if (LOCK_ATTIBUTES_KEYS.includes(key as LockAttributesKey)) {
     return ATTR_SECTION.LOCK;
   } else if (DOOR_ATTRIBUTES_KEYS.includes(key as DoorAttributesKey)) {
     return ATTR_SECTION.DOOR;
   } else if (WINDOW_ATTRIBUTES_KEYS.includes(key as WindowAttributesKey)) {
     return ATTR_SECTION.WINDOW;
+  } else if (CHARGING_OVERVIEW_KEYS.includes(key as ChargingOverviewKey)) {
+    return INDICATOR_SECTIONS.CHARGING_OVERVIEW;
   }
   return undefined;
 }

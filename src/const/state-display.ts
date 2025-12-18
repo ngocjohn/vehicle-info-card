@@ -87,6 +87,11 @@ export const FLAP_STATES: StateDisplay = {
   '3': 'stateUnknown',
 };
 
+export const PARK_BRAKE_STATES: StateDisplay = {
+  off: 'stateParkBrakeOff',
+  on: 'stateParkBrakeOn',
+};
+
 const createNameState = (localize: LocalizeFunc, stateMap: StateDisplay, sector: string = 'common'): StateDisplay => ({
   ...Object.keys(stateMap).reduce((acc, key) => {
     acc[key] = ['Standard', 'Home', 'Work'].includes(stateMap[key])
@@ -118,11 +123,12 @@ export const computeStateMappingWithAttributes = (localize: LocalizeFunc): Recor
 });
 
 export const computeStateMapping = (localize: LocalizeFunc): StateMapping => ({
-  lockStatus: createNameState(localize, LOCK_STATES),
+  lockSensor: createNameState(localize, LOCK_STATES),
   doorStatus: createNameState(localize, DOOR_STATES),
   chargeSelectedProgram: createNameState(localize, CHARGE_PROGRAMS),
   starterBattery: createNameState(localize, STARTER_BATTERY_STATES, 'starterBattery'),
   ignitionStatus: createNameState(localize, IGNITION_STATES, 'ignitionState'),
+  parkBrake: createNameState(localize, PARK_BRAKE_STATES),
 });
 
 export const getStateDisplay = (localize: LocalizeFunc): StateDisplayManager =>

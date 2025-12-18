@@ -1,17 +1,20 @@
+import type { CardIndicatorSection, CarEntityKey } from 'data';
 import { AttributeItemKey, CardAttributesSection, getAttributeSectionItems } from 'data/attributes-items';
 import { getIndicatorItems, CardIndicatorKey } from 'data/indicator-items';
-import { SubCardItemKey, SubCardSection, getSubCardItems } from 'data/subcard-items';
+import type { SubCardItemKey, SubCardSection } from 'data/subcard-items';
+import { getSubCardItems } from 'data/subcard-items';
 import { forEach } from 'es-toolkit/compat';
 import { LocalizeFunc } from 'types';
-export type CardSectionType = SubCardSection | CardAttributesSection | CardIndicatorKey;
+
+export type CardSectionType = SubCardSection | CardAttributesSection | CardIndicatorSection;
 
 export interface CardItem {
-  key: CardItemKey;
+  key: string;
   name: string;
   icon?: string;
 }
 
-export type CardItemKey = SubCardItemKey | CardIndicatorKey | AttributeItemKey;
+export type CardItemKey = SubCardItemKey | CardIndicatorKey | AttributeItemKey | CarEntityKey;
 
 const ICON: Record<CardItemKey | string, string> = {
   // Trip Overview
@@ -23,6 +26,7 @@ const ICON: Record<CardItemKey | string, string> = {
   averageSpeedStart: 'mdi:speedometer-slow',
   // Vehicle card
   doorStatusOverall: 'mdi:car-door-lock',
+  lockSensor: 'mdi:lock',
   // Vehicle Warnings
   lowCoolantLevel: 'mdi:car-coolant-level',
   lowBrakeFluid: 'mdi:car-brake-fluid-level',
@@ -34,12 +38,23 @@ const ICON: Record<CardItemKey | string, string> = {
   // Charging Overview
   chargingPower: 'mdi:flash',
   selectedProgram: 'mdi:ev-station',
+  // Indicator Base
+  titleServices: 'mdi:car-cog',
+  stateCharging: 'mdi:ev-station',
 };
 
-const createItem = (localize: LocalizeFunc, section: CardSectionType, key: CardItemKey): CardItem => {
+const createItem = (localize: LocalizeFunc, section: CardSectionType | string, key: CardItemKey): CardItem => {
   if (key === 'sunroofstatus') {
     section = 'doorAttributes';
   }
+  if (section === 'baseIndicators') {
+    if (['lockSensor', 'parkBrake'].includes(key)) {
+      section = 'vehicleCard';
+    } else {
+      section = 'common';
+    }
+  }
+
   return {
     key,
     name: localize(`card.${section}.${key}`),
