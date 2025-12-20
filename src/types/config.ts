@@ -112,7 +112,7 @@ export interface VehicleCardConfig extends LovelaceCardConfig {
    */
   show_background?: boolean;
   /**
-   * @deprecated use `layout_config.button_grid` instead
+   * @deprecated use `extra_configs.button_grid` instead
    */
   button_grid?: ButtonGridLayoutConfig;
   /**
@@ -144,24 +144,36 @@ const DEPRECATED_BUTTON_CARD_PROPS = [
   'tyre_card',
   'use_custom_cards',
 ] as const;
+const DEPREACTED_MAP_CONFIG_PROPS = [
+  'map_popup_config',
+  'device_tracker',
+  'google_api_key',
+  'enable_map_popup',
+] as const;
+const DEPREACTED_MAP_IN_EXTRA_CONFIGS = ['maptiler_api_key', 'mini_map_height', 'show_address'] as const;
 
 type DeprecatedConfig = {
   legacyDefaultButtonCard?: boolean;
   legacyAddedCustomButtonCard?: boolean;
+  legacyMapConfig?: boolean;
 };
 
 export const configHasDeprecatedProps = (config: VehicleCardConfig): boolean | DeprecatedConfig => {
   // Check for deprecated properties
 
   const legacyDefaultButtonCard = DEPRECATED_BUTTON_CARD_PROPS.some((prop) => prop in config);
-
-  const needMigration = Boolean(legacyDefaultButtonCard);
+  const legacyMapPropInConfig = DEPREACTED_MAP_CONFIG_PROPS.some((prop) => prop in config);
+  const legacyMapInExtraConfigs = DEPREACTED_MAP_IN_EXTRA_CONFIGS.some((prop) => prop in config.extra_configs!);
+  const legacyMapConfig = Boolean(legacyMapPropInConfig || legacyMapInExtraConfigs);
+  const needMigration = Boolean(legacyDefaultButtonCard || legacyMapConfig);
   if (needMigration) {
     console.log('Config needs migration:', {
       legacyDefaultButtonCard,
+      legacyMapConfig,
     });
     return {
       legacyDefaultButtonCard,
+      legacyMapConfig,
     };
   }
   return needMigration;
@@ -205,6 +217,40 @@ export const updateDeprecatedConfig = (config: VehicleCardConfig): VehicleCardCo
           delete (newConfig as any)[prop];
         }
       });
+    }
+    if (legacyCheck.legacyMapConfig) {
+      console.log('Migrating legacy map config to mini_map');
+      const miniMapConfig: MiniMapConfig = {};
+      // Migrate properties from main config
+      DEPREACTED_MAP_IN_EXTRA_CONFIGS.forEach((prop) => {
+        if (newConfig.extra_configs && prop in newConfig.extra_configs) {
+          if (prop === 'mini_map_height') {
+            miniMapConfig.map_height = newConfig.extra_configs.mini_map_height;
+          } else if (prop === 'show_address') {
+            miniMapConfig.hide_map_address = newConfig.extra_configs.show_address;
+          } else {
+            (miniMapConfig as any)[prop] = (newConfig.extra_configs as any)[prop];
+          }
+          delete (newConfig.extra_configs as any)[prop];
+        }
+      });
+      DEPREACTED_MAP_CONFIG_PROPS.forEach((prop) => {
+        if (prop in newConfig) {
+          if (prop === 'map_popup_config') {
+            const popupConfig = { ...config.map_popup_config };
+            Object.entries(popupConfig).forEach(([key, value]) => {
+              miniMapConfig[key as any] = value;
+            });
+          } else {
+            (miniMapConfig as any)[prop] = (newConfig as any)[prop];
+          }
+          delete (newConfig as any)[prop];
+        }
+      });
+      newConfig.mini_map = {
+        ...newConfig.mini_map,
+        ...miniMapConfig,
+      };
     }
   }
   return newConfig;
