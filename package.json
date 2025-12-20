@@ -19,6 +19,7 @@
   "main": "vehicle-info-card.js",
   "license": "MIT",
   "dependencies": {
+    "@formatjs/intl-durationformat": "^0.8.4",
     "@mdi/js": "^7.4.47",
     "apexcharts": "^5.3.3",
     "deep-clone-simple": "^1.1.1",

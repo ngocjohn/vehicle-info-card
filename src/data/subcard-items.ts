@@ -71,6 +71,8 @@ export const VEHICLE_CARD_ITEMS: Record<VehicleCardSection, readonly VehicleCard
   warnings: VEHICLE_WARNINGS_KEYS,
 };
 
+export type SubSubSection = VehicleCardSection | TripCardSection;
+
 export const ECO_SCORE_KEYS = [
   'ecoScoreBonusRange',
   'ecoScoreAcceleration',
@@ -113,4 +115,14 @@ export function getSubCardItems(): SubCardItems {
     ecoCard: ECO_SCORE_KEYS,
     tyreCard: TYRE_PRESSURE_KEYS,
   };
+}
+export const SUBCARD_ITEMS: Record<SUBCARD, SubCardItemKey[]> = {
+  tripCard: [...TRIP_OVERVIEW_KEYS, ...TRIP_FROM_RESET_KEYS, ...TRIP_FROM_START_KEYS],
+  vehicleCard: [...VEHICLE_OVERVIEW_KEYS, ...VEHICLE_WARNINGS_KEYS],
+  ecoCard: [...ECO_SCORE_KEYS],
+  tyreCard: [...TYRE_PRESSURE_KEYS],
+};
+
+export function getSubCardItemKeys(subcard: SUBCARD): SubCardItemKey[] {
+  return SUBCARD_ITEMS[subcard];
 }

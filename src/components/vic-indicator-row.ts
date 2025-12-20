@@ -106,7 +106,8 @@ export class VicIndicatorRow extends BaseElement {
           return html`
             <vic-indicator-badge
               type=${buttonType}
-              @click=${this._toggleSubItems}
+              .key=${key}
+              @click=${this._handleBadgeClick}
               .active=${this.subItemsActive && key === 'stateCharging'}
               .hidden=${isHidden(key)}
             >
@@ -170,8 +171,21 @@ export class VicIndicatorRow extends BaseElement {
     return html`${renderBars()}`;
   }
 
-  private _toggleSubItems() {
-    this.subItemsActive = !this.subItemsActive;
+  private _handleBadgeClick(ev: Event): void {
+    ev.stopPropagation();
+    const badge = ev.currentTarget as HTMLElement;
+    const key = badge?.['key'];
+    if (key === 'stateCharging') {
+      this.subItemsActive = !this.subItemsActive;
+    } else if (key === 'titleServices') {
+      console.log('Title Services clicked');
+      // Handle title services click action here
+    } else {
+      const item = this._baseIndicators?.[key as CardIndicatorKey] || this._chargingOverview?.[key as CardIndicatorKey];
+      if (item?.entity_id) {
+        this._openMoreInfo(item.entity_id);
+      }
+    }
   }
 
   static get styles(): CSSResultGroup {
@@ -215,7 +229,7 @@ export class VicIndicatorRow extends BaseElement {
         display: grid;
         width: 100%;
         height: 100%;
-        grid-template-columns: repeat(auto-fill, minmax(calc((100% - 16px) / 2), 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(calc((100% - 16px) / 2), 1fr));
       }
       .combined-range-bars[colapsed] {
         max-height: 0;

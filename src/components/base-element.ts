@@ -1,4 +1,3 @@
-import { getStateDisplay, StateDisplayManager } from 'const/state-display';
 import { css, CSSResultGroup, html, LitElement, TemplateResult } from 'lit';
 import { property } from 'lit/decorators.js';
 import { Car } from 'model/car';
@@ -35,10 +34,6 @@ export class BaseElement extends LitElement {
 
   get _translate(): LocalizeFunc {
     return this.store.translate;
-  }
-
-  get _stateDisplayManager(): StateDisplayManager {
-    return getStateDisplay(this._translate);
   }
 
   set hass(hass: HomeAssistant) {

@@ -1,6 +1,6 @@
 import setupTranslation from 'localize/translate';
 
-import { HomeAssistant, LocalizeFunc } from '../types';
+import { FrontendLocaleData, HomeAssistant, LocalizeFunc } from '../types';
 import { VehicleCardConfig } from '../types/config';
 import { VehicleInfoCard } from '../vehicle-info-card';
 import { VehicleInfoCardEditor } from '../vehicle-info-card-editor';
@@ -28,9 +28,15 @@ export class Store {
   }
 
   get userLang(): string {
-    if (!this.config?.selected_language || this.config.selected_language === 'system') {
+    if (!this.config?.selected_language || ['system', 'default'].includes(this.config.selected_language)) {
       return this._hass?.selectedLanguage || this._hass?.locale.language || 'en';
     }
     return this.config.selected_language;
+  }
+
+  get _userLocale(): FrontendLocaleData {
+    const locale = { ...this._hass.locale };
+    locale.language = this.userLang;
+    return locale;
   }
 }

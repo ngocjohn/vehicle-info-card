@@ -1,3 +1,4 @@
+import type { DurationFormatConstructor } from '@formatjs/intl-durationformat/src/types';
 import {
   Auth,
   Connection,
@@ -43,6 +44,11 @@ declare global {
   // For loading workers in rspack
   interface ImportMeta {
     url: string;
+  }
+
+  // Intl.DurationFormat is not yet part of the TypeScript standard
+  namespace Intl {
+    const DurationFormat: DurationFormatConstructor;
   }
 }
 

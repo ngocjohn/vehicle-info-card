@@ -18,7 +18,7 @@ export class VicRangeBar extends LitElement {
           <span>${this.levelInfo.display_state}</span>
         </div>
         <div class="bar-outer">
-          <div class="bar-inner" style="width: ${levelState}%;"></div>
+          <div class="bar-inner" ?charging=${this.charging} style="width: ${levelState}%;"></div>
         </div>
         <div class="item">
           <span>${this.rangeInfo.display_state}</span>
@@ -30,6 +30,10 @@ export class VicRangeBar extends LitElement {
     return css`
       :host {
         --vic-bar-fuel-color: #4caf50;
+        --vic-bar-animation-position: 20px 20px;
+        --vic-bar-fuel-color-charging-light: #64b5f6;
+        --vic-bar-border-radius: 4px;
+        --vic-bar-height: 8px;
         --mdc-icon-size: 21px;
       }
       :host([electic]) {
@@ -57,9 +61,9 @@ export class VicRangeBar extends LitElement {
       }
       .bar-outer {
         flex: 1;
-        height: 8px;
+        height: var(--vic-bar-height);
         background-color: var(--divider-color);
-        border-radius: 4px;
+        border-radius: var(--vic-bar-border-radius);
         overflow: hidden;
         border: none;
       }
@@ -67,6 +71,35 @@ export class VicRangeBar extends LitElement {
         height: 100%;
         background-color: var(--vic-bar-fuel-color);
         transition: width 0.3s ease-in-out;
+      }
+
+      .bar-inner[charging] {
+        background: -webkit-linear-gradient(
+          135deg,
+          var(--vic-bar-fuel-color) 25%,
+          var(--vic-bar-fuel-color-charging-light) 25%,
+          var(--vic-bar-fuel-color-charging-light) 50%,
+          var(--vic-bar-fuel-color) 50%,
+          var(--vic-bar-fuel-color) 75%,
+          var(--vic-bar-fuel-color-charging-light) 75%
+        );
+        width: 100%;
+        height: 100%;
+        line-height: 100%;
+        border-radius: 4px;
+        color: #fff;
+        background-size: var(--vic-bar-animation-position);
+        animation: bar-animation 3s linear infinite;
+        -webkit-animation: bar-animation 3s linear infinite;
+      }
+
+      @keyframes bar-animation {
+        0% {
+          background-position: 0 0;
+        }
+        100% {
+          background-position: var(--vic-bar-animation-position);
+        }
       }
     `;
   }

@@ -1,4 +1,10 @@
-import { AttributeItemKey, CardAttributesSection, ATTR_SECTION_ITEMS } from 'data/attributes-items';
+import {
+  AttributeItemKey,
+  CardAttributesSection,
+  ATTR_SECTION_ITEMS,
+  getAttrSectionType,
+  CARD_ATTRIBUTES_SECTION,
+} from 'data/attributes-items';
 import { LocalizeFunc } from 'types';
 
 type StateDisplay = {
@@ -91,8 +97,48 @@ export const PARK_BRAKE_STATES: StateDisplay = {
   off: 'stateParkBrakeOff',
   on: 'stateParkBrakeOn',
 };
+const STATE_DISPLAY_ITEMS: Record<string, StateDisplay> = {
+  lockSensor: LOCK_STATES,
+  doorStatusOverall: DOOR_STATES,
+  selectedProgram: CHARGE_PROGRAMS,
+  starterBattery: STARTER_BATTERY_STATES,
+  ignitionState: IGNITION_STATES,
+  sunroofstatus: SUNROOF_STATES,
+  chargeflapdcstatus: FLAP_STATES,
+  parkBrake: PARK_BRAKE_STATES,
+  lockAttributes: LOCKED_UNLOCKED,
+  doorAttributes: DOOR_BOOLEAN_STATES,
+  windowAttributes: WINDOW_STATES,
+};
 
-const createNameState = (localize: LocalizeFunc, stateMap: StateDisplay, sector: string = 'common'): StateDisplay => ({
+const CARD_LOCALIZE_SECTIONS: Record<string, string> = {
+  starterBattery: 'starterBattery',
+  ignitionState: 'ignitionState',
+  sunroofstatus: 'sunroofState',
+};
+
+export function getStateDisplayType(key: string): StateDisplay | undefined {
+  if (key in STATE_DISPLAY_ITEMS) {
+    return STATE_DISPLAY_ITEMS[key];
+  } else if (getAttrSectionType(key) !== undefined) {
+    const section = getAttrSectionType(key) as CardAttributesSection;
+    return STATE_DISPLAY_ITEMS[section];
+  }
+  return undefined;
+}
+
+export function getLocalizeSection(key: string): string | undefined {
+  if (key in CARD_LOCALIZE_SECTIONS) {
+    return CARD_LOCALIZE_SECTIONS[key];
+  }
+  return undefined;
+}
+
+export const createNameState = (
+  localize: LocalizeFunc,
+  stateMap: StateDisplay,
+  sector: string = 'common'
+): StateDisplay => ({
   ...Object.keys(stateMap).reduce((acc, key) => {
     acc[key] = ['Standard', 'Home', 'Work'].includes(stateMap[key])
       ? stateMap[key]
@@ -101,38 +147,28 @@ const createNameState = (localize: LocalizeFunc, stateMap: StateDisplay, sector:
   }, {} as { [key: string]: string }),
 });
 
-const createAttributeStateMapping = (
-  localize: LocalizeFunc,
-  sector: CardAttributesSection,
-  stateMapping: StateDisplay
-): AttributeStateMapping => {
-  const attributeKeys = ATTR_SECTION_ITEMS[sector];
-  const mapping: Record<string, StateDisplay> = {};
-  attributeKeys.forEach((key) => {
-    stateMapping = key === 'chargeflapdcstatus' ? FLAP_STATES : key === 'sunroofstatus' ? SUNROOF_STATES : stateMapping;
-
-    mapping[key] = createNameState(localize, stateMapping, key === 'sunroofstatus' ? 'sunroofState' : undefined);
+export const computeStateManager = (localize: LocalizeFunc): StateDisplayManager => {
+  const manager: StateDisplayManager = {} as StateDisplayManager;
+  Object.keys(STATE_DISPLAY_ITEMS).forEach((key) => {
+    if (CARD_ATTRIBUTES_SECTION.includes(key as CardAttributesSection)) {
+      const mapping: Record<string, AttributeStateMapping> = {};
+      const attributeKeys = ATTR_SECTION_ITEMS[key as CardAttributesSection];
+      const stateMapping: Record<string, StateDisplay> = {};
+      attributeKeys.forEach((attrKey) => {
+        const stateDisplayType = getStateDisplayType(attrKey);
+        const sectorLocalize = getLocalizeSection(attrKey);
+        if (stateDisplayType) {
+          stateMapping[attrKey] = createNameState(localize, stateDisplayType, sectorLocalize);
+        }
+      });
+      mapping[key] = stateMapping as AttributeStateMapping;
+      Object.assign(manager, mapping);
+    } else {
+      const stateDisplayType = getStateDisplayType(key);
+      if (stateDisplayType) {
+        manager[key] = createNameState(localize, stateDisplayType, getLocalizeSection(key));
+      }
+    }
   });
-  return mapping as AttributeStateMapping;
+  return manager;
 };
-
-export const computeStateMappingWithAttributes = (localize: LocalizeFunc): Record<string, AttributeStateMapping> => ({
-  lockAttributes: createAttributeStateMapping(localize, 'lockAttributes', LOCKED_UNLOCKED),
-  doorAttributes: createAttributeStateMapping(localize, 'doorAttributes', DOOR_BOOLEAN_STATES),
-  windowAttributes: createAttributeStateMapping(localize, 'windowAttributes', WINDOW_STATES),
-});
-
-export const computeStateMapping = (localize: LocalizeFunc): StateMapping => ({
-  lockSensor: createNameState(localize, LOCK_STATES),
-  doorStatus: createNameState(localize, DOOR_STATES),
-  chargeSelectedProgram: createNameState(localize, CHARGE_PROGRAMS),
-  starterBattery: createNameState(localize, STARTER_BATTERY_STATES, 'starterBattery'),
-  ignitionStatus: createNameState(localize, IGNITION_STATES, 'ignitionState'),
-  parkBrake: createNameState(localize, PARK_BRAKE_STATES),
-});
-
-export const getStateDisplay = (localize: LocalizeFunc): StateDisplayManager =>
-  ({
-    ...computeStateMapping(localize),
-    ...computeStateMappingWithAttributes(localize),
-  } as StateDisplayManager);

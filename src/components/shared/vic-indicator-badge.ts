@@ -13,11 +13,10 @@ export class VicIndicatorBadge extends LitElement {
     const label = this.label;
     return html`
       <div class="badge" role=${ifDefined(this.type === 'button' ? 'button' : undefined)}>
-        <ha-ripple .disabled=${this.type !== 'button'}></ha-ripple>
         <slot name="icon"></slot>
         <span class="info">
-          <span class="content"><slot></slot></span>
           ${label ? html`<span class="label">${label}</span>` : nothing}
+          <span class="content"><slot></slot></span>
         </span>
         ${this.type === 'button'
           ? html`<ha-icon slot="icon" class="toggle-icon" icon="mdi:chevron-down"></ha-icon>`
@@ -56,6 +55,7 @@ export class VicIndicatorBadge extends LitElement {
       :host([type='button']) [role='button']:hover ::slotted([slot='icon']) {
         color: var(--primary-color) !important;
       }
+
       .info {
         display: flex;
         flex-direction: column;
@@ -78,7 +78,8 @@ export class VicIndicatorBadge extends LitElement {
         text-align: start;
         overflow: hidden;
         white-space: nowrap;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.4px;
+        line-height: 1.2;
       }
 
       :host([active]) .content,
@@ -89,14 +90,16 @@ export class VicIndicatorBadge extends LitElement {
 
       ::slotted([slot='icon']) {
         color: var(--badge-color);
-        line-height: 24px;
+        /* line-height: 24px; */
         margin-left: auto;
         margin-right: 4px;
         height: 100%;
         display: flex;
+        align-items: center;
+        justify-content: center;
       }
       .toggle-icon {
-        width: 21px;
+        width: 18px;
         height: auto;
         color: var(--secondary-text-color);
         transition: transform 0.3s ease-in-out;

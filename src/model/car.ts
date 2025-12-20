@@ -1,5 +1,14 @@
 import { CardItem, CardItemKey, computeCardItems, findCardItemByKey } from 'const/card-item';
-import { CardIndicatorKey, INDICATOR_ITEMS, INDICATOR_SECTIONS } from 'data';
+import {
+  CardIndicatorKey,
+  getSubCardItems,
+  INDICATOR_ITEMS,
+  INDICATOR_SECTIONS,
+  SUBCARD,
+  SubCardItemKey,
+  SubCardItems,
+  SubSubSection,
+} from 'data';
 import {
   ATTR_SECTION_ITEMS,
   ATTR_SECTION,
@@ -11,19 +20,22 @@ import {
 import { CarEntityKey } from 'data/car-device-entities';
 import { HassEntity } from 'home-assistant-js-websocket';
 import { CarEntities, CarItemDisplay, HomeAssistant, LocalizeFunc } from 'types';
-import { getEntityAttributeValue } from 'utils/entity-helper';
 import { VehicleInfoCard } from 'vehicle-info-card';
 
 import * as ITEMS_FROM_CONST from '../const/card-item';
+import * as STATE_DISPLAY_CONST from '../const/state-display';
+import { computeStateManager, StateDisplayManager } from '../const/state-display';
 import { Store } from './store';
 
 export class Car {
   private _card: VehicleInfoCard;
   private translate: LocalizeFunc;
   private _itemsFromConst = ITEMS_FROM_CONST;
+  private _statesHelper = STATE_DISPLAY_CONST;
   constructor(store: Store) {
     this.translate = store.translate;
     this._card = store.card;
+    window.VicCar = this;
     console.log('%cCAR:', 'color: #bada55;', 'Car model initialized');
   }
 
@@ -38,8 +50,9 @@ export class Car {
   get _carEntities(): CarEntities {
     return this._card._carEntities;
   }
-  get _stateManager() {
-    return this._card._stateDisplayManager;
+
+  get _displayManager(): StateDisplayManager {
+    return computeStateManager(this.translate);
   }
 
   get _isCarCharging(): boolean {
@@ -51,20 +64,6 @@ export class Car {
     return Boolean(chargingState);
   }
 
-  _loopAttributesValues() {
-    const itemKeys = ATTR_SECTION_ITEMS.lockAttributes;
-    const mainEntity = this._carEntities.lockSensor?.entity_id || '';
-    itemKeys.forEach((itemKey) => {
-      const attrNormal = getEntityAttributeValue(this.hass, mainEntity, itemKey);
-      const formattedValue = getEntityAttributeValue(this.hass, mainEntity, itemKey, true /* formatted */);
-      const attrName = this.hass.formatEntityAttributeName(this.hass.states[mainEntity], itemKey);
-      console.log(
-        `%cCAR:`,
-        'color: #bada55;',
-        ` ${itemKey}: ${attrName} Normal Value: ${attrNormal}, Formatted Value: ${formattedValue}`
-      );
-    });
-  }
   _getAttrSectionItemConfig(section: ATTR_SECTION): Record<AttributeItemKey, CarItemDisplay> {
     const items = {} as Record<AttributeItemKey, CarItemDisplay>;
     const itemKeys = ATTR_SECTION_ITEMS[section];
@@ -81,6 +80,37 @@ export class Car {
       items[key] = this._getEntityConfigByKey(key);
     });
     return items;
+  }
+
+  _getSubCardSectionItems(
+    section: SUBCARD
+  ): Record<SubSubSection, Record<SubCardItemKey, CarItemDisplay>> | Record<SubCardItemKey, CarItemDisplay> {
+    const sectionItems: SubCardItems = this._getSubCardItems();
+    switch (section) {
+      case SUBCARD.TRIP:
+      case SUBCARD.VEHICLE: {
+        const items = {} as Record<SubSubSection, Record<SubCardItemKey, CarItemDisplay>>;
+        const subCardConfig = sectionItems[section];
+        for (const subSection in subCardConfig) {
+          const itemKeys = subCardConfig[subSection as SubSubSection] as SubCardItemKey[];
+          const sectionItems = {} as Record<SubCardItemKey, CarItemDisplay>;
+          itemKeys.forEach((itemKey) => {
+            sectionItems[itemKey] = this._getEntityConfigByKey(itemKey);
+          });
+          items[subSection as SubSubSection] = sectionItems;
+        }
+        return items;
+      }
+      case SUBCARD.ECO:
+      case SUBCARD.TYRE: {
+        const itemKeys = sectionItems[section] as SubCardItemKey[];
+        const items = {} as Record<SubCardItemKey, CarItemDisplay>;
+        itemKeys.forEach((itemKey) => {
+          items[itemKey] = this._getEntityConfigByKey(itemKey);
+        });
+        return items;
+      }
+    }
   }
 
   public _getEntityConfigByKey(key: CardItemKey): CarItemDisplay {
@@ -115,22 +145,25 @@ export class Car {
     let state: string | undefined = undefined;
     let display_state: string | undefined = undefined;
     let active: boolean | undefined = undefined;
+    let entity_id: string | undefined = undefined;
 
     if (attrType) {
       return this._getAttrItemConfig(key as AttributeItemKey, attrType);
     } else {
       switch (key) {
         case 'selectedProgram':
-          const carEntity = this.hass.states[this._carEntities.rangeElectric?.entity_id || ''];
+          entity_id = this._carEntities.rangeElectric?.entity_id || '';
+          const carEntity = this.hass.states[entity_id];
           const programState = this.hass.formatEntityAttributeValue(carEntity, 'selectedChargeProgram');
           state = programState;
-          display_state = this._stateManager.chargeSelectedProgram[programState] || programState;
+          display_state = this._displayManager.selectedProgram?.[programState] || programState;
           break;
         case 'stateCharging':
           const isCharging = this._isCarCharging;
-          state = isCharging ? 'charging' : 'not_charging';
+          state = isCharging.toString();
           display_state = item?.name || '';
           active = isCharging;
+          entity_id = this._carEntities.rangeElectric?.entity_id || '';
           break;
         case 'titleServices':
           display_state = item?.name || '';
@@ -142,6 +175,7 @@ export class Car {
       display_state,
       state,
       active,
+      entity_id,
     };
   }
 
@@ -157,7 +191,7 @@ export class Car {
       const mainStateObj = this.hass.states[mainItemEntity?.entity_id || ''];
       const mainState = mainStateObj?.state;
       const mainDisplayState =
-        this._stateManager[attrType]?.[itemKey]?.[mainState as string] ?? this.hass.formatEntityState(mainStateObj);
+        this._displayManager[attrType]?.[itemKey]?.[mainState as string] ?? this.hass.formatEntityState(mainStateObj);
       const mainActive = itemKey === ENTITY_NOT_ATTR.SUNROOF_STATUS ? mainState !== '0' : this.isActive(mainState);
       return {
         ...item,
@@ -176,7 +210,7 @@ export class Car {
       const state = stateObj?.attributes?.[itemKey];
 
       const display_state =
-        this._stateManager[attrType]?.[itemKey]?.[state as string] ||
+        this._displayManager[attrType]?.[itemKey]?.[state as string] ||
         this.hass.formatEntityAttributeValue(stateObj, itemKey);
 
       const active = this.isActive(state);
@@ -200,7 +234,7 @@ export class Car {
       return { state: undefined, display_state: undefined, icon: undefined };
     }
     const state = stateObj.state;
-    const display_state = this._stateManager[key]?.[state as string] || this.hass.formatEntityState(stateObj);
+    const display_state = this._displayManager[key]?.[state as string] || this.hass.formatEntityState(stateObj);
     const icon = item?.icon || stateObj.attributes?.icon;
     // console.log('%cCAR:', 'color: #bada55;', { state, display_state, icon });
     return { state, display_state, icon };
@@ -213,4 +247,7 @@ export class Car {
     const closedState = ['2', '1', false, 'false'];
     return !Boolean(closedState.includes(state as string));
   };
+  _getSubCardItems(): SubCardItems {
+    return getSubCardItems();
+  }
 }
