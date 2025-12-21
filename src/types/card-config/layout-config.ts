@@ -1,6 +1,6 @@
 import { ServicesConfig } from './services-config';
 
-export const SECTION_KEYS = ['header_info', 'images_slider', 'mini_map', 'buttons'];
+export const SECTION_KEYS = ['header_info', 'images', 'mini_map', 'buttons'];
 export type SectionOrder = (typeof SECTION_KEYS)[number];
 
 export interface ExtraConfigs {
@@ -32,6 +32,7 @@ export type ButtonGridLayoutConfig = {
   use_swiper?: boolean;
   rows_size?: number;
   columns_size?: number;
+  button_order?: string[];
   /**
    * @deprecated use 'layout' in button config instead
    */
@@ -76,3 +77,26 @@ export interface TireCardCustomConfig {
   top?: number;
   left?: number;
 }
+
+export const reorderSections = (hide: string[], currentOrder: string[]): SectionOrder[] => {
+  if (!hide || hide.length === 0) {
+    return currentOrder.length > 0
+      ? (currentOrder.filter((s) => SECTION_KEYS.includes(s)) as SectionOrder[])
+      : (SECTION_KEYS as SectionOrder[]);
+  }
+
+  const hiddenToRemove = new Set<string>(hide);
+  const visibleToAdd = SECTION_KEYS.filter((s) => !hiddenToRemove.has(s));
+
+  let sectionOrder: SectionOrder[] = currentOrder.filter((s) => !hiddenToRemove.has(s)) as SectionOrder[];
+
+  visibleToAdd.forEach((section) => {
+    if (!sectionOrder.includes(section)) {
+      sectionOrder.push(section);
+    }
+  });
+
+  sectionOrder = [...new Set(sectionOrder)].filter((s) => SECTION_KEYS.includes(s)) as SectionOrder[];
+
+  return sectionOrder;
+};

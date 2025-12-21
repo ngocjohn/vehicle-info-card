@@ -1,10 +1,10 @@
-import { convertButtonToNewFormat } from 'utils/editor/migrate_button_card';
+import { convertButtonToNewFormat, migrateDefaultButtonConfig } from 'utils/editor/migrate_button_card';
 
 import { LovelaceCardConfig } from '../types';
-import { AdditionalCustomButtonCard, DefaultButtonCard } from './card-config/button-card';
-import { ButtonGridLayoutConfig, ExtraConfigs } from './card-config/layout-config';
+import { AdditionalCustomButtonCard, DefaultButtonCard, DefaultButtonConfig } from './card-config/button-card';
+import { ButtonGridLayoutConfig, ExtraConfigs, reorderSections } from './card-config/layout-config';
 import { MapPopupConfig, MiniMapConfig } from './card-config/mini-map';
-import { Services } from './card-config/services-config';
+import { convertServicesConfig, Services, ServicesConfig } from './card-config/services-config';
 import { AddedCards, BaseButtonConfig } from './legacy-card-config/legacy-button-config';
 
 /**
@@ -24,7 +24,7 @@ export interface VehicleCardConfig extends LovelaceCardConfig {
   images?: ImageConfig[];
   mini_map?: MiniMapConfig;
   default_buttons?: DefaultButtonCard;
-  added_custom_buttons?: AdditionalCustomButtonCard;
+  custom_buttons?: AdditionalCustomButtonCard;
   extra_configs?: ExtraConfigs;
   /**
    * @deprecated use `mini_map` instead
@@ -152,31 +152,47 @@ const DEPREACTED_MAP_CONFIG_PROPS = [
 ] as const;
 const DEPREACTED_MAP_IN_EXTRA_CONFIGS = ['maptiler_api_key', 'mini_map_height', 'show_address'] as const;
 
+const INVALID_SHOW_SECTION_PROPS = ['show_slides', 'show_map', 'show_buttons', 'show_header_info'] as const;
+const INVALID_SHOW_ELEMENT_PROPS = ['show_background', 'show_error_notify'] as const;
+const INVALID_SERVICE_PROPS = ['enable_services_control', 'services'] as const;
+
 type DeprecatedConfig = {
-  legacyDefaultButtonCard?: boolean;
-  legacyAddedCustomButtonCard?: boolean;
-  legacyMapConfig?: boolean;
+  hasLegacyDefaultButton?: boolean;
+  hasLegacyCustomButton?: boolean;
+  hasLegacyMapConfig?: boolean;
+  hasLegacyShowSectionProps?: boolean;
+  hasLegacyButtonGridConfig?: boolean;
+  hasLegacySelectedThemeConfig?: boolean;
+  hasLegacyServicesConfig?: boolean;
 };
 
 export const configHasDeprecatedProps = (config: VehicleCardConfig): boolean | DeprecatedConfig => {
   // Check for deprecated properties
+  const legacyCheck: DeprecatedConfig = {};
 
-  const legacyDefaultButtonCard = DEPRECATED_BUTTON_CARD_PROPS.some((prop) => prop in config);
+  legacyCheck.hasLegacyDefaultButton = DEPRECATED_BUTTON_CARD_PROPS.some((prop) => prop in config);
+
+  legacyCheck.hasLegacyCustomButton = config.added_cards !== undefined;
+
   const legacyMapPropInConfig = DEPREACTED_MAP_CONFIG_PROPS.some((prop) => prop in config);
   const legacyMapInExtraConfigs = DEPREACTED_MAP_IN_EXTRA_CONFIGS.some((prop) => prop in config.extra_configs!);
-  const legacyMapConfig = Boolean(legacyMapPropInConfig || legacyMapInExtraConfigs);
-  const needMigration = Boolean(legacyDefaultButtonCard || legacyMapConfig);
-  if (needMigration) {
-    console.log('Config needs migration:', {
-      legacyDefaultButtonCard,
-      legacyMapConfig,
-    });
-    return {
-      legacyDefaultButtonCard,
-      legacyMapConfig,
-    };
+
+  legacyCheck.hasLegacyMapConfig = Boolean(legacyMapPropInConfig || legacyMapInExtraConfigs);
+
+  legacyCheck.hasLegacyShowSectionProps =
+    INVALID_SHOW_SECTION_PROPS.some((prop) => prop in config) ||
+    INVALID_SHOW_ELEMENT_PROPS.some((prop) => prop in config);
+
+  legacyCheck.hasLegacyButtonGridConfig = config.button_grid !== undefined;
+  legacyCheck.hasLegacySelectedThemeConfig = config.selected_theme !== undefined;
+  legacyCheck.hasLegacyServicesConfig = INVALID_SERVICE_PROPS.some((prop) => prop in config);
+
+  if (Object.values(legacyCheck).some((value) => value === true)) {
+    console.log('%cCONFIG:', 'color: #bada55;', 'Deprecated config properties found:', legacyCheck);
+
+    return legacyCheck;
   }
-  return needMigration;
+  return false;
 };
 
 export const updateDeprecatedConfig = (config: VehicleCardConfig): VehicleCardConfig => {
@@ -189,22 +205,26 @@ export const updateDeprecatedConfig = (config: VehicleCardConfig): VehicleCardCo
   const newConfig = { ...config };
   // Migrate legacy button configs
   if (legacyCheck && typeof legacyCheck === 'object') {
-    if (legacyCheck.legacyDefaultButtonCard) {
-      console.log('Migrating legacy button card config');
+    // Migrate legacy default button cards
+    if (legacyCheck.hasLegacyDefaultButton) {
+      console.log('%cCONFIG:', 'color: #bada55;', 'Migrating legacy default button config');
+
       const updatedDefaultButtons: DefaultButtonCard = {};
-      for (const cardButtonType of ['vehicle', 'trip', 'eco', 'tyre'] as const) {
-        const buttonKey = `${cardButtonType}_button` as keyof VehicleCardConfig;
-        const cardKey = `${cardButtonType}_card` as keyof VehicleCardConfig;
+      for (const cardButtonType of ['trip', 'vehicle', 'eco', 'tyre'] as const) {
+        const buttonKey = `${cardButtonType}_button`;
+        const cardKey = `${cardButtonType}_card`;
         const legacyButtonConfig = config[buttonKey] as BaseButtonConfig | undefined;
         const legacyCardConfig = config[cardKey] as LovelaceCardConfig[] | undefined;
-        const useCustomCards = config.use_custom_cards?.[`${cardButtonType}_card`];
+        const useCustomCards = config.use_custom_cards?.[cardKey];
+        const useCustomButton = legacyButtonConfig?.enabled;
         if (legacyButtonConfig || legacyCardConfig) {
-          const updatedButtonConfig = convertButtonToNewFormat({
+          const updatedButtonConfig: DefaultButtonConfig = migrateDefaultButtonConfig({
             button: legacyButtonConfig,
             cards: legacyCardConfig,
             use_custom_cards: useCustomCards,
+            use_custom_button: useCustomButton,
           });
-          updatedDefaultButtons[`${cardButtonType}_card`] = updatedButtonConfig;
+          updatedDefaultButtons[cardKey] = updatedButtonConfig;
         }
       }
       newConfig.default_buttons = {
@@ -218,8 +238,27 @@ export const updateDeprecatedConfig = (config: VehicleCardConfig): VehicleCardCo
         }
       });
     }
-    if (legacyCheck.legacyMapConfig) {
-      console.log('Migrating legacy map config to mini_map');
+    // Migrate legacy added custom button cards
+    if (legacyCheck.hasLegacyCustomButton) {
+      console.log('%cCONFIG:', 'color: #bada55;', 'Migrating legacy added custom button card config');
+      const addedCustomButtons: AdditionalCustomButtonCard = {};
+      if (config.added_cards) {
+        Object.entries(config.added_cards).forEach(([key, value]) => {
+          const convertedButtonConfig = convertButtonToNewFormat(value);
+          addedCustomButtons[key] = convertedButtonConfig;
+        });
+      }
+      newConfig.custom_buttons = {
+        ...newConfig.custom_buttons,
+        ...addedCustomButtons,
+      };
+      // Remove deprecated property
+      delete newConfig.added_cards;
+    }
+    // Migrate legacy map configs
+    if (legacyCheck.hasLegacyMapConfig) {
+      console.log('%cCONFIG:', 'color: #bada55;', 'Migrating legacy map config');
+
       const miniMapConfig: MiniMapConfig = {};
       // Migrate properties from main config
       DEPREACTED_MAP_IN_EXTRA_CONFIGS.forEach((prop) => {
@@ -250,6 +289,85 @@ export const updateDeprecatedConfig = (config: VehicleCardConfig): VehicleCardCo
       newConfig.mini_map = {
         ...newConfig.mini_map,
         ...miniMapConfig,
+      };
+    }
+    // Migrate legacy show section properties
+    if (legacyCheck.hasLegacyShowSectionProps) {
+      console.log('%cCONFIG:', 'color: #bada55;', 'Migrating legacy show section properties');
+      if (!newConfig.extra_configs) {
+        newConfig.extra_configs = {};
+      }
+      INVALID_SHOW_ELEMENT_PROPS.forEach((prop) => {
+        if (prop in newConfig) {
+          if (prop === 'show_background') {
+            newConfig.extra_configs!.hide_background = !(newConfig as any)[prop];
+          }
+          delete (newConfig as any)[prop];
+        }
+      });
+
+      const hidden: string[] = [];
+      INVALID_SHOW_SECTION_PROPS.forEach((prop) => {
+        if (prop in newConfig) {
+          const show = (newConfig as any)[prop];
+          const sectionName = prop.replace('show_', '').replace('slides', 'images');
+          if (show === false) {
+            hidden.push(sectionName);
+          }
+          delete (newConfig as any)[prop];
+        }
+      });
+      const currentOrder = newConfig.extra_configs?.section_order || [];
+      const updatedOrder = reorderSections(hidden, currentOrder);
+      newConfig.extra_configs!.section_order = updatedOrder;
+    }
+
+    // Migrate legacy button grid config
+    if (legacyCheck.hasLegacyButtonGridConfig) {
+      console.log('%cCONFIG:', 'color: #bada55;', 'Migrating legacy button grid config');
+      const legacyButtonGridConfig = newConfig.button_grid;
+      ['button_layout', 'transparent'].forEach((prop) => {
+        if (prop in legacyButtonGridConfig!) {
+          delete (legacyButtonGridConfig as any)[prop];
+        }
+      });
+      if (!newConfig.extra_configs) {
+        newConfig.extra_configs = {};
+      }
+      newConfig.extra_configs.button_grid = {
+        ...newConfig.extra_configs.button_grid,
+        ...legacyButtonGridConfig,
+      };
+      delete newConfig.button_grid;
+    }
+    // Migrate legacy selected theme config
+    if (legacyCheck.hasLegacySelectedThemeConfig) {
+      console.log('%cCONFIG:', 'color: #bada55;', 'Migrating legacy selected theme config');
+      const legacySelectedThemeConfig = newConfig.selected_theme;
+      newConfig.extra_configs!.theme_config = {
+        ...legacySelectedThemeConfig,
+      };
+      delete newConfig.selected_theme;
+    }
+    // Migrate legacy services config
+    if (legacyCheck.hasLegacyServicesConfig) {
+      console.log('%cCONFIG:', 'color: #bada55;', 'Migrating legacy services config');
+      if (!newConfig.extra_configs) {
+        newConfig.extra_configs = {};
+      }
+      const updatedServicesConfig: ServicesConfig = {};
+      if ('enable_services_control' in newConfig) {
+        updatedServicesConfig.enabled = (newConfig as any).enable_services_control;
+        delete (newConfig as any).enable_services_control;
+      }
+      if ('services' in newConfig) {
+        const oldServicesConfig = (newConfig as any).services as Services;
+        updatedServicesConfig.items = convertServicesConfig(oldServicesConfig);
+        delete (newConfig as any).services;
+      }
+      newConfig.extra_configs.services_config = {
+        ...newConfig.extra_configs.services_config,
+        ...updatedServicesConfig,
       };
     }
   }

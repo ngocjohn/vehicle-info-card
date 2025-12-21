@@ -221,3 +221,7 @@ export const hasTemplate = (value: unknown): boolean => {
   }
   return false;
 };
+
+export const getMin = (arr, val) => arr.reduce((min, p) => (Number(p[val]) < Number(min[val]) ? p : min), arr[0]);
+export const getAvg = (arr, val) => arr.reduce((sum, p) => sum + Number(p[val]), 0) / arr.length;
+export const getMax = (arr, val) => arr.reduce((max, p) => (Number(p[val]) > Number(max[val]) ? p : max), arr[0]);

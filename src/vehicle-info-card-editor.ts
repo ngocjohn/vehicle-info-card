@@ -4,7 +4,16 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { BaseEditor } from './card-editor/base-editor';
 import { VEHICLE_INFO_CARD_NEW_EDITOR_NAME, VEHICLE_INFO_CARD_NEW_NAME } from './const/const';
 import { Store } from './model/store';
-import { ConfigArea, HomeAssistant, LovelaceCardEditor, LovelaceConfig, VehicleCardConfig } from './types';
+import {
+  ConfigArea,
+  configHasDeprecatedProps,
+  HomeAssistant,
+  LovelaceCardEditor,
+  LovelaceConfig,
+  updateDeprecatedConfig,
+  VehicleCardConfig,
+} from './types';
+import { fireEvent } from './types';
 import { registerCustomCard } from './utils/custom-card-register';
 
 @customElement(VEHICLE_INFO_CARD_NEW_EDITOR_NAME)
@@ -35,10 +44,14 @@ export class VehicleInfoCardEditor extends BaseEditor implements LovelaceCardEdi
     super.disconnectedCallback();
   }
   public setConfig(config: VehicleCardConfig): void {
-    if (!config) {
-      throw new Error('Invalid configuration');
+    if (configHasDeprecatedProps(config)) {
+      const updatedConfig = updateDeprecatedConfig(config);
+      console.log('%cVEHICLE-INFO-CARD-EDITOR:', 'color: #bada55;', ' Updated deprecated config:', updatedConfig);
+      fireEvent(this, 'config-changed', { config: updatedConfig });
+      return;
+    } else {
+      this._config = config;
     }
-    this._config = config;
     if (this._store != undefined) {
       this._store.config = config;
     } else {

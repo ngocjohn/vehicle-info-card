@@ -1,8 +1,8 @@
-import { ATTR_SECTION } from 'data';
 import { isEmpty } from 'es-toolkit/compat';
 import { html, CSSResultGroup, TemplateResult, css, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { Car } from 'model/car';
+import { DefaultButtonConfig } from 'types/card-config/button-card';
 import { _getCarEntity } from 'utils';
 import { isCardInEditPreview, isCardInPickerPreview } from 'utils/helpers-dom';
 import { getCarEntities } from 'utils/lovelace/car-entities';
@@ -19,6 +19,8 @@ import {
   updateDeprecatedConfig,
   VehicleCardConfig,
 } from './types';
+import './components/vic-button-group';
+
 @customElement(VEHICLE_INFO_CARD_NEW_NAME)
 export class VehicleInfoCard extends BaseElement implements LovelaceCard {
   constructor() {
@@ -38,6 +40,12 @@ export class VehicleInfoCard extends BaseElement implements LovelaceCard {
   @state() private _config!: VehicleCardConfig;
   @state() _carEntities: CarEntities = {};
   @state() private _loadedData: boolean = false;
+  @state() private _legacyConfig?: VehicleCardConfig;
+  @state() private _buttonOrder: string[] = [];
+  @state() private _buttonsData = new Map<string, DefaultButtonConfig>();
+
+  @state() _currentSwipeIndex?: number;
+  @state() public _activeCardIndex: null | number | string = null;
 
   public static async getConfigElement(): Promise<LovelaceCardEditor> {
     await import('./vehicle-info-card-editor');
@@ -75,9 +83,28 @@ export class VehicleInfoCard extends BaseElement implements LovelaceCard {
       throw new Error('Entity is required in the configuration');
     }
     const newConfig = JSON.parse(JSON.stringify(config));
+    this._legacyConfig = newConfig;
     this._config = {
       ...updateDeprecatedConfig(newConfig),
     };
+    const combinedButtons = {
+      ...(this._config?.default_buttons || {}),
+      ...(this._config?.custom_buttons || {}),
+    };
+    this._buttonsData = new Map(Object.entries(combinedButtons));
+    if (this._config.extra_configs?.button_grid?.button_order) {
+      this._buttonOrder = this._config.extra_configs.button_grid.button_order!;
+    } else if (!isEmpty(this._config.custom_buttons)) {
+      const defaultButtons = [...Object.keys(this._config?.default_buttons || {})].filter(
+        (key) => this._config?.default_buttons![key]?.hide_button !== true
+      );
+      this._buttonOrder = [
+        ...defaultButtons,
+        ...Object.keys(this._config.custom_buttons).filter(
+          (key) => this._config?.custom_buttons![key]?.hide_button !== true
+        ),
+      ];
+    }
   }
 
   protected async willUpdate(_changedProperties: PropertyValues): Promise<void> {
@@ -109,9 +136,9 @@ export class VehicleInfoCard extends BaseElement implements LovelaceCard {
     }
     this._createStore();
     return html`
-      <ha-card class="__background">
+      <ha-card>
         <header><h1>${this._config?.name || 'Vehicle Info Card'}</h1></header>
-        <main id="main-wrapper">${this._renderIndicator()}</main>
+        <main id="main-wrapper">${this._renderIndicator()} ${this._renderButtonGroup()}</main>
       </ha-card>
     `;
   }
@@ -120,31 +147,13 @@ export class VehicleInfoCard extends BaseElement implements LovelaceCard {
     return html` <vic-indicator-row .store=${this.store} .car=${this.car} .hass=${this._hass}></vic-indicator-row> `;
   }
 
-  private _renderMockData(): TemplateResult {
-    const windowData = this.car!._getAttrSectionItemConfig(ATTR_SECTION.WINDOW);
+  private _renderButtonGroup(): TemplateResult {
     return html`
-      <div>
-        <h2>Window Status (Mock Data)</h2>
-        <ul>
-          ${Object.values(windowData).map((item) => html`<li>${item.name}: ${item.display_state || 'N/A'}</li>`)}
-        </ul>
-      </div>
-    `;
-  }
-  private _renderMockIndicator(): TemplateResult {
-    const lockBrakeData = ['lockSensor', 'parkBrake'].map((key) => this.car!._getEntityConfigByKey(key as any));
-    return html`
-      <div>
-        <h2>Indicator Status (Mock Data)</h2>
-        <ul>
-          ${Object.values(lockBrakeData).map(
-            (item) => html`<li>
-              ${item.icon ? html`<ha-icon icon="${item.icon}"></ha-icon>` : ''} ${item.name}:
-              ${item.display_state || 'N/A'}
-            </li>`
-          )}
-        </ul>
-      </div>
+      <vic-button-group
+        ._hass=${this._hass}
+        ._buttonsDataMap=${this._buttonsData}
+        .store=${this.store}
+      ></vic-button-group>
     `;
   }
 
@@ -156,7 +165,7 @@ export class VehicleInfoCard extends BaseElement implements LovelaceCard {
   }
 
   public getCardSize(): number {
-    return 3;
+    return 1;
   }
 
   static get styles(): CSSResultGroup {
@@ -202,6 +211,48 @@ export class VehicleInfoCard extends BaseElement implements LovelaceCard {
           margin: 0;
           text-align: center;
           margin-bottom: var(--vic-gutter-gap);
+        }
+        .button-info-wrapper {
+          display: flex;
+          gap: var(--vic-gutter-gap);
+          /* justify-content: center; */
+          /* align-items: center; */
+          margin-top: var(--vic-gutter-gap);
+          width: 100%;
+          flex-wrap: wrap;
+        }
+        .button-info {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 8px;
+          border-radius: 8px;
+          background-color: var(--vic-icon-shape-color);
+          /* width: 80px; */
+          flex: 1 0 25%;
+        }
+        .button-info ha-icon {
+          width: var(--vic-icon-size);
+          height: var(--vic-icon-size);
+          border-radius: 50%;
+          /* padding: 8px; */
+          background-color: rgba(var(--rgb-primary-text-color), var(--vic-icon-bg-opacity));
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .state-info {
+          margin-top: 4px;
+          text-align: center;
+        }
+        .state-info span {
+          display: block;
+          font-size: 0.875rem;
+          color: var(--primary-text-color);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
       `,
     ];

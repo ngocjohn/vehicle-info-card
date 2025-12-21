@@ -18,8 +18,11 @@ import {
   NON_ATTR_ENTITY_KEYS,
 } from 'data/attributes-items';
 import { CarEntityKey } from 'data/car-device-entities';
+import { baseButtonItems, ButtonInfo, DEFAULT_CARD, DefaultButtonInfo } from 'data/default-button-items';
 import { HassEntity } from 'home-assistant-js-websocket';
 import { CarEntities, CarItemDisplay, HomeAssistant, LocalizeFunc } from 'types';
+import { getEntityStateValue } from 'utils/entity-helper';
+import { getMax, getMin } from 'utils/helpers';
 import { VehicleInfoCard } from 'vehicle-info-card';
 
 import * as ITEMS_FROM_CONST from '../const/card-item';
@@ -49,6 +52,10 @@ export class Car {
 
   get _carEntities(): CarEntities {
     return this._card._carEntities;
+  }
+
+  get _baseButtonItems() {
+    return baseButtonItems(this.translate);
   }
 
   get _displayManager(): StateDisplayManager {
@@ -85,7 +92,7 @@ export class Car {
   _getSubCardSectionItems(
     section: SUBCARD
   ): Record<SubSubSection, Record<SubCardItemKey, CarItemDisplay>> | Record<SubCardItemKey, CarItemDisplay> {
-    const sectionItems: SubCardItems = this._getSubCardItems();
+    const sectionItems: SubCardItems = getSubCardItems();
     switch (section) {
       case SUBCARD.TRIP:
       case SUBCARD.VEHICLE: {
@@ -117,7 +124,7 @@ export class Car {
     const entity = this._carEntities![key];
     let attrType = getAttrSectionType(key);
     if (!entity) {
-      console.log('%cCAR:', 'color: #bada55;', ' No entity found for key:', key);
+      // console.log('%cCAR:', 'color: #bada55;', ' No entity found for key:', key);
       attrType = attrType && attrType in ATTR_SECTION ? (attrType as ATTR_SECTION) : undefined;
       return this._getFallbackEntityConfig(key, attrType) as CarItemDisplay;
     }
@@ -247,7 +254,51 @@ export class Car {
     const closedState = ['2', '1', false, 'false'];
     return !Boolean(closedState.includes(state as string));
   };
-  _getSubCardItems(): SubCardItems {
-    return getSubCardItems();
+
+  _getDefaultButtonConfig(): DefaultButtonInfo {
+    const buttonConfig: DefaultButtonInfo = {} as DefaultButtonInfo;
+    for (const key of Object.values(DEFAULT_CARD)) {
+      buttonConfig[key] = this._getDefaultButtonByKey(key);
+    }
+    return buttonConfig;
+  }
+
+  _getDefaultButtonByKey(key: DEFAULT_CARD): ButtonInfo {
+    const item = this._baseButtonItems[key];
+    let secondary = '';
+    let notify = false;
+    const mainEntity = item.main_entity;
+
+    const getEntityId = (eId: string) => this._carEntities[eId]?.entity_id || '';
+    switch (key) {
+      case DEFAULT_CARD.TRIP:
+      case DEFAULT_CARD.ECO: {
+        secondary = getEntityStateValue(this.hass, getEntityId(mainEntity as string), true) || '';
+        break;
+      }
+      case DEFAULT_CARD.VEHICLE: {
+        const lockState = getEntityStateValue(this.hass, getEntityId(mainEntity as string)) || '4';
+        secondary = this._displayManager.lockSensor?.[lockState as string];
+        const warnings = this._getSubCardSectionItems(SUBCARD.VEHICLE)['warnings'];
+        const warningItems = Object.values(warnings)
+          .map((entry) => entry as CarItemDisplay)
+          .filter((entry) => entry.key !== 'tirePressureWarning' && !['off', '0'].includes(entry.state as string));
+        notify = warningItems.length > 0;
+        break;
+      }
+      case DEFAULT_CARD.TYRE: {
+        const tireItems = this._getSubCardSectionItems(SUBCARD.TYRE);
+        const pressures = Array.from(Object.values(tireItems));
+        const maxPressureItem = getMax(pressures, 'state');
+        const minPressureItem = getMin(pressures, 'state');
+        secondary = `${minPressureItem.state} - ${maxPressureItem.display_state}`;
+        break;
+      }
+    }
+    return {
+      ...item,
+      secondary,
+      notify,
+    } as ButtonInfo;
   }
 }

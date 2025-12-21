@@ -31,6 +31,12 @@ export interface ButtonEntityBehavior {
   double_tap_action?: ActionConfig;
 }
 
+export interface ButtonIconBehavior {
+  icon_tap_action?: ActionConfig;
+  icon_hold_action?: ActionConfig;
+  icon_double_tap_action?: ActionConfig;
+}
+
 export interface ButtonNotifyBadgeConfig {
   notify?: string;
   notify_color?: string;
@@ -66,11 +72,11 @@ export interface BaseButtonCardItem {
 export type BaseButtonCardItemConfig = BaseButtonCardItem &
   ButtonShowConfig &
   ButtonEntityBehavior &
+  ButtonIconBehavior &
   ButtonNotifyBadgeConfig &
   ButtonTemplatesConfig;
 
 export interface DefaultButtonConfig extends BaseButtonCardItemConfig {
-  card_type?: CARD_TYPE;
   use_custom_button?: boolean;
   use_custom_cards?: boolean;
 }
@@ -98,6 +104,7 @@ export const BUTTON_CARD_TEMPLATE_KEYS = [
 ] as const;
 
 export type BUTTON_CARD_TEMPLATE_KEY = (typeof BUTTON_CARD_TEMPLATE_KEYS)[number];
+export type ButtonCardTemplateKey = (typeof BUTTON_CARD_TEMPLATE_KEYS)[number];
 
 export const BUTTON_SHOW_CONFIG_KEYS = [
   'show_primary',

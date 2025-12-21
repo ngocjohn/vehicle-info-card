@@ -20,3 +20,14 @@ export interface ServicesConfig {
   enabled?: boolean;
   items?: ServicesItem[];
 }
+
+export const convertServicesConfig = (oldConfig: Services): ServicesConfig['items'] => {
+  let items: ServicesItem[] = [];
+  for (const key of ServiceKeys) {
+    if (oldConfig[key]) {
+      items.push(key);
+    }
+  }
+  items = [...new Set(items)].filter((item) => ServiceKeys.includes(item));
+  return items;
+};

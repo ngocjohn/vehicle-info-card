@@ -2,7 +2,7 @@ import { css, CSSResultGroup, html, LitElement, TemplateResult } from 'lit';
 import { property } from 'lit/decorators.js';
 import { Car } from 'model/car';
 import { Store } from 'model/store';
-import { fireEvent, HomeAssistant, LocalizeFunc, SECTION, VehicleCardConfig } from 'types';
+import { configHasDeprecatedProps, fireEvent, HomeAssistant, LocalizeFunc, SECTION, VehicleCardConfig } from 'types';
 
 export function computeDarkMode(hass?: HomeAssistant): boolean {
   if (!hass) return false;
@@ -44,10 +44,6 @@ export class BaseElement extends LitElement {
     return this._hass;
   }
 
-  get config(): VehicleCardConfig {
-    return this.store.config;
-  }
-
   public _showWarning(warning: string): TemplateResult {
     return html` <hui-warning>${warning}</hui-warning> `;
   }
@@ -56,6 +52,9 @@ export class BaseElement extends LitElement {
     fireEvent(this, 'hass-more-info', { entityId });
   }
 
+  private _validateConfig(config: VehicleCardConfig) {
+    return configHasDeprecatedProps(config);
+  }
   static get styles(): CSSResultGroup {
     return css`
       :host {

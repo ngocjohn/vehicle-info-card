@@ -1,5 +1,5 @@
 import { hasTemplate } from 'types';
-import type { DefaultButtonConfig } from 'types/card-config';
+import type { BaseButtonCardItemConfig, DefaultButtonConfig } from 'types/card-config';
 import { LovelaceCardConfig } from 'types/ha-frontend/lovelace/lovelace';
 import { BaseButtonConfig } from 'types/legacy-card-config/legacy-button-config';
 
@@ -7,17 +7,17 @@ type LegacyButtonCardConfig = {
   button?: BaseButtonConfig;
   cards?: LovelaceCardConfig[];
   use_custom_cards?: boolean;
+  use_custom_button?: boolean;
 };
 
-export const convertButtonToNewFormat = (legacyConfig: LegacyButtonCardConfig): DefaultButtonConfig => {
-  const newConfig: Partial<DefaultButtonConfig> = {
+export const convertButtonToNewFormat = (legacyConfig: LegacyButtonCardConfig): BaseButtonCardItemConfig => {
+  const newConfig: Partial<BaseButtonCardItemConfig> = {
     show_icon: true,
     show_primary: true,
     show_secondary: true,
   };
   if (legacyConfig.button && typeof legacyConfig.button === 'object') {
     const button = { ...legacyConfig.button };
-    newConfig.use_custom_button = button.enabled ?? false;
     newConfig.hide_button = button.hide ?? false;
     newConfig.button_type = button.button_type ?? 'default';
     if (button.primary) {
@@ -72,9 +72,6 @@ export const convertButtonToNewFormat = (legacyConfig: LegacyButtonCardConfig): 
   if (legacyConfig.cards && Array.isArray(legacyConfig.cards)) {
     newConfig.cards = legacyConfig.cards;
   }
-  if (typeof legacyConfig.use_custom_cards === 'boolean') {
-    newConfig.use_custom_cards = legacyConfig.use_custom_cards;
-  }
 
   // Remove undefined values or empty objects
   Object.keys(newConfig).forEach((key) => {
@@ -83,5 +80,16 @@ export const convertButtonToNewFormat = (legacyConfig: LegacyButtonCardConfig): 
       delete (newConfig as any)[key];
     }
   });
-  return newConfig as DefaultButtonConfig;
+  return newConfig;
+};
+
+export const migrateDefaultButtonConfig = (oldCondig: LegacyButtonCardConfig): DefaultButtonConfig => {
+  const updatedConfig = convertButtonToNewFormat(oldCondig);
+  if (oldCondig.use_custom_button && typeof oldCondig.use_custom_button === 'boolean') {
+    (updatedConfig as DefaultButtonConfig).use_custom_button = oldCondig.use_custom_button;
+  }
+  if (oldCondig.use_custom_cards && typeof oldCondig.use_custom_cards === 'boolean') {
+    (updatedConfig as DefaultButtonConfig).use_custom_cards = oldCondig.use_custom_cards;
+  }
+  return updatedConfig as DefaultButtonConfig;
 };
