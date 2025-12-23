@@ -2,7 +2,7 @@ import { css, CSSResultGroup, html, LitElement, TemplateResult } from 'lit';
 import { property } from 'lit/decorators.js';
 import { Car } from 'model/car';
 import { Store } from 'model/store';
-import { configHasDeprecatedProps, fireEvent, HomeAssistant, LocalizeFunc, SECTION, VehicleCardConfig } from 'types';
+import { configHasDeprecatedProps, fireEvent, HomeAssistant, SECTION, VehicleCardConfig } from 'types';
 
 export function computeDarkMode(hass?: HomeAssistant): boolean {
   if (!hass) return false;
@@ -22,18 +22,6 @@ export class BaseElement extends LitElement {
     if (section) {
       this.section = section;
     }
-  }
-
-  public connectedCallback() {
-    super.connectedCallback();
-
-    // if (this.hasUpdated && this.store !== undefined) {
-    //   console.log('%cBASE-ELEMENT:', 'color: #bada55;', this, this.hasUpdated);
-    // }
-  }
-
-  get _translate(): LocalizeFunc {
-    return this.store.translate;
   }
 
   set hass(hass: HomeAssistant) {
@@ -64,11 +52,24 @@ export class BaseElement extends LitElement {
         --vic-icon-border-radius: 18px;
         --vic-icon-shape-color: rgba(var(--rgb-primary-text-color), 0.05);
         --vic-icon-bg-opacity: 0.2;
+        --vsc-unit: 40px;
       }
       *,
       *:before,
       *:after {
         box-sizing: border-box;
+      }
+      *:focus {
+        outline: none;
+      }
+      ha-card {
+        position: relative;
+        overflow: hidden;
+        display: block;
+        width: auto;
+        height: auto;
+        padding: var(--vic-card-padding);
+        background: var(--card-background-color, var(--ha-card-background, white));
       }
     `;
   }

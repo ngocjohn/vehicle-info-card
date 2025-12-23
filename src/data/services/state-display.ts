@@ -1,11 +1,12 @@
+import { LocalizeFunc } from 'types';
+
 import {
   AttributeItemKey,
   CardAttributesSection,
   ATTR_SECTION_ITEMS,
   getAttrSectionType,
   CARD_ATTRIBUTES_SECTION,
-} from 'data/attributes-items';
-import { LocalizeFunc } from 'types';
+} from '../attributes-items';
 
 type StateDisplay = {
   [key: string]: string;
@@ -99,7 +100,7 @@ export const PARK_BRAKE_STATES: StateDisplay = {
 };
 const STATE_DISPLAY_ITEMS: Record<string, StateDisplay> = {
   lockSensor: LOCK_STATES,
-  doorStatusOverall: DOOR_STATES,
+  doorStatusOverall: DOOR_BOOLEAN_STATES,
   selectedProgram: CHARGE_PROGRAMS,
   starterBattery: STARTER_BATTERY_STATES,
   ignitionState: IGNITION_STATES,

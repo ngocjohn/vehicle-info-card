@@ -45,6 +45,7 @@ const ICON: Record<CardItemKey | string, string> = {
   soc: 'mdi:ev-station',
 };
 
+export type ICardItems = Record<string, CardItem[] | Record<string, Record<string, CardItem[]>>>;
 const createItem = (localize: LocalizeFunc, section: CardSectionType | string, key: CardItemKey): CardItem => {
   if (key === 'sunroofstatus') {
     section = 'doorAttributes';
@@ -74,7 +75,7 @@ export const computeCardItems = memoizeOne((localize: LocalizeFunc) => {
     ...attrinutesItems,
   };
 
-  const cardItems: Record<string, CardItem[] | Record<string, Record<string, CardItem[]>>> = {};
+  const cardItems: ICardItems = {};
 
   forEach(sections, (sectionValue, sectionKey) => {
     if (Array.isArray(sectionValue)) {

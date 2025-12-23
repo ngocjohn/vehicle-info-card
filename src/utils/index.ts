@@ -8,3 +8,4 @@ export * from './load_resource';
 export * from './load-extra-map';
 export * from './apply-theme';
 export * as Create from './create';
+export * from './mdi-icons';

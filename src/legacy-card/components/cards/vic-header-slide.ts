@@ -5,6 +5,7 @@ import Swiper from 'swiper';
 import { Autoplay, Pagination, EffectFade, EffectCoverflow } from 'swiper/modules';
 import swipercss from 'swiper/swiper-bundle.css';
 import { SwiperOptions } from 'swiper/types';
+import { ImageConfig } from 'types/card-config';
 
 import { VehicleCardConfig } from '../../../types';
 
@@ -12,7 +13,7 @@ import { VehicleCardConfig } from '../../../types';
 export class HeaderSlide extends LitElement {
   @state() private config!: VehicleCardConfig;
   @state() private editMode!: boolean;
-  @state() private images: { url: string; title: string }[] = [];
+  @state() private images: ImageConfig[] = [];
 
   private swiper: Swiper | null = null;
 
@@ -23,7 +24,9 @@ export class HeaderSlide extends LitElement {
 
   private _copyImageFromConfig(): void {
     if (!this.config || !this.config.images) return;
-    this.images = this.config.images;
+    if (!Array.isArray(this.config.images)) return;
+    this.images = [...this.config.images];
+
     this.updateComplete.then(() => {
       this.initSwiper();
     });

@@ -69,9 +69,29 @@ export function getAttributeSectionItems(): Record<CardAttributesSection, readon
   return ATTR_SECTION_ITEMS;
 }
 
-export const NON_ATTR_ENTITY_KEYS = ['chargeflapdcstatus', 'sunroofstatus'];
+export const NON_ATTR_ENTITY_KEYS = ['chargeflapdcstatus', 'sunroofstatus'] as const;
+export type NonAttrEntityKey = (typeof NON_ATTR_ENTITY_KEYS)[number];
 
 export const enum ENTITY_NOT_ATTR {
   CHARGE_FLAP_DC_STATUS = 'chargeflapdcstatus',
   SUNROOF_STATUS = 'sunroofstatus',
+}
+
+export const ATTR_MAIN_ENTITY: Record<CardAttributesSection | NonAttrEntityKey | string, string> = {
+  chargeflapdcstatus: 'chargeFlapDCStatus',
+  sunroofstatus: 'sunroofStatus',
+  lockAttributes: 'lockSensor',
+  doorAttributes: 'lockSensor',
+  windowAttributes: 'windowClosed',
+};
+
+export function getMainAttributeEntity(key: AttributeItemKey | NonAttrEntityKey | string): string | undefined {
+  if (key in ATTR_MAIN_ENTITY) {
+    return ATTR_MAIN_ENTITY[key];
+  } else if (getAttrSectionType(key) !== undefined) {
+    const section = getAttrSectionType(key) as CardAttributesSection;
+    return ATTR_MAIN_ENTITY[section];
+  } else {
+    return undefined;
+  }
 }

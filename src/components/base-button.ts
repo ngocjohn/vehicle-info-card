@@ -1,3 +1,4 @@
+import { ButtonInfo } from 'data/default-button-items';
 import pick from 'es-toolkit/compat/pick';
 import { UnsubscribeFunc } from 'home-assistant-js-websocket';
 import { HassEntity } from 'home-assistant-js-websocket';
@@ -14,21 +15,25 @@ import {
   BUTTON_SHOW_CONFIG_KEYS,
   ButtonCardTemplateKey,
   ButtonShowConfig,
+  DEFAULT_CARD_KEYS,
+  DefaultButtonConfig,
+  DefaultCardKey,
 } from '../types/card-config/button-card';
 import { RenderTemplateResult, hasTemplate, subscribeRenderTemplate } from '../types/ha-frontend';
 import { computeRgbColor } from '../types/ha-frontend/common/color/compute-color';
 import { stateColorCss } from '../types/ha-frontend/common/entity/state_color';
-import { hsv2rgb, rgb2hsv, rgb2hex } from '../utils/colors';
-import { BaseElement } from './base-element';
 import './shared/button/vic-btn-state-info';
 import './shared/button/vic-btn-shape-icon';
+import './shared/vic-state-display';
+import { hsv2rgb, rgb2hsv, rgb2hex } from '../utils/colors';
+import { BaseElement } from './base-element';
 
 const cameraUrlWithWidthHeight = (base_url: string, width: number, height: number) =>
   `${base_url}&width=${width}&height=${height}`;
 
 export class BaseButton extends BaseElement {
-  @property({ attribute: false }) protected _btnConfig!: BaseButtonCardItemConfig;
-
+  @property({ attribute: false }) protected _btnConfig!: DefaultButtonConfig;
+  @property({ attribute: false }) protected buttonKey!: DefaultCardKey | string;
   @state() protected _templateResults: Partial<Record<ButtonCardTemplateKey, RenderTemplateResult | undefined>> = {};
   @state() protected _unsubRenderTemplates: Map<ButtonCardTemplateKey, Promise<UnsubscribeFunc>> = new Map();
 
@@ -108,6 +113,14 @@ export class BaseButton extends BaseElement {
     } finally {
       this._unsubRenderTemplates.delete(key);
     }
+  }
+
+  protected get _isDefaultButton(): boolean {
+    return DEFAULT_CARD_KEYS.includes(this.buttonKey as DefaultCardKey);
+  }
+
+  protected get _usingDefaultButton(): boolean {
+    return this._isDefaultButton && !this._btnConfig.use_custom_button;
   }
 
   protected get _stateObj(): HassEntity | undefined {
@@ -241,6 +254,10 @@ export class BaseButton extends BaseElement {
     return fallBackColor;
   });
 
+  protected _getValueFromDefaultButton(type: keyof ButtonInfo) {
+    return this.car._getDefaultButtonInfo(this.buttonKey as DefaultCardKey, type);
+  }
+
   protected _renderIcon(): TemplateResult {
     const icon = this._getTemplateValue('icon_template') ?? this._btnConfig.icon;
     const stateObj = this._stateObj as HassEntity | undefined;
@@ -316,8 +333,12 @@ export class BaseButton extends BaseElement {
     const showConfig = this._btnShowConfig;
 
     const multiline_secondary = showConfig.secondary_multiline ?? false;
-    const primary = showConfig.show_primary !== false ? this._getPrimaryInfo() : undefined;
-    const secondary = showConfig.show_secondary !== false ? this._computeSecondaryInfo() : undefined;
+    let primary = showConfig.show_primary !== false ? this._getPrimaryInfo() : undefined;
+    let secondary = showConfig.show_secondary !== false ? this._computeSecondaryInfo() : undefined;
+    if (this._usingDefaultButton) {
+      primary = this._getValueFromDefaultButton('name')! as string;
+      secondary = html`${this._getValueFromDefaultButton('secondary')! as string}`;
+    }
 
     return html`
       <vic-btn-state-info

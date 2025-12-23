@@ -24,7 +24,7 @@ export default function setupTranslation(selectedLang?: string) {
       const translatedMessage = new IntlMessageFormat(translated, lang);
       return translatedMessage.format<string>(argObject) as string;
     } catch (e) {
-      console.error(`Error formatting message for key "${key}" with lang "${lang}":`, e);
+      // console.error(`Error formatting message for key "${key}" with lang "${lang}":`, e);
       return translated;
     }
   };

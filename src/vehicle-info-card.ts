@@ -1,13 +1,16 @@
+import { DEFAULT_ITEMS } from 'data/default-button-items';
 import { isEmpty } from 'es-toolkit/compat';
-import { html, CSSResultGroup, TemplateResult, css, PropertyValues } from 'lit';
+import { html, CSSResultGroup, TemplateResult, css, PropertyValues, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { Car } from 'model/car';
-import { DefaultButtonConfig } from 'types/card-config/button-card';
-import { _getCarEntity } from 'utils';
+import { DEFAULT_CARD_KEYS, IButtonMap } from 'types/card-config/button-card';
+import { SECTION_KEYS } from 'types/card-config/layout-config';
+import { _getCarEntity, ICON } from 'utils';
 import { isCardInEditPreview, isCardInPickerPreview } from 'utils/helpers-dom';
 import { getCarEntities } from 'utils/lovelace/car-entities';
 
 import { BaseElement, computeDarkMode } from './components';
+import './components/vic-button-group';
 import { VEHICLE_INFO_CARD_NEW_EDITOR_NAME, VEHICLE_INFO_CARD_NEW_NAME } from './const/const';
 import { imagesVars } from './css/shared-styles';
 import { Store } from './model/store';
@@ -16,10 +19,10 @@ import {
   HomeAssistant,
   LovelaceCard,
   LovelaceCardEditor,
+  SECTION,
   updateDeprecatedConfig,
   VehicleCardConfig,
 } from './types';
-import './components/vic-button-group';
 
 @customElement(VEHICLE_INFO_CARD_NEW_NAME)
 export class VehicleInfoCard extends BaseElement implements LovelaceCard {
@@ -33,19 +36,21 @@ export class VehicleInfoCard extends BaseElement implements LovelaceCard {
   }
   disconnectedCallback(): void {
     super.disconnectedCallback();
-    window.VicCard = undefined;
   }
 
   @property({ attribute: false }) public _hass!: HomeAssistant;
-  @state() private _config!: VehicleCardConfig;
+  @property({ attribute: false }) public _config!: VehicleCardConfig;
   @state() _carEntities: CarEntities = {};
   @state() private _loadedData: boolean = false;
   @state() private _legacyConfig?: VehicleCardConfig;
-  @state() private _buttonOrder: string[] = [];
-  @state() private _buttonsData = new Map<string, DefaultButtonConfig>();
+
+  @state() _buttonOrder: string[] = [];
+  @state() _buttonsData: IButtonMap = new Map();
+
+  @state() public _activeCardIndex: null | number | string = null;
 
   @state() _currentSwipeIndex?: number;
-  @state() public _activeCardIndex: null | number | string = null;
+  @state() _hasAnimated: boolean = false;
 
   public static async getConfigElement(): Promise<LovelaceCardEditor> {
     await import('./vehicle-info-card-editor');
@@ -68,7 +73,7 @@ export class VehicleInfoCard extends BaseElement implements LovelaceCard {
     return this._hass;
   }
 
-  get isCardInPreview(): boolean {
+  get isEditorPreview(): boolean {
     return isCardInEditPreview(this);
   }
   get isInCardPicker(): boolean {
@@ -87,24 +92,17 @@ export class VehicleInfoCard extends BaseElement implements LovelaceCard {
     this._config = {
       ...updateDeprecatedConfig(newConfig),
     };
-    const combinedButtons = {
-      ...(this._config?.default_buttons || {}),
-      ...(this._config?.custom_buttons || {}),
-    };
-    this._buttonsData = new Map(Object.entries(combinedButtons));
-    if (this._config.extra_configs?.button_grid?.button_order) {
-      this._buttonOrder = this._config.extra_configs.button_grid.button_order!;
-    } else if (!isEmpty(this._config.custom_buttons)) {
-      const defaultButtons = [...Object.keys(this._config?.default_buttons || {})].filter(
-        (key) => this._config?.default_buttons![key]?.hide_button !== true
-      );
-      this._buttonOrder = [
-        ...defaultButtons,
-        ...Object.keys(this._config.custom_buttons).filter(
-          (key) => this._config?.custom_buttons![key]?.hide_button !== true
-        ),
-      ];
-    }
+
+    this._buttonsData = new Map(
+      Object.entries({
+        ...(this._config?.default_buttons || {}),
+        ...(this._config?.custom_buttons || {}),
+      })
+    );
+
+    this._updateButtonDataMap();
+    this._buttonOrder = this._config!.extra_configs!.button_grid!.button_order!;
+    console.log('%cVEHICLE-INFO-CARD:', 'color: #bada55;', 'button-order:', this._buttonOrder);
   }
 
   protected async willUpdate(_changedProperties: PropertyValues): Promise<void> {
@@ -130,42 +128,172 @@ export class VehicleInfoCard extends BaseElement implements LovelaceCard {
     }
   }
 
-  protected render(): TemplateResult | void {
-    if (!this._hass || !this._config || !this._loadedData) {
+  protected render(): TemplateResult {
+    if (!this._config || !this._hass || !this._loadedData) {
       return html``;
     }
     this._createStore();
+    const _config = this._config;
+    const isEditorPreview = this.isEditorPreview;
+    const notMainCard = this._activeCardIndex !== null;
+    const headerHidden = Boolean(_config.extra_configs?.hide_card_name || isEmpty(_config?.name) || notMainCard);
+
     return html`
-      <ha-card>
-        <header><h1>${this._config?.name || 'Vehicle Info Card'}</h1></header>
-        <main id="main-wrapper">${this._renderIndicator()} ${this._renderButtonGroup()}</main>
+      <ha-card ?notMainCard=${notMainCard} ?preview=${isEditorPreview} .raised=${isEditorPreview}>
+        ${!headerHidden ? html`<header><h1>${this._config?.name}</h1></header>` : nothing}
+        ${!notMainCard ? this._renderMainCard() : this._renderSelectedCard()}
       </ha-card>
     `;
   }
 
+  private _renderMainCard(): TemplateResult {
+    const sectionOrder = this._config.extra_configs?.section_order || SECTION_KEYS;
+    return html`<main id="main-wrapper">
+      ${sectionOrder.map((sectionKey: string) => {
+        switch (sectionKey) {
+          case SECTION.HEADER_INFO:
+            return this._renderIndicator();
+          case SECTION.IMAGES:
+            return this._renderImagesSection();
+          case SECTION.MINI_MAP:
+            return this._renderMiniMapSection();
+          case SECTION.BUTTONS:
+            return this._renderButtonGroup();
+          default:
+            return nothing;
+        }
+      })}
+    </main>`;
+  }
+
+  private _renderSelectedCard(): TemplateResult {
+    if (this._activeCardIndex === null) {
+      return html``;
+    }
+    const activeCardKey = this._activeCardIndex.toString();
+    // console.log('%cVEHICLE-INFO-CARD:', 'color: #bada55;', ' Rendering selected card for key:', activeCardKey);
+
+    const renderButton = (label: string, icon: string, action: () => void): TemplateResult => {
+      return html`
+        <ha-icon-button
+          class="click-shrink headder-btn"
+          .label=${label}
+          .path=${icon}
+          @click=${action}
+        ></ha-icon-button>
+      `;
+    };
+    const cardHeaderBox = html`
+      <div class="added-card-header">
+        ${renderButton('Close', ICON.CLOSE, () => (this._activeCardIndex = null))}
+        <div class="card-toggle">
+          ${renderButton('Previous', ICON.CHEVRON_LEFT, () => this._toggleCard('prev'))}
+          ${renderButton('Next', ICON.CHEVRON_RIGHT, () => this._toggleCard('next'))}
+        </div>
+      </div>
+    `;
+    return html`
+      <main id="cards-wrapper">
+        ${cardHeaderBox}
+        <section class="card-element">
+          <div class="added-card">${activeCardKey}</div>
+        </section>
+      </main>
+    `;
+  }
+
   private _renderIndicator(): TemplateResult {
-    return html` <vic-indicator-row .store=${this.store} .car=${this.car} .hass=${this._hass}></vic-indicator-row> `;
+    return html`
+      <div id=${SECTION.HEADER_INFO}>
+        <vic-indicator-row .store=${this.store} .car=${this.car} .hass=${this._hass}></vic-indicator-row>
+      </div>
+    `;
+  }
+
+  private _renderImagesSection(): TemplateResult {
+    return html` <div id=${SECTION.IMAGES}>this is images section</div> `;
+  }
+
+  private _renderMiniMapSection(): TemplateResult {
+    return html` <div id=${SECTION.MINI_MAP}>this is mini map section</div> `;
   }
 
   private _renderButtonGroup(): TemplateResult {
     return html`
-      <vic-button-group
-        ._hass=${this._hass}
-        ._buttonsDataMap=${this._buttonsData}
-        .store=${this.store}
-      ></vic-button-group>
+      <div id=${SECTION.BUTTONS}>
+        <vic-button-group
+          ._hass=${this._hass}
+          .store=${this.store}
+          .car=${this.car}
+          ._buttonsDataMap=${this._buttonsData}
+          ._cardCurrentSwipeIndex=${this._currentSwipeIndex}
+        ></vic-button-group>
+      </div>
     `;
   }
 
   private _createStore() {
     if (!this.store) {
-      this.store = new Store(this, this._config, this.hass);
+      this.store = new Store(this, this._config, this._hass);
       this.car = new Car(this.store);
     }
   }
 
+  private _updateButtonDataMap(): void {
+    DEFAULT_CARD_KEYS.forEach((key) => {
+      if (!this._buttonsData.has(key)) {
+        const default_button_config = DEFAULT_ITEMS[key];
+        this._buttonsData.set(key, { default_button_config });
+      }
+    });
+  }
+
+  private _toggleCard(direction: 'next' | 'prev'): void {
+    setTimeout(() => {
+      if (this._activeCardIndex === null) {
+        return;
+      }
+      const currentCartType = this._activeCardIndex.toString();
+      const visibleButtons = this.store._visibleButtons;
+      const btnKeys = Object.keys(visibleButtons);
+      const currentIndex = btnKeys.indexOf(currentCartType);
+      const totalButtons = btnKeys.length;
+
+      const isNotActionType = (btnKey: string): boolean => visibleButtons[btnKey]?.button_type !== 'action';
+
+      let newIndex = currentIndex;
+      if (direction === 'next') {
+        do {
+          newIndex = newIndex === totalButtons - 1 ? 0 : newIndex + 1;
+        } while (!isNotActionType(btnKeys[newIndex]) && newIndex !== currentIndex);
+        console.log(
+          '%cVEHICLE-INFO-CARD:',
+          'color: #bada55;',
+          ' Next card index:',
+          newIndex,
+          'key:',
+          btnKeys[newIndex]
+        );
+      } else if (direction === 'prev') {
+        do {
+          newIndex = newIndex === 0 ? totalButtons - 1 : newIndex - 1;
+        } while (!isNotActionType(btnKeys[newIndex]) && newIndex !== currentIndex);
+        console.log(
+          '%cVEHICLE-INFO-CARD:',
+          'color: #bada55;',
+          ' Previous card index:',
+          newIndex,
+          'key:',
+          btnKeys[newIndex]
+        );
+      }
+      this._activeCardIndex = btnKeys[newIndex];
+    }, 50);
+    // this.requestUpdate();
+  }
+
   public getCardSize(): number {
-    return 1;
+    return 3;
   }
 
   static get styles(): CSSResultGroup {
@@ -177,11 +305,10 @@ export class VehicleInfoCard extends BaseElement implements LovelaceCard {
           position: relative;
           overflow: hidden;
           display: block;
-          width: 100%;
-          height: 100%;
-          max-width: 500px !important;
+          width: auto;
+          height: auto;
           padding: var(--vic-card-padding);
-          background-color: var(--ha-card-background, var(--card-background-color));
+          background: var(--card-background-color, var(--ha-card-background, white));
         }
         ha-card.__background::before {
           content: '';
@@ -212,47 +339,70 @@ export class VehicleInfoCard extends BaseElement implements LovelaceCard {
           text-align: center;
           margin-bottom: var(--vic-gutter-gap);
         }
-        .button-info-wrapper {
-          display: flex;
-          gap: var(--vic-gutter-gap);
-          /* justify-content: center; */
-          /* align-items: center; */
-          margin-top: var(--vic-gutter-gap);
-          width: 100%;
-          flex-wrap: wrap;
+        #cards-wrapper {
+          animation: fadeIn 0.5s ease-in-out;
+          position: relative;
         }
-        .button-info {
+
+        #main-wrapper {
+          animation: fadeIn 0.3s ease;
+          position: relative;
+        }
+
+        #main-wrapper * {
+          transition: all 0.3s ease-in-out;
+        }
+
+        .card-element {
+          transition: all 0.5s ease;
+          position: relative;
+        }
+        .added-card-header {
           display: flex;
-          flex-direction: column;
+          justify-content: space-between;
           align-items: center;
-          justify-content: center;
-          padding: 8px;
-          border-radius: 8px;
-          background-color: var(--vic-icon-shape-color);
-          /* width: 80px; */
-          flex: 1 0 25%;
+          --mdc-icon-button-size: var(--vsc-unit);
+          --mdc-icon-size: calc(var(--vsc-unit) * 0.6);
         }
-        .button-info ha-icon {
-          width: var(--vic-icon-size);
-          height: var(--vic-icon-size);
-          border-radius: 50%;
-          /* padding: 8px; */
-          background-color: rgba(var(--rgb-primary-text-color), var(--vic-icon-bg-opacity));
+
+        .added-card-header ha-icon {
           display: flex;
-          align-items: center;
-          justify-content: center;
+          width: calc(var(--vsc-unit) * 0.6);
+          height: calc(var(--vsc-unit) * 0.6);
         }
-        .state-info {
-          margin-top: 4px;
-          text-align: center;
+
+        .added-card-header .headder-btn {
+          color: var(--secondary-text-color);
+          opacity: 0.5;
+          transition: opacity 0.3s;
         }
-        .state-info span {
-          display: block;
-          font-size: 0.875rem;
-          color: var(--primary-text-color);
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
+
+        .added-card-header .headder-btn:hover {
+          opacity: 1;
+        }
+
+        ha-icon-button.headder-btn,
+        .header-btn .mdc-icon-button {
+          width: var(--vsc-unit) !important;
+          height: var(--vsc-unit) !important;
+        }
+
+        ha-icon-button ha-icon {
+          display: flex;
+        }
+
+        .added-card-header .card-toggle {
+          display: flex;
+          gap: 1rem;
+        }
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+
+          to {
+            opacity: 1;
+          }
         }
       `,
     ];

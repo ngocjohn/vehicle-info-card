@@ -1,5 +1,5 @@
-import { css, CSSResultGroup, html, nothing, PropertyValues, TemplateResult, unsafeCSS } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { css, CSSResultGroup, html, nothing, TemplateResult, unsafeCSS } from 'lit';
+import { customElement, state, queryAll } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
 import './shared/button/vic-button-card-item';
@@ -8,47 +8,62 @@ import Swiper from 'swiper';
 import { Pagination } from 'swiper/modules';
 import swipercss from 'swiper/swiper-bundle.css';
 import { SECTION } from 'types';
-import { BaseButtonCardItemConfig } from 'types/card-config/button-card';
+import { BaseButtonCardItemConfig, IButtonMap } from 'types/card-config/button-card';
 
 import { BaseElement } from './base-element';
+import { VicButtonCardItem } from './shared/button/vic-button-card-item';
 
 @customElement('vic-button-group')
 export class VicButtonGroup extends BaseElement {
   constructor() {
     super(SECTION.BUTTONS);
-  }
-
-  connectedCallback(): void {
-    super.connectedCallback();
     window.VicButtonGroup = this;
   }
 
-  disconnectedCallback(): void {
-    super.disconnectedCallback();
-    window.VicButtonGroup = undefined;
-  }
-
-  @state() private buttons: BaseButtonCardItemConfig[] = [];
+  @state() private _buttonsMap: IButtonMap = new Map();
   @state() private swiper?: Swiper;
   @state() private useSwiper!: boolean;
 
-  @state() private _cardCurrentSwipeIndex?: number;
   @state() activeSlideIndex: number = 0;
 
-  protected willUpdate(_changedProperties: PropertyValues): void {
-    if (_changedProperties.has('store') && this.store) {
-      this.useSwiper = this.store.gridConfig.swipe || false;
-      this.buttons = this.store.getButtonItemsArray();
-    }
-  }
+  @queryAll('vic-button-card-item') _buttonItems!: NodeListOf<VicButtonCardItem>;
 
-  protected firstUpdated(_changedProperties: PropertyValues): void {
-    super.firstUpdated(_changedProperties);
+  protected async firstUpdated(): Promise<void> {
     if (this.useSwiper) {
       this._initSwiper();
     }
+    this._setUpButtonAnimation();
   }
 
+  private _setUpButtonAnimation(): void {
+    if (this.store.card._hasAnimated || this.store.card.isEditorPreview || !this.shadowRoot) return;
+    this.store.card._hasAnimated = true;
+
+    const runAnimation = () => {
+      const buttons = this.shadowRoot?.querySelectorAll('vic-button-card-item');
+      if (!buttons || buttons.length === 0) return;
+
+      buttons.forEach((btn: VicButtonCardItem) => {
+        requestAnimationFrame(() => {
+          btn._zoomInEffect();
+        });
+      });
+      observer.disconnect();
+    };
+
+    const observer = new MutationObserver(() => {
+      const buttons = this.shadowRoot?.querySelectorAll('vic-button-card-item') as NodeListOf<HTMLElement>;
+
+      if (buttons && buttons.length > 0) {
+        requestAnimationFrame(() => runAnimation());
+      }
+    });
+
+    observer.observe(this.shadowRoot, { childList: true, subtree: false });
+
+    // Fallback in case MutationObserver doesn't trigger
+    requestAnimationFrame(() => runAnimation());
+  }
   private _initSwiper(): void {
     if (!this.useSwiper) return;
     const swiperCon = this.shadowRoot?.querySelector('.swiper-container');
@@ -74,20 +89,27 @@ export class VicButtonGroup extends BaseElement {
     });
     if (
       this.swiper &&
-      this._cardCurrentSwipeIndex !== undefined &&
-      this._cardCurrentSwipeIndex !== this.activeSlideIndex
+      this.store.card._currentSwipeIndex !== undefined &&
+      this.store.card._currentSwipeIndex !== this.activeSlideIndex
     ) {
-      this.swiper.slideTo(this._cardCurrentSwipeIndex, 0, false);
+      console.log(
+        '%cVIC-BUTTON-GROUP:',
+        'color: #bada55;',
+        ' Setting initial swipe index to',
+        this.store.card._currentSwipeIndex
+      );
+
+      this.swiper.slideTo(this.store.card._currentSwipeIndex, 0, false);
     }
   }
   protected render(): TemplateResult {
-    if (!this._hass || !this.store) {
-      return html``;
-    }
-    const buttons = this.buttons;
+    this.useSwiper = this.store.gridConfig.swipe || false;
+    this._buttonsMap = new Map(Object.entries(this.store._visibleButtons));
+    const btnKeys = Array.from(this._buttonsMap.keys());
+    const buttons = Array.from(this._buttonsMap.values());
     const { rows, columns } = this.store.gridConfig;
     const useSwiper = this.useSwiper;
-    const total = this.useSwiper ? rows! * columns! : buttons.length;
+    const total = this.useSwiper ? rows! * columns! : btnKeys.length;
 
     return html`
       <div
@@ -98,7 +120,7 @@ export class VicButtonGroup extends BaseElement {
         style=${this._computeStyle()}
       >
         <div class="swiper-wrapper">
-          ${Array.from({ length: Math.ceil(buttons.length / total) }, (_, slideIndex) => {
+          ${Array.from({ length: Math.ceil(btnKeys.length / total) }, (_, slideIndex) => {
             const start = slideIndex * total;
             const end = start + total;
 
@@ -107,7 +129,8 @@ export class VicButtonGroup extends BaseElement {
                 <div class="grid-container" data-slide-index=${slideIndex}>
                   ${buttons.slice(start, end).map((button, index) => {
                     const realIndex = start + index;
-                    return this._renderButton(button, realIndex, slideIndex);
+                    const keyName = btnKeys[realIndex];
+                    return this._renderButton(button, realIndex, slideIndex, keyName);
                   })}
                 </div>
               </div>
@@ -119,14 +142,21 @@ export class VicButtonGroup extends BaseElement {
     `;
   }
 
-  private _renderButton(button: BaseButtonCardItemConfig, index: number, slideIndex: number): TemplateResult {
+  private _renderButton(
+    button: BaseButtonCardItemConfig,
+    index: number,
+    slideIndex: number,
+    keyName: string
+  ): TemplateResult {
     return html`
       <vic-button-card-item
         ._hass=${this._hass}
-        ._store=${this.store}
+        .store=${this.store}
+        .car=${this.car}
         ._btnConfig=${button}
         .itemIndex=${index}
         .slideIndex=${slideIndex}
+        .buttonKey=${keyName}
         @click-index=${this._handleClickIndex.bind(this)}
       ></vic-button-card-item>
     `;
@@ -134,17 +164,17 @@ export class VicButtonGroup extends BaseElement {
   _handleClickIndex(ev: Event): void {
     ev.stopPropagation();
     const index = (ev.target as any).itemIndex;
-    // console.debug('Button index clicked:', index);
+    const key = (ev.target as any).buttonKey;
+    console.log('%cVIC-BUTTON-GROUP:', 'color: #bada55;', ' Button clicked index', index, 'key:', key);
+
     setTimeout(() => {
       this.store.card._currentSwipeIndex = this.activeSlideIndex;
-      this.store.card._activeCardIndex = index;
+      this.store.card._activeCardIndex = key;
     }, 50);
   }
 
   private _computeStyle() {
     const { columns } = this.store.gridConfig;
-    // const minWidth = `calc((100% / ${columns}) - 8px)`;
-    // const gridTemplateColumns = `repeat(auto-fill, minmax(${minWidth}, 1fr))`;
     const gridTemplateColumns = `repeat(${columns}, minmax(0, 1fr))`;
     const paddingBottom = this.swiper?.isLocked || !this.useSwiper ? '0' : undefined;
     let marginTop: string | null = null;
@@ -179,15 +209,16 @@ export class VicButtonGroup extends BaseElement {
           width: 100%;
           height: 100%;
         }
+
         .swiper-slide {
           width: 100%;
           height: auto;
         }
 
-        /* .swiper-wrapper {
-					flex-direction: initial;
-					flex-wrap: wrap;
-				} */
+        .swiper-wrapper {
+          /* align-items: stretch; */
+        }
+
         .swiper-pagination {
           margin-top: var(--swiper-pagination-bottom);
           display: block;
@@ -199,21 +230,22 @@ export class VicButtonGroup extends BaseElement {
         .swiper-pagination-bullet-active {
           opacity: 0.7;
         }
-        .button-item {
-          display: flex;
-          flex-direction: column;
-          border: 1px solid var(--divider-color);
-          border-radius: inherit;
-          width: 100%;
-          /* height: 100%; */
-          justify-content: center;
-          white-space: nowrap;
-          box-sizing: content-box;
-        }
         .grid-container {
+          display: grid;
+          /* grid-template-columns: repeat(auto-fill, minmax(calc((100% - 24px) / 2), 1fr)); */
+          grid-template-rows: auto;
+          gap: var(--vic-gutter-gap);
+          /* margin-top: 1rem; */
+          position: relative;
           grid-template-columns: var(--vsc-btn-template-columns);
         }
       `,
     ];
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'vic-button-group': VicButtonGroup;
   }
 }

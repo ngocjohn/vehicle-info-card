@@ -88,3 +88,5 @@ export type CarEntities = {
 export type CarItemDisplay = Partial<CarEntity & EntityConfig> & {
   display_state?: string;
 };
+
+export type CarEntityFunc = (entityKey: string) => CarEntity | undefined;

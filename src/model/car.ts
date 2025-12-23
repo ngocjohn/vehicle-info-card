@@ -1,4 +1,3 @@
-import { CardItem, CardItemKey, computeCardItems, findCardItemByKey } from 'const/card-item';
 import {
   CardIndicatorKey,
   getSubCardItems,
@@ -16,30 +15,32 @@ import {
   getAttrSectionType,
   ENTITY_NOT_ATTR,
   NON_ATTR_ENTITY_KEYS,
+  NonAttrEntityKey,
 } from 'data/attributes-items';
 import { CarEntityKey } from 'data/car-device-entities';
-import { baseButtonItems, ButtonInfo, DEFAULT_CARD, DefaultButtonInfo } from 'data/default-button-items';
+import { ButtonInfo, DEFAULT_CARD, DEFAULT_ITEMS } from 'data/default-button-items';
+import setupFindCarEntity from 'data/find-car-entity';
+import { CardItem, CardItemKey, computeCardItems, findCardItemByKey } from 'data/services/card-item';
 import { HassEntity } from 'home-assistant-js-websocket';
-import { CarEntities, CarItemDisplay, HomeAssistant, LocalizeFunc } from 'types';
+import { CarEntities, CarEntityFunc, CarItemDisplay, HomeAssistant, LocalizeFunc } from 'types';
+import { DefaultCardKey } from 'types/card-config/button-card';
 import { getEntityStateValue } from 'utils/entity-helper';
 import { getMax, getMin } from 'utils/helpers';
 import { VehicleInfoCard } from 'vehicle-info-card';
 
-import * as ITEMS_FROM_CONST from '../const/card-item';
-import * as STATE_DISPLAY_CONST from '../const/state-display';
-import { computeStateManager, StateDisplayManager } from '../const/state-display';
+import { computeStateManager, StateDisplayManager } from '../data/services/state-display';
 import { Store } from './store';
 
 export class Car {
   private _card: VehicleInfoCard;
-  private translate: LocalizeFunc;
-  private _itemsFromConst = ITEMS_FROM_CONST;
-  private _statesHelper = STATE_DISPLAY_CONST;
+  private carEntityConfig: CarEntityFunc;
+  protected translate: LocalizeFunc;
   constructor(store: Store) {
-    this.translate = store.translate;
     this._card = store.card;
+    this.carEntityConfig = setupFindCarEntity(this._card._carEntities);
     window.VicCar = this;
     console.log('%cCAR:', 'color: #bada55;', 'Car model initialized');
+    this.translate = store.translate;
   }
 
   get hass(): HomeAssistant {
@@ -52,10 +53,6 @@ export class Car {
 
   get _carEntities(): CarEntities {
     return this._card._carEntities;
-  }
-
-  get _baseButtonItems() {
-    return baseButtonItems(this.translate);
   }
 
   get _displayManager(): StateDisplayManager {
@@ -133,7 +130,11 @@ export class Car {
       const chargingObj = this._carItems.chargingOverview;
       item = findCardItemByKey(chargingObj, key);
     }
-
+    if (key === 'windowsClosed') {
+      // console.log('%cCAR:', 'color: #bada55;', ' Handling windowsClosed key separately');
+      const stateDisplayResult = this._getFallbackEntityConfig(key) as CarItemDisplay;
+      return { ...stateDisplayResult, ...entity };
+    }
     const { state, display_state, icon } = this._getEntityDisplayState(key as CarEntityKey, item);
     const result: CarItemDisplay = {
       display_state,
@@ -175,6 +176,18 @@ export class Car {
         case 'titleServices':
           display_state = item?.name || '';
           break;
+
+        case 'doorStatusOverall':
+        case 'windowsClosed':
+          const attrSec = key === 'doorStatusOverall' ? ATTR_SECTION.DOOR : ATTR_SECTION.WINDOW;
+          const attrEntities = this._getAttrSectionItemConfig(attrSec);
+          const activeCount = Object.values(attrEntities).filter((entry) => entry.active).length;
+          const isAnyActive = Boolean(activeCount > 0);
+          state = isAnyActive.toString();
+          const overallStateStr = this._displayManager.doorStatusOverall?.[state as string] || '';
+          display_state = isAnyActive ? `${activeCount} ${overallStateStr}` : overallStateStr;
+          active = isAnyActive;
+          break;
       }
     }
     return {
@@ -189,7 +202,7 @@ export class Car {
   private _getAttrItemConfig(itemKey: AttributeItemKey, attrType: ATTR_SECTION): CarItemDisplay {
     const itemObj = this._carItems[attrType];
     const item = findCardItemByKey(itemObj, itemKey);
-    if ([...NON_ATTR_ENTITY_KEYS].includes(itemKey)) {
+    if ([...NON_ATTR_ENTITY_KEYS].includes(itemKey as NonAttrEntityKey)) {
       // console.log('%cCAR:', 'color: #bada55;', 'Handling non-attribute entity key:', itemKey);
       const mainItemEntity =
         itemKey === ENTITY_NOT_ATTR.CHARGE_FLAP_DC_STATUS
@@ -255,50 +268,46 @@ export class Car {
     return !Boolean(closedState.includes(state as string));
   };
 
-  _getDefaultButtonConfig(): DefaultButtonInfo {
-    const buttonConfig: DefaultButtonInfo = {} as DefaultButtonInfo;
-    for (const key of Object.values(DEFAULT_CARD)) {
-      buttonConfig[key] = this._getDefaultButtonByKey(key);
+  _getDefaultButtonNotifyByKey(key: DefaultCardKey): boolean {
+    if (key === DEFAULT_CARD.VEHICLE) {
+      const warnings = this._getSubCardSectionItems(SUBCARD.VEHICLE)['warnings'];
+      const warningItems = Object.values(warnings)
+        .map((entry) => entry as CarItemDisplay)
+        .filter((entry) => entry.key !== 'tirePressureWarning' && !['off', '0'].includes(entry.state as string));
+      return warningItems.length > 0;
     }
-    return buttonConfig;
+    return false;
   }
 
-  _getDefaultButtonByKey(key: DEFAULT_CARD): ButtonInfo {
-    const item = this._baseButtonItems[key];
-    let secondary = '';
-    let notify = false;
-    const mainEntity = item.main_entity;
-
+  _getDefaultButtonSecondaryByKey(key: DefaultCardKey): string {
+    const mainEntity = DEFAULT_ITEMS[key].main_entity;
     const getEntityId = (eId: string) => this._carEntities[eId]?.entity_id || '';
     switch (key) {
       case DEFAULT_CARD.TRIP:
       case DEFAULT_CARD.ECO: {
-        secondary = getEntityStateValue(this.hass, getEntityId(mainEntity as string), true) || '';
-        break;
+        return getEntityStateValue(this.hass, getEntityId(mainEntity as string), true);
       }
       case DEFAULT_CARD.VEHICLE: {
         const lockState = getEntityStateValue(this.hass, getEntityId(mainEntity as string)) || '4';
-        secondary = this._displayManager.lockSensor?.[lockState as string];
-        const warnings = this._getSubCardSectionItems(SUBCARD.VEHICLE)['warnings'];
-        const warningItems = Object.values(warnings)
-          .map((entry) => entry as CarItemDisplay)
-          .filter((entry) => entry.key !== 'tirePressureWarning' && !['off', '0'].includes(entry.state as string));
-        notify = warningItems.length > 0;
-        break;
+        return this._displayManager.lockSensor?.[lockState as string] || '';
       }
       case DEFAULT_CARD.TYRE: {
         const tireItems = this._getSubCardSectionItems(SUBCARD.TYRE);
         const pressures = Array.from(Object.values(tireItems));
         const maxPressureItem = getMax(pressures, 'state');
         const minPressureItem = getMin(pressures, 'state');
-        secondary = `${minPressureItem.state} - ${maxPressureItem.display_state}`;
-        break;
+        return `${minPressureItem.state} - ${maxPressureItem.display_state}`;
       }
+      default:
+        return '';
     }
-    return {
-      ...item,
-      secondary,
-      notify,
-    } as ButtonInfo;
+  }
+  _getDefaultButtonInfo<K extends keyof ButtonInfo>(key: DefaultCardKey, type: K): ButtonInfo[K] {
+    if (type === 'secondary') return this._getDefaultButtonSecondaryByKey(key) as ButtonInfo[K];
+    if (type === 'notify') return this._getDefaultButtonNotifyByKey(key) as ButtonInfo[K];
+    if (type === 'name') return this.translate(`card.cardType.${DEFAULT_ITEMS[key].name}`) as ButtonInfo[K];
+    if (type === 'icon') return DEFAULT_ITEMS[key].icon as ButtonInfo[K];
+    if (type === 'main_entity') return DEFAULT_ITEMS[key].main_entity as ButtonInfo[K];
+    return undefined as unknown as ButtonInfo[K];
   }
 }

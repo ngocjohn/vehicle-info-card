@@ -20,7 +20,7 @@ export class VicButtonCardItem extends BaseButton {
   @property({ type: Number, attribute: 'item-index' }) public itemIndex?: number;
   @property({ type: Boolean, reflect: true, attribute: 'dimmed-in-editor' }) public dimmedInEditor = false;
 
-  @query('ha-card') _haCard!: HTMLElement;
+  @query('ha-card') private _haCard!: HTMLElement;
 
   protected firstUpdated(_changedProperties: PropertyValues): void {
     super.firstUpdated(_changedProperties);
@@ -60,26 +60,31 @@ export class VicButtonCardItem extends BaseButton {
     if (!this._btnConfig || !this._hass) {
       return nothing;
     }
+    const isUsingDefault = this._usingDefaultButton;
     const stateObj = this._stateObj;
     const btnShowConfig = this._btnShowConfig;
 
     const imageUrl = btnShowConfig.icon_type === 'entity-picture' ? this._getImageUrl() : undefined;
-    const icon =
+    let icon =
       btnShowConfig.icon_type === 'icon-template' ? this._getTemplateValue('icon_template') : this._btnConfig.icon;
-
+    if (isUsingDefault) {
+      icon = this._getValueFromDefaultButton('icon')! as string;
+    }
     const iconStyle = this._computeIconStyle();
 
-    const badgeVisible = Boolean(this._getTemplateValue('notify'));
+    const badgeVisible = isUsingDefault
+      ? this.car._getDefaultButtonNotifyByKey(this.buttonKey as any)
+      : Boolean(this._getTemplateValue('notify'));
     const notifyIcon = this._getTemplateValue('notify_icon');
     const notifyText = this._getTemplateValue('notify_text');
-    const notifyColor = this._getTemplateValue('notify_color');
+    const notifyColor = isUsingDefault ? 'var(--primary-color)' : this._getTemplateValue('notify_color');
 
     const _hasAction = this._hasAction;
     const _hasIconAction = this._hasIconAction;
     const _btnHasAction = Boolean(_hasAction || _hasIconAction);
 
     return html`
-      <ha-card ?transparent=${btnShowConfig.transparent} style=${styleMap(iconStyle)}>
+      <ha-card ?transparent=${btnShowConfig.transparent} style=${styleMap(iconStyle)} ?isUsingDefault=${isUsingDefault}>
         <div
           id="clickable-background"
           class="background"
@@ -167,10 +172,7 @@ export class VicButtonCardItem extends BaseButton {
   }
 
   public _zoomInEffect(): void {
-    const haCard = this._haCard;
-    if (!haCard) {
-      return;
-    }
+    const haCard = this.shadowRoot?.querySelector('ha-card') as HTMLElement;
     haCard.style.animationDelay = `${this.itemIndex! * 50}ms`;
     haCard.classList.add('zoom-in');
     haCard.addEventListener(
@@ -187,11 +189,6 @@ export class VicButtonCardItem extends BaseButton {
     return [
       super.styles,
       css`
-        *,
-        *::before,
-        *::after {
-          box-sizing: border-box;
-        }
         :host {
           --icon-color: rgba(var(--rgb-primary-text-color), 0.75);
           --icon-color-disabled: rgb(var(--default-disabled-color));
@@ -232,6 +229,9 @@ export class VicButtonCardItem extends BaseButton {
           background: transparent;
           box-shadow: none;
           border: none;
+        }
+        ha-card[isUsingDefault] {
+          border: 2px dashed var(--primary-color);
         }
         [role='button'] {
           cursor: pointer;

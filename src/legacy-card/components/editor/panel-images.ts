@@ -5,7 +5,8 @@ import { repeat } from 'lit/directives/repeat.js';
 import Sortable from 'sortablejs';
 
 import editorcss from '../../../css/editor.css';
-import { ImageConfig, VehicleCardConfig } from '../../../types';
+import { VehicleCardConfig } from '../../../types';
+import { ImageConfig } from '../../../types/card-config/images-config';
 import { fireEvent } from '../../../types/ha-frontend';
 import { imageInputChange, handleFilePicked } from '../../../utils';
 import { Picker } from '../../../utils/create';
@@ -15,7 +16,7 @@ import { VehicleCardEditor } from '../../editor';
 export class PanelImages extends LitElement {
   @property({ attribute: false }) editor!: VehicleCardEditor;
   @property({ type: Object }) config!: VehicleCardConfig;
-  @property({ type: Array }) _images!: ImageConfig[];
+  @property({ type: Array }) _images: ImageConfig[] = [];
   @state() _selectedItems: Set<string> = new Set();
   @state() _newImageUrl: string = '';
   @state() _sortable: Sortable | null = null;
@@ -216,7 +217,10 @@ export class PanelImages extends LitElement {
               .value=${image.title}
               @input=${(event: Event) => imageInputChange(this.editor, event, index)}
             ></ha-textfield>
-            <ha-checkbox .checked=${false} @change=${(ev: Event) => this._toggleSelection(ev, image.url)}></ha-checkbox>
+            <ha-checkbox
+              .checked=${false}
+              @change=${(ev: Event) => this._toggleSelection(ev, image.url!)}
+            ></ha-checkbox>
           </div>`
       )}
       ${showIndexDeleteBtn}
@@ -420,14 +424,16 @@ export class PanelImages extends LitElement {
 
     this._selectedItems.clear(); // Clear existing selections
 
-    this._images.forEach((image: { url: string }) => this._selectedItems.add(image.url));
+    this._images.forEach((image) => {
+      this._selectedItems.add(image.url!);
+    });
 
     this.requestUpdate();
   }
 
   private _deleteSelectedItems(): void {
     if (this._selectedItems.size === 0) return;
-    const images = this._images.filter((image: { url: string }) => !this._selectedItems.has(image.url));
+    const images = this._images.filter((image) => !this._selectedItems.has(image.url!));
     this._selectedItems.clear();
     fireEvent(this.editor, 'config-changed', { config: { ...this.config, images } });
     this.validateImageList();

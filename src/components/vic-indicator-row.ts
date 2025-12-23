@@ -204,6 +204,7 @@ export class VicIndicatorRow extends BaseElement {
       }
       .indicator-row.more-items {
         justify-content: space-around;
+        flex-wrap: wrap;
       }
       .indi-group-item {
         overflow: hidden;
@@ -224,7 +225,7 @@ export class VicIndicatorRow extends BaseElement {
       }
       .combined-range-bars {
         gap: var(--vic-gutter-gap);
-        margin-top: var(--vic-gutter-gap);
+        margin-top: var(--vic-card-padding);
         width: 100%;
         display: grid;
         width: 100%;

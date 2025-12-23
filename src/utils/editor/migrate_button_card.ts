@@ -45,6 +45,7 @@ export const convertButtonToNewFormat = (legacyConfig: LegacyButtonCardConfig): 
       if (hasTemplate(button.secondary)) {
         newConfig.state_template = button.secondary;
         newConfig.include_state_template = true;
+        newConfig.state_content = [...(newConfig.state_content || []), 'state_template'];
       }
     }
     if (button.attribute) {

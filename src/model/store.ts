@@ -1,7 +1,8 @@
+import { CarServices } from 'data/services/car-services';
 import setupTranslation from 'localize/translate';
-import { BaseButtonCardItemConfig, ExtraConfigs } from 'types/card-config';
+import { DefaultButtonConfig, ExtraConfigs } from 'types/card-config';
 
-import { FrontendLocaleData, HomeAssistant, LocalizeFunc } from '../types';
+import { HomeAssistant, LocalizeFunc } from '../types';
 import { VehicleCardConfig } from '../types/config';
 import { VehicleInfoCard } from '../vehicle-info-card';
 import { VehicleInfoCardEditor } from '../vehicle-info-card-editor';
@@ -12,33 +13,28 @@ export class Store {
   public card!: VehicleInfoCard;
   public editor?: VehicleInfoCardEditor;
   public translate: LocalizeFunc;
+  public carServices?: CarServices;
 
   constructor(card: VehicleInfoCard | VehicleInfoCardEditor, config: VehicleCardConfig, hass: HomeAssistant) {
     this._hass = hass;
     this.config = config;
-
+    this.translate = setupTranslation(this.userLang);
     if (card instanceof VehicleInfoCardEditor) {
       this.editor = card;
     } else if (card instanceof VehicleInfoCard) {
       this.card = card;
+      this.carServices = new CarServices(this._hass, this.card, this.translate);
     } else {
       throw new Error('Invalid card type, expected VehicleInfoCard or VehicleInfoCardEditor');
     }
-    this.translate = setupTranslation(this.userLang);
     console.log('%cSTORE:', 'color: #bada55;', 'Store initialized');
   }
 
   get userLang(): string {
-    if (!this.config?.selected_language || ['system', 'default'].includes(this.config.selected_language)) {
-      return this._hass?.selectedLanguage || this._hass?.locale.language || 'en';
+    if (!this.config.selected_language || ['system', 'default'].includes(this.config.selected_language)) {
+      return this._hass.language;
     }
     return this.config.selected_language;
-  }
-
-  get _userLocale(): FrontendLocaleData {
-    const locale = { ...this._hass.locale };
-    locale.language = this.userLang;
-    return locale;
   }
 
   public get layoutConfig(): ExtraConfigs {
@@ -55,10 +51,20 @@ export class Store {
       transparent: button_grid?.transparent ?? false,
     };
   }
-  public getButtonItemsArray(): BaseButtonCardItemConfig[] {
-    return Object.entries({
-      ...(this.config?.default_buttons || {}),
-      ...(this.config?.custom_buttons || {}),
-    }).map(([, value]) => value);
+
+  public get _visibleButtons(): Record<string, DefaultButtonConfig> {
+    let buttonOrder = this.card._buttonOrder || [];
+    // Check if some buttons are hidden, update the button order accordingly
+    const hiddenButtons = Array.from(this.card._buttonsData.entries())
+      .filter(([, val]) => val.hide_button === true)
+      .map(([key]) => key);
+    buttonOrder = buttonOrder.filter((btnKey) => !hiddenButtons.includes(btnKey));
+    return buttonOrder.reduce((acc, key) => {
+      const buttonConfig = this.card._buttonsData.get(key);
+      if (buttonConfig) {
+        acc[key] = buttonConfig;
+      }
+      return acc;
+    }, {} as Record<string, DefaultButtonConfig>);
   }
 }
