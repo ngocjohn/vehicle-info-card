@@ -118,8 +118,8 @@ importers:
         specifier: ^4.1.4
         version: 4.3.0(@typescript-eslint/eslint-plugin@8.49.0(@typescript-eslint/parser@8.49.0(eslint@9.39.1)(typescript@5.9.3))(eslint@9.39.1)(typescript@5.9.3))(eslint@9.39.1)
       extra-map-card:
-        specifier: ^1.3.2
-        version: 1.6.2
+        specifier: ^1.7.1
+        version: 1.7.1
       husky:
         specifier: ^9.1.7
         version: 9.1.7
@@ -502,8 +502,14 @@ packages:
   '@formatjs/ecma402-abstract@1.11.4':
     resolution: {integrity: sha512-EBikYFp2JCdIfGEb5G9dyCkTGDmC57KSHhRQOC3aYxoPWVZvfWCDjZwkGYHN7Lis/fmuWl906bnNTJifDQ3sXw==}
 
+  '@formatjs/ecma402-abstract@3.0.7':
+    resolution: {integrity: sha512-U55Yulf37vBXN0C7gHm7hrxULVrcrhpQBcdLmIN2rpYpLfC5eIpa1JRX9efjU74gfzjK/MSmSG3Lxv3E4ZNZIw==}
+
   '@formatjs/fast-memoize@1.2.1':
     resolution: {integrity: sha512-Rg0e76nomkz3vF9IPlKeV+Qynok0r7YZjL6syLz4/urSg0IbjPZCB/iYUMNsYA643gh4mgrX3T7KEIFIxJBQeg==}
+
+  '@formatjs/fast-memoize@3.0.2':
+    resolution: {integrity: sha512-YFApUDWFmjpPwAE7VcY7PYVjm6JaLZOAo0UfCQj1/OGi/1QtduG9kIBHmVC551M6AI01qvuP5kjbDebrZOT4Vg==}
 
   '@formatjs/icu-messageformat-parser@2.1.0':
     resolution: {integrity: sha512-Qxv/lmCN6hKpBSss2uQ8IROVnta2r9jd3ymUEIjm2UyIkUCHVcbUVRGL/KS/wv7876edvsPe+hjHVJ4z8YuVaw==}
@@ -511,8 +517,14 @@ packages:
   '@formatjs/icu-skeleton-parser@1.3.6':
     resolution: {integrity: sha512-I96mOxvml/YLrwU2Txnd4klA7V8fRhb6JG/4hm3VMNmeJo1F03IpV2L3wWt7EweqNLES59SZ4d6hVOPCSf80Bg==}
 
+  '@formatjs/intl-datetimeformat@7.1.1':
+    resolution: {integrity: sha512-8x1kB8FVJRuDlDGa8ogjtT5t9OKcsODBrsjbuDWx/EQulMu3sxq2kaLxumZdEjcWAeby7A+TqlJzSsDYIkO4pg==}
+
   '@formatjs/intl-localematcher@0.2.25':
     resolution: {integrity: sha512-YmLcX70BxoSopLFdLr1Ds99NdlTI2oWoLbaUW2M406lxOIPzE1KQhRz2fPUkq34xVZQaihCoU29h0KK7An3bhA==}
+
+  '@formatjs/intl-localematcher@0.7.4':
+    resolution: {integrity: sha512-AWsSZupIBMU/y04Nj24CjohyNVyfItMJPxSzX5OJwedDEIbGLOHkPxCjAeLeiLF2dw4xmQA8psktdi9MaebBQw==}
 
   '@formatjs/intl-utils@3.8.4':
     resolution: {integrity: sha512-j5C6NyfKevIxsfLK8KwO1C0vvP7k1+h4A9cFpc+cr6mEwCc1sPkr17dzh0Ke6k9U5pQccAQoXdcNBl3IYa4+ZQ==}
@@ -1704,6 +1716,9 @@ packages:
       supports-color:
         optional: true
 
+  decimal.js@10.6.0:
+    resolution: {integrity: sha512-YpgQiITW3JXGntzdUmyUR1V812Hn8T1YVXhCu+wO3OpS4eU9l4YdD3qjyiKdV6mvV29zapkMeD390UVEf2lkUg==}
+
   deep-clone-simple@1.1.1:
     resolution: {integrity: sha512-d/Knd6Cmq0hQTdTf5uggLD0ua6zpwGb1Yqorz3Y8NAmcAMKsG/UmV8+iaNqgT92WPFD7EDymwGIwwVy888T6fQ==}
 
@@ -1909,8 +1924,8 @@ packages:
   exponential-backoff@3.1.3:
     resolution: {integrity: sha512-ZgEeZXj30q+I0EN+CbSSpIyPaJ5HVQD18Z1m+u1FXbAeT94mr1zw50q4q6jiiC447Nl/YTcIYSAftiGqetwXCA==}
 
-  extra-map-card@1.6.2:
-    resolution: {integrity: sha512-yRlQSda5wYZhViLUuK8aXrQpcSHeI5aIj/G3XvIzm9VY901PPaQdfDdy0c3e1Dy+io/zbOCbvG97K9sH49ahNg==}
+  extra-map-card@1.7.1:
+    resolution: {integrity: sha512-F8RMPApQmrtdxPoKo8tCXVY4Sf8rdwhprAkwwhqKiqCfEikRn6ZIPDxv1Sg17tmbYThrh8VK07i5f0UMq3arpw==}
 
   fast-deep-equal@3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
@@ -3940,7 +3955,18 @@ snapshots:
       '@formatjs/intl-localematcher': 0.2.25
       tslib: 2.8.1
 
+  '@formatjs/ecma402-abstract@3.0.7':
+    dependencies:
+      '@formatjs/fast-memoize': 3.0.2
+      '@formatjs/intl-localematcher': 0.7.4
+      decimal.js: 10.6.0
+      tslib: 2.8.1
+
   '@formatjs/fast-memoize@1.2.1':
+    dependencies:
+      tslib: 2.8.1
+
+  '@formatjs/fast-memoize@3.0.2':
     dependencies:
       tslib: 2.8.1
 
@@ -3955,8 +3981,20 @@ snapshots:
       '@formatjs/ecma402-abstract': 1.11.4
       tslib: 2.8.1
 
+  '@formatjs/intl-datetimeformat@7.1.1':
+    dependencies:
+      '@formatjs/ecma402-abstract': 3.0.7
+      '@formatjs/intl-localematcher': 0.7.4
+      decimal.js: 10.6.0
+      tslib: 2.8.1
+
   '@formatjs/intl-localematcher@0.2.25':
     dependencies:
+      tslib: 2.8.1
+
+  '@formatjs/intl-localematcher@0.7.4':
+    dependencies:
+      '@formatjs/fast-memoize': 3.0.2
       tslib: 2.8.1
 
   '@formatjs/intl-utils@3.8.4':
@@ -5959,6 +5997,8 @@ snapshots:
     dependencies:
       ms: 2.1.3
 
+  decimal.js@10.6.0: {}
+
   deep-clone-simple@1.1.1: {}
 
   deep-is@0.1.4: {}
@@ -6166,11 +6206,11 @@ snapshots:
 
   exponential-backoff@3.1.3: {}
 
-  extra-map-card@1.6.2:
+  extra-map-card@1.7.1:
     dependencies:
+      '@formatjs/intl-datetimeformat': 7.1.1
       '@maptiler/sdk': 3.9.0
       '@mdi/js': 7.4.47
-      custom-card-helpers: 1.9.0
       date-fns: 4.1.0
       home-assistant-js-websocket: 9.6.0
       lit: 3.3.1
