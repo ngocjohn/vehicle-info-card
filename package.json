@@ -28,7 +28,7 @@
     "lit": "^3.3.0",
     "memoize-one": "^6.0.0",
     "nvn-tabs": "^1.0.1",
-    "sortablejs": "^1.15.6",
+    "sortablejs": "^1.15.7",
     "swiper": "^11.2.10",
     "tinycolor2": "^1.6.0"
   },
