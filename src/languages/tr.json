@@ -1,0 +1,303 @@
+{
+    "name": "Turkish",
+    "nativeName": "Türkçe",
+    "card": {
+        "common": {
+            "lastUpdate": "Son güncelleme",
+            "stateCharging": "Şarj oluyor",
+            "stateClosed": "Kapalı",
+            "stateLocked": "Kilitli",
+            "stateLockedInt": "İçeriden kilitli",
+            "stateNotExisting": "Mevcut değil",
+            "stateOpen": "Açık",
+            "stateParkBrakeOff": "Serbest",
+            "stateParkBrakeOn": "Devrede",
+            "statePartlyUnlocked": "Kısmen kilit açık",
+            "stateUnknown": "Bilinmiyor",
+            "stateUnlocked": "Kilit açık",
+            "statePressed": "Basılı",
+            "titleRemoteControl": "Uzaktan kontrol",
+            "titleServices": "Servisler",
+            "toastCommandSent": "Komut başarıyla gönderildi!",
+            "toastImageError": "Görsel yüklenirken hata oluştu. Yalnızca PNG ve JPEG dosyalarına izin verilir.",
+            "toastCardAlreadyExists": "Kart zaten mevcut"
+        },
+        "cardType": {
+            "ecoCards": "Eco göstergesi",
+            "tripCards": "Sürüş verileri",
+            "tyreCards": "Lastik basıncı",
+            "vehicleCards": "Araç durumu"
+        },
+        "chargingOverview": {
+            "chargingPower": "Güç",
+            "maxSoc": "Maksimum",
+            "selectedProgram": "Program",
+            "soc": "Mevcut durum"
+        },
+        "doorAttributes": {
+            "decklidstatus": "Bagaj bölmesi",
+            "doorstatusfrontleft": "Sol ön kapı",
+            "doorstatusfrontright": "Sağ ön kapı",
+            "doorstatusrearleft": "Sol arka kapı",
+            "doorstatusrearright": "Sağ arka kapı",
+            "enginehoodstatus": "Motor kaputu",
+            "sunroofstatus": "Sunroof",
+            "chargeflapdcstatus": "Şarj soketi kapağı"
+        },
+        "ecoCard": {
+            "ecoDisplay": "Eco göstergesi",
+            "ecoScore": "Puanlar",
+            "ecoScoreAcceleration": "Hızlanma",
+            "ecoScoreBonusRange": "Bonus menzil",
+            "ecoScoreConstant": "Sabit",
+            "ecoScoreFreeWheel": "Serbest sürüş"
+        },
+        "lockAttributes": {
+            "doorlockstatusfrontleft": "Sol ön kapı kilidi",
+            "doorlockstatusfrontright": "Sağ ön kapı kilidi",
+            "doorlockstatusgas": "Yakıt kapağı kilidi",
+            "doorlockstatusrearleft": "Sol arka kapı kilidi",
+            "doorlockstatusrearright": "Sağ arka kapı kilidi"
+        },
+        "serviceData": {
+            "labelChargeProgram": "Şarj programı",
+            "labelCity": "Şehir",
+            "labelClose": "Kapat",
+            "labelDepartureTime": "Kalkış zamanı",
+            "labelDurationTime": "Süre",
+            "labelLatitude": "Enlem",
+            "labelLockCar": "Aracı kilitle",
+            "labelLongitude": "Boylam",
+            "labelMaxStateOfCharge": "Maks. şarj durumu",
+            "labelMoreInfo": "Daha fazla bilgi",
+            "labelMove": "Taşı",
+            "labelNoSelection": "Seçim yok",
+            "labelOpen": "Aç",
+            "labelPostCode": "Posta kodu",
+            "labelSave": "Kaydet",
+            "labelSend": "Gönder",
+            "labelSetMaxSoc": "Maksimumu ayarla",
+            "labelSetProgram": "Programı ayarla",
+            "labelStart": "Başlat",
+            "labelStartTime": "Başlangıç zamanı",
+            "labelStop": "Durdur",
+            "labelStopTime": "Bitiş zamanı",
+            "labelStreet": "Sokak",
+            "labelTilt": "Eğ",
+            "labelTime1": "Zaman 1",
+            "labelTime2": "Zaman 2",
+            "labelTime3": "Zaman 3",
+            "labelTimeSelection": "Zaman seçimi",
+            "labelTitle": "Başlık",
+            "labelUnlockCar": "Araç kilidini aç",
+            "labelWindowFrontLeft": "Sol ön",
+            "labelWindowFrontRight": "Sağ ön",
+            "labelWindowRearLeft": "Sol arka",
+            "labelWindowRearRight": "Sağ arka",
+            "labelSeatConfig": "Koltuk yapılandırmasını kaydet",
+            "labelSetTempZone": "Sıcaklık bölgesini kaydet",
+            "labelPreclimateStatus": "Ön iklimlendirme durumu"
+        },
+        "servicesCtrl": {
+            "auxheat": "Yardımcı ısıtma",
+            "charge": "Şarj",
+            "doorsLock": "Güvenlik",
+            "engine": "Motor kontrolü",
+            "preheat": "Ön iklimlendirme",
+            "sendRoute": "Rota gönder",
+            "sigPos": "Konum sinyali",
+            "sunroof": "Sunroof",
+            "windows": "Camlar"
+        },
+        "starterBattery": {
+            "notAvailable": "Kullanılamıyor",
+            "partlyCharged": "Kısmen şarjlı",
+            "remoteServiceDisabled": "Uzaktan servis devre dışı",
+            "stateOk": "Tamam",
+            "vehicleNoLongerAvailable": "Araç artık kullanılamıyor"
+        },
+        "sunroofState": {
+            "antiBoomingLifting": "Rüzgar gürültüsü önleme kaldırma",
+            "antiBoomingPosition": "Rüzgar gürültüsü önleme konumu",
+            "closing": "Kapanıyor",
+            "closingLifting": "Kaldırma kapanıyor",
+            "intermediatePosition": "Ara konum",
+            "liftingIntermediate": "Kaldırma ara konumu",
+            "liftingOpen": "Kaldırma açık",
+            "opening": "Açılıyor",
+            "openingLifting": "Kaldırma açılıyor",
+            "running": "Çalışıyor",
+            "slidingIntermediate": "Sürgü ara konumu",
+            "stateClosed": "Kapalı",
+            "stateOpen": "Açık"
+        },
+        "tripCard": {
+            "adBlueLevel": "AdBlue seviyesi",
+            "averageSpeedReset": "Ortalama hız",
+            "averageSpeedStart": "Ortalama hız",
+            "distanceReset": "Kat edilen mesafe",
+            "distanceStart": "Kat edilen mesafe",
+            "distanceZEReset": "Sıfır Emisyon kat edilen mesafe",
+            "distanceZEStart": "Sıfır Emisyon kat edilen mesafe",
+            "drivenTimeReset": "Sürüş süresi",
+            "drivenTimeStart": "Sürüş süresi",
+            "drivenTimeZEReset": "Sıfır Emisyon sürüş süresi",
+            "drivenTimeZEStart": "Sıfır Emisyon sürüş süresi",
+            "electricConsumptionReset": "Ortalama tüketim",
+            "electricConsumptionStart": "Ortalama tüketim",
+            "fromReset": "Sıfırlamadan itibaren",
+            "fromStart": "Başlangıçtan itibaren",
+            "fuelLevel": "Yakıt seviyesi",
+            "liquidConsumptionReset": "Ortalama tüketim",
+            "liquidConsumptionStart": "Ortalama tüketim",
+            "maxSoc": "Maks. şarj durumu",
+            "odometer": "Kilometre sayacı",
+            "overview": "Genel bakış",
+            "rangeElectric": "Menzil",
+            "rangeLiquid": "Menzil",
+            "soc": "Şarj durumu"
+        },
+        "tyreCard": {
+            "tirePressureFrontLeft": "Sol ön",
+            "tirePressureFrontRight": "Sağ ön",
+            "tirePressureRearLeft": "Sol arka",
+            "tirePressureRearRight": "Sağ arka",
+            "tireWarningOk": "Basınç kaybı algılanmadı",
+            "tireWarningProblem": "Basınç kaybı algılandı. Lastikleri kontrol edin.",
+            "tyrePressure": "Lastik basınçları"
+        },
+        "vehicleCard": {
+            "doorStatusOverall": "Kapılar",
+            "engineLight": "Motor lambası",
+            "ignitionState": "Kontak durumu",
+            "lockSensor": "Kilit durumu",
+            "lowBrakeFluid": "Fren hidroliği",
+            "lowCoolantLevel": "Soğutma sıvısı",
+            "lowWashWater": "Cam yıkama sıvısı",
+            "parkBrake": "Park freni",
+            "starterBatteryState": "Marş aküsü",
+            "tirePressureWarning": "Lastik basıncı",
+            "vehicleStatus": "Araç durumu",
+            "vehicleWarnings": "Uyarılar",
+            "windowsClosed": "Camlar"
+        },
+        "windowAttributes": {
+            "windowstatusfrontleft": "Sol ön cam",
+            "windowstatusfrontleftblind": "Sol ön cam perdesi",
+            "windowstatusfrontright": "Sağ ön cam",
+            "windowstatusfrontrightblind": "Sağ ön cam perdesi",
+            "windowstatusrearleft": "Sol arka cam",
+            "windowstatusrearleftblind": "Sol arka cam perdesi",
+            "windowstatusrearright": "Sağ arka cam",
+            "windowstatusrearrightblind": "Sağ arka cam perdesi"
+        },
+        "ignitionState": {
+            "ignitionLock": "kilit",
+            "ignitionOff": "kapalı",
+            "ignitionAccessory": "aksesuar",
+            "ignitionOn": "açık",
+            "ignitionStart": "başlat"
+        },
+        "precondSeatTemp": {
+            "frontLeft": "Sol ön",
+            "frontRight": "Sağ ön",
+            "rearLeft": "Sol arka",
+            "rearRight": "Sağ arka"
+        }
+    },
+    "editor": {
+        "entityConfig": {
+            "desc": "Varlığı ve kart adını seçin.",
+            "title": "Varlık ve kart adı"
+        },
+        "buttonConfig": {
+            "desc": "Tek tek düğmeler için alt kartları yapılandırın.",
+            "title": "Düğme yapılandırması",
+            "defaultCards": "Varsayılan kartlar",
+            "customCards": "Özel kartlar",
+            "addNewCard": "Yeni kart ekle",
+            "hideButton": "Kartta düğmeyi gizle",
+            "useCustomButton": "Özel düğme kullan",
+            "useCustomCard": "Özel kart kullan",
+            "showButton": "Düğmeyi göster",
+            "preview": "Önizleme",
+            "hidePreview": "Önizlemeyi gizle",
+            "secondaryInfo": "İkincil bilgi",
+            "secondaryInfoDesc": "Bu bilgi kart başlığının altında gösterilir.",
+            "secondaryInfoHelper": "İkincil bilgiyi göstermek için Jinja2 şablonu kullanın",
+            "notifyInfo": "Bildirim yapılandırması",
+            "notifyInfoHelper": "Bildirimi göstermek için sonuç 'True' boolean değeri döndürmelidir.",
+            "deleteConfirm": "Bu kartı silmek istediğinizden emin misiniz?",
+            "toastNewCard": "Yeni kart eklendi!",
+            "buttonGridSwipe": "Düğme ızgarası yapılandırması",
+            "swipeRows": "Slayt başına satır",
+            "useButtonSwipe": "Düğmeler için kaydırmayı kullan",
+            "iconInfo": "Simge şablonu",
+            "iconInfoHelper": "Simgeyi göstermek için Jinja2 şablonu kullanın",
+            "colorInfo": "Renk şablonu",
+            "colorInfoHelper": "Simge rengini değiştirmek için Jinja2 şablonu kullanın",
+            "pictureInfo": "Resim (simgenin yerini alır)",
+            "pictureInfoHelper": "Bir resmi göstermek için şablon veya bir görsel dosyasına URL kullanabilirsiniz"
+        },
+        "common": {
+            "checkAll": "Tümünü seç",
+            "infoButton": "Yapılandırmak istediğiniz kartı seçin.",
+            "infoImages": "Her satır için '-' eklemenize gerek yoktur. Her satır otomatik olarak ayrı bir URL olarak işlenir.",
+            "infoMap": "Bu, harita açılır penceresi yapılandırmasıdır.",
+            "infoServices": "Etkinleştirmek istediğiniz servisleri seçin. Bir servis devre dışıysa kartta gösterilmez.",
+            "uncheckAll": "Tüm seçimleri kaldır"
+        },
+        "imagesConfig": {
+            "desc": "Görsellerin URL'lerini ekleyin.",
+            "title": "Görsel yapılandırması",
+            "selectAll": "Tümünü seç",
+            "deselectAll": "Tüm seçimleri kaldır",
+            "deleteSelected": "Seçilenleri sil"
+        },
+        "mapConfig": {
+            "desc": "Harita yapılandırmasını seçin",
+            "title": "Harita yapılandırması"
+        },
+        "servicesConfig": {
+            "desc": "Etkinleştirmek istediğiniz servisleri seçin.",
+            "title": "Servis yapılandırması"
+        },
+        "showConfig": {
+            "desc": "Göstermek istediğiniz öğeleri seçin.",
+            "title": "Gösterim yapılandırması"
+        },
+        "showOpts": {
+            "enable_map_popup": "Harita açılır penceresini etkinleştir",
+            "enable_services_control": "Servis kontrolünü etkinleştir",
+            "show_background": "Arka planı göster",
+            "show_buttons": "Düğmeleri göster",
+            "show_error_notify": "Hata bildirimini göster",
+            "show_map": "Haritayı göster",
+            "show_slides": "Slaytları göster",
+            "show_header_info": "Başlık bilgisini göster",
+            "show_address": "Adresi göster"
+        },
+        "themeLangConfig": {
+            "desc": "Temayı ve dili seçin.",
+            "title": "Temalar ve Dil"
+        },
+        "customButtonConfig": {
+            "title": "Özel Düğme",
+            "desc": "Özel düğme için değeri ayarlayın",
+            "info": "Yeni özel düğme ekleyin veya mevcut olanı düzenleyin"
+        },
+        "customCardConfig": {
+            "title": "Özel Kart",
+            "desc": "Lovelace kartı için YAML yapılandırması"
+        },
+        "customTireBackground": {
+            "title": "Özel Lastik Arka Planı",
+            "desc": "Varsayılan arka planın yerine bir görsel yükleyin.",
+            "info": "Görsel kare olmalı ve en fazla 450x450 piksel çözünürlüğe sahip olmalıdır. Şeffaf arka plan önerilir."
+        },
+        "customActionConfig": {
+            "title": "Düğme etkileşimi",
+            "desc": "Özel düğme için eylemi ayarlayın"
+        }
+    }
+}

@@ -11,6 +11,7 @@ import * as lt from '../languages/lt.json';
 import * as nl from '../languages/nl.json';
 import * as pl from '../languages/pl.json';
 import * as sk from '../languages/sk.json';
+import * as tr from '../languages/tr.json';
 import * as vi from '../languages/vi.json';
 import * as zh_Hans from '../languages/zh_Hans.json';
 import * as zh_Hant from '../languages/zh_Hant.json';
@@ -27,6 +28,7 @@ const languages: Record<string, unknown> = {
   nl,
   pl,
   sk,
+  tr,
   vi,
   "zh-Hans": zh_Hans,
   "zh-Hant": zh_Hant,
@@ -44,6 +46,7 @@ export const languageOptions = [
   { key: 'nl', name: 'Dutch', nativeName: 'Nederlands' },
   { key: 'pl', name: 'Polish', nativeName: 'Polski' },
   { key: 'sk', name: 'Slovak', nativeName: 'Slovenčina' },
+  { key: 'tr', name: 'Turkish', nativeName: 'Türkçe' },
   { key: 'vi', name: 'Vietnamese', nativeName: 'Tiếng Việt' },
   { key: 'zh-Hans', name: 'zh-hans', nativeName: '简体中文' },
   { key: 'zh-Hant', name: 'zh-hant', nativeName: '繁體中文' },
