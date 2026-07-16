@@ -472,7 +472,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
           <ha-icon .icon=${icon}></ha-icon>
           <span>${state}</span>
         </div>
-      `
+      `,
     );
 
     // Render added charging info if charging
@@ -481,7 +481,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
           'mdi:ev-station',
           this.localize('card.common.stateCharging'),
           () => (this.chargingInfoVisible = !this.chargingInfoVisible),
-          this.chargingInfoVisible
+          this.chargingInfoVisible,
         )
       : nothing;
 
@@ -489,7 +489,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     const serviceControl =
       this.config.enable_services_control !== false
         ? renderItem('mdi:car-cog', this.localize('card.common.titleServices'), () =>
-            this.toggleCardFromButtons('servicesCard')
+            this.toggleCardFromButtons('servicesCard'),
           )
         : nothing;
 
@@ -541,7 +541,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
     const entities = ['fuelLevel', 'rangeLiquid', 'rangeElectric', 'soc'];
     const [fuelInfo, rangeLiquidInfo, rangeElectricInfo, socInfo] = entities.map((entity) =>
-      getEntityInfo(this.vehicleEntities[entity]?.entity_id)
+      getEntityInfo(this.vehicleEntities[entity]?.entity_id),
     );
 
     const renderInfoBox = (icon: string, state: number, fuelInfo: string, rangeInfo: string, eletric: boolean) => html`
@@ -571,7 +571,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
             fuelInfo.state!,
             fuelInfo.stateDisplay!,
             rangeLiquidInfo.stateDisplay!,
-            false
+            false,
           )
         : ''}
       ${socInfo && rangeElectricInfo
@@ -840,7 +840,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
               >
                 <span class="tyre-value">${this.getStateDisplay(this.vehicleEntities[tyre.key]?.entity_id)}</span>
                 <span class="tyre-name">${tyre.name}</span>
-              </div>`
+              </div>`,
           )}
         </div>
         <div class="tyre-info" ?warning=${isPressureWarning}>
@@ -870,15 +870,18 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     const hass = this._hass;
     const serviceControl = this.config.services || {};
 
-    const activeServices = Object.entries(serviceControl).reduce((acc, [key, value]) => {
-      if (value) {
-        acc[key] = {
-          name: servicesCtrl(this.userLang)[key].name,
-          icon: servicesCtrl(this.userLang)[key].icon,
-        };
-      }
-      return acc;
-    }, {} as Record<string, { name: string; icon: string }>);
+    const activeServices = Object.entries(serviceControl).reduce(
+      (acc, [key, value]) => {
+        if (value) {
+          acc[key] = {
+            name: servicesCtrl(this.userLang)[key].name,
+            icon: servicesCtrl(this.userLang)[key].icon,
+          };
+        }
+        return acc;
+      },
+      {} as Record<string, { name: string; icon: string }>,
+    );
 
     return html`
       <div class="default-card remote-tab">
@@ -1017,7 +1020,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     const entityID = this.getEntityTypeId(attributeType);
     const stateMapping = this.getAttrStateMap(attributeType, lang);
     const attributesVisible = this.isSubCardActive(attributeType);
-
+    // console.log('Rendering subcard for:', attributeType, 'Entity ID:', entityID, 'State Mapping:', stateMapping);
     // Iterate over the keys of the stateMapping object
     Object.keys(stateMapping).forEach((key) => {
       let attributeState: string | boolean | null | undefined;
@@ -1027,27 +1030,34 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       } else if (key === 'sunroofstatus' && this.vehicleEntities.sunroofStatus?.entity_id !== undefined) {
         attributeState = this.getEntityState(this.vehicleEntities.sunroofStatus.entity_id);
       } else {
-        attributeState = this.getEntityAttribute(entityID, key);
+        attributeState =
+          attributeType === 'window'
+            ? this.getEntityAttribute(entityID, key)
+            : Boolean(this.getEntityAttribute(entityID, key)).toString();
       }
       // Check if the attribute state
 
       if (attributeState !== undefined && attributeState !== null) {
         state[key] = attributeState;
+        // console.log('State mapping for', key, ':', stateMapping[key], 'state:', state[key]);
       }
     });
+    console.log('Subcard state for', attributeType, ':', state);
     // Render the attributes
     return html`
       <div class="sub-attributes" ?active=${attributesVisible}>
         ${Object.keys(state).map((key) => {
           const rawState = state[key];
+
           // Check if the state is valid and the attribute mapping exists
           if (rawState !== undefined && rawState !== null && stateMapping[key]) {
-            const readableState = stateMapping[key].state[rawState] || 'Unknown';
+            const readableState = stateMapping[key].state[rawState];
+
             let classState: boolean;
             if (key === 'sunroofstatus') {
               classState = rawState === '0' ? false : true;
             } else {
-              classState = ['2', '1', false, 'false'].includes(rawState as string) ? false : true;
+              classState = ['2', '1', false, 'false', 2].includes(rawState as string) ? false : true;
             }
             return html`
               <div class="data-row">
@@ -1076,7 +1086,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
   private getAttrStateMap(
     attributeType: 'lock' | 'window' | 'door',
-    lang: string
+    lang: string,
   ): Record<'lock' | 'window' | 'door', string> {
     const stateMapping: Record<string, any> = {
       lock: StateMapping.lockAttributes(lang),
@@ -1234,7 +1244,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
   private getDefaultEntityInfo = (
     { key, name, icon, state, unit }: EntityConfig,
-    vehicleEntity: VehicleEntity
+    vehicleEntity: VehicleEntity,
   ): EntityConfig => {
     return {
       key,
@@ -1304,12 +1314,12 @@ export class VehicleCard extends LitElement implements LovelaceCard {
         } else {
           doorAttributeStates[attribute] = this.getEntityAttribute(
             this.vehicleEntities.lockSensor.entity_id,
-            attribute
+            attribute,
           );
         }
       });
       const openDoors = Object.keys(doorAttributeStates).filter(
-        (attribute) => doorAttributeStates[attribute] === '0' || doorAttributeStates[attribute] === true
+        (attribute) => doorAttributeStates[attribute] === '0' || doorAttributeStates[attribute] === true,
       ).length;
       if (openDoors === 0) {
         closed = true;
@@ -1342,7 +1352,9 @@ export class VehicleCard extends LitElement implements LovelaceCard {
         if (attribute === 'sunroofstatus' && this.vehicleEntities.sunroofStatus?.entity_id !== undefined) {
           attributeState = this.getEntityState(this.vehicleEntities.sunroofStatus.entity_id) === '1' ? true : false;
         } else {
-          attributeState = this.getEntityAttribute(vehicleEntity.entity_id, attribute);
+          const attrValue = this.getEntityAttribute(vehicleEntity.entity_id, attribute);
+
+          attributeState = typeof attrValue === 'number' ? attrValue.toString() : attrValue;
         }
 
         if (attributeState !== undefined && attributeState !== null) {
@@ -1351,7 +1363,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       });
 
       const openWindows = Object.keys(windowAttributeStates).filter(
-        (attribute) => windowAttributeStates[attribute] === '0' || windowAttributeStates[attribute] === true
+        (attribute) => windowAttributeStates[attribute] === '0' || windowAttributeStates[attribute] === true,
       ).length;
 
       if (openWindows === 0) {
@@ -1407,7 +1419,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   private getWarningOrDefaultInfo = (
     defaultInfo: EntityConfig,
     key: string,
-    vehicleEntity: VehicleEntity
+    vehicleEntity: VehicleEntity,
   ): EntityConfig => {
     if (this.DataKeys.vehicleWarnings.map((key) => key.key).includes(key)) {
       const warningState = this.getBooleanState(vehicleEntity.entity_id);
@@ -1520,10 +1532,13 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       // Filter out only top-level properties for CSS variables and the modes property
       const filteredThemeData = Object.keys(themeData)
         .filter((key) => key !== 'modes')
-        .reduce((obj, key) => {
-          obj[key] = themeData[key];
-          return obj;
-        }, {} as Record<string, string>);
+        .reduce(
+          (obj, key) => {
+            obj[key] = themeData[key];
+            return obj;
+          },
+          {} as Record<string, string>,
+        );
 
       // Get the current mode (light or dark)
       const mode = this.isDark ? 'dark' : 'light';
@@ -1535,7 +1550,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
         this,
         { default_theme: this._hass.themes.default_theme, themes: { [theme]: allThemeData } },
         theme,
-        false
+        false,
       );
     }
   }
