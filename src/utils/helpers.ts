@@ -1,9 +1,11 @@
-import { formatDateNumeric, formatTime } from 'custom-card-helpers';
+import { HassConfig } from 'home-assistant-js-websocket';
 import memoizeOne from 'memoize-one';
 import tinycolor from 'tinycolor2';
 
 import { HistoryStates, VehicleCardConfig } from '../types';
-import { FrontendLocaleData } from '../types/ha-frontend/data/frontend-local-data';
+import { FrontendLocaleData } from '../types/ha-frontend/';
+import { formatDateNumeric } from '../types/ha-frontend/common/datetime/format_date';
+import { formatTime } from '../types/ha-frontend/common/datetime/format_time';
 
 export function cloneDeep<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj));
@@ -95,7 +97,7 @@ const formatTimestamp = (ts: number): string => {
 };
 
 export const _getHistoryPoints = memoizeOne((config: VehicleCardConfig, history?: HistoryStates): any | undefined => {
-  if (!history || !(config.map_popup_config.hours_to_show ?? 0)) {
+  if (!history || !(config.map_popup_config?.hours_to_show ?? 0)) {
     return undefined;
   }
   console.log('history', history);
@@ -198,8 +200,8 @@ export const getInitials = (name: string): string => {
     .join('');
 };
 
-export const getFormatedDateTime = (dateObj: Date, locale: FrontendLocaleData): string => {
-  return `${formatDateNumeric(dateObj, locale)} ${formatTime(dateObj, locale)}`;
+export const getFormatedDateTime = (dateObj: Date, locale: FrontendLocaleData, config: HassConfig): string => {
+  return `${formatDateNumeric(dateObj, locale, config)} ${formatTime(dateObj, locale, config)}`;
 };
 
 const isTemplateRegex = /{%|{{/;
@@ -219,3 +221,7 @@ export const hasTemplate = (value: unknown): boolean => {
   }
   return false;
 };
+
+export const getMin = (arr, val) => arr.reduce((min, p) => (Number(p[val]) < Number(min[val]) ? p : min), arr[0]);
+export const getAvg = (arr, val) => arr.reduce((sum, p) => sum + Number(p[val]), 0) / arr.length;
+export const getMax = (arr, val) => arr.reduce((max, p) => (Number(p[val]) > Number(max[val]) ? p : max), arr[0]);

@@ -1,7 +1,7 @@
-import { ButtonActionConfig } from '../types';
+import { ActionsSharedConfig } from '../types';
 type ActionType = 'tap' | 'double_tap' | 'hold';
 
-export function addActions(element: HTMLElement, config: ButtonActionConfig) {
+export function addActions(element: HTMLElement, config: ActionsSharedConfig) {
   const handler = new ActionHandler(element, config, sendActionEvent);
 
   element.addEventListener('pointerdown', handler.handleStart.bind(handler));
@@ -11,7 +11,7 @@ export function addActions(element: HTMLElement, config: ButtonActionConfig) {
   element.style.cursor = 'pointer';
 }
 
-function sendActionEvent(element: HTMLElement, config: ButtonActionConfig, action: ActionType) {
+function sendActionEvent(element: HTMLElement, config: ActionsSharedConfig, action: ActionType) {
   const tapAction = config?.tap_action || { action: 'more-info' };
   const doubleTapAction = config?.double_tap_action || { action: 'none' };
   const holdAction = config?.hold_action || { action: 'none' };
@@ -26,7 +26,7 @@ function sendActionEvent(element: HTMLElement, config: ButtonActionConfig, actio
   // console.log('sendActionEvent', action, entity, tapAction, doubleTapAction, holdAction);
 }
 
-function callAction(element: HTMLElement, config: ButtonActionConfig, action: ActionType) {
+function callAction(element: HTMLElement, config: ActionsSharedConfig, action: ActionType) {
   setTimeout(() => {
     const event = new CustomEvent('hass-action', { bubbles: true, composed: true, detail: { config, action } });
     element.dispatchEvent(event);
@@ -36,8 +36,8 @@ function callAction(element: HTMLElement, config: ButtonActionConfig, action: Ac
 
 class ActionHandler {
   private element: HTMLElement;
-  private config: ButtonActionConfig;
-  private sendActionEvent: (element: HTMLElement, config: ButtonActionConfig, action: ActionType) => void;
+  private config: ActionsSharedConfig;
+  private sendActionEvent: (element: HTMLElement, config: ActionsSharedConfig, action: ActionType) => void;
   private tapTimeout: number | null;
   private startTime: number | null;
   private lastTap: number;
@@ -48,8 +48,8 @@ class ActionHandler {
 
   constructor(
     element: HTMLElement,
-    config: ButtonActionConfig,
-    sendActionEvent: (element: HTMLElement, config: ButtonActionConfig, action: ActionType) => void
+    config: ActionsSharedConfig,
+    sendActionEvent: (element: HTMLElement, config: ActionsSharedConfig, action: ActionType) => void
   ) {
     this.element = element;
     this.config = config;

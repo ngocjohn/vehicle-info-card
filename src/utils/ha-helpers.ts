@@ -1,32 +1,32 @@
 const HELPERS = (window as any).loadCardHelpers ? (window as any).loadCardHelpers() : undefined;
 
-import { hasAction } from 'custom-card-helpers';
 import { ExtraMapCardConfig, MapEntityConfig } from 'extra-map-card';
 import memoizeOne from 'memoize-one';
+import { defaultConfig } from 'types/legacy-card-config/default-config';
 
-import { combinedFilters, CARD_UPADE_SENSOR, CARD_VERSION, REPOSITORY } from '../const/const';
+import { CARD_UPADE_SENSOR, CARD_VERSION, REPOSITORY } from '../const/const';
 import { baseDataKeys } from '../const/data-keys';
-import { VehicleCardEditor } from '../editor';
+import { combinedFilters } from '../data/car-device-entities';
+import { VehicleCardEditor } from '../legacy-card/editor';
+import { VehicleCard } from '../legacy-card/vehicle-info-card-legacy';
 import {
   HomeAssistant,
   VehicleEntities,
   VehicleEntity,
   VehicleCardConfig,
-  BaseButtonConfig,
-  CustomButtonEntity,
   CardTypeConfig,
-  ButtonCardEntity,
-  AddedCards,
   MapData,
   SECTION,
-  defaultConfig,
   Address,
-  MapPopupConfig,
-  ButtonActionConfig,
 } from '../types';
+import { MapPopupConfig } from '../types/card-config/mini-map';
 import { LovelaceCardConfig } from '../types/ha-frontend/lovelace/lovelace';
-import { VehicleCard } from '../vehicle-info-card';
-
+import {
+  ButtonCardEntity,
+  AddedCards,
+  BaseButtonConfig,
+  CustomButtonEntity,
+} from '../types/legacy-card-config/legacy-button-config';
 /**
  *
  * @param car
@@ -124,6 +124,16 @@ export function getCarEntity(hass: HomeAssistant): string {
   const entities = Object.keys(hass.states).filter((entity) => entity.startsWith('sensor.') && entity.endsWith('_car'));
   return entities[0] || '';
 }
+
+export const _getCarEntity = (hass: HomeAssistant): string => {
+  console.log('Getting car entity');
+  const entities = Object.values(hass.entities).filter((entity) => entity.platform === 'mbapi2020');
+  if (entities.length > 0) {
+    const carEntity = entities.find((entity) => entity.entity_id.endsWith('_car'));
+    return carEntity ? carEntity.entity_id : entities[0].entity_id;
+  }
+  return '';
+};
 
 export async function createCustomButtons(
   hass: HomeAssistant,
@@ -359,9 +369,9 @@ export async function handleFirstUpdated(editor: VehicleCardEditor): Promise<voi
 
     console.log('Section order:', updates.extra_configs?.section_order);
   } else if (editor._config?.extra_configs?.images_swipe === undefined) {
-    let extraConfig = { ...(editor._config.extra_configs || {}) };
+    const extraConfig = { ...(editor._config.extra_configs || {}) };
     console.log('Images swipe not found, creating default...');
-    const defaultImageSwipe = defaultConfig.extra_configs.images_swipe;
+    const defaultImageSwipe = defaultConfig.extra_configs!.images_swipe;
     extraConfig.images_swipe = defaultImageSwipe;
     updates.extra_configs = extraConfig;
     console.log('Images swipe:', updates.extra_configs?.images_swipe);
@@ -421,7 +431,9 @@ export async function handleCardFirstUpdated(component: VehicleCard): Promise<vo
 
 export async function _getSingleCard(card: VehicleCard): Promise<LovelaceCardConfig | void> {
   const config = card.config as VehicleCardConfig;
-  if (!config.map_popup_config?.single_map_card || !config.device_tracker) return;
+  if (!config.map_popup_config?.single_map_card || !config.device_tracker || !config.extra_configs?.maptiler_api_key) {
+    return;
+  }
   const hass = card._hass as HomeAssistant;
   const mapConfig = config.map_popup_config;
   const apiKey = config.extra_configs.maptiler_api_key!;
@@ -651,10 +663,4 @@ export const _convertToExtraMapConfig = (
     history_period: config.history_period,
     use_more_info: config.use_more_info,
   };
-};
-
-export const hasActions = (config: ButtonActionConfig): boolean => {
-  return Object.keys(config)
-    .filter((key) => key !== 'entity')
-    .some((action) => hasAction(config[action]));
 };

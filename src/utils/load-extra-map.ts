@@ -64,12 +64,12 @@ export const loadAndCleanExtraMap = async (): Promise<void> => {
 
     if (!exactScript) {
       if (existingScript) {
-        console.log(`${CARD_NAME}:🧹 Removing outdated script: ${existingScript.src}`);
+        // console.log(`${CARD_NAME}:🧹 Removing outdated script: ${existingScript.src}`);
         existingScript.remove();
       }
-      console.log(`${CARD_NAME}: ℹ️ Loading Extra Map Card with version ${latestVersion}`);
+      // console.log(`${CARD_NAME}: ℹ️ Loading Extra Map Card with version ${latestVersion}`);
       await loadModule(latestUrl);
-      console.log(`${CARD_NAME}: ✅ Extra Map Card loaded successfully`);
+      // console.log(`${CARD_NAME}: ✅ Extra Map Card loaded successfully`);
     } else {
       // If the exact script is already loaded, we can skip loading
     }

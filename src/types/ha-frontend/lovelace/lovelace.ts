@@ -1,6 +1,6 @@
 import type { Connection } from 'home-assistant-js-websocket';
 
-import { HomeAssistant } from './../home-assistant';
+import { HomeAssistant } from '../types';
 
 export interface Lovelace {
   config: LovelaceConfig;

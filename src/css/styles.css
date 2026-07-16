@@ -85,7 +85,7 @@ ha-card[no-header].__map_single {
 }
 
 header h1 {
-  color: var(--ha-card-header-color, --primary-text-color);
+  color: var(--ha-card-header-color, var(--primary-text-color));
   font-family: serif !important;
   font-size: 24px;
   font-size: var(--ha-card-header-font-size, 24px);

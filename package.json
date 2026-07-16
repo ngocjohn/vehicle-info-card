@@ -19,10 +19,12 @@
   "main": "vehicle-info-card.js",
   "license": "MIT",
   "dependencies": {
+    "@formatjs/intl-durationformat": "^0.8.4",
     "@mdi/js": "^7.4.47",
     "apexcharts": "^5.3.3",
     "deep-clone-simple": "^1.1.1",
     "home-assistant-js-websocket": "^9.5.0",
+    "intl-messageformat": "^10.7.18",
     "leaflet": "^1.9.4",
     "leaflet-providers": "^2.0.0",
     "lit": "^3.3.0",
@@ -49,9 +51,9 @@
     "@types/sortablejs": "^1.15.8",
     "@typescript-eslint/eslint-plugin": "^8.35.1",
     "@typescript-eslint/parser": "^8.35.1",
+    "@watchable/unpromise": "^1.0.2",
     "axios": "^1.10.0",
     "cross-env": "^7.0.3",
-    "custom-card-helpers": "^1.9.0",
     "dotenv": "^16.5.0",
     "es-toolkit": "^1.39.6",
     "eslint": "^9.30.1",
@@ -73,6 +75,7 @@
   },
   "scripts": {
     "start": "rollup -c rollup.config.js --bundleConfigAsCjs --watch",
+    "start:dev": "rollup -c rollup.config.dev.js --bundleConfigAsCjs --watch",
     "build": "pnpm run import-lang && pnpm run lint && pnpm run rollup",
     "lint": "eslint 'src/**/*.ts' --fix",
     "rollup": "rollup -c rollup.config.js --bundleConfigAsCjs",
@@ -83,6 +86,6 @@
     "update-missing": "npm run translate-new-strings && npm run add-missing-translations",
     "prepare": "husky",
     "dev-serve": "cross-env PORT=8222 npm run dev",
-    "debug": "cross-env DEBUG=true pnpm start"
+    "debug": "cross-env DEBUG=true pnpm start:dev"
   }
 }

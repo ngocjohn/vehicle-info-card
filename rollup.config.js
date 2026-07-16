@@ -1,11 +1,12 @@
 import terser from '@rollup/plugin-terser';
 import serve from 'rollup-plugin-serve';
-import filesize from 'rollup-plugin-filesize';
 import { version } from './package.json';
 import { logCardInfo, defaultPlugins } from './rollup.config.helper.mjs';
 
 const dev = process.env.ROLLUP_WATCH;
 const port = process.env.PORT || 8235;
+const debug = process.env.DEBUG;
+
 const currentVersion = dev ? `DEV - v${version}` : `v${version}`;
 const custombanner = logCardInfo(currentVersion);
 
@@ -26,16 +27,21 @@ const terserOpt = {
   },
 };
 
-const plugins = [dev && serve(serveopts), !dev && terser(terserOpt), !dev && filesize()];
+const replaceOpts = {
+  preventAssignment: true,
+  __DEBUG__: debug || false,
+};
+
+const plugins = [dev && serve(serveopts), !dev && terser(terserOpt)];
 
 export default [
   {
-    input: 'src/vehicle-info-card.ts',
+    input: 'src/main-b.ts',
     output: [
       {
         file: dev ? 'dist/vehicle-info-card.js' : 'build/vehicle-info-card.js',
         format: 'es',
-        sourcemap: dev ? true : false,
+        sourcemap: false,
         inlineDynamicImports: true,
         banner: custombanner,
       },
@@ -43,7 +49,7 @@ export default [
     watch: {
       exclude: 'node_modules/**',
     },
-    plugins: [...plugins, ...defaultPlugins],
+    plugins: [...defaultPlugins, ...plugins],
     moduleContext: (id) => {
       const thisAsWindowForModules = [
         'node_modules/@formatjs/intl-utils/lib/src/diff.js',

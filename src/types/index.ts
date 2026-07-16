@@ -1,6 +1,16 @@
+export * from './ha-frontend/index';
 export * from './config';
 export * from './card-types';
-export * from './ha-frontend/home-assistant';
-export * from './ha-frontend/data/history';
-export * from './ha-frontend/lovelace/lovelace';
-export * from './ha-frontend/lovelace/action';
+export * from './actions-config';
+export * from './section';
+export * from './config-area';
+
+import { VehicleInfoCard } from '../vehicle-info-card';
+import { VehicleInfoCardEditor } from '../vehicle-info-card-editor';
+
+declare global {
+  interface Window {
+    VicCard: VehicleInfoCard | undefined;
+    VicEditor: VehicleInfoCardEditor | undefined;
+  }
+}

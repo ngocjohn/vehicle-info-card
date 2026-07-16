@@ -13,7 +13,8 @@
     "skipLibCheck": true,
     "experimentalDecorators": true,
     "resolveJsonModule": true,
-    "strict": true
+    "strict": true,
+    "baseUrl": "./src"
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]

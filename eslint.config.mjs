@@ -22,20 +22,15 @@ export default [
     rules: {
       // TypeScript recommended rules
       '@typescript-eslint/no-unused-vars': 'off',
-      'unused-imports/no-unused-imports': 'error',
+      'unused-imports/no-unused-imports': 'warn',
       'unused-imports/no-unused-vars': 'warn',
       // Perfectionist sort-imports rule
       'perfectionist/sort-imports': [
-        'error',
+        'warn',
         {
           type: 'alphabetical',
           order: 'asc',
-          ignoreCase: true,
-          newlinesBetween: 'always',
-          maxLineLength: undefined,
           groups: ['builtin', 'external', 'internal', ['sibling', 'parent'], 'index', 'unknown'],
-          customGroups: { type: {}, value: {} },
-          environment: 'node',
         },
       ],
     },

@@ -1,6 +1,5 @@
-import { computeDomain } from 'custom-card-helpers';
-
-import { HomeAssistant } from '../home-assistant';
+import { computeDomain } from '../common/entity/compute_domain';
+import { HomeAssistant } from '../types';
 
 const NEED_ATTRIBUTE_DOMAINS = [
   'climate',

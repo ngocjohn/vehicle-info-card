@@ -1,5 +1,7 @@
-import { CustomButtonEntity } from './config';
+import { CarEntityKey } from 'data/car-device-entities';
+
 import { LovelaceCardConfig } from './ha-frontend/lovelace/lovelace';
+import { CustomButtonEntity } from './legacy-card-config/legacy-button-config';
 
 export type HEADER_ACTION = 'next' | 'prev' | 'close';
 
@@ -23,16 +25,20 @@ export type VehicleEntity = {
   translation_key?: string;
   disabled_by?: string | null;
   hidden_by?: string | null;
+  icon?: string;
+  unit?: string;
+  state?: string;
+  active?: boolean;
 };
 
-export type EntityConfig = {
+export interface EntityConfig {
   key: string;
   name?: string;
   icon?: string;
   unit?: string;
   state?: string;
   active?: boolean;
-};
+}
 
 export interface ecoChartModel {
   bonusRange: {
@@ -64,3 +70,23 @@ export interface PreviewCard {
   cardPreview?: LovelaceCardConfig[];
   buttonPreview?: Partial<CustomButtonEntity>;
 }
+
+export interface CarEntity {
+  entity_id: string;
+  original_name: string;
+  name?: string;
+  icon?: string;
+  unit?: string;
+  state?: string;
+  active?: boolean;
+}
+
+export type CarEntities = {
+  [K in CarEntityKey]?: CarEntity;
+};
+
+export type CarItemDisplay = Partial<CarEntity & EntityConfig> & {
+  display_state?: string;
+};
+
+export type CarEntityFunc = (entityKey: string) => CarEntity | undefined;
