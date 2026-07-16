@@ -36,12 +36,12 @@ const plugins = [dev && serve(serveopts), !dev && terser(terserOpt)];
 
 export default [
   {
-    input: 'src/main.ts',
+    input: 'src/main-b.ts',
     output: [
       {
         file: dev ? 'dist/vehicle-info-card.js' : 'build/vehicle-info-card.js',
         format: 'es',
-        sourcemap: dev ? true : false,
+        sourcemap: false,
         inlineDynamicImports: true,
         banner: custombanner,
       },
@@ -49,7 +49,7 @@ export default [
     watch: {
       exclude: 'node_modules/**',
     },
-    plugins: [replace(replaceOpts), ...defaultPlugins, ...plugins],
+    plugins: [...defaultPlugins, ...plugins],
     moduleContext: (id) => {
       const thisAsWindowForModules = [
         'node_modules/@formatjs/intl-utils/lib/src/diff.js',

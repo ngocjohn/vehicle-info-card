@@ -46,7 +46,20 @@ export default [
       inlineDynamicImports: true,
     },
     plugins: [replace(replaceOpts), ...defaultPlugins, ...plugins],
-    watch: false,
+    // watch: false,
+    moduleContext: (id) => {
+      const thisAsWindowForModules = [
+        'node_modules/@formatjs/intl-utils/lib/src/diff.js',
+        'node_modules/@formatjs/intl-utils/lib/src/resolve-locale.js',
+      ];
+      if (thisAsWindowForModules.some((id_) => id.trimRight().endsWith(id_))) {
+        return 'window';
+      }
+    },
+    onwarn(warning, warn) {
+      if (warning.code === 'CIRCULAR_DEPENDENCY') return; // Ignore circular dependency warnings
+      warn(warning); // Display other warnings
+    },
   },
   {
     input: 'src/main.ts',
@@ -59,10 +72,11 @@ export default [
         banner: custombanner,
       },
     ],
-    watch: {
-      exclude: 'node_modules/**',
-      buildDelay: 500,
-    },
+    // watch: {
+    //   exclude: 'node_modules/**',
+    //   buildDelay: 500,
+    // },
+    watch: false,
     plugins: [replace(replaceOpts), ...defaultPlugins, ...plugins],
     moduleContext: (id) => {
       const thisAsWindowForModules = [

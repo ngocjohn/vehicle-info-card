@@ -49,7 +49,7 @@ export const languageOptions = [
   { key: 'zh-Hant', name: zh_Hant.name, nativeName: zh_Hant.nativeName },
 ];
 
-const langFiles: Record<string, unknown> = {
+export const langFiles: Record<string, unknown> = {
   cs,
   de,
   'en-GB': en_GB,
@@ -66,21 +66,6 @@ const langFiles: Record<string, unknown> = {
   'zh-Hant': zh_Hant,
 };
 
-export const langKeys = [
-  'cs',
-  'de',
-  'en-GB',
-  'en',
-  'es',
-  'fr',
-  'it',
-  'lt',
-  'nl',
-  'pl',
-  'sk',
-  'vi',
-  'zh-Hans',
-  'zh-Hant',
-] as const;
+export const langKeys = ['cs', 'de', 'en-GB', 'en', 'es', 'fr', 'it', 'lt', 'nl', 'pl', 'sk', 'vi', 'zh-Hans', 'zh-Hant'] as const;
 
-export { languages, langFiles };
+export { languages };
