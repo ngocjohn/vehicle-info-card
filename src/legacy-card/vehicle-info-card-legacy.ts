@@ -1677,12 +1677,10 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     return 3;
   }
 
-  public getLayoutOptions() {
+  public getGridOptions() {
     const gridRowSize = this.getGridRowSize();
     return {
-      grid_min_rows: gridRowSize,
-      grid_columns: 4,
-      grid_min_columns: 4,
+      min_rows: gridRowSize,
     };
   }
 }
