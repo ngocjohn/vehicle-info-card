@@ -42,7 +42,7 @@ export default [
     output: {
       file: 'dist/vehicle-info-card-legacy.js',
       format: 'es',
-      sourcemap: false,
+      sourcemap: true,
       inlineDynamicImports: true,
     },
     plugins: [replace(replaceOpts), ...defaultPlugins, ...plugins],
