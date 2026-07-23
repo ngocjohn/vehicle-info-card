@@ -1,3 +1,19 @@
+<a id="v1.12.2"></a>
+# [v1.12.2](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.12.2) - 2026-07-23
+
+<!-- Release notes generated using configuration in .github/release.yml at v1.12.2 -->
+
+## What's Changed
+### Fixes 🐛
+* Adjust card layout options and settings by [@ngocjohn](https://github.com/ngocjohn) in [#348](https://github.com/ngocjohn/vehicle-info-card/pull/348)
+* Fix window status handling and improve localizations by [@ngocjohn](https://github.com/ngocjohn) in [#352](https://github.com/ngocjohn/vehicle-info-card/pull/352)
+
+
+**Full Changelog**: https://github.com/ngocjohn/vehicle-info-card/compare/v1.12.1...v1.12.2
+
+[Changes][v1.12.2]
+
+
 <a id="v1.12.1"></a>
 # [v1.12.1](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.12.1) - 2026-07-16
 
@@ -9,6 +25,8 @@
 ### Fixes 🐛
 * Fix: Card width conflict with custom layout [#162](https://github.com/ngocjohn/vehicle-info-card/issues/162) by [@ngocjohn](https://github.com/ngocjohn) in [#163](https://github.com/ngocjohn/vehicle-info-card/pull/163)
 * Implement load and clean logic for extra map card resources by [@ngocjohn](https://github.com/ngocjohn) in [#192](https://github.com/ngocjohn/vehicle-info-card/pull/192)
+* Apexcharts deps conflict
+* Attributes translated value 
 ### Other Changes
 * Update VehicleCard and dependencies for enhanced functionality by [@ngocjohn](https://github.com/ngocjohn) in [#179](https://github.com/ngocjohn/vehicle-info-card/pull/179)
 * Update project dependencies by [@ngocjohn](https://github.com/ngocjohn) in [#180](https://github.com/ngocjohn/vehicle-info-card/pull/180)
@@ -610,6 +628,7 @@ This update enhances the usability and accuracy of our custom card, providing cl
 [Changes][v1.0.0]
 
 
+[v1.12.2]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.12.1...v1.12.2
 [v1.12.1]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.11.0...v1.12.1
 [v1.11.0]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.10.0...v1.11.0
 [v1.10.0]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.9.1...v1.10.0
