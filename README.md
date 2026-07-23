@@ -31,8 +31,8 @@
 | ------------- | ---------------------- | ---------------------- |
 | `cs`     | Czech          | Čeština          |
 | `de`     | German          | Deutsch          |
+| `en-GB`     | English          | English (GB)          |
 | `en`     | English          | English          |
-| `en_GB`     | English          | English (GB)          |
 | `es`     | Spanish          | Español          |
 | `fr`     | French          | Français          |
 | `it`     | Italiano          | Italian          |
@@ -41,8 +41,8 @@
 | `pl`     | Polish          | Polski          |
 | `sk`     | Slovak          | Slovenčina          |
 | `vi`     | Vietnamese          | Tiếng Việt          |
-| `zh_Hans`     | zh-hans          | 简体中文          |
-| `zh_Hant`     | zh-hant          | 繁體中文          |
+| `zh-Hans`     | zh-hans          | 简体中文          |
+| `zh-Hant`     | zh-hant          | 繁體中文          |
 
 </details>
 
