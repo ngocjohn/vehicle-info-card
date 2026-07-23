@@ -1042,7 +1042,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
         // console.log('State mapping for', key, ':', stateMapping[key], 'state:', state[key]);
       }
     });
-    console.log('Subcard state for', attributeType, ':', state);
+
     // Render the attributes
     return html`
       <div class="sub-attributes" ?active=${attributesVisible}>
@@ -1055,9 +1055,11 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
             let classState: boolean;
             if (key === 'sunroofstatus') {
-              classState = rawState === '0' ? false : true;
+              classState = rawState.toString() !== '0';
+            } else if (attributeType === 'window' && key !== 'sunroofstatus') {
+              classState = rawState.toString() !== '2';
             } else {
-              classState = ['2', '1', false, 'false', 2].includes(rawState as string) ? false : true;
+              classState = ['1', false, 'false', 2].includes(rawState as string) ? false : true;
             }
             return html`
               <div class="data-row">
@@ -1350,7 +1352,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       Object.keys(StateMapping.windowAttributes(lang)).forEach((attribute) => {
         let attributeState: string | boolean | null | undefined;
         if (attribute === 'sunroofstatus' && this.vehicleEntities.sunroofStatus?.entity_id !== undefined) {
-          attributeState = this.getEntityState(this.vehicleEntities.sunroofStatus.entity_id) === '1' ? true : false;
+          attributeState = this.getEntityState(this.vehicleEntities.sunroofStatus.entity_id) === '2';
         } else {
           const attrValue = this.getEntityAttribute(vehicleEntity.entity_id, attribute);
 
@@ -1363,7 +1365,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       });
 
       const openWindows = Object.keys(windowAttributeStates).filter(
-        (attribute) => windowAttributeStates[attribute] === '0' || windowAttributeStates[attribute] === true,
+        (attribute) => windowAttributeStates[attribute] !== '2' || windowAttributeStates[attribute] === true,
       ).length;
 
       if (openWindows === 0) {
