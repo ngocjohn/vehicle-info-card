@@ -31,7 +31,7 @@
     "memoize-one": "^6.0.0",
     "nvn-tabs": "^1.0.1",
     "sortablejs": "^1.15.6",
-    "swiper": "^11.2.10",
+    "swiper": "^14.0.6",
     "tinycolor2": "^1.6.0"
   },
   "devDependencies": {
