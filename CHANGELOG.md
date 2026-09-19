@@ -1,3 +1,18 @@
+<a id="v1.12.3"></a>
+# [v1.12.3](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.12.3) - 2026-09-19
+
+<!-- Release notes generated using configuration in .github/release.yml at v1.12.3 -->
+
+## What's Changed
+### Fixes 🐛
+* fix: Integrate Maplibre for enhanced mapping functionality by [@ngocjohn](https://github.com/ngocjohn) in [#376](https://github.com/ngocjohn/vehicle-info-card/pull/376)
+
+
+**Full Changelog**: https://github.com/ngocjohn/vehicle-info-card/compare/v1.12.2...v1.12.3
+
+[Changes][v1.12.3]
+
+
 <a id="v1.12.2"></a>
 # [v1.12.2](https://github.com/ngocjohn/vehicle-info-card/releases/tag/v1.12.2) - 2026-07-23
 
@@ -628,6 +643,7 @@ This update enhances the usability and accuracy of our custom card, providing cl
 [Changes][v1.0.0]
 
 
+[v1.12.3]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.12.2...v1.12.3
 [v1.12.2]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.12.1...v1.12.2
 [v1.12.1]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.11.0...v1.12.1
 [v1.11.0]: https://github.com/ngocjohn/vehicle-info-card/compare/v1.10.0...v1.11.0
