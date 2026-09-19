@@ -1,4 +1,5 @@
 // Leaflet imports
+import { maplibreGL } from '@maplibre/maplibre-gl-leaflet';
 import * as L from 'leaflet';
 import mapstyle from 'leaflet/dist/leaflet.css';
 import 'leaflet-providers';
@@ -6,6 +7,8 @@ import 'leaflet-providers';
 import { LitElement, html, css, TemplateResult, PropertyValues, CSSResultGroup, unsafeCSS, nothing } from 'lit';
 import { customElement, state, property } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
+import { setWorkerUrl } from 'maplibre-gl';
+import maplibreStyle from 'maplibre-gl/dist/maplibre-gl.css';
 
 import { MAPTILER_DIALOG_STYLES, DEFAULT_DIALOG_STYLES, DEFAULT_HOURS_TO_SHOW } from '../../../const/maptiler-const';
 import {
@@ -29,6 +32,12 @@ export interface MapConfig extends MapPopupConfig {
   google_api_key?: string;
   maptiler_api_key?: string;
 }
+
+// Generate a unified local pointer
+const MAPLIBRE_VERSION = '6.10.0';
+const cdnWorkerUrl = `https://unpkg.com/maplibre-gl@${MAPLIBRE_VERSION}/dist/maplibre-gl-worker.mjs`;
+
+setWorkerUrl(new URL(cdnWorkerUrl, import.meta.url).toString());
 
 @customElement('vehicle-map')
 export class VehicleMap extends LitElement {
@@ -126,7 +135,7 @@ export class VehicleMap extends LitElement {
       },
       new Date(startTime),
       new Date(endTime),
-      [mapConfig.device_tracker!]
+      [mapConfig.device_tracker!],
     ).catch((err) => {
       this._subscribed = undefined;
       console.error('Error subscribing to history', err);
@@ -194,13 +203,12 @@ export class VehicleMap extends LitElement {
     const mapContainer = this.shadowRoot?.getElementById('map') as HTMLElement;
     if (!mapContainer) return;
     this.map = L.map(mapContainer, mapOptions).setView([lat, lon]);
-
     this.latLon = this._getTargetLatLng(this.map);
 
     this.map.setView(this.latLon, this.zoom);
 
-    // Add tile layer to map
-    this._createTileLayer(this.map);
+    // // Add tile layer to map
+    this._addMaplibreLayer(this.map);
     // Add marker to map
     this.marker = this._createMarker(this.map);
     this.map.on('moveend zoomend', () => {
@@ -239,14 +247,11 @@ export class VehicleMap extends LitElement {
     return marker;
   }
 
-  private _createTileLayer(map: L.Map): L.TileLayer {
-    const tileOpts = {
-      tileSize: 256,
-      className: 'map-tiles',
-    };
-
-    const tileLayer = L.tileLayer.provider('CartoDB.Positron', tileOpts).addTo(map);
-    return tileLayer;
+  private _addMaplibreLayer(map: L.Map) {
+    console.log('Adding Maplibre layer to map...');
+    maplibreGL({
+      style: 'https://tiles.openfreemap.org/styles/positron',
+    }).addTo(map);
   }
 
   private resetMap(): void {
@@ -386,6 +391,7 @@ export class VehicleMap extends LitElement {
   static get styles(): CSSResultGroup {
     return [
       unsafeCSS(mapstyle),
+      unsafeCSS(maplibreStyle),
       css`
         *:focus {
           outline: none;
@@ -427,12 +433,13 @@ export class VehicleMap extends LitElement {
           mask-image: var(--vic-map-mask-image);
           mask-composite: intersect;
         }
-
+        .leaflet-tile-pane,
         .map-tiles {
           filter: var(--vic-map-tiles-filter, none);
           position: relative;
           width: 100%;
           height: 100%;
+          /* z-index: 1; */
         }
 
         .marker {
