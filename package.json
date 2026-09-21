@@ -65,7 +65,7 @@
     "json5": "^2.2.3",
     "lint-staged": "^16.1.2",
     "maplibre-gl": "^6.10.0",
-    "postcss-preset-env": "^10.2.4",
+    "postcss-preset-env": "^11.5.3",
     "rollup": "^4.44.1",
     "rollup-plugin-filesize": "^10.0.0",
     "rollup-plugin-polyfill-node": "^0.13.0",
