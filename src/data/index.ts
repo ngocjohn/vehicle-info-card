@@ -1,4 +1,5 @@
 export * from './car-device-entities';
+export * from './service-capabilities';
 export * from './subcard-items';
 export * from './attributes-items';
 export * from './indicator-items';

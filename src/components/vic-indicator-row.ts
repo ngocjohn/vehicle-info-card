@@ -1,3 +1,4 @@
+import { hasServiceCapability } from 'data/car-device-entities';
 import { CardIndicatorKey, ChargingOverviewKey, INDICATOR_SECTIONS, IndicatorBaseKey } from 'data/indicator-items';
 import { isEmpty, pick } from 'es-toolkit/compat';
 import { html, TemplateResult, css, CSSResultGroup, PropertyValues } from 'lit';
@@ -37,6 +38,7 @@ export class VicIndicatorRow extends BaseElement {
     if (_changedProperties.has('_connected') && this._connected) {
       if (isEmpty(this._baseIndicators)) {
         this._baseIndicators = this.car._getIndicatorSectionItems(INDICATOR_SECTIONS.BASE_INDICATORS);
+        this._noServices = !hasServiceCapability(this.car._carEntities);
       }
     }
 

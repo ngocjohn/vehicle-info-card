@@ -3,7 +3,7 @@ import { mdiClose } from '@mdi/js';
 import { LitElement, html, TemplateResult, CSSResultGroup, nothing } from 'lit';
 import { customElement, state, property } from 'lit/decorators.js';
 
-import { ControlServiceData, tempSelectOptions } from '../../../const/remote-control-keys';
+import { ControlServiceData, tempSelectOptions, servicesCtrl } from '../../../const/remote-control-keys';
 import styles from '../../../css/remote-control.css';
 import mainstyle from '../../../css/styles.css';
 import { fireEvent, forwardHaptic } from '../../../types';
@@ -21,6 +21,10 @@ export class RemoteControl extends LitElement {
   @property({ attribute: false }) hass!: HomeAssistant;
   @property({ attribute: false }) card!: VehicleCard;
   @property({ attribute: false }) private selectedServices!: { [key: string]: { name: string; icon: string } };
+  /** Services the user enabled that this car cannot perform. */
+  @property({ attribute: false }) private gatedServices: string[] = [];
+  /** Mirrors extra_configs.services_config.enabled / enable_services_control. */
+  @property({ attribute: false }) private controlEnabled: boolean = true;
 
   @state() private subcardType: string | null = null;
   @state() private serviceData: Record<string, any> = {};
@@ -75,7 +79,22 @@ export class RemoteControl extends LitElement {
   }
 
   protected render(): TemplateResult {
-    if (Object.keys(this.selectedServices).length === 0) return html`<hui-warning>No service selected.</hui-warning>`;
+    if (!this.controlEnabled) {
+      return html`<hui-warning>${this.card.localize('card.common.titleRemoteControlDisabled')}</hui-warning>`;
+    }
+    if (Object.keys(this.selectedServices).length === 0) {
+      // Distinguish "you enabled nothing" from "you enabled things this car
+      // cannot do", otherwise capability gating looks like a broken card.
+      if (!this.gatedServices.length) {
+        return html`<hui-warning>No service selected.</hui-warning>`;
+      }
+      const names = this.gatedServices
+        .map((service) => servicesCtrl(this.card.userLang)[service]?.name ?? service)
+        .join(', ');
+      return html`<hui-warning
+        >${this.card.localize('card.common.titleRemoteControlUnsupported', '{services}', names)}</hui-warning
+      >`;
+    }
     const title = !this.subcardType
       ? this.card.localize('card.common.titleRemoteControl')
       : this.selectedServices[this.subcardType].name;

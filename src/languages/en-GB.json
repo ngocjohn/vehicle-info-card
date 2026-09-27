@@ -21,6 +21,8 @@
             "stateVentilating": "Ventilating",
             "stateRunning": "Moving",
             "titleRemoteControl": "Remote control",
+            "titleRemoteControlDisabled": "Remote control is turned off for this card.",
+            "titleRemoteControlUnsupported": "Not supported by this car: {services}",
             "titleServices": "Services",
             "toastCommandSent": "Command sent sucess!",
             "toastImageError": "Error uploading image. Only PNG and JPEG files are allowed.",

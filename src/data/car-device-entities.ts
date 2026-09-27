@@ -249,6 +249,30 @@ function internalNameOf(uniqueId: string | undefined): string | undefined {
 }
 
 /**
+ * Keys that back a remote-control action. A car resolving none of them has no
+ * hardware the control panel could act on, which is what the indicator row uses
+ * to decide whether to offer the services entry point at all.
+ */
+export const SERVICE_BACKING_KEYS: readonly CarEntityKey[] = [
+  'lock',
+  'lockSensor',
+  'soc',
+  'maxSoc',
+  'rangeElectric',
+  'precondStatus',
+  'engineState',
+  'sunroofStatus',
+  'windowsClosed',
+];
+
+export function hasServiceCapability(entities: Record<string, unknown> | undefined): boolean {
+  if (!entities) {
+    return false;
+  }
+  return SERVICE_BACKING_KEYS.some((key) => !!entities[key]);
+}
+
+/**
  * Keys the card could not resolve for the current car. Surfaced for diagnostics:
  * on any given model most keys are legitimately absent, and a silently short
  * list is indistinguishable from a broken lookup.

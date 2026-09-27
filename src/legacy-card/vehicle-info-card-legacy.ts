@@ -14,6 +14,7 @@ import { IMAGE } from '../const/imgconst';
 import { servicesCtrl } from '../const/remote-control-keys';
 import * as StateMapping from '../const/state-mapping';
 import styles from '../css/styles.css';
+import { getAvailableServices } from '../data/service-capabilities';
 import { localize } from '../localize/localize';
 import {
   HomeAssistant,
@@ -26,6 +27,7 @@ import {
   SECTION_DEFAULT_ORDER,
 } from '../types';
 import { HEADER_ACTION, PreviewCard, MapData, SECTION } from '../types';
+import { ServicesItem } from '../types/card-config/services-config';
 import { fireEvent, formatDateTime, forwardHaptic } from '../types/ha-frontend';
 import * as ENTITY_UTIL from '../types/ha-frontend/data/entity_registry';
 import { FrontendLocaleData } from '../types/ha-frontend/data/translation';
@@ -78,6 +80,13 @@ export class VehicleCard extends LitElement implements LovelaceCard {
   }
 
   @property({ attribute: false }) public _hass!: HomeAssistant;
+
+  /**
+   * Remote-control actions this car can perform, resolved from the entities the
+   * integration actually created. `undefined` until the first probe resolves,
+   * which keeps the control panel fully populated during startup.
+   */
+  private _availableServices?: ServicesItem[];
   @property({ attribute: false }) public config!: VehicleCardConfig;
   @property({ type: Boolean }) public editMode: boolean = false;
   @property({ attribute: false }) public layout?: string;
@@ -209,6 +218,10 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
   protected async willUpdate(changedProps: PropertyValues): Promise<void> {
     super.willUpdate(changedProps);
+
+    if (changedProps.has('config') && this._hass && this.config.entity) {
+      await this._updateAvailableServices();
+    }
 
     if (
       changedProps.has('config') &&
@@ -624,8 +637,8 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
     const chartData = filteredData.map((item) => {
       const label = this.localize(`card.ecoCard.${item.key}`);
-      // Not every model reports every eco score, so chart a missing entity as
-      // "no data" instead of throwing and taking the eco card down with it.
+      // Not every model reports every eco score, so a missing entity must chart
+      // as "no data" rather than throw and take the whole sub-card down.
       const entityId = this.vehicleEntities[item.key]?.entity_id;
       const score = entityId ? getEcoScore(entityId) : 0;
       return { series: score, labels: label };
@@ -871,26 +884,67 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
   private _renderServiceControl(): TemplateResult | void {
     const hass = this._hass;
-    const serviceControl = this.config.services || {};
+    const servicesConfig = this.config.extra_configs?.services_config;
+    // Accept both the current shape (extra_configs.services_config) and the
+    // deprecated top-level `services` / `enable_services_control`. The migration
+    // in updateDeprecatedConfig rewrites old configs into the new shape, but the
+    // legacy renderer used to read only the old keys - so a config that had been
+    // through the editor silently rendered an empty control panel.
+    const enabled = servicesConfig?.enabled ?? this.config.enable_services_control;
+    const items: ServicesItem[] =
+      servicesConfig?.items ??
+      (Object.entries(this.config.services ?? {}).filter(([, on]) => on).map(([key]) => key as ServicesItem));
 
-    const activeServices = Object.entries(serviceControl).reduce(
-      (acc, [key, value]) => {
-        if (value) {
+    // Only offer a control the car can actually perform. Without this the panel
+    // shows whatever the user ticked, so a non-EV car would offer charge
+    // controls and a car without a sunroof would offer sunroof controls, both of
+    // which fail when used. Until the capability probe has resolved we keep
+    // every control, so the panel is never briefly empty.
+    const available = this._availableServices;
+    const activeServices = items
+      .filter((key) => !available || available.includes(key))
+      .reduce(
+        (acc, key) => {
           acc[key] = {
             name: servicesCtrl(this.userLang)[key].name,
             icon: servicesCtrl(this.userLang)[key].icon,
           };
-        }
-        return acc;
-      },
-      {} as Record<string, { name: string; icon: string }>,
-    );
+          return acc;
+        },
+        {} as Record<string, { name: string; icon: string }>,
+      );
+
+    const gatedOut = items.filter((item) => available && !available.includes(item));
 
     return html`
       <div class="default-card remote-tab">
-        <remote-control .hass=${hass} .card=${this as any} .selectedServices=${activeServices}></remote-control>
+        <remote-control
+          .hass=${hass}
+          .card=${this as any}
+          .selectedServices=${activeServices}
+          .gatedServices=${gatedOut}
+          .controlEnabled=${enabled !== false}
+        ></remote-control>
       </div>
     `;
+  }
+
+  /**
+   * Refreshes the set of services this car can perform. Memoized upstream, so
+   * repeated hass updates cost nothing; results are applied asynchronously and
+   * trigger a re-render only when they actually change.
+   */
+  private async _updateAvailableServices(): Promise<void> {
+    const carEntity = this._hass?.entities[this.config.entity];
+    const next = await getAvailableServices(carEntity, this._hass);
+    const changed =
+      !this._availableServices ||
+      next.length !== this._availableServices.length ||
+      next.some((s) => !this._availableServices!.includes(s));
+    if (changed) {
+      this._availableServices = next;
+      this.requestUpdate();
+    }
   }
 
   private _showWarning(warning: string): TemplateResult {
@@ -1313,10 +1367,9 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       doorStatusOverall = this.localize('card.common.stateClosed');
     } else {
       const doorAttributeStates: Record<string, any> = {};
-      // Read the entity ids once and tolerate their absence. Every door attribute
-      // except the charge flap is read from the lock sensor, so dereferencing it
-      // unguarded throws and takes the whole vehicle card down whenever the car
-      // has no lock sensor.
+      // Read once, and tolerate its absence. A car with no lock sensor still
+      // renders this card, so this loop must never dereference it blindly - every
+      // door attribute except the charge flap falls through to it.
       const lockSensorId = this.vehicleEntities.lockSensor?.entity_id;
       const chargeFlapId = this.vehicleEntities.chargeFlapDCStatus?.entity_id;
 
@@ -1327,7 +1380,7 @@ export class VehicleCard extends LitElement implements LovelaceCard {
           doorAttributeStates[attribute] = this.getEntityAttribute(lockSensorId, attribute);
         }
         // Otherwise the door states are unknown for this car, so the attribute is
-        // left unrecorded and excluded from the "open doors" count.
+        // simply not recorded and is excluded from the "open doors" count.
       });
       const openDoors = Object.keys(doorAttributeStates).filter(
         (attribute) => doorAttributeStates[attribute] === '0' || doorAttributeStates[attribute] === true,
