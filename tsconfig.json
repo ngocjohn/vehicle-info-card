@@ -2,8 +2,8 @@
   "compilerOptions": {
     "target": "es2017",
     "module": "esnext",
-    "moduleResolution": "node",
-    "lib": ["es2017", "dom", "dom.iterable", "WebWorker"],
+    "moduleResolution": "bundler",
+    "lib": ["es2017", "es2019", "es2020", "dom", "dom.iterable", "WebWorker"],
     "allowSyntheticDefaultImports": true,
     "noEmit": true,
     "noUnusedParameters": true,
@@ -14,7 +14,10 @@
     "experimentalDecorators": true,
     "resolveJsonModule": true,
     "strict": true,
-    "baseUrl": "./src"
+    "paths": {
+      "*": ["./src/*"],
+      "@formatjs/intl-durationformat/src/types": ["./node_modules/@formatjs/intl-durationformat/src/types.d.ts"]
+    }
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]

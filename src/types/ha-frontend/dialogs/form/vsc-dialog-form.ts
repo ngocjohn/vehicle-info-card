@@ -6,7 +6,6 @@ import { fireEvent } from '../../common/dom/fire_event';
 import type { HomeAssistant } from '../../types';
 import type { HassDialog } from '../dialog-manager';
 import type { FormDialogData, FormDialogParams } from './show-form-dialog';
-import '../../../editor/shared/vsc-editor-form';
 
 @customElement('vsc-dialog-form')
 export class VscDialogForm extends LitElement implements HassDialog<FormDialogData> {
