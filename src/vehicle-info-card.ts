@@ -42,6 +42,8 @@ export class VehicleInfoCard extends BaseElement implements LovelaceCard {
   @property({ attribute: false }) public _config!: VehicleCardConfig;
   @state() _carEntities: CarEntities = {};
   @state() private _loadedData: boolean = false;
+  /** Set when `config.entity` no longer resolves in the entity registry. */
+  @state() private _entityNotFound: boolean = false;
   @state() private _legacyConfig?: VehicleCardConfig;
 
   @state() _buttonOrder: string[] = [];
@@ -109,7 +111,16 @@ export class VehicleInfoCard extends BaseElement implements LovelaceCard {
     if (_changedProperties.has('_config') && this._config.entity != null && this._hass) {
       if (isEmpty(this._carEntities)) {
         console.log('Loading car entities for the first time');
-        this._carEntities = await getCarEntities(this._hass.entities[this._config.entity], this._hass);
+        const entry = this._hass.entities[this._config.entity];
+        if (!entry) {
+          // A renamed or removed config.entity used to throw a TypeError on
+          // `entry.device_id` inside this async hook, leaving a blank card with
+          // no explanation.
+          this._entityNotFound = true;
+          this._loadedData = true;
+          return;
+        }
+        this._carEntities = await getCarEntities(entry, this._hass);
         console.log('Car entities updated');
         this._loadedData = true;
       }

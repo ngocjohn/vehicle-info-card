@@ -4,7 +4,7 @@ import { CarEntity, EntityRegistryDisplayEntry, fetchEntityRegistry } from 'type
 import { HomeAssistant } from 'types';
 import { CarEntities } from 'types';
 
-import { combinedFilters } from '../../data/car-device-entities';
+import { CarEntityKey, combinedFilters, findEntityForKey, findUnresolvedKeys } from '../../data/car-device-entities';
 
 export const getCarEntities = memoizeOne(
   async (entry: EntityRegistryDisplayEntry, hass: HomeAssistant): Promise<CarEntities> => {
@@ -19,18 +19,8 @@ export const getCarEntities = memoizeOne(
     // console.log('%cCAR-ENTITIES:', 'color: #bada55;', combinedFilters);
 
     const entities: CarEntities = {};
-    for (const [key, val] of Object.entries(combinedFilters)) {
-      const { prefix, suffix } = val;
-      const matchesEntity = deviceEntities.find((e) => {
-        if (['soc', 'maxSoc'].includes(key)) {
-          const origName = key === 'soc' ? 'State of Charge' : 'Max State of Charge';
-          return e.original_name === origName;
-        } else if (prefix) {
-          return e.entity_id.startsWith(prefix) && e.entity_id.endsWith(suffix);
-        } else {
-          return e.unique_id?.endsWith(suffix) || e.entity_id.endsWith(suffix);
-        }
-      });
+    for (const key of Object.keys(combinedFilters) as CarEntityKey[]) {
+      const matchesEntity = findEntityForKey(key, deviceEntities);
 
       if (matchesEntity) {
         const entityStateObj = hass.states[matchesEntity.entity_id];
@@ -38,12 +28,31 @@ export const getCarEntities = memoizeOne(
         const unit = entityStateObj?.attributes?.unit_of_measurement || undefined;
         entities[key] = {
           entity_id: matchesEntity.entity_id,
-          original_name: matchesEntity.original_name,
+          original_name: matchesEntity.original_name ?? '',
           icon,
           unit,
         } as CarEntity;
       }
     }
+
+    // Diagnostics. Absence is expected on most models, so a short list is not by
+    // itself a fault - but silently returning one is indistinguishable from a
+    // broken lookup, so report both halves once per resolution.
+    const unresolved = findUnresolvedKeys(deviceEntities);
+    const report = {
+      resolved: Object.keys(entities).length,
+      total: Object.keys(combinedFilters).length,
+      // Capabilities this car genuinely does not report.
+      unavailable: unresolved,
+      entities,
+    };
+    // console.warn, not console.log: the production build runs terser with
+    // drop_console: ['log', 'error'], so a log call would never reach the console.
+    console.warn(
+      `[vehicle-info-card] resolved ${report.resolved}/${report.total} car entities` +
+        (unresolved.length ? `; not reported by this car: ${unresolved.join(', ')}` : ''),
+    );
+    window.VicCarEntities = report;
 
     // console.log(Object.keys(entities).length, entities);
     return entities;

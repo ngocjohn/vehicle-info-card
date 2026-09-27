@@ -624,7 +624,10 @@ export class VehicleCard extends LitElement implements LovelaceCard {
 
     const chartData = filteredData.map((item) => {
       const label = this.localize(`card.ecoCard.${item.key}`);
-      const score = getEcoScore(this.vehicleEntities[item.key].entity_id);
+      // Not every model reports every eco score, so chart a missing entity as
+      // "no data" instead of throwing and taking the eco card down with it.
+      const entityId = this.vehicleEntities[item.key]?.entity_id;
+      const score = entityId ? getEcoScore(entityId) : 0;
       return { series: score, labels: label };
     });
 
@@ -1310,15 +1313,21 @@ export class VehicleCard extends LitElement implements LovelaceCard {
       doorStatusOverall = this.localize('card.common.stateClosed');
     } else {
       const doorAttributeStates: Record<string, any> = {};
+      // Read the entity ids once and tolerate their absence. Every door attribute
+      // except the charge flap is read from the lock sensor, so dereferencing it
+      // unguarded throws and takes the whole vehicle card down whenever the car
+      // has no lock sensor.
+      const lockSensorId = this.vehicleEntities.lockSensor?.entity_id;
+      const chargeFlapId = this.vehicleEntities.chargeFlapDCStatus?.entity_id;
+
       Object.keys(StateMapping.doorAttributes(lang)).forEach((attribute) => {
-        if (attribute === 'chargeflapdcstatus' && this.vehicleEntities.chargeFlapDCStatus?.entity_id !== undefined) {
-          doorAttributeStates[attribute] = this.getEntityState(this.vehicleEntities.chargeFlapDCStatus.entity_id);
-        } else {
-          doorAttributeStates[attribute] = this.getEntityAttribute(
-            this.vehicleEntities.lockSensor.entity_id,
-            attribute,
-          );
+        if (attribute === 'chargeflapdcstatus' && chargeFlapId !== undefined) {
+          doorAttributeStates[attribute] = this.getEntityState(chargeFlapId);
+        } else if (lockSensorId !== undefined) {
+          doorAttributeStates[attribute] = this.getEntityAttribute(lockSensorId, attribute);
         }
+        // Otherwise the door states are unknown for this car, so the attribute is
+        // left unrecorded and excluded from the "open doors" count.
       });
       const openDoors = Object.keys(doorAttributeStates).filter(
         (attribute) => doorAttributeStates[attribute] === '0' || doorAttributeStates[attribute] === true,

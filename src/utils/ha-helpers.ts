@@ -6,7 +6,12 @@ import { defaultConfig } from 'types/legacy-card-config/default-config';
 
 import { CARD_UPADE_SENSOR, CARD_VERSION, REPOSITORY } from '../const/const';
 import { baseDataKeys } from '../const/data-keys';
-import { combinedFilters } from '../data/car-device-entities';
+import {
+  CarEntityKey,
+  combinedFilters,
+  findEntityForKey,
+  findUnresolvedKeys,
+} from '../data/car-device-entities';
 import { VehicleCardEditor } from '../legacy-card/editor';
 import { VehicleCard } from '../legacy-card/vehicle-info-card-legacy';
 import {
@@ -56,39 +61,59 @@ const getVehicleEntities = memoizeOne(
 
     const entityIds: VehicleEntities = {};
 
-    for (const entityName of Object.keys(combinedFilters)) {
-      const { prefix, suffix } = combinedFilters[entityName];
-
-      if (entityName === 'soc' || entityName === 'maxSoc') {
-        const specialName = entityName === 'soc' ? 'State of Charge' : 'Max State of Charge';
-        const entity = deviceEntities.find((e) => e.original_name === specialName);
-        if (entity) {
-          entityIds[entityName] = {
-            entity_id: entity.entity_id,
-            original_name: entity.original_name,
-          };
-        }
-        continue;
-      }
-
-      const entity = deviceEntities.find((e) => {
-        if (prefix) {
-          return e.entity_id.startsWith(prefix) && e.entity_id.endsWith(suffix);
-        }
-        return e.unique_id.endsWith(suffix) || e.entity_id.endsWith(suffix);
-      });
+    for (const entityName of Object.keys(combinedFilters) as CarEntityKey[]) {
+      const entity = findEntityForKey(entityName, deviceEntities);
 
       if (entity) {
         entityIds[entityName] = {
           entity_id: entity.entity_id,
-          original_name: entity.original_name,
+          original_name: entity.original_name ?? '',
         };
       }
     }
 
+    reportResolution(entityIds, deviceEntities);
+
     return entityIds;
   }
 );
+
+/**
+ * One-shot resolution report for the browser console. Absence is expected on most
+ * models, so a short list is not by itself a fault - but silently returning one
+ * is indistinguishable from a broken lookup, so publish both halves.
+ */
+function reportResolution(entityIds: VehicleEntities, deviceEntities: Required<VehicleEntity>[]): void {
+  const keys = Object.keys(combinedFilters);
+  const report = {
+    resolved: Object.keys(entityIds).length,
+    total: keys.length,
+    // Capabilities this car genuinely does not report.
+    unavailable: findUnresolvedKeys(deviceEntities),
+    entities: entityIds,
+  };
+  // console.warn, not console.log: the production build runs terser with
+  // drop_console: ['log', 'error'], so a log call would never reach the console.
+  console.warn(
+    `[vehicle-info-card] resolved ${report.resolved}/${report.total} car entities` +
+      (report.unavailable.length ? `; not reported by this car: ${report.unavailable.join(', ')}` : ''),
+  );
+  window.VicCarEntities = report;
+
+  // Build fingerprint. The production build runs terser with
+  // drop_console: ['log', 'error'], so the warning above is the only signal that
+  // a given bundle is actually live. A stale cached copy is otherwise
+  // indistinguishable from a broken build, so publish the capabilities this
+  // build is expected to provide and let the console answer that question.
+  console.warn(
+    `[vehicle-info-card] ${CARD_VERSION} loaded` +
+      ' | tiered entity resolution: translation_key -> unique_id -> suffix -> original_name',
+  );
+  window.VicCardBuild = {
+    version: CARD_VERSION,
+    features: ['tiered-resolution', 'door-status-guard'],
+  };
+}
 
 async function getModelName(hass: HomeAssistant, entityCar: string): Promise<string> {
   // Fetch all entities
