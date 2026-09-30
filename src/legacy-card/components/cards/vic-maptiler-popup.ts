@@ -40,6 +40,35 @@ const MARKER_FLYTO_OPTS = {
   bearing: -17.6,
 };
 
+/**
+ * Query parameters whose values must never be rendered or logged.
+ *
+ * MapTiler puts the account API key in the query string of every style
+ * request, so any URL taken from a map error event carries a live credential.
+ * These are removed before the URL reaches the error panel, the component state
+ * or the console - a screenshot of the panel, or a pasted support log, would
+ * otherwise be enough to leak the key.
+ */
+const REDACTED_QUERY_PARAMS = ['key', 'access_token', 'token', 'apikey', 'api_key', 'secret', 'password'];
+
+/**
+ * Strip credential-bearing query parameters from a URL so it is safe to display.
+ *
+ * Keeps the origin, path and non-sensitive parameters, because those are what
+ * make the URL useful for diagnosing the failure. Unparseable input is reduced
+ * to a bare path rather than passed through, so a malformed value cannot leak a
+ * secret that a failed parse happened to miss.
+ */
+const redactUrl = (url: string): string => {
+  try {
+    const parsed = new URL(url, window.location.origin);
+    REDACTED_QUERY_PARAMS.forEach((param) => parsed.searchParams.delete(param));
+    return parsed.toString();
+  } catch {
+    return url.split('?')[0].split('#')[0];
+  }
+};
+
 @customElement('vic-maptiler-popup')
 export class VicMaptilerPopup extends LitElement {
   @property({ attribute: false }) mapData!: MapData;
@@ -53,7 +82,12 @@ export class VicMaptilerPopup extends LitElement {
   @state() private map!: maptilersdk.Map;
   @state() private _popup: maptilersdk.Popup | null = null;
 
-  @state() private _loadError: boolean = false;
+  /**
+   * The style could not be loaded. Store the reason so the message can name the
+   * actual cause instead of always blaming the API key - a style 404, a network
+   * failure and a rejected key all arrive through this same handler.
+   */
+  @state() private _loadError: { message: string; url?: string } | null = null;
   @state() private _markerFocus: boolean = false;
 
   private _bounds: maptilersdk.LngLatBounds | null = null;
@@ -104,7 +138,56 @@ export class VicMaptilerPopup extends LitElement {
       ? MAPTILER_STYLE.dark
       : MAPTILER_STYLE.light;
 
+    // Values persisted before the shorthand was resolved through the SDK's style
+    // registry are unusable as-is, and would otherwise keep re-requesting a style
+    // that does not exist. Rewrite them to a concrete id so an existing
+    // localStorage entry self-heals without the user clearing browser data.
+    if (storedStyle && !this._resolveStyleObject(this._currentStyle)) {
+      this._currentStyle = isDarkMode ? MAPTILER_STYLE.dark : MAPTILER_STYLE.light;
+      localStorage.setItem(MAP_STORAGE.THEME_STYLE, this._currentStyle);
+    }
+
     console.log('Initial Theme Mode:', this._themeMode, 'Current Style:', this._currentStyle);
+  }
+
+  /**
+   * Resolve a `NAME.VARIANT` picker shorthand to a concrete style object.
+   *
+   * The SDK only expands `ReferenceMapStyle` / `MapStyleVariant` objects into a
+   * real style URL. A bare string bypasses that lookup and is interpolated
+   * straight into the request path by `expandMapStyle()`, so an unrecognised
+   * name is not rejected locally - it becomes a 404 from the map service.
+   * `STREETS.DARK` took exactly that path.
+   *
+   * Variants must be read through `getVariant()`, which returns a `MapStyleVariant`
+   * and is the only access the SDK types expose. Note that `STREETS` is an alias
+   * for the deprecated `streets-v2`; `STREETS_V4` is the current equivalent, so a
+   * deprecated result is rejected and reported rather than silently requested.
+   *
+   * Returns undefined when the shorthand cannot be resolved to a usable style,
+   * so callers can fall back instead of requesting one that cannot exist.
+   */
+  private _resolveStyleObject(style: string): maptilersdk.MapStyleVariant | undefined {
+    const [name, variant] = style.split('.');
+    const reference = (maptilersdk.MapStyle as unknown as Record<string, maptilersdk.ReferenceMapStyle>)[name];
+
+    if (!reference || typeof reference.getVariant !== 'function') {
+      return undefined;
+    }
+
+    try {
+      const resolved = variant ? reference.getVariant(variant) : reference.getDefaultVariant();
+      if (!resolved) {
+        return undefined;
+      }
+      if (resolved.deprecated) {
+        console.warn(`Style "${reference.getName()}" resolves to the deprecated "${resolved.getId()}"; falling back to ${MAPTILER_STYLE.dark}.`);
+        return undefined;
+      }
+      return resolved;
+    } catch {
+      return undefined;
+    }
   }
 
   private _initMap(): void {
@@ -114,6 +197,10 @@ export class VicMaptilerPopup extends LitElement {
     const { lat, lon } = this.mapData;
 
     const initStyle = this._currentStyle as string;
+    // Hand the SDK the resolved style object, not the picker shorthand. The
+    // shorthand is not a style id, so passing it through as a string is what
+    // produced the "Map with this identifier does not exist" 404.
+    const styleObject = this._resolveStyleObject(initStyle);
 
     this._bounds = this._getMapBounds();
 
@@ -124,7 +211,7 @@ export class VicMaptilerPopup extends LitElement {
     const mapOptions: maptilersdk.MapOptions = {
       container: mapEl,
       zoom: defaultZoom,
-      style: initStyle,
+      style: styleObject ?? MAPTILER_STYLE.dark,
       geolocateControl: false,
       fullscreenControl: false,
       navigationControl: false,
@@ -213,13 +300,30 @@ export class VicMaptilerPopup extends LitElement {
     });
 
     this.map.on('error', (e: any) => {
-      if (e.style !== undefined) {
-        this._loadError = true;
-        this.map.setStyle(MAPTILER_STYLE.demo);
-        this.map.setZoom(5);
-      } else {
+      if (e.style === undefined) {
         return;
       }
+      // Surface the real cause. Maplibre routes every style-pipeline failure
+      // through this one event, so a single hardcoded "verify your API key"
+      // message sent users chasing a key that was never the problem.
+      const err = e.error;
+      // Redact at the source: this URL is the only place the key enters, so
+      // sanitising here keeps it out of the panel, the state and the log.
+      const url: string | undefined = err?.url ? redactUrl(err.url) : undefined;
+      let message = this.card.localize('card.mapErrors.generic');
+      if (err?.status === 401 || err?.status === 403) {
+        message = this.card.localize('card.mapErrors.unauthorized');
+      } else if (err?.status === 404) {
+        message = this.card.localize('card.mapErrors.styleNotFound');
+      } else if (err?.status === 429) {
+        message = this.card.localize('card.mapErrors.quotaExceeded');
+      } else if (/Failed to fetch|NetworkError|Load failed/i.test(err?.message ?? '')) {
+        message = this.card.localize('card.mapErrors.network');
+      }
+      console.warn('[vehicle-info-card] map style failed to load:', err?.status ?? '', message, url ?? '');
+      this._loadError = { message, url };
+      this.map.setStyle(MAPTILER_STYLE.demo);
+      this.map.setZoom(5);
     });
 
     this.map.on('styleimagemissing', (e) => {
@@ -615,12 +719,14 @@ export class VicMaptilerPopup extends LitElement {
   }
 
   private _changeMapStyle(style: string) {
-    const selectedTheme = style.split('.');
-    const maptilerTheme =
-      selectedTheme.length === 2
-        ? maptilersdk.MapStyle[selectedTheme[0]][selectedTheme[1]]
-        : maptilersdk.MapStyle[selectedTheme[0]];
-    this.map?.setStyle(maptilerTheme, { diff: false });
+    // Resolve through the same path as init, so a picker selection cannot land
+    // on a deprecated style or an id the map service does not know.
+    const resolved = this._resolveStyleObject(style);
+    if (!resolved) {
+      console.warn(`Could not resolve map style "${style}"; leaving the current style in place.`);
+      return;
+    }
+    this.map?.setStyle(resolved, { diff: false });
   }
 
   private getModeColor = (key: string): string => {
@@ -641,8 +747,14 @@ export class VicMaptilerPopup extends LitElement {
 
   private _renderLoadError(): TemplateResult | typeof nothing {
     if (!this._loadError) return nothing;
+    const { message, url } = this._loadError;
     return html`<div id="error">
-      <ha-alert alert-type="error">Error fetching the map. Please verify your API key and try again.</ha-alert>
+      <ha-alert alert-type="error">
+        ${message}
+        ${url
+          ? html`<div class="map-error-url" title=${url}>${this.card.localize('card.mapErrors.failedUrl')}: ${url}</div>`
+          : nothing}
+      </ha-alert>
     </div>`;
   }
 
@@ -816,6 +928,13 @@ export class VicMaptilerPopup extends LitElement {
 
         .fade-in {
           animation: fadeIn 0.5s;
+        }
+
+        .map-error-url {
+          margin-top: 6px;
+          font-size: 0.85em;
+          opacity: 0.8;
+          overflow-wrap: anywhere;
         }
 
         #mapstyles {

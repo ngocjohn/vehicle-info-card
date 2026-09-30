@@ -80,9 +80,24 @@ export const DARK_AVAILABLE_STYLES = ['STREETS', 'BASIC', 'BRIGHT', 'DATAVIZ', '
 export const DEFAULT_HOURS_TO_SHOW = 0;
 export const DEFAULT_ZOOM = 13;
 
+/**
+ * Style ids passed to the MapTiler SDK.
+ *
+ * These must be real MapTiler Cloud style ids, not the `NAME.VARIANT` shorthand
+ * used in the style picker. The SDK's `expandMapStyle()` builds the request URL
+ * by direct interpolation, so an unrecognised name is not rejected locally - it
+ * is turned into a 404 (`…/maps/STREETS.DARK/style.json`). `STREETS.DARK` and
+ * `STREETS.LIGHT` were never style ids, which made the popup 404 and fall back
+ * to the deprecated `streets-v2` default.
+ *
+ * `STREETS` and the `.DARK` / `.LIGHT` variants are the SDK's own shorthands;
+ * see `mappersdk.MapStyle` in the style picker. These are the concrete v4 ids
+ * they resolve to, used here so `maptilersdk.Map({ style })` gets something the
+ * API accepts.
+ */
 export const MAPTILER_STYLE = {
-  dark: 'STREETS.DARK',
-  light: 'STREETS.LIGHT',
+  dark: 'streets-v4-dark',
+  light: 'streets-v4',
   demo: 'https://demotiles.maplibre.org/style.json',
 };
 
