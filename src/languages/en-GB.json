@@ -26,6 +26,14 @@
             "toastImageError": "Error uploading image. Only PNG and JPEG files are allowed.",
             "toastCardAlreadyExists": "Card already exists"
         },
+        "mapErrors": {
+            "generic": "Could not load the map style. Please try again.",
+            "styleNotFound": "The map style could not be found. This usually means the card requested a style that the map service does not offer.",
+            "unauthorized": "The map service rejected the API key. Check that the key is valid and has not been rotated.",
+            "quotaExceeded": "The map service quota has been exceeded. Wait for the quota to reset or upgrade the plan.",
+            "network": "Could not reach the map service. Check the network connection, ad blockers, or content blockers.",
+            "failedUrl": "Failed to load"
+        },
         "cardType": {
             "ecoCards": "Eco display",
             "tripCards": "Trip data",

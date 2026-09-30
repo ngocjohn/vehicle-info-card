@@ -53,7 +53,12 @@ export class VicMaptilerPopup extends LitElement {
   @state() private map!: maptilersdk.Map;
   @state() private _popup: maptilersdk.Popup | null = null;
 
-  @state() private _loadError: boolean = false;
+  /**
+   * The style could not be loaded. Store the reason so the message can name the
+   * actual cause instead of always blaming the API key - a style 404, a network
+   * failure and a rejected key all arrive through this same handler.
+   */
+  @state() private _loadError: { message: string; url?: string } | null = null;
   @state() private _markerFocus: boolean = false;
 
   private _bounds: maptilersdk.LngLatBounds | null = null;
@@ -213,13 +218,28 @@ export class VicMaptilerPopup extends LitElement {
     });
 
     this.map.on('error', (e: any) => {
-      if (e.style !== undefined) {
-        this._loadError = true;
-        this.map.setStyle(MAPTILER_STYLE.demo);
-        this.map.setZoom(5);
-      } else {
+      if (e.style === undefined) {
         return;
       }
+      // Surface the real cause. Maplibre routes every style-pipeline failure
+      // through this one event, so a single hardcoded "verify your API key"
+      // message sent users chasing a key that was never the problem.
+      const err = e.error;
+      const url: string | undefined = err?.url;
+      let message = this.card.localize('card.mapErrors.generic');
+      if (err?.status === 401 || err?.status === 403) {
+        message = this.card.localize('card.mapErrors.unauthorized');
+      } else if (err?.status === 404) {
+        message = this.card.localize('card.mapErrors.styleNotFound');
+      } else if (err?.status === 429) {
+        message = this.card.localize('card.mapErrors.quotaExceeded');
+      } else if (/Failed to fetch|NetworkError|Load failed/i.test(err?.message ?? '')) {
+        message = this.card.localize('card.mapErrors.network');
+      }
+      console.warn('[vehicle-info-card] map style failed to load:', err?.status ?? '', message, url ?? '');
+      this._loadError = { message, url };
+      this.map.setStyle(MAPTILER_STYLE.demo);
+      this.map.setZoom(5);
     });
 
     this.map.on('styleimagemissing', (e) => {
@@ -641,8 +661,14 @@ export class VicMaptilerPopup extends LitElement {
 
   private _renderLoadError(): TemplateResult | typeof nothing {
     if (!this._loadError) return nothing;
+    const { message, url } = this._loadError;
     return html`<div id="error">
-      <ha-alert alert-type="error">Error fetching the map. Please verify your API key and try again.</ha-alert>
+      <ha-alert alert-type="error">
+        ${message}
+        ${url
+          ? html`<div class="map-error-url" title=${url}>${this.card.localize('card.mapErrors.failedUrl')}: ${url}</div>`
+          : nothing}
+      </ha-alert>
     </div>`;
   }
 
@@ -816,6 +842,13 @@ export class VicMaptilerPopup extends LitElement {
 
         .fade-in {
           animation: fadeIn 0.5s;
+        }
+
+        .map-error-url {
+          margin-top: 6px;
+          font-size: 0.85em;
+          opacity: 0.8;
+          overflow-wrap: anywhere;
         }
 
         #mapstyles {
