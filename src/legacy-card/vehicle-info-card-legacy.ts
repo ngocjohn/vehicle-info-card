@@ -281,10 +281,18 @@ export class VehicleCard extends LitElement implements LovelaceCard {
     // console.log('%cButton ready: %O', 'color: #bada55', logging);
     this._buttonReady = true;
     this._calculateCardHeight = this.getGridRowSize() * ROWPX;
-    // console.log('Card height calculated', this._calculateCardHeight);
-    setTimeout(() => {
+    // The splash is a cosmetic pause, not real loading: the button cards are
+    // already resolved by this point. Hold the logo for a moment unless the
+    // user opted out via `startup_animation_delay`. Compared against `false`
+    // rather than truthiness so configs written before the option existed keep
+    // the original behaviour.
+    if (this.config.startup_animation_delay === false) {
       this._loading = false;
-    }, 2000);
+    } else {
+      setTimeout(() => {
+        this._loading = false;
+      }, 2000);
+    }
   }
 
   private async _setUpPreview(): Promise<void> {
