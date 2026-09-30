@@ -40,6 +40,35 @@ const MARKER_FLYTO_OPTS = {
   bearing: -17.6,
 };
 
+/**
+ * Query parameters whose values must never be rendered or logged.
+ *
+ * MapTiler puts the account API key in the query string of every style
+ * request, so any URL taken from a map error event carries a live credential.
+ * These are removed before the URL reaches the error panel, the component state
+ * or the console - a screenshot of the panel, or a pasted support log, would
+ * otherwise be enough to leak the key.
+ */
+const REDACTED_QUERY_PARAMS = ['key', 'access_token', 'token', 'apikey', 'api_key', 'secret', 'password'];
+
+/**
+ * Strip credential-bearing query parameters from a URL so it is safe to display.
+ *
+ * Keeps the origin, path and non-sensitive parameters, because those are what
+ * make the URL useful for diagnosing the failure. Unparseable input is reduced
+ * to a bare path rather than passed through, so a malformed value cannot leak a
+ * secret that a failed parse happened to miss.
+ */
+const redactUrl = (url: string): string => {
+  try {
+    const parsed = new URL(url, window.location.origin);
+    REDACTED_QUERY_PARAMS.forEach((param) => parsed.searchParams.delete(param));
+    return parsed.toString();
+  } catch {
+    return url.split('?')[0].split('#')[0];
+  }
+};
+
 @customElement('vic-maptiler-popup')
 export class VicMaptilerPopup extends LitElement {
   @property({ attribute: false }) mapData!: MapData;
@@ -278,7 +307,9 @@ export class VicMaptilerPopup extends LitElement {
       // through this one event, so a single hardcoded "verify your API key"
       // message sent users chasing a key that was never the problem.
       const err = e.error;
-      const url: string | undefined = err?.url;
+      // Redact at the source: this URL is the only place the key enters, so
+      // sanitising here keeps it out of the panel, the state and the log.
+      const url: string | undefined = err?.url ? redactUrl(err.url) : undefined;
       let message = this.card.localize('card.mapErrors.generic');
       if (err?.status === 401 || err?.status === 403) {
         message = this.card.localize('card.mapErrors.unauthorized');
