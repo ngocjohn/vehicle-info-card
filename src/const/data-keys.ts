@@ -15,6 +15,7 @@ export const editorShowOpts = (lang: string) => [
   createShowOpts('editor.showOpts.show_address', lang, 'show_address'),
   createShowOpts('editor.showOpts.enable_services_control', lang, 'enable_services_control'),
   createShowOpts('editor.showOpts.show_error_notify', lang, 'show_error_notify'),
+  createShowOpts('editor.showOpts.startup_animation_delay', lang, 'startup_animation_delay'),
 ];
 
 const createCard = (key: string, icon: string, config: string, button: string, lang: string): CardTypeConfig => ({

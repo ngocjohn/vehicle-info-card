@@ -14,6 +14,7 @@ export const defaultConfig: Partial<VehicleCardConfig> = {
   show_background: true,
   enable_map_popup: false,
   enable_services_control: false,
+  startup_animation_delay: true,
   show_error_notify: false,
   device_tracker: '',
   map_popup_config: {

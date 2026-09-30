@@ -279,7 +279,8 @@
             "show_map": "Show map",
             "show_slides": "Show slides",
             "show_header_info": "Show header info",
-            "show_address": "Show address"
+            "show_address": "Show address",
+            "startup_animation_delay": "Startup animation delay"
         },
         "themeLangConfig": {
             "desc": "Choose the theme and language.",

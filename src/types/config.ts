@@ -122,6 +122,14 @@ export interface VehicleCardConfig extends LovelaceCardConfig {
    */
   enable_services_control?: boolean;
   /**
+   * Show the animated logo for a moment when the card first opens.
+   *
+   * Set to false to reveal the card as soon as its data is ready instead of
+   * waiting out the splash delay. Defaults to true when unset, so existing
+   * configurations keep the current behaviour.
+   */
+  startup_animation_delay?: boolean;
+  /**
    * @deprecated use `extra_configs.services_config` instead
    */
   services?: Services;
