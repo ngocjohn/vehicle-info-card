@@ -109,7 +109,56 @@ export class VicMaptilerPopup extends LitElement {
       ? MAPTILER_STYLE.dark
       : MAPTILER_STYLE.light;
 
+    // Values persisted before the shorthand was resolved through the SDK's style
+    // registry are unusable as-is, and would otherwise keep re-requesting a style
+    // that does not exist. Rewrite them to a concrete id so an existing
+    // localStorage entry self-heals without the user clearing browser data.
+    if (storedStyle && !this._resolveStyleObject(this._currentStyle)) {
+      this._currentStyle = isDarkMode ? MAPTILER_STYLE.dark : MAPTILER_STYLE.light;
+      localStorage.setItem(MAP_STORAGE.THEME_STYLE, this._currentStyle);
+    }
+
     console.log('Initial Theme Mode:', this._themeMode, 'Current Style:', this._currentStyle);
+  }
+
+  /**
+   * Resolve a `NAME.VARIANT` picker shorthand to a concrete style object.
+   *
+   * The SDK only expands `ReferenceMapStyle` / `MapStyleVariant` objects into a
+   * real style URL. A bare string bypasses that lookup and is interpolated
+   * straight into the request path by `expandMapStyle()`, so an unrecognised
+   * name is not rejected locally - it becomes a 404 from the map service.
+   * `STREETS.DARK` took exactly that path.
+   *
+   * Variants must be read through `getVariant()`, which returns a `MapStyleVariant`
+   * and is the only access the SDK types expose. Note that `STREETS` is an alias
+   * for the deprecated `streets-v2`; `STREETS_V4` is the current equivalent, so a
+   * deprecated result is rejected and reported rather than silently requested.
+   *
+   * Returns undefined when the shorthand cannot be resolved to a usable style,
+   * so callers can fall back instead of requesting one that cannot exist.
+   */
+  private _resolveStyleObject(style: string): maptilersdk.MapStyleVariant | undefined {
+    const [name, variant] = style.split('.');
+    const reference = (maptilersdk.MapStyle as unknown as Record<string, maptilersdk.ReferenceMapStyle>)[name];
+
+    if (!reference || typeof reference.getVariant !== 'function') {
+      return undefined;
+    }
+
+    try {
+      const resolved = variant ? reference.getVariant(variant) : reference.getDefaultVariant();
+      if (!resolved) {
+        return undefined;
+      }
+      if (resolved.deprecated) {
+        console.warn(`Style "${reference.getName()}" resolves to the deprecated "${resolved.getId()}"; falling back to ${MAPTILER_STYLE.dark}.`);
+        return undefined;
+      }
+      return resolved;
+    } catch {
+      return undefined;
+    }
   }
 
   private _initMap(): void {
@@ -119,6 +168,10 @@ export class VicMaptilerPopup extends LitElement {
     const { lat, lon } = this.mapData;
 
     const initStyle = this._currentStyle as string;
+    // Hand the SDK the resolved style object, not the picker shorthand. The
+    // shorthand is not a style id, so passing it through as a string is what
+    // produced the "Map with this identifier does not exist" 404.
+    const styleObject = this._resolveStyleObject(initStyle);
 
     this._bounds = this._getMapBounds();
 
@@ -129,7 +182,7 @@ export class VicMaptilerPopup extends LitElement {
     const mapOptions: maptilersdk.MapOptions = {
       container: mapEl,
       zoom: defaultZoom,
-      style: initStyle,
+      style: styleObject ?? MAPTILER_STYLE.dark,
       geolocateControl: false,
       fullscreenControl: false,
       navigationControl: false,
@@ -635,12 +688,14 @@ export class VicMaptilerPopup extends LitElement {
   }
 
   private _changeMapStyle(style: string) {
-    const selectedTheme = style.split('.');
-    const maptilerTheme =
-      selectedTheme.length === 2
-        ? maptilersdk.MapStyle[selectedTheme[0]][selectedTheme[1]]
-        : maptilersdk.MapStyle[selectedTheme[0]];
-    this.map?.setStyle(maptilerTheme, { diff: false });
+    // Resolve through the same path as init, so a picker selection cannot land
+    // on a deprecated style or an id the map service does not know.
+    const resolved = this._resolveStyleObject(style);
+    if (!resolved) {
+      console.warn(`Could not resolve map style "${style}"; leaving the current style in place.`);
+      return;
+    }
+    this.map?.setStyle(resolved, { diff: false });
   }
 
   private getModeColor = (key: string): string => {
