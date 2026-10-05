@@ -37,7 +37,7 @@
   "devDependencies": {
     "@dotenvx/dotenvx": "^1.45.2",
     "@maplibre/maplibre-gl-leaflet": "^0.1.4",
-    "@maptiler/sdk": "^3.5.0",
+    "@maptiler/sdk": "^4.2.0",
     "@rollup/plugin-commonjs": "^28.0.6",
     "@rollup/plugin-image": "^3.0.3",
     "@rollup/plugin-json": "^6.1.0",
